@@ -1,0 +1,2 @@
+JBoss CapeDwarf Blue is JBoss' attempt to implement GoogleAppEngine API on top of JBoss' technology / frameworks / libraries.
+This way making the GAE to JBossAS switch seamless.
