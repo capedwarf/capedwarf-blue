@@ -1,351 +1,361 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.jboss</groupId>
-    <artifactId>jboss-parent</artifactId>
-    <version>5</version>
-  </parent>
-  <groupId>org.jboss.capedwarf.blue</groupId>
-  <artifactId>capedwarf-build</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <name>CapeDwarf Build</name>
-  <url>http://www.jboss.org/capedwarf</url>
-  <description>CapeDwarf Build</description>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>5</version>
+    </parent>
+    <groupId>org.jboss.capedwarf.blue</groupId>
+    <artifactId>capedwarf-build</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>CapeDwarf Build</name>
+    <url>http://www.jboss.org/capedwarf</url>
+    <description>CapeDwarf Build</description>
 
-  <modules>
-    <module>datastore</module>
-  </modules>
+    <modules>
+        <module>bytecode</module>
+        <module>datastore</module>
+    </modules>
 
-  <properties>
-    <version.cdi.api>1.0-SP4</version.cdi.api>
-    <version.com.google.gae>1.5.2</version.com.google.gae>
-    <version.com.google.gae.api>1.5.2</version.com.google.gae.api>
-    <version.com.google.gae.labs>1.5.2</version.com.google.gae.labs>
-    <version.com.google.guava>1.0.0.R05</version.com.google.guava>
-    <version.json>20090211</version.json>
-    <version.org.jboss.seam>3.0.0.Final</version.org.jboss.seam>
-    <version.org.jboss.logging>3.0.0.GA</version.org.jboss.logging>
-    <version.javassist>3.14.0-GA</version.javassist>
-    <version.slf4j>1.5.10</version.slf4j>
-    <version.javax.validation>1.0.0.GA</version.javax.validation>
-    <version.javax.servlet>2.5</version.javax.servlet>
-    <version.javax.servlet.jsp>2.1</version.javax.servlet.jsp>
-    <version.javax.cache>1.0-dev-2</version.javax.cache>
-    <version.javax.mail>1.4</version.javax.mail>
-    <version.javax.jpa2>1.0.0.Final</version.javax.jpa2>
-    <version.org.datanucleus.jpa.spec>1.1.1</version.org.datanucleus.jpa.spec>
-    <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
-    <version.org.infinispan>5.0.0.FINAL</version.org.infinispan>
-    <version.org.apache.http>4.0.3</version.org.apache.http>
-    <version.junit>4.7</version.junit>
-    <version.arquillian>1.0.0.CR1</version.arquillian>
-    <version.metainf>1.1</version.metainf>
-  </properties>
+    <properties>
+        <version.cdi.api>1.0-SP4</version.cdi.api>
+        <version.com.google.gae>1.5.2</version.com.google.gae>
+        <version.com.google.gae.api>1.5.2</version.com.google.gae.api>
+        <version.com.google.gae.labs>1.5.2</version.com.google.gae.labs>
+        <version.com.google.guava>1.0.0.R05</version.com.google.guava>
+        <version.json>20090211</version.json>
+        <version.org.jboss.seam>3.0.0.Final</version.org.jboss.seam>
+        <version.org.jboss.logging>3.0.0.GA</version.org.jboss.logging>
+        <version.javassist>3.14.0-GA</version.javassist>
+        <version.slf4j>1.5.10</version.slf4j>
+        <version.javax.validation>1.0.0.GA</version.javax.validation>
+        <version.javax.servlet>2.5</version.javax.servlet>
+        <version.javax.servlet.jsp>2.1</version.javax.servlet.jsp>
+        <version.javax.cache>1.0-dev-2</version.javax.cache>
+        <version.javax.mail>1.4</version.javax.mail>
+        <version.javax.jpa2>1.0.0.Final</version.javax.jpa2>
+        <version.org.datanucleus.jpa.spec>1.1.1</version.org.datanucleus.jpa.spec>
+        <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
+        <version.org.infinispan>5.0.0.FINAL</version.org.infinispan>
+        <version.org.apache.http>4.0.3</version.org.apache.http>
+        <version.junit>4.7</version.junit>
+        <version.arquillian>1.0.0.CR1</version.arquillian>
+        <version.jboss.as7>7.1.0.Alpha2-SNAPSHOT</version.jboss.as7>
+        <version.metainf>1.1</version.metainf>
+    </properties>
 
-  <build>
-    <plugins>
-      <plugin>
-	     <groupId>org.apache.maven.plugins</groupId>
-	     <artifactId>maven-compiler-plugin</artifactId>
-	     <configuration>
-	       <source>1.5</source>
-	       <target>1.5</target>
-	       <debug>true</debug>
-	       <encoding>UTF-8</encoding>
-	       <fork>true</fork>
-	     </configuration>
-	   </plugin>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                    <debug>true</debug>
+                    <encoding>UTF-8</encoding>
+                    <fork>true</fork>
+                </configuration>
+            </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.0-beta-9</version>
-        <configuration>
-          <autoVersionSubmodules>true</autoVersionSubmodules>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-idea-plugin</artifactId>
-        <version>2.2</version>
-        <configuration>
-          <downloadSources>true</downloadSources>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.4.3</version>
-        <configuration>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <includes>
-            <include>org/jboss/test/**/*TestCase.java</include>
-          </includes>
-          <systemProperties>
-             <property>
-               <name>capedwarf.localhost</name>
-               <value>://localhost:8080/client/</value>
-             </property>
-          </systemProperties>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.0-beta-9</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-idea-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <downloadSources>true</downloadSources>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.4.3</version>
+                <configuration>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <includes>
+                        <include>org/jboss/test/**/*TestCase.java</include>
+                    </includes>
+                    <systemProperties>
+                        <property>
+                            <name>capedwarf.localhost</name>
+                            <value>://localhost:8080/client/</value>
+                        </property>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-  <repositories>
-      <repository>
-          <id>oss-sonatype-central</id>
-          <name>OSS Sonatype Central</name>
-          <url>https://oss.sonatype.org/content/repositories/central/</url>
-         <layout>default</layout>
-         <releases>
-           <enabled>true</enabled>
-           <updatePolicy>never</updatePolicy>
-         </releases>
-      </repository>
-      <repository>
-          <id>maven-gae-plugin</id>
-          <name>Maven-gae-plugin Repository</name>
-          <url>http://maven-gae-plugin.googlecode.com/svn/repository</url>
-         <layout>default</layout>
-         <releases>
-           <enabled>true</enabled>
-           <updatePolicy>never</updatePolicy>
-         </releases>
-      </repository>
-      <repository>
-          <id>mvnrepository</id>
-          <name>Maven Repository</name>
-          <url>http://mvnrepository.com/artifact/</url>
-         <layout>default</layout>
-         <releases>
-           <enabled>true</enabled>
-           <updatePolicy>never</updatePolicy>
-         </releases>
-      </repository>
-      <repository>
-          <id>atlassian</id>
-          <name>Atlassian Repository</name>
-          <url>https://maven.atlassian.com/content/groups/public</url>
-         <layout>default</layout>
-         <releases>
-           <enabled>true</enabled>
-           <updatePolicy>never</updatePolicy>
-         </releases>
-      </repository>
-      <repository>
+    <repositories>
+        <repository>
+            <id>oss-sonatype-central</id>
+            <name>OSS Sonatype Central</name>
+            <url>https://oss.sonatype.org/content/repositories/central/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>maven-gae-plugin</id>
+            <name>Maven-gae-plugin Repository</name>
+            <url>http://maven-gae-plugin.googlecode.com/svn/repository</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>mvnrepository</id>
+            <name>Maven Repository</name>
+            <url>http://mvnrepository.com/artifact/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>atlassian</id>
+            <name>Atlassian Repository</name>
+            <url>https://maven.atlassian.com/content/groups/public</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+        <repository>
             <id>datanucleus</id>
             <name>Datanucleus Repository</name>
             <url>http://www.datanucleus.org/downloads/maven2</url>
             <layout>default</layout>
             <releases>
-              <enabled>true</enabled>
-              <updatePolicy>never</updatePolicy>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
             </releases>
-      </repository>
-      <repository>
-          <id>jboss-public-repository-group</id>
-          <name>JBoss Public Maven Repository Group</name>
-          <url>https://repository.jboss.org/nexus/content/groups/public</url>
-          <layout>default</layout>
-          <releases>
-            <enabled>true</enabled>
-            <updatePolicy>never</updatePolicy>
-          </releases>
-          <snapshots>
-            <enabled>false</enabled>
-            <updatePolicy>never</updatePolicy>
-          </snapshots>
-      </repository>
-      <repository>
-          <id>jboss-deprecated-repository</id>
-          <name>JBoss Deprecated Maven Repository</name>
-          <url>https://repository.jboss.org/nexus/content/repositories/deprecated</url>
-          <layout>default</layout>
-          <releases>
-            <enabled>true</enabled>
-            <updatePolicy>never</updatePolicy>
-          </releases>
-          <snapshots>
-            <enabled>false</enabled>
-            <updatePolicy>never</updatePolicy>
-          </snapshots>
-      </repository>
-  </repositories>
+        </repository>
+        <repository>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Maven Repository Group</name>
+            <url>https://repository.jboss.org/nexus/content/groups/public</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>jboss-deprecated-repository</id>
+            <name>JBoss Deprecated Maven Repository</name>
+            <url>https://repository.jboss.org/nexus/content/repositories/deprecated</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
 
-   <dependencyManagement>
-    <!-- The parent pom manages the inter-dependencies of the modules. -->
-    <dependencies>
+    <dependencyManagement>
+        <!-- The parent pom manages the inter-dependencies of the modules. -->
+        <dependencies>
 
-        <!-- Common code -->
+            <!-- Common code -->
 
-        <dependency>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-          <version>${version.com.google.guava}</version>
-        </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${version.com.google.guava}</version>
+            </dependency>
 
-        <!-- Seam3 -->
+            <!-- Seam3 -->
 
-        <dependency>
-          <groupId>org.jboss.seam</groupId>
-          <artifactId>seam-bom</artifactId>
-          <version>${version.org.jboss.seam}</version>
-          <type>pom</type>
-          <scope>import</scope>
-        </dependency>
+            <dependency>
+                <groupId>org.jboss.seam</groupId>
+                <artifactId>seam-bom</artifactId>
+                <version>${version.org.jboss.seam}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
-        <!-- JPA2 -->
+            <!-- JPA2 -->
 
-        <dependency>
-            <groupId>org.hibernate.javax.persistence</groupId>
-            <artifactId>hibernate-jpa-2.0-api</artifactId>
-            <version>${version.javax.jpa2}</version>
-        </dependency>
+            <dependency>
+                <groupId>org.hibernate.javax.persistence</groupId>
+                <artifactId>hibernate-jpa-2.0-api</artifactId>
+                <version>${version.javax.jpa2}</version>
+            </dependency>
 
-       <!-- Google AppEngine -->
+            <!-- Google AppEngine -->
 
-      <dependency>
-            <groupId>com.google.appengine</groupId>
-            <artifactId>appengine-api-1.0-sdk</artifactId>
-            <version>${version.com.google.gae.api}</version>
-      </dependency>
+            <dependency>
+                <groupId>com.google.appengine</groupId>
+                <artifactId>appengine-api-1.0-sdk</artifactId>
+                <version>${version.com.google.gae.api}</version>
+            </dependency>
 
-      <dependency>
-            <groupId>com.google.appengine</groupId>
-            <artifactId>appengine-api-labs</artifactId>
-            <version>${version.com.google.gae.labs}</version>
-      </dependency>
+            <dependency>
+                <groupId>com.google.appengine</groupId>
+                <artifactId>appengine-api-labs</artifactId>
+                <version>${version.com.google.gae.labs}</version>
+            </dependency>
 
-      <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>${version.json}</version>
-      </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>${version.json}</version>
+            </dependency>
 
-        <dependency>
-           <groupId>javax.servlet</groupId>
-           <artifactId>servlet-api</artifactId>
-            <version>${version.javax.servlet}</version>
-        </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>${version.javax.servlet}</version>
+            </dependency>
 
-        <dependency>
-           <groupId>javax.servlet.jsp</groupId>
-           <artifactId>jsp-api</artifactId>
-            <version>${version.javax.servlet.jsp}</version>
-        </dependency>
+            <dependency>
+                <groupId>javax.servlet.jsp</groupId>
+                <artifactId>jsp-api</artifactId>
+                <version>${version.javax.servlet.jsp}</version>
+            </dependency>
 
-        <dependency>
-            <groupId>jcache</groupId>
-            <artifactId>jcache</artifactId>
-            <version>${version.javax.cache}</version>
-        </dependency>
+            <dependency>
+                <groupId>jcache</groupId>
+                <artifactId>jcache</artifactId>
+                <version>${version.javax.cache}</version>
+            </dependency>
 
-        <dependency>
-            <groupId>com.google.appengine</groupId>
-            <artifactId>geronimo-jpa_3.0_spec</artifactId>
-            <version>${version.org.datanucleus.jpa.spec}</version>
-        </dependency>
+            <dependency>
+                <groupId>com.google.appengine</groupId>
+                <artifactId>geronimo-jpa_3.0_spec</artifactId>
+                <version>${version.org.datanucleus.jpa.spec}</version>
+            </dependency>
 
-        <dependency>
-            <groupId>com.google.appengine</groupId>
-            <artifactId>geronimo-jta_1.1_spec</artifactId>
-            <version>${version.org.datanucleus.jta}</version>
-        </dependency>
+            <dependency>
+                <groupId>com.google.appengine</groupId>
+                <artifactId>geronimo-jta_1.1_spec</artifactId>
+                <version>${version.org.datanucleus.jta}</version>
+            </dependency>
 
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-            <version>${version.org.infinispan}</version>
-            <scope>provided</scope>
-        </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-core</artifactId>
+                <version>${version.org.infinispan}</version>
+                <scope>provided</scope>
+            </dependency>
 
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
-            <version>${version.javax.mail}</version>
-        </dependency>
+            <dependency>
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>${version.javax.mail}</version>
+            </dependency>
 
-        <!--JBoss Weld / CDI -->
+            <!--JBoss Weld / CDI -->
 
-        <dependency>
-           <groupId>javax.enterprise</groupId>
-           <artifactId>cdi-api</artifactId>
-           <version>${version.cdi.api}</version>
-        </dependency>
+            <dependency>
+                <groupId>javax.enterprise</groupId>
+                <artifactId>cdi-api</artifactId>
+                <version>${version.cdi.api}</version>
+            </dependency>
 
-       <dependency>
-          <groupId>org.jboss.logging</groupId>
-          <artifactId>jboss-logging</artifactId>
-          <version>${version.org.jboss.logging}</version>
-       </dependency>
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging</artifactId>
+                <version>${version.org.jboss.logging}</version>
+            </dependency>
 
-        <dependency>
-           <groupId>org.javassist</groupId>
-           <artifactId>javassist</artifactId>
-           <version>${version.javassist}</version>
-        </dependency>
+            <dependency>
+                <groupId>org.javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>${version.javassist}</version>
+            </dependency>
 
-        <dependency>
-           <groupId>org.slf4j</groupId>
-           <artifactId>slf4j-api</artifactId>
-           <version>${version.slf4j}</version>
-        </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${version.slf4j}</version>
+            </dependency>
 
-        <dependency>
-           <groupId>org.slf4j</groupId>
-           <artifactId>slf4j-ext</artifactId>
-           <version>${version.slf4j}</version>
-        </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-ext</artifactId>
+                <version>${version.slf4j}</version>
+            </dependency>
 
-        <dependency>
-           <groupId>org.slf4j</groupId>
-           <artifactId>slf4j-jdk14</artifactId>
-           <version>${version.slf4j}</version>
-        </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-jdk14</artifactId>
+                <version>${version.slf4j}</version>
+            </dependency>
 
-        <dependency>
-           <groupId>javax.validation</groupId>
-           <artifactId>validation-api</artifactId>
-           <version>${version.javax.validation}</version>
-        </dependency>
+            <dependency>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${version.javax.validation}</version>
+            </dependency>
 
-        <dependency>
-           <groupId>org.apache.httpcomponents</groupId>
-           <artifactId>httpclient</artifactId>
-           <version>${version.org.apache.http}</version>
-        </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${version.org.apache.http}</version>
+            </dependency>
 
-        <dependency>
-            <groupId>org.kohsuke.metainf-services</groupId>
-            <artifactId>metainf-services</artifactId>
-            <version>${version.metainf}</version>
-        </dependency>
+            <dependency>
+                <groupId>org.kohsuke.metainf-services</groupId>
+                <artifactId>metainf-services</artifactId>
+                <version>${version.metainf}</version>
+            </dependency>
 
-        <!-- Testing -->
+            <!-- Testing -->
 
-        <dependency>
-           <groupId>junit</groupId>
-           <artifactId>junit</artifactId>
-           <version>${version.junit}</version>
-           <scope>test</scope>
-        </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit}</version>
+                <scope>test</scope>
+            </dependency>
 
-        <dependency>
-         <groupId>org.jboss.arquillian.junit</groupId>
-         <artifactId>arquillian-junit-container</artifactId>
-         <version>${version.arquillian}</version>
-         <scope>test</scope>
-       </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.junit</groupId>
+                <artifactId>arquillian-junit-container</artifactId>
+                <version>${version.arquillian}</version>
+                <scope>test</scope>
+            </dependency>
 
-    </dependencies>
-  </dependencyManagement>
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-container-remote</artifactId>
+                <version>${version.jboss.as7}</version>
+                <scope>test</scope>
+            </dependency>
 
-   <scm>
-       <connection>scm:git:git://github.com/capedwarf/capedwarf-blue.git</connection>
-       <developerConnection>scm:git:git://github.com/capedwarf/capedwarf-blue.git</developerConnection>
-       <url>scm:git:git://github.com/capedwarf/capedwarf-blue.git</url>
-   </scm>
+        </dependencies>
+    </dependencyManagement>
+
+    <scm>
+        <connection>scm:git:git://github.com/capedwarf/capedwarf-blue.git</connection>
+        <developerConnection>scm:git:git://github.com/capedwarf/capedwarf-blue.git</developerConnection>
+        <url>scm:git:git://github.com/capedwarf/capedwarf-blue.git</url>
+    </scm>
 
 </project>
