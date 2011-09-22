@@ -22,29 +22,16 @@
 
 package org.jboss.capedwarf.bytecode;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
-import java.security.ProtectionDomain;
-import java.util.HashMap;
-import java.util.Map;
+import javassist.CtClass;
+import javassist.CtMethod;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class FactoriesTransformer implements ClassFileTransformer {
-
-    private static Map<String, ClassFileTransformer> transformers = new HashMap<String, ClassFileTransformer>();
-
-    static {
-        transformers.put("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreFactoryTransformer());
-        transformers.put("com.google.appengine.api.datastore.DatastoreApiHelper", new DatastoreApiHelperTransformer());
-    }
-
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        ClassFileTransformer cft = transformers.get(className);
-        if (cft != null)
-            return cft.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
-
-        return classfileBuffer;
+public class DatastoreApiHelperTransformer extends JavassistTransformer {
+    protected void transform(CtClass clazz) throws Exception {
+        CtMethod method = clazz.getDeclaredMethod("getCurrentAppIdNamespace");
+        // TODO -- smarter appId, namespace!
+        method.setBody("return new com.google.appengine.api.datastore.AppIdNamespace(\"dummy-TODO\", \"jboss-capedwarf\");");
     }
 }

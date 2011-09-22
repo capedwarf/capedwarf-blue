@@ -52,6 +52,7 @@ public class SmokeTestCase {
     @Test
     public void testBasicOps() throws Exception {
         DatastoreService service = DatastoreServiceFactory.getDatastoreService();
+        System.out.println("service = " + service);
 
         Entity entity = new Entity("KIND", 1);
         entity.setProperty("text", "Some text.");
@@ -66,6 +67,7 @@ public class SmokeTestCase {
     @Test
     public void testBasicTxOps() throws Exception {
         DatastoreService service = DatastoreServiceFactory.getDatastoreService();
+        System.out.println("service = " + service);
 
         Entity entity = new Entity("KIND", 1);
         entity.setProperty("text", "Some text.");
@@ -78,9 +80,9 @@ public class SmokeTestCase {
             Assert.assertNotNull(lookup);
             Assert.assertEquals(entity, lookup);
 
-            tx.commit();
+            // tx.commit();
         } catch (Exception e) {
-            tx.rollback();
+            // tx.rollback();
         }
     }
 }

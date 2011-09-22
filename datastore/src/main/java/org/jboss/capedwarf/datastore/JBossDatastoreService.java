@@ -30,6 +30,9 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,52 +42,63 @@ import java.util.Map;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class JBossDatastoreService extends AbstractDatastoreService implements DatastoreService {
+
+    private Map<Key, Entity> store = new HashMap<Key, Entity>(); // TODO -- test dummy
+
     public Entity get(Key key) throws EntityNotFoundException {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return store.get(key);
     }
 
     public Entity get(Transaction transaction, Key key) throws EntityNotFoundException {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return get(key);
     }
 
     public Map<Key, Entity> get(Iterable<Key> keyIterable) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        Map<Key, Entity> result = new HashMap<Key, Entity>();
+        for (Key key : keyIterable)
+            result.put(key, store.get(key));
+        return result;
     }
 
     public Map<Key, Entity> get(Transaction transaction, Iterable<Key> keyIterable) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return get(keyIterable);
     }
 
     public Key put(Entity entity) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        Entity v = store.put(entity.getKey(), entity);
+        return v != null ? v.getKey() : null;
     }
 
     public Key put(Transaction transaction, Entity entity) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return put(entity);
     }
 
     public List<Key> put(Iterable<Entity> entityIterable) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        List<Key> list = new ArrayList<Key>();
+        for (Entity e : entityIterable)
+            list.add(put(e));
+        return list;
     }
 
     public List<Key> put(Transaction transaction, Iterable<Entity> entityIterable) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return put(entityIterable);
     }
 
     public void delete(Key... keys) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        delete(Arrays.asList(keys));
     }
 
     public void delete(Transaction transaction, Key... keys) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        delete(keys);
     }
 
     public void delete(Iterable<Key> keyIterable) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        for (Key key : keyIterable)
+            store.remove(key);
     }
 
     public void delete(Transaction transaction, Iterable<Key> keyIterable) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        delete(keyIterable);
     }
 
     public Transaction beginTransaction() {

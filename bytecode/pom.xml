@@ -21,6 +21,20 @@
             <artifactId>javassist</artifactId>
         </dependency>
 
+        <!-- Transform GAE code -->
+
+        <dependency>
+            <groupId>org.jboss.maven.plugins</groupId>
+            <artifactId>maven-transformer-plugin</artifactId>
+        </dependency>
+
+        <!-- Factories we need to modify -->
+
+        <dependency>
+            <groupId>org.jboss.capedwarf.blue</groupId>
+            <artifactId>capedwarf-datastore</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>
