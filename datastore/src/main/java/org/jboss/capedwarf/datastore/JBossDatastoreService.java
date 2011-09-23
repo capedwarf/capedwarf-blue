@@ -43,8 +43,6 @@ import java.util.Map;
  */
 public class JBossDatastoreService extends AbstractDatastoreService implements DatastoreService {
 
-    private Map<Key, Entity> store = new HashMap<Key, Entity>(); // TODO -- test dummy
-
     public Entity get(Key key) throws EntityNotFoundException {
         return store.get(key);
     }

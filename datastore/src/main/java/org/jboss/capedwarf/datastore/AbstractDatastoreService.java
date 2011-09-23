@@ -23,11 +23,24 @@
 package org.jboss.capedwarf.datastore;
 
 import com.google.appengine.api.datastore.BaseDatastoreService;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
+import org.infinispan.Cache;
+import org.infinispan.manager.EmbeddedCacheManager;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Base Datastore service.
@@ -35,6 +48,76 @@ import java.util.Collection;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class AbstractDatastoreService implements BaseDatastoreService {
+    private static String[] defaultJndiNames = {"java:jboss/infinispan/capedwarf", "java:CacheManager/capedwarf"};
+
+    protected Logger log = Logger.getLogger(getClass().getName());
+    protected Cache<Key, Entity> store = createStore();
+
+    protected Cache<Key, Entity> createStore() {
+        try {
+            EmbeddedCacheManager manager = doJNDILookup();
+            String appName = "DUMMY"; // TODO
+            return manager.getCache(appName, true);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected EmbeddedCacheManager doJNDILookup() throws IOException {
+        Properties jndiProperties = new Properties();
+        URL jndiPropertiesURL = getClass().getClassLoader().getResource("jndi.properties");
+        if (jndiPropertiesURL != null) {
+            InputStream is = jndiPropertiesURL.openStream();
+            try {
+                jndiProperties.load(is);
+            } finally {
+                try {
+                    is.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+
+        String jndiNamespace = jndiProperties.getProperty("infinispan.jndi.name");
+        Context ctx = null;
+        try {
+            ctx = new InitialContext(jndiProperties);
+
+            EmbeddedCacheManager manager;
+            if (jndiNamespace != null)
+                manager = (EmbeddedCacheManager) ctx.lookup(jndiNamespace);
+            else
+                manager = checkDefaultNames(ctx);
+
+            log.info("Using JNDI found CacheManager: " + manager);
+            return manager;
+        } catch (NamingException ne) {
+            String msg = "Unable to retrieve CacheManager from JNDI [" + jndiNamespace + "]";
+            log.info(msg + ": " + ne);
+            throw new IOException(msg);
+        } finally {
+            if (ctx != null) {
+                try {
+                    ctx.close();
+                } catch (NamingException ne) {
+                    log.info("Unable to release initial context: " + ne);
+                }
+            }
+        }
+    }
+
+    protected EmbeddedCacheManager checkDefaultNames(Context ctx) throws IOException {
+        for (String jndiName : defaultJndiNames) {
+            try {
+                return (EmbeddedCacheManager) ctx.lookup(jndiName);
+            } catch (NamingException ne) {
+                String msg = "Unable to retrieve CacheManager from JNDI [" + jndiName + "]";
+                log.fine(msg + ": " + ne);
+            }
+        }
+        throw new IOException("Cannot find default JNDI cache manager: " + Arrays.toString(defaultJndiNames));
+    }
+
     public PreparedQuery prepare(Query query) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
