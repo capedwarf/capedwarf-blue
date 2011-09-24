@@ -2,5 +2,8 @@
 *.iml
 *.ipr
 *.iws
+bytecode/target/
+common/target/
 datastore/target/
+mail/target/
 
