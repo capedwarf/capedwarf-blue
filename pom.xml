@@ -16,7 +16,9 @@
 
     <modules>
         <module>bytecode</module>
+        <module>common</module>
         <module>datastore</module>
+        <module>mail</module>
     </modules>
 
     <properties>
@@ -184,7 +186,19 @@
 
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-datastore</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-mail</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

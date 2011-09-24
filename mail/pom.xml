@@ -8,11 +8,11 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>capedwarf-datastore</artifactId>
+    <artifactId>capedwarf-mail</artifactId>
     <packaging>jar</packaging>
-    <name>CapeDwarf Datastore</name>
+    <name>CapeDwarf Mail</name>
     <url>http://www.jboss.org/capedwarf</url>
-    <description>CapeDwarf Datastore</description>
+    <description>CapeDwarf Mail</description>
 
     <dependencies>
 
@@ -24,18 +24,6 @@
         <dependency>
             <groupId>com.google.appengine</groupId>
             <artifactId>appengine-api-1.0-sdk</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.kohsuke.metainf-services</groupId>
-            <artifactId>metainf-services</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <dependency>

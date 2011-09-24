@@ -28,7 +28,7 @@ import javassist.CtMethod;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class DatastoreFactoryTransformer extends JavassistTransformer {
+public class DatastoreServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getDatastoreService");
         method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService();");

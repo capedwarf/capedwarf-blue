@@ -36,8 +36,9 @@ public class FactoriesTransformer implements ClassFileTransformer {
     private static Map<String, ClassFileTransformer> transformers = new HashMap<String, ClassFileTransformer>();
 
     static {
-        transformers.put("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreFactoryTransformer());
+        transformers.put("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.datastore.DatastoreApiHelper", new DatastoreApiHelperTransformer());
+        transformers.put("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
