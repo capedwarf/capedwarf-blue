@@ -32,7 +32,6 @@ import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Logger;
 
@@ -48,13 +47,9 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     protected Cache<Key, Entity> store = createStore();
 
     protected Cache<Key, Entity> createStore() {
-        try {
-            EmbeddedCacheManager manager = JndiLookupUtils.lookup("infinispan.jndi.name", EmbeddedCacheManager.class, defaultJndiNames);
-            String appName = "DUMMY"; // TODO
-            return manager.getCache(appName, true);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        EmbeddedCacheManager manager = JndiLookupUtils.lookup("infinispan.jndi.name", EmbeddedCacheManager.class, defaultJndiNames);
+        String appName = "DUMMY"; // TODO
+        return manager.getCache(appName, true);
     }
 
     public PreparedQuery prepare(Query query) {

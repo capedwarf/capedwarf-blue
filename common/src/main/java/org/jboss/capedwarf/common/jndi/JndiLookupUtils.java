@@ -56,19 +56,19 @@ public class JndiLookupUtils {
         return jndiProperties;
     }
 
-    public static <T> T lookup(String propertyKey, Class<T> expected, String... names) throws IOException {
+    public static <T> T lookup(String propertyKey, Class<T> expected, String... names) {
         if (propertyKey == null)
             throw new IllegalArgumentException("Null property key.");
         if (expected == null)
             throw new IllegalArgumentException("Null expected class");
 
-        Properties properties = findProperties("jndi.properties");
-        String jndiNamespace = properties.getProperty(propertyKey);
         Context ctx = null;
         try {
+            Properties properties = findProperties("jndi.properties");
             ctx = new InitialContext(properties);
 
             Object result;
+            String jndiNamespace = properties.getProperty(propertyKey);
             if (jndiNamespace != null)
                 result = checkNames(ctx, jndiNamespace);
             else
@@ -76,10 +76,12 @@ public class JndiLookupUtils {
 
             log.info("Using JNDI found " + expected.getName() + ": " + result);
             return expected.cast(result);
-        } catch (Exception ne) {
-            String msg = "Unable to retrieve " + expected.getName() + " from JNDI [" + jndiNamespace + "]";
-            log.info(msg + ": " + ne);
-            throw new IOException(msg);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            String msg = "Unable to retrieve " + expected.getName() + " from JNDI [" + propertyKey + "]";
+            log.info(msg + ": " + e);
+            throw new IllegalArgumentException(msg);
         } finally {
             if (ctx != null) {
                 try {
@@ -91,7 +93,7 @@ public class JndiLookupUtils {
         }
     }
 
-    protected static Object checkNames(Context ctx, String... names) throws IOException {
+    protected static Object checkNames(Context ctx, String... names) {
         for (String jndiName : names) {
             try {
                 return ctx.lookup(jndiName);
@@ -100,7 +102,7 @@ public class JndiLookupUtils {
                 log.fine(msg + ": " + ne);
             }
         }
-        throw new IOException("Cannot find JNDI object: " + Arrays.toString(names));
+        throw new IllegalArgumentException("Cannot find JNDI object: " + Arrays.toString(names));
     }
 
 }

@@ -28,8 +28,6 @@ import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-import java.io.IOException;
 import java.util.concurrent.Future;
 
 /**
@@ -42,11 +40,7 @@ public class JBossTransaction implements Transaction {
     private final TransactionManager tm;
 
     public JBossTransaction() {
-        try {
-            tm = JndiLookupUtils.lookup("tm.jndi.name", TransactionManager.class, "java:jboss/TransactionManager");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        tm = JndiLookupUtils.lookup("tm.jndi.name", TransactionManager.class, "java:jboss/TransactionManager");
     }
 
     public void commit() {
