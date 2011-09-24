@@ -81,7 +81,7 @@ public class JndiLookupUtils {
         } catch (Exception e) {
             String msg = "Unable to retrieve " + expected.getName() + " from JNDI [" + propertyKey + "]";
             log.info(msg + ": " + e);
-            throw new IllegalArgumentException(msg);
+            throw new IllegalStateException(msg);
         } finally {
             if (ctx != null) {
                 try {
@@ -102,7 +102,7 @@ public class JndiLookupUtils {
                 log.fine(msg + ": " + ne);
             }
         }
-        throw new IllegalArgumentException("Cannot find JNDI object: " + Arrays.toString(names));
+        throw new IllegalStateException("Cannot find JNDI object: " + Arrays.toString(names));
     }
 
 }
