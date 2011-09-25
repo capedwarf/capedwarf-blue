@@ -69,7 +69,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
 
     public Key put(Entity entity) {
         Entity v = store.put(entity.getKey(), entity);
-        return v != null ? v.getKey() : null;
+        return v == null ? null : v.getKey();
     }
 
     public Key put(Transaction transaction, Entity entity) {
@@ -78,8 +78,10 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
 
     public List<Key> put(Iterable<Entity> entityIterable) {
         List<Key> list = new ArrayList<Key>();
-        for (Entity e : entityIterable)
-            list.add(put(e));
+        for (Entity e : entityIterable) {
+            Key key = put(e);
+            list.add(key);
+        }
         return list;
     }
 

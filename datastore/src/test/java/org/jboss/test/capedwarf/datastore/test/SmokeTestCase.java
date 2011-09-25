@@ -34,8 +34,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -77,6 +79,34 @@ public class SmokeTestCase {
         service.get(nonExistingKey);
     }
 
+    @Test
+    public void deleteRemovesEntityFromStore() throws Exception {
+        Entity entity = createTestEntity();
+        Key key = entity.getKey();
+        service.put(entity);
+
+        service.delete(key);
+        assertStoreDoesNotContain(key);
+    }
+
+    @Test
+    public void deleteRemovesAllGivenEntities() throws Exception {
+        Collection<Entity> entities = createTestEntities();
+        Collection<Key> keys = extractKeys(entities);
+        service.put(entities);
+
+        service.delete(keys);
+        assertStoreDoesNotContain(keys);
+    }
+
+    private Collection<Key> extractKeys(Collection<Entity> entities) {
+        List<Key> keys = new ArrayList<Key>();
+        for (Entity entity : entities) {
+            keys.add(entity.getKey());
+        }
+        return keys;
+    }
+
     @Ignore
     @Test
     public void testBasicTxOps() throws Exception {
@@ -106,6 +136,21 @@ public class SmokeTestCase {
         Entity lookup = service.get(entity.getKey());
         Assert.assertNotNull(lookup);
         Assert.assertEquals(entity, lookup);
+    }
+
+    private void assertStoreDoesNotContain(Collection<Key> keys) throws EntityNotFoundException {
+        for (Key key : keys) {
+            assertStoreDoesNotContain(key);
+        }
+    }
+
+    private void assertStoreDoesNotContain(Key key) throws EntityNotFoundException {
+        try {
+            Entity storedEntity = service.get(key);
+            Assert.fail("expected the datastore not to contain anything under key " + key + ", but it contained the entity " + storedEntity);
+        } catch (EntityNotFoundException e) {
+            // pass
+        }
     }
 
     private Entity createTestEntity() {
