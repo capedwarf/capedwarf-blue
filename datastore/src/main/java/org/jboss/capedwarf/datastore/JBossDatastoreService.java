@@ -40,11 +40,16 @@ import java.util.Map;
  * JBoss DatastoreService impl.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class JBossDatastoreService extends AbstractDatastoreService implements DatastoreService {
 
     public Entity get(Key key) throws EntityNotFoundException {
-        return store.get(key);
+        Entity entity = store.get(key);
+        if (entity == null)
+            throw new EntityNotFoundException(key);
+        else
+            return entity;
     }
 
     public Entity get(Transaction transaction, Key key) throws EntityNotFoundException {

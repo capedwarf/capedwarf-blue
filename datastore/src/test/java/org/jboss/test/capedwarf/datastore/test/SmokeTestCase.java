@@ -71,6 +71,11 @@ public class SmokeTestCase {
         assertStoreContainsAll(entities);
     }
 
+    @Test(expected = EntityNotFoundException.class)
+    public void getThrowsNotFoundExceptionWhenKeyIsNotFound() throws Exception {
+        Key nonExistingKey = KeyFactory.createKey("NonExistingKey", 1);
+        service.get(nonExistingKey);
+    }
 
     @Ignore
     @Test
