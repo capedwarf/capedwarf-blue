@@ -23,7 +23,9 @@
 package org.jboss.capedwarf.mail;
 
 import com.google.appengine.api.mail.MailService;
+import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
+import javax.mail.Session;
 import java.io.IOException;
 
 /**
@@ -31,7 +33,7 @@ import java.io.IOException;
  */
 public class JBossMailService implements MailService {
 
-    // TODO
+    private Session session = JndiLookupUtils.lazyLookup("mail.jndi.name", Session.class, "java:jboss/mail/Default");
 
     public void send(Message message) throws IOException {
     }

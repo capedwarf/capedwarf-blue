@@ -27,6 +27,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Properties;
@@ -54,6 +57,18 @@ public class JndiLookupUtils {
             }
         }
         return jndiProperties;
+    }
+
+    protected static Object checkNames(Context ctx, String... names) {
+        for (String jndiName : names) {
+            try {
+                return ctx.lookup(jndiName);
+            } catch (NamingException ne) {
+                String msg = "Unable to retrieve object from JNDI [" + jndiName + "]";
+                log.fine(msg + ": " + ne);
+            }
+        }
+        throw new IllegalStateException("Cannot find JNDI object: " + Arrays.toString(names));
     }
 
     public static <T> T lookup(String propertyKey, Class<T> expected, String... names) {
@@ -93,16 +108,25 @@ public class JndiLookupUtils {
         }
     }
 
-    protected static Object checkNames(Context ctx, String... names) {
-        for (String jndiName : names) {
-            try {
-                return ctx.lookup(jndiName);
-            } catch (NamingException ne) {
-                String msg = "Unable to retrieve object from JNDI [" + jndiName + "]";
-                log.fine(msg + ": " + ne);
+    @SuppressWarnings({"unchecked"})
+    public static <T> T lazyLookup(final String propertyKey, final Class<T> expected, final String... names) {
+        if (propertyKey == null)
+            throw new IllegalArgumentException("Null property key.");
+        if (expected == null)
+            throw new IllegalArgumentException("Null expected class");
+        if (expected.isInterface() == false)
+            throw new IllegalArgumentException("Expected is not an interface: " + expected.getName());
+
+        return expected.cast(Proxy.newProxyInstance(expected.getClassLoader(), new Class[]{expected}, new InvocationHandler() {
+            private volatile Object delegate;
+
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                if (delegate == null)
+                    delegate = lookup(propertyKey, expected, names);
+
+                return method.invoke(delegate, args);
             }
-        }
-        throw new IllegalStateException("Cannot find JNDI object: " + Arrays.toString(names));
+        }));
     }
 
 }
