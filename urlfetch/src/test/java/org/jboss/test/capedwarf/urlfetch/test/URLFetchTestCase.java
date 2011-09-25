@@ -26,11 +26,14 @@ import com.google.appengine.api.urlfetch.URLFetchService;
 import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.net.URL;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -45,7 +48,7 @@ public class URLFetchTestCase {
     }
 
     @Test
-    public void testBasicOps() throws Exception {
+    public void testBasicOps(@ArquillianResource URL url) throws Exception {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
         System.out.println("service = " + service);
 

@@ -53,12 +53,12 @@
         <version.org.datanucleus.jpa.spec>1.1.1</version.org.datanucleus.jpa.spec>
         <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
         <version.org.infinispan>5.0.0.FINAL</version.org.infinispan>
-        <version.org.apache.http>4.0.3</version.org.apache.http>
         <version.junit>4.7</version.junit>
         <version.arquillian>1.0.0.CR4</version.arquillian>
         <version.jboss.as7>7.1.0.Alpha2-SNAPSHOT</version.jboss.as7>
         <version.jboss.maven.transformer>1.0.0-SNAPSHOT</version.jboss.maven.transformer>
         <version.metainf>1.1</version.metainf>
+        <version.org.apache.httpcomponents>4.1.1</version.org.apache.httpcomponents>
     </properties>
 
     <build>
@@ -428,15 +428,21 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${version.org.apache.http}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.kohsuke.metainf-services</groupId>
                 <artifactId>metainf-services</artifactId>
                 <version>${version.metainf}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${version.org.apache.httpcomponents}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- Testing -->

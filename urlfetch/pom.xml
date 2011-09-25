@@ -27,6 +27,17 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
