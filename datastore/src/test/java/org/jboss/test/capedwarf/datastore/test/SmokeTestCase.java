@@ -22,26 +22,29 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.datastore.*;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
 public class SmokeTestCase {
+
+    private DatastoreService service;
 
     @Deployment
     public static Archive getDeployment() {
@@ -49,40 +52,66 @@ public class SmokeTestCase {
                 .addAsManifestResource("jboss/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
     }
 
-    @Test
-    public void testBasicOps() throws Exception {
-        DatastoreService service = DatastoreServiceFactory.getDatastoreService();
-        System.out.println("service = " + service);
-
-        Entity entity = new Entity("KIND", 1);
-        entity.setProperty("text", "Some text.");
-        Key key = KeyFactory.createKey("KIND", 1);
-
-        service.put(entity);
-        Entity lookup = service.get(key);
-        Assert.assertNotNull(lookup);
-        Assert.assertEquals(entity, lookup);
+    @Before
+    public void setUp() {
+        service = DatastoreServiceFactory.getDatastoreService();
     }
 
     @Test
+    public void putStoresEntity() throws Exception {
+        Entity entity = createTestEntity();
+        service.put(entity);
+        assertStoreContains(entity);
+    }
+
+    @Test
+    public void putStoresAllGivenEntities() throws Exception {
+        Collection<Entity> entities = createTestEntities();
+        service.put(entities);
+        assertStoreContainsAll(entities);
+    }
+
+
+    @Ignore
+    @Test
     public void testBasicTxOps() throws Exception {
-        DatastoreService service = DatastoreServiceFactory.getDatastoreService();
-        System.out.println("service = " + service);
-
-        Entity entity = new Entity("KIND", 1);
-        entity.setProperty("text", "Some text.");
-        Key key = KeyFactory.createKey("KIND", 1);
-
+        Entity entity = createTestEntity();
         Transaction tx = service.beginTransaction();
         try {
             service.put(tx, entity);
-            Entity lookup = service.get(tx, key);
-            Assert.assertNotNull(lookup);
-            Assert.assertEquals(entity, lookup);
-
+            assertStoreContains(entity);
             // tx.commit();
         } catch (Exception e) {
             // tx.rollback();
         }
     }
+
+
+    private Collection<Entity> createTestEntities() {
+        return Arrays.asList(createTestEntity("One", 1), createTestEntity("Two", 2), createTestEntity("Three", 3));
+    }
+
+    private void assertStoreContainsAll(Collection<Entity> entities) throws EntityNotFoundException {
+        for (Entity entity : entities) {
+            assertStoreContains(entity);
+        }
+    }
+
+    private void assertStoreContains(Entity entity) throws EntityNotFoundException {
+        Entity lookup = service.get(entity.getKey());
+        Assert.assertNotNull(lookup);
+        Assert.assertEquals(entity, lookup);
+    }
+
+    private Entity createTestEntity() {
+        return createTestEntity("KIND", 1);
+    }
+
+    private Entity createTestEntity(String kind, int id) {
+        Key key = KeyFactory.createKey(kind, id);
+        Entity entity = new Entity(key);
+        entity.setProperty("text", "Some text.");
+        return entity;
+    }
+
 }
