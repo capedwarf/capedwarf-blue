@@ -39,6 +39,7 @@ public class FactoriesTransformer implements ClassFileTransformer {
         transformers.put("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.datastore.DatastoreApiHelper", new DatastoreApiHelperTransformer());
         transformers.put("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
+        transformers.put("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchFactoryTransformer());
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {

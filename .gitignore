@@ -2,8 +2,20 @@
 *.iml
 *.ipr
 *.iws
+blobstore/target/
 bytecode/target/
+capabilities/target/
+channel/target/
 common/target/
 datastore/target/
+images/target/
 mail/target/
+memcache/target/
+multitenancy/target/
+oauth/target/
+tasks/target/
+urlfetch/target/
+users/target/
+umpp/target/
+xmpp/target/
 

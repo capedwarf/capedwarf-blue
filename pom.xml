@@ -17,8 +17,19 @@
     <modules>
         <module>bytecode</module>
         <module>common</module>
+        <module>blobstore</module>
+        <module>capabilities</module>
+        <module>channel</module>
         <module>datastore</module>
+        <module>images</module>
         <module>mail</module>
+        <module>memcache</module>
+        <module>multitenancy</module>
+        <module>oauth</module>
+        <module>tasks</module>
+        <module>urlfetch</module>
+        <module>users</module>
+        <module>xmpp</module>
     </modules>
 
     <properties>
@@ -192,13 +203,79 @@
 
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-blobstore</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-capabilities</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-channel</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-datastore</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-images</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-mail</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-memcache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-multitenancy</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-oauth</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-tasks</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-urlfetch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-users</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-xmpp</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
