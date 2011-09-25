@@ -28,7 +28,7 @@ import javassist.CtMethod;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class URLFetchFactoryTransformer extends JavassistTransformer {
+public class URLFetchServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getURLFetchService");
         method.setBody("return new org.jboss.capedwarf.urlfetch.JBossURLFetchService();");
