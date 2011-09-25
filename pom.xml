@@ -15,6 +15,7 @@
     <description>CapeDwarf Build</description>
 
     <modules>
+        <module>appidentity</module>
         <module>bytecode</module>
         <module>common</module>
         <module>blobstore</module>
@@ -198,6 +199,12 @@
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-appidentity</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
