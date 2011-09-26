@@ -47,8 +47,8 @@ public class MailTestCase {
     @Test
     public void testBasicOps() throws Exception {
         MailService service = MailServiceFactory.getMailService();
-        System.out.println("service = " + service);
 
-        // TODO
+        MailService.Message message = new MailService.Message("sender@internet.com", "recipient@internet.com", "Subject", "Text body");
+        service.send(message);
     }
 }

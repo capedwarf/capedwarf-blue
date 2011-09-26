@@ -25,7 +25,9 @@ package org.jboss.capedwarf.mail;
 import com.google.appengine.api.mail.MailService;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
+import javax.mail.MessagingException;
 import javax.mail.Session;
+import javax.mail.Transport;
 import java.io.IOException;
 
 /**
@@ -33,11 +35,39 @@ import java.io.IOException;
  */
 public class JBossMailService implements MailService {
 
-    private Session session = JndiLookupUtils.lazyLookup("mail.jndi.name", Session.class, "java:jboss/mail/Default");
+    private Session session;
 
     public void send(Message message) throws IOException {
+        try {
+            initSessionIfNeeded();
+            send(convertToJavaMail(message));
+        } catch (MessagingException e) {
+            throw new IOException("Could not send message", e);
+        }
+    }
+
+    private void initSessionIfNeeded() {
+        if (session == null) {
+             session = JndiLookupUtils.lookup("mail.jndi.name", Session.class, "java:jboss/mail/Default");
+        }
     }
 
     public void sendToAdmins(Message message) throws IOException {
+        // TODO
+    }
+
+    private javax.mail.Message convertToJavaMail(Message message) throws MessagingException {
+        MessageConverter converter = new MessageConverter(message, session);
+        return converter.convert();
+    }
+
+    private void send(javax.mail.Message javaMailMessage) throws MessagingException {
+        Transport transport = session.getTransport();
+        transport.connect();
+        try {
+            transport.sendMessage(javaMailMessage, javaMailMessage.getAllRecipients());
+        } finally {
+            transport.close();
+        }
     }
 }
