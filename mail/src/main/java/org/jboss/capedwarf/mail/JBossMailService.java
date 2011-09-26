@@ -58,7 +58,7 @@ public class JBossMailService implements MailService {
     }
 
     private javax.mail.Message convertToJavaMail(Message message) throws MessagingException {
-        MessageConverter converter = new MessageConverter(message, session);
+        MessageConverter converter = new MessageConverter(message, getSession());
         return converter.convert();
     }
 
