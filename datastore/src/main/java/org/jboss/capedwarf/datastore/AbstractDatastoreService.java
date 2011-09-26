@@ -45,7 +45,7 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     protected Cache<Key, Entity> store = createStore();
 
     protected Cache<Key, Entity> createStore() {
-        EmbeddedCacheManager manager = Utils.getInstance();
+        EmbeddedCacheManager manager = Utils.getCacheManager();
         String appName = "DUMMY"; // TODO
         return manager.getCache(appName, true);
     }

@@ -27,11 +27,6 @@ import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.ByteRange;
 import com.google.appengine.api.blobstore.UnsupportedRangeFormatException;
 import com.google.appengine.api.blobstore.UploadOptions;
-import org.infinispan.Cache;
-import org.infinispan.io.GridFile;
-import org.infinispan.io.GridFilesystem;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.capedwarf.common.infinispan.Utils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,23 +42,6 @@ public class JBossBlobstoreService implements BlobstoreService {
     static final String SERVE_HEADER = "X-AppEngine-BlobKey";
     static final String UPLOADED_BLOBKEY_ATTR = "com.google.appengine.api.blobstore.upload.blobkeys";
     static final String BLOB_RANGE_HEADER = "X-AppEngine-BlobRange";
-
-    static final String DATA = "GridFilesystem_DATA";
-    static final String METADATA = "GridFilesystem_METADATA";
-
-    private GridFilesystem gridFilesystem;
-
-    protected GridFilesystem getGridFilesystem() {
-        if (gridFilesystem == null) {
-            EmbeddedCacheManager cm = Utils.getInstance();
-            Cache<String, byte[]> data = cm.getCache(DATA);
-            Cache<String, GridFile.Metadata> metadata = cm.getCache(METADATA);
-            data.start();
-            metadata.start();
-            gridFilesystem = new GridFilesystem(data, metadata);
-        }
-        return gridFilesystem;
-    }
 
     public String createUploadUrl(String successPath, UploadOptions uploadOptions) {
         return null;  // TODO

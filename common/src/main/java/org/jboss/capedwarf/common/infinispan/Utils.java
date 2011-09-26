@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
+import org.infinispan.Cache;
+import org.infinispan.io.GridFile;
+import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
@@ -30,8 +33,28 @@ import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
  */
 public class Utils {
     private static String[] defaultJndiNames = {"java:jboss/infinispan/capedwarf", "java:CacheManager/capedwarf"};
+    private static final String DATA = "GridFilesystem_DATA";
+    private static final String METADATA = "GridFilesystem_METADATA";
 
-    public static EmbeddedCacheManager getInstance() {
+    private static volatile GridFilesystem gridFilesystem;
+
+    public static EmbeddedCacheManager getCacheManager() {
         return JndiLookupUtils.lazyLookup("infinispan.jndi.name", EmbeddedCacheManager.class, defaultJndiNames);
+    }
+
+    public static GridFilesystem getGridFilesystem() {
+        if (gridFilesystem == null) {
+            synchronized (Utils.class) {
+                if (gridFilesystem == null) {
+                    EmbeddedCacheManager cm = getCacheManager();
+                    Cache<String, byte[]> data = cm.getCache(DATA);
+                    Cache<String, GridFile.Metadata> metadata = cm.getCache(METADATA);
+                    data.start();
+                    metadata.start();
+                    gridFilesystem = new GridFilesystem(data, metadata);
+                }
+            }
+        }
+        return gridFilesystem;
     }
 }
