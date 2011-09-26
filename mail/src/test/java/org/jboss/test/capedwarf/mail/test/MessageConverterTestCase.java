@@ -10,7 +10,7 @@ import javax.mail.Message;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class MessageConverterTests {
+public class MessageConverterTestCase {
 
     @Test
     public void subjectIsConvertedCorrectly() throws Exception {
