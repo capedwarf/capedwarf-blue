@@ -30,7 +30,7 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import org.jboss.capedwarf.common.infinispan.Utils;
 
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -41,13 +41,11 @@ import java.util.logging.Logger;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class AbstractDatastoreService implements BaseDatastoreService {
-    private static String[] defaultJndiNames = {"java:jboss/infinispan/capedwarf", "java:CacheManager/capedwarf"};
-
     protected Logger log = Logger.getLogger(getClass().getName());
     protected Cache<Key, Entity> store = createStore();
 
     protected Cache<Key, Entity> createStore() {
-        EmbeddedCacheManager manager = JndiLookupUtils.lookup("infinispan.jndi.name", EmbeddedCacheManager.class, defaultJndiNames);
+        EmbeddedCacheManager manager = Utils.getInstance();
         String appName = "DUMMY"; // TODO
         return manager.getCache(appName, true);
     }

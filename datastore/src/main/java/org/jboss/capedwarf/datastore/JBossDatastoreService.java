@@ -26,9 +26,11 @@ import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.datastore.TransactionOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,7 +108,15 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         delete(keyIterable);
     }
 
+    public Map<Index, Index.IndexState> getIndexes() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     public Transaction beginTransaction() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public Transaction beginTransaction(TransactionOptions transactionOptions) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

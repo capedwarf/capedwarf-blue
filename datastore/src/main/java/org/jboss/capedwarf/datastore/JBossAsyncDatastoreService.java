@@ -23,10 +23,13 @@
 package org.jboss.capedwarf.datastore;
 
 import com.google.appengine.api.datastore.AsyncDatastoreService;
+import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.datastore.TransactionOptions;
 
 import java.util.List;
 import java.util.Map;
@@ -39,6 +42,10 @@ import java.util.concurrent.Future;
  */
 public class JBossAsyncDatastoreService extends AbstractDatastoreService implements AsyncDatastoreService {
     public Future<Transaction> beginTransaction() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public Future<Transaction> beginTransaction(TransactionOptions transactionOptions) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -95,6 +102,14 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     }
 
     public Future<KeyRange> allocateIds(Key key, String s, long l) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public Future<DatastoreAttributes> getDatastoreAttributes() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public Future<Map<Index, Index.IndexState>> getIndexes() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }
