@@ -22,11 +22,11 @@
 
 package org.jboss.test.capedwarf.urlfetch.test;
 
+import com.google.appengine.api.urlfetch.HTTPResponse;
 import com.google.appengine.api.urlfetch.URLFetchService;
 import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -34,6 +34,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.net.URL;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -48,10 +50,30 @@ public class URLFetchTestCase {
     }
 
     @Test
-    public void testBasicOps(@ArquillianResource URL url) throws Exception {
+    public void testBasicOps() throws Exception {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
         System.out.println("service = " + service);
 
-        // TODO
+        URL jbossHome = new URL("http://localhost:8080");
+        HTTPResponse response = service.fetch(jbossHome);
+        printResponse(response);
+
+        jbossHome = new URL("http://www.jboss.org");
+        response = service.fetch(jbossHome);
+        printResponse(response);
+    }
+
+    @Test
+    public void testAsyncOps() throws Exception {
+        URLFetchService service = URLFetchServiceFactory.getURLFetchService();
+        System.out.println("service = " + service);
+
+        URL jbossHome = new URL("http://www.jboss.org");
+        Future<HTTPResponse> response = service.fetchAsync(jbossHome);
+        printResponse(response.get(30, TimeUnit.SECONDS));
+    }
+
+    private void printResponse(HTTPResponse response) throws Exception {
+        System.out.println("response = " + new String(response.getContent()));
     }
 }

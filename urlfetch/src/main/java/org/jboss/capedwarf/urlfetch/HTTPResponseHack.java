@@ -48,7 +48,7 @@ final class HTTPResponseHack {
         try {
             Class<HTTPResponse> clazz = HTTPResponse.class;
 
-            ctor = clazz.getConstructor(int.class);
+            ctor = clazz.getDeclaredConstructor(int.class);
             ctor.setAccessible(true);
 
             addHeader = clazz.getDeclaredMethod("addHeader", String.class, String.class);

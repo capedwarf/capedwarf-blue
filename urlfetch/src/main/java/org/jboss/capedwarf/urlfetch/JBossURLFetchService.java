@@ -41,12 +41,14 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
+import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
@@ -114,11 +116,13 @@ public class JBossURLFetchService implements URLFetchService {
     }
 
     public Future<HTTPResponse> fetchAsync(final HTTPRequest httpRequest) {
-        // TODO -- any way to use AS7 Executor instance?
-        return new FutureTask<HTTPResponse>(new Callable<HTTPResponse>() {
+        FutureTask<HTTPResponse> task = new FutureTask<HTTPResponse>(new Callable<HTTPResponse>() {
             public HTTPResponse call() throws Exception {
                 return fetch(httpRequest);
             }
         });
+        Executor executor = ExecutorFactory.getInstance();
+        executor.execute(task);
+        return task;
     }
 }
