@@ -25,11 +25,9 @@ package org.jboss.capedwarf.urlfetch;
 import com.google.appengine.api.urlfetch.HTTPResponse;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.jboss.capedwarf.common.io.IOUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -66,27 +64,13 @@ final class HTTPResponseHack {
 
     private HTTPResponse response;
 
-    protected static void copyStream(final InputStream in, final OutputStream out) throws IOException {
-        final byte[] bytes = new byte[8192];
-        int cnt;
-        while ((cnt = in.read(bytes)) != -1) {
-            out.write(bytes, 0, cnt);
-        }
-    }
-
     HTTPResponseHack(HttpResponse response) throws Exception {
         createResponse(response.getStatusLine().getStatusCode());
         for (Header h : response.getAllHeaders())
             addHeader(h.getName(), h.getValue());
 
         InputStream is = response.getEntity().getContent();
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            copyStream(is, baos);
-            setContent(baos.toByteArray());
-        } finally {
-            is.close();
-        }
+        setContent(IOUtils.toBytes(is, true));
     }
 
     HTTPResponse getResponse() {

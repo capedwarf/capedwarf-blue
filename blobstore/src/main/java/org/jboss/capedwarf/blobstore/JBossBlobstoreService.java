@@ -27,9 +27,13 @@ import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.ByteRange;
 import com.google.appengine.api.blobstore.UnsupportedRangeFormatException;
 import com.google.appengine.api.blobstore.UploadOptions;
+import org.infinispan.io.GridFilesystem;
+import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.io.IOUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +52,9 @@ public class JBossBlobstoreService implements BlobstoreService {
     }
 
     public void delete(BlobKey... blobKeys) {
-        // TODO
+        GridFilesystem gfs = InfinispanUtils.getGridFilesystem();
+        for (BlobKey key : blobKeys)
+            gfs.remove(key.getKeyString(), true);
     }
 
     public void serve(BlobKey blobKey, ByteRange byteRange, HttpServletResponse response) {
@@ -66,7 +72,12 @@ public class JBossBlobstoreService implements BlobstoreService {
     }
 
     public byte[] fetchData(BlobKey blobKey, long start, long end) {
-        return new byte[0];  // TODO
+        try {
+            GridFilesystem gfs = InfinispanUtils.getGridFilesystem();
+            return IOUtils.toBytes(gfs.getInput(blobKey.getKeyString()), start, end, true);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     // ------

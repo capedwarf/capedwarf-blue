@@ -30,7 +30,7 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.capedwarf.common.infinispan.Utils;
+import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -45,7 +45,7 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     protected Cache<Key, Entity> store = createStore();
 
     protected Cache<Key, Entity> createStore() {
-        EmbeddedCacheManager manager = Utils.getCacheManager();
+        EmbeddedCacheManager manager = InfinispanUtils.getCacheManager();
         String appName = "DUMMY"; // TODO
         return manager.getCache(appName, true);
     }
