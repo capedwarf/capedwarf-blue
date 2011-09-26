@@ -22,6 +22,11 @@
 
 package org.jboss.capedwarf.common.jndi;
 
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -31,6 +36,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -114,19 +121,70 @@ public class JndiLookupUtils {
             throw new IllegalArgumentException("Null property key.");
         if (expected == null)
             throw new IllegalArgumentException("Null expected class");
-        if (expected.isInterface() == false)
-            throw new IllegalArgumentException("Expected is not an interface: " + expected.getName());
 
-        return expected.cast(Proxy.newProxyInstance(expected.getClassLoader(), new Class[]{expected}, new InvocationHandler() {
-            private volatile Object delegate;
+        if (expected.isInterface()) {
+            return expected.cast(Proxy.newProxyInstance(expected.getClassLoader(), new Class[]{expected}, new InvocationHandler() {
+                private volatile Object delegate;
 
-            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (delegate == null)
-                    delegate = lookup(propertyKey, expected, names);
+                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                    if (delegate == null)
+                        delegate = lookup(propertyKey, expected, names);
 
-                return method.invoke(delegate, args);
+                    return method.invoke(delegate, args);
+                }
+            }));
+        } else {
+            ProxyFactory factory = new ProxyFactory();
+            factory.setFilter(FINALIZE_FILTER);
+            factory.setSuperclass(expected);
+            Class<?> proxyClass = getProxyClass(factory);
+            ProxyObject proxy;
+            try {
+                proxy = (ProxyObject) proxyClass.newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        }));
+            proxy.setHandler(new MethodHandler() {
+                private volatile Object delegate;
+
+                public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
+                    if (delegate == null)
+                        delegate = lookup(propertyKey, expected, names);
+
+                    return thisMethod.invoke(delegate, args);
+                }
+            });
+            return expected.cast(proxy);
+        }
     }
 
+    protected static Class<?> getProxyClass(ProxyFactory factory) {
+        SecurityManager sm = System.getSecurityManager();
+        if (sm == null)
+            return factory.createClass();
+        else
+            return AccessController.doPrivileged(new ClassCreator(factory));
+    }
+
+    /**
+     * Privileged class creator.
+     */
+    protected static class ClassCreator implements PrivilegedAction<Class<?>> {
+        private ProxyFactory factory;
+
+        public ClassCreator(ProxyFactory factory) {
+            this.factory = factory;
+        }
+
+        public Class<?> run() {
+            return factory.createClass();
+        }
+    }
+
+    private static final MethodFilter FINALIZE_FILTER = new MethodFilter() {
+        public boolean isHandled(Method m) {
+            // skip finalize methods
+            return !("finalize".equals(m.getName()) && m.getParameterTypes().length == 0);
+        }
+    };
 }
