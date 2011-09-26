@@ -31,7 +31,7 @@ import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class Utils {
+public class InfinispanUtils {
     private static String[] defaultJndiNames = {"java:jboss/infinispan/capedwarf", "java:CacheManager/capedwarf"};
     private static final String DATA = "GridFilesystem_DATA";
     private static final String METADATA = "GridFilesystem_METADATA";
@@ -44,7 +44,7 @@ public class Utils {
 
     public static GridFilesystem getGridFilesystem() {
         if (gridFilesystem == null) {
-            synchronized (Utils.class) {
+            synchronized (InfinispanUtils.class) {
                 if (gridFilesystem == null) {
                     EmbeddedCacheManager cm = getCacheManager();
                     Cache<String, byte[]> data = cm.getCache(DATA);
