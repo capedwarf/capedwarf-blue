@@ -32,28 +32,29 @@ import java.io.IOException;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class JBossMailService implements MailService {
 
-    private Session session;
+    private volatile Session session;
 
     public void send(Message message) throws IOException {
         try {
-            initSessionIfNeeded();
             send(convertToJavaMail(message));
         } catch (MessagingException e) {
             throw new IOException("Could not send message", e);
         }
     }
 
-    private void initSessionIfNeeded() {
-        if (session == null) {
-             session = JndiLookupUtils.lookup("mail.jndi.name", Session.class, "java:jboss/mail/Default");
-        }
-    }
-
     public void sendToAdmins(Message message) throws IOException {
         // TODO
+    }
+
+    private Session getSession() {
+        if (session == null)
+            session = JndiLookupUtils.lookup("mail.jndi.name", Session.class, "java:jboss/mail/Default");
+
+        return session;
     }
 
     private javax.mail.Message convertToJavaMail(Message message) throws MessagingException {
@@ -62,7 +63,7 @@ public class JBossMailService implements MailService {
     }
 
     private void send(javax.mail.Message javaMailMessage) throws MessagingException {
-        Transport transport = session.getTransport();
+        Transport transport = getSession().getTransport();
         transport.connect();
         try {
             transport.sendMessage(javaMailMessage, javaMailMessage.getAllRecipients());
