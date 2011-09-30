@@ -30,6 +30,7 @@ import java.util.Map;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class FactoriesTransformer implements ClassFileTransformer {
 
@@ -42,6 +43,7 @@ public class FactoriesTransformer implements ClassFileTransformer {
         transformers.put("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
+        transformers.put("com.google.appengine.api.images.ImagesServiceFactory", new ImagesServiceFactoryTransformer());
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
