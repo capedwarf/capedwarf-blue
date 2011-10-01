@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -22,6 +23,7 @@
         <module>capabilities</module>
         <module>channel</module>
         <module>datastore</module>
+        <module>files</module>
         <module>images</module>
         <module>mail</module>
         <module>memcache</module>
@@ -42,6 +44,8 @@
         <version.json>20090211</version.json>
         <version.org.jboss.seam>3.0.0.Final</version.org.jboss.seam>
         <version.org.jboss.logging>3.0.0.GA</version.org.jboss.logging>
+        <version.org.jboss.xnio.xnio-api>3.0.0.Beta3</version.org.jboss.xnio.xnio-api>
+        <version.org.jboss.xnio.xnio-nio>3.0.0.Beta3</version.org.jboss.xnio.xnio-nio>
         <version.javassist>3.14.0-GA</version.javassist>
         <version.slf4j>1.5.10</version.slf4j>
         <version.javax.validation>1.0.0.GA</version.javax.validation>
@@ -466,6 +470,20 @@
                 </exclusions>
             </dependency>
 
+            <!-- XNIO -->
+
+            <dependency>
+                <groupId>org.jboss.xnio</groupId>
+                <artifactId>xnio-api</artifactId>
+                <version>${version.org.jboss.xnio.xnio-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.xnio</groupId>
+                <artifactId>xnio-nio</artifactId>
+                <version>${version.org.jboss.xnio.xnio-nio}</version>
+            </dependency>
+
             <!-- Testing -->
 
             <dependency>
@@ -494,7 +512,8 @@
 
     <scm>
         <connection>scm:git:git://github.com/capedwarf/capedwarf-blue.git</connection>
-        <developerConnection>scm:git:git://github.com/capedwarf/capedwarf-blue.git</developerConnection>
+        <developerConnection>scm:git:git://github.com/capedwarf/capedwarf-blue.git
+        </developerConnection>
         <url>scm:git:git://github.com/capedwarf/capedwarf-blue.git</url>
     </scm>
 

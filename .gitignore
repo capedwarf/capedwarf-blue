@@ -9,6 +9,7 @@ capabilities/target/
 channel/target/
 common/target/
 datastore/target/
+files/target/
 images/target/
 mail/target/
 memcache/target/

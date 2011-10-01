@@ -36,6 +36,7 @@ public class ReflectionWrapper<WRAPPED> {
         this.wrapped = wrapped;
     }
 
+    @SuppressWarnings({"unchecked"})
     protected <V> V getFieldValue(String fieldName) {
         return (V) getFieldValue(getAccessibleField(fieldName));
     }

@@ -40,12 +40,13 @@ public class FactoriesTransformer implements ClassFileTransformer {
         transformers.put("com.google.appengine.api.blobstore.BlobstoreServiceFactory", new BlobstoreServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.datastore.DatastoreApiHelper", new DatastoreApiHelperTransformer());
-        transformers.put("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
-        transformers.put("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());
-        transformers.put("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
+        transformers.put("com.google.appengine.api.files.FileServiceFactory", new FileServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.images.ImagesServiceFactory", new ImagesServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.datastore.Entity", new EntityTransformer());
         transformers.put("com.google.appengine.api.datastore.Key", new KeyTransformer());
+        transformers.put("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
+        transformers.put("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());
+        transformers.put("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
