@@ -22,15 +22,11 @@
 
 package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.BaseDatastoreService;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.datastore.*;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.datastore.query.InfinispanPreparedQuery;
 
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -39,19 +35,27 @@ import java.util.logging.Logger;
  * Base Datastore service.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class AbstractDatastoreService implements BaseDatastoreService {
     protected Logger log = Logger.getLogger(getClass().getName());
     protected Cache<Key, Entity> store = createStore();
 
     protected Cache<Key, Entity> createStore() {
+        return getCache(getStoreCacheName());
+    }
+
+    private <K, V> Cache<K, V> getCache(String cacheName) {
         EmbeddedCacheManager manager = InfinispanUtils.getCacheManager();
-        String appName = "DUMMY"; // TODO
-        return manager.getCache(appName, true);
+        return manager.getCache(cacheName, true);
+    }
+
+    private String getStoreCacheName() {
+        return "default"; // TODO
     }
 
     public PreparedQuery prepare(Query query) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return new InfinispanPreparedQuery(store, query);
     }
 
     public PreparedQuery prepare(Transaction transaction, Query query) {
