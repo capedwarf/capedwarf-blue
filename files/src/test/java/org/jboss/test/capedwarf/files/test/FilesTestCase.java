@@ -22,8 +22,10 @@
 
 package org.jboss.test.capedwarf.files.test;
 
+import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileService;
 import com.google.appengine.api.files.FileServiceFactory;
+import com.google.appengine.api.files.FileWriteChannel;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -32,22 +34,27 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-public class FilesTestCase
-{
-   @Deployment
-   public static Archive getDeployment()
-   {
-      return ShrinkWrap.create(JavaArchive.class).addAsManifestResource("jboss/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
-   }
+public class FilesTestCase {
+    @Deployment
+    public static Archive getDeployment() {
+        return ShrinkWrap.create(JavaArchive.class).addAsManifestResource("jboss/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+    }
 
-   @Test
-   public void testBasicOps() throws Exception
-   {
-      FileService service = FileServiceFactory.getFileService();
-      // TODO
-   }
+    @Test
+    public void testBasicOps() throws Exception {
+        FileService service = FileServiceFactory.getFileService();
+        AppEngineFile file = service.createNewBlobFile("image/jpeg");
+        FileWriteChannel writeChannel = service.openWriteChannel(file, true);
+        try {
+            writeChannel.write(ByteBuffer.wrap("some-bytes".getBytes()));
+        } finally {
+            writeChannel.close();
+        }
+    }
 }

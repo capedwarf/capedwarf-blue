@@ -22,50 +22,43 @@
 
 package org.jboss.capedwarf.files;
 
+import com.google.appengine.api.files.FileWriteChannel;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
-import com.google.appengine.api.files.FileWriteChannel;
-
 /**
  * JBoss file write channel.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class JBossFileWriteChannel implements FileWriteChannel
-{
-   private final WritableByteChannel delegate;
+class JBossFileWriteChannel implements FileWriteChannel {
+    private final WritableByteChannel delegate;
 
-   JBossFileWriteChannel(OutputStream out)
-   {
-      delegate = Channels.newChannel(out);
-   }
+    JBossFileWriteChannel(OutputStream out) {
+        delegate = Channels.newChannel(out);
+    }
 
-   public int write(ByteBuffer byteBuffer, String s) throws IOException
-   {
-      return 0;  // TODO
-   }
+    public int write(ByteBuffer buffer, String sequenceKey) throws IOException {
+        return write(buffer);  // TODO
+    }
 
-   public void closeFinally() throws IllegalStateException, IOException
-   {
-      // TODO
-   }
+    public void closeFinally() throws IllegalStateException, IOException {
+        // TODO
+    }
 
-   public int write(ByteBuffer src) throws IOException
-   {
-      return delegate.write(src);
-   }
+    public int write(ByteBuffer buffer) throws IOException {
+        return delegate.write(buffer);
+    }
 
-   public boolean isOpen()
-   {
-      return delegate.isOpen();
-   }
+    public boolean isOpen() {
+        return delegate.isOpen();
+    }
 
-   public void close() throws IOException
-   {
-      delegate.close();
-   }
+    public void close() throws IOException {
+        delegate.close();
+    }
 }

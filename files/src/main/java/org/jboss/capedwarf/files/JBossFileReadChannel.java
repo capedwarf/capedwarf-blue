@@ -22,50 +22,58 @@
 
 package org.jboss.capedwarf.files;
 
+import com.google.appengine.api.files.FileReadChannel;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadableByteChannel;
-
-import com.google.appengine.api.files.FileReadChannel;
 
 /**
  * JBoss file read channel.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class JBossFileReadChannel implements FileReadChannel
-{
-   private final ReadableByteChannel delegate;
+class JBossFileReadChannel implements FileReadChannel {
+    private final ReadableByteChannel delegate;
+    private long position;
 
-   JBossFileReadChannel(InputStream in)
-   {
-      delegate = Channels.newChannel(in);
-   }
+    JBossFileReadChannel(InputStream in) {
+        delegate = Channels.newChannel(in);
+    }
 
-   public long position() throws IOException
-   {
-      return 0;  // TODO
-   }
+    protected void checkOpen() throws ClosedChannelException {
+        if (isOpen() == false) {
+            throw new ClosedChannelException();
+        }
+    }
 
-   public FileReadChannel position(long l) throws IOException
-   {
-      return null;  // TODO
-   }
+    public long position() throws IOException {
+        checkOpen();
+        return position;
+    }
 
-   public int read(ByteBuffer dst) throws IOException
-   {
-      return delegate.read(dst);
-   }
+    public FileReadChannel position(long newPosition) throws IOException {
+        if (newPosition < 0) {
+            throw new IllegalArgumentException("newPosition may not be negative");
+        }
+        checkOpen();
+        position = newPosition;
+        // TODO -- move position
+        return this;
+    }
 
-   public boolean isOpen()
-   {
-      return delegate.isOpen();
-   }
+    public int read(ByteBuffer dst) throws IOException {
+        return delegate.read(dst);
+    }
 
-   public void close() throws IOException
-   {
-      delegate.close();
-   }
+    public boolean isOpen() {
+        return delegate.isOpen();
+    }
+
+    public void close() throws IOException {
+        delegate.close();
+    }
 }

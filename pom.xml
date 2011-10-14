@@ -239,6 +239,12 @@
 
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-files</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-images</artifactId>
                 <version>${project.version}</version>
             </dependency>
