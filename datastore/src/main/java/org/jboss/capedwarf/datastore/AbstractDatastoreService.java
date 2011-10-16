@@ -25,8 +25,12 @@ package org.jboss.capedwarf.datastore;
 import com.google.appengine.api.datastore.*;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.query.CacheQuery;
+import org.infinispan.query.Search;
+import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.datastore.query.InfinispanPreparedQuery;
+import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
+import org.jboss.capedwarf.datastore.query.QueryConverter;
 
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -38,8 +42,16 @@ import java.util.logging.Logger;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class AbstractDatastoreService implements BaseDatastoreService {
-    protected Logger log = Logger.getLogger(getClass().getName());
-    protected Cache<Key, Entity> store = createStore();
+    protected final Logger log = Logger.getLogger(getClass().getName());
+    protected final Cache<Key, Entity> store;
+    protected final SearchManager searchManager;
+    private final QueryConverter queryConverter;
+
+    public AbstractDatastoreService() {
+        this.store = createStore();
+        this.searchManager = Search.getSearchManager(store);
+        this.queryConverter = new QueryConverter(searchManager);
+    }
 
     protected Cache<Key, Entity> createStore() {
         return getCache(getStoreCacheName());
@@ -55,11 +67,12 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     public PreparedQuery prepare(Query query) {
-        return new InfinispanPreparedQuery(store, query);
+        CacheQuery cacheQuery = queryConverter.convert(query);
+        return new PreparedQueryImpl(cacheQuery);
     }
 
     public PreparedQuery prepare(Transaction transaction, Query query) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return prepare(query);
     }
 
     public Transaction getCurrentTransaction() {
