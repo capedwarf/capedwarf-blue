@@ -88,17 +88,15 @@ public class JBossTransaction implements Transaction {
     }
 
     public Future<Void> commitAsync() {
-        return new FutureTask<Void>(new Callable<Void>() {
+        FutureTask<Void> task = new FutureTask<Void>(new Callable<Void>() {
             public Void call() throws Exception {
-                final Executor executor = ExecutorFactory.getInstance();
-                executor.execute(new Runnable() {
-                    public void run() {
-                        commit();
-                    }
-                });
+                commit();
                 return null;
             }
         });
+        final Executor executor = ExecutorFactory.getInstance();
+        executor.execute(task);
+        return task;
     }
 
     public void rollback() {
@@ -112,17 +110,15 @@ public class JBossTransaction implements Transaction {
     }
 
     public Future<Void> rollbackAsync() {
-        return new FutureTask<Void>(new Callable<Void>() {
+        FutureTask<Void> task = new FutureTask<Void>(new Callable<Void>() {
             public Void call() throws Exception {
-                final Executor executor = ExecutorFactory.getInstance();
-                executor.execute(new Runnable() {
-                    public void run() {
-                        rollback();
-                    }
-                });
+                rollback();
                 return null;
             }
         });
+        final Executor executor = ExecutorFactory.getInstance();
+        executor.execute(task);
+        return task;
     }
 
     public String getId() {
