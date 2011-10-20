@@ -38,6 +38,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -97,7 +98,7 @@ public class JBossTransaction implements Transaction {
             if (ignoreException == false)
                 throw new DatastoreFailureException("Cannot resume tx.", e);
             else
-                log.warning("Failed to resume previous tx: " + t);
+                log.log(Level.SEVERE, "Failed to resume previous tx: " + t, e);
         }
     }
 
@@ -180,7 +181,7 @@ public class JBossTransaction implements Transaction {
     }
 
     public String getId() {
-        return null; // TODO
+        return null; // TODO - global id
     }
 
     public String getApp() {
