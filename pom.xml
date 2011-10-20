@@ -37,15 +37,15 @@
 
     <properties>
         <version.cdi.api>1.0-SP4</version.cdi.api>
-        <version.com.google.gae>1.5.4</version.com.google.gae>
-        <version.com.google.gae.api>1.5.4</version.com.google.gae.api>
-        <version.com.google.gae.labs>1.5.4</version.com.google.gae.labs>
+        <version.com.google.gae>1.5.5</version.com.google.gae>
+        <version.com.google.gae.api>1.5.5</version.com.google.gae.api>
+        <version.com.google.gae.labs>1.5.5</version.com.google.gae.labs>
         <version.com.google.guava>1.0.0.R05</version.com.google.guava>
         <version.json>20090211</version.json>
         <version.org.jboss.seam>3.0.0.Final</version.org.jboss.seam>
         <version.org.jboss.logging>3.0.0.GA</version.org.jboss.logging>
-        <version.org.jboss.xnio.xnio-api>3.0.0.Beta3</version.org.jboss.xnio.xnio-api>
-        <version.org.jboss.xnio.xnio-nio>3.0.0.Beta3</version.org.jboss.xnio.xnio-nio>
+        <version.org.jboss.xnio.xnio-api>3.0.0.Beta5</version.org.jboss.xnio.xnio-api>
+        <version.org.jboss.xnio.xnio-nio>3.0.0.Beta5</version.org.jboss.xnio.xnio-nio>
         <version.javassist>3.14.0-GA</version.javassist>
         <version.slf4j>1.5.10</version.slf4j>
         <version.javax.validation>1.0.0.GA</version.javax.validation>
@@ -57,7 +57,7 @@
         <version.org.datanucleus.jpa.spec>1.1.1</version.org.datanucleus.jpa.spec>
         <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
         <version.org.hibernate.search>3.4.0.Final</version.org.hibernate.search>
-        <version.org.infinispan>5.0.1.FINAL</version.org.infinispan>
+        <version.org.infinispan>5.1.0.BETA2</version.org.infinispan>
         <version.junit>4.7</version.junit>
         <version.arquillian>1.0.0.CR4</version.arquillian>
         <version.jboss.as7>7.1.0.Alpha2-SNAPSHOT</version.jboss.as7>

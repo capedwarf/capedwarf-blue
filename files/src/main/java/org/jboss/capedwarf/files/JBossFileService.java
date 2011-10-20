@@ -40,6 +40,8 @@ import com.google.appengine.api.files.FileServicePb;
 import com.google.appengine.api.files.FileWriteChannel;
 import com.google.appengine.api.files.FinalizationException;
 import com.google.appengine.api.files.LockException;
+import com.google.appengine.api.files.RecordReadChannel;
+import com.google.appengine.api.files.RecordWriteChannel;
 import org.infinispan.io.GridFilesystem;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 
@@ -114,6 +116,14 @@ public class JBossFileService implements FileService {
     public FileReadChannel openReadChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, LockException, IOException {
         GridFilesystem gfs = InfinispanUtils.getGridFilesystem();
         return new JBossFileReadChannel(gfs.getInput(file.getFullPath())); // TODO lock?
+    }
+
+    public RecordWriteChannel openRecordWriteChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, FinalizationException, LockException, IOException {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public RecordReadChannel openRecordReadChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, LockException, IOException {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public BlobKey getBlobKey(AppEngineFile file) {
