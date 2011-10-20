@@ -22,7 +22,12 @@
 
 package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.datastore.BaseDatastoreService;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Transaction;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.query.CacheQuery;
@@ -76,14 +81,15 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     public Transaction getCurrentTransaction() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return JBossTransaction.getTransaction(true);
     }
 
     public Transaction getCurrentTransaction(Transaction transaction) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        Transaction tx = JBossTransaction.getTransaction(false);
+        return (tx != null) ? tx : transaction;
     }
 
     public Collection<Transaction> getActiveTransactions() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return JBossTransaction.getTransactions();
     }
 }

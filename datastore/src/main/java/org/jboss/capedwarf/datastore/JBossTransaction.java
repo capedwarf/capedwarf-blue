@@ -25,10 +25,18 @@ package org.jboss.capedwarf.datastore;
 import com.google.appengine.api.datastore.DatastoreFailureException;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 /**
  * JBoss GAE transaction.
@@ -38,9 +46,37 @@ import java.util.concurrent.Future;
 public class JBossTransaction implements Transaction {
 
     private final TransactionManager tm;
+    private final Executor executor;
 
-    public JBossTransaction() {
+    private static ThreadLocal<Transaction> current = new ThreadLocal<Transaction>();
+    private static Set<Transaction> transactions = new ConcurrentSkipListSet<Transaction>();
+
+    static Transaction getTransaction(boolean createNew) {
+        Transaction tx = current.get();
+        if (tx == null && createNew) {
+            tx = new JBossTransaction();
+            init(tx);
+        }
+        return tx;
+    }
+
+    private static void init(Transaction tx) {
+        current.set(tx);
+        transactions.add(tx);
+    }
+
+    private static void cleanup(Transaction tx) {
+        current.remove();
+        transactions.remove(tx);
+    }
+
+    private JBossTransaction() {
         tm = JndiLookupUtils.lookup("tm.jndi.name", TransactionManager.class, "java:jboss/TransactionManager");
+        executor = ExecutorFactory.getInstance();
+    }
+
+    static Collection<Transaction> getTransactions() {
+        return Collections.unmodifiableCollection(transactions);
     }
 
     public void commit() {
@@ -48,11 +84,22 @@ public class JBossTransaction implements Transaction {
             tm.commit();
         } catch (Exception e) {
             throw new DatastoreFailureException("Cannot commit tx.", e);
+        } finally {
+            cleanup(this);
         }
     }
 
     public Future<Void> commitAsync() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return new FutureTask<Void>(new Callable<Void>() {
+            public Void call() throws Exception {
+                executor.execute(new Runnable() {
+                    public void run() {
+                        commit();
+                    }
+                });
+                return null;
+            }
+        });
     }
 
     public void rollback() {
@@ -60,11 +107,22 @@ public class JBossTransaction implements Transaction {
             tm.rollback();
         } catch (Exception e) {
             throw new DatastoreFailureException("Cannot rollback tx.", e);
+        } finally {
+            cleanup(this);
         }
     }
 
     public Future<Void> rollbackAsync() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return new FutureTask<Void>(new Callable<Void>() {
+            public Void call() throws Exception {
+                executor.execute(new Runnable() {
+                    public void run() {
+                        rollback();
+                    }
+                });
+                return null;
+            }
+        });
     }
 
     public String getId() {
