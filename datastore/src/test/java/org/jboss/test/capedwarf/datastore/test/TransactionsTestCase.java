@@ -23,59 +23,40 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Collection;
-
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class SmokeTestCase extends AbstractTest {
+public class TransactionsTestCase extends AbstractTest {
 
     @Test
-    public void putStoresEntity() throws Exception {
+    public void testBasicTxOps() throws Exception {
         Entity entity = createTestEntity();
-        service.put(entity);
+        Transaction tx = service.beginTransaction();
+        try {
+            service.put(tx, entity);
+            assertStoreContains(entity);
+            tx.commit();
+        } catch (Exception e) {
+            tx.rollback();
+        }
+    }
+
+    @Test
+    public void testRollback() throws Exception {
+        Entity entity = createTestEntity();
+        Transaction tx = service.beginTransaction();
+        Key key = service.put(tx, entity);
         assertStoreContains(entity);
-    }
-
-    @Test
-    public void putStoresAllGivenEntities() throws Exception {
-        Collection<Entity> entities = createTestEntities();
-        service.put(entities);
-        assertStoreContainsAll(entities);
-    }
-
-    @Test(expected = EntityNotFoundException.class)
-    public void getThrowsNotFoundExceptionWhenKeyIsNotFound() throws Exception {
-        Key nonExistingKey = KeyFactory.createKey("NonExistingKey", 1);
-        service.get(nonExistingKey);
-    }
-
-    @Test
-    public void deleteRemovesEntityFromStore() throws Exception {
-        Entity entity = createTestEntity();
-        Key key = entity.getKey();
-        service.put(entity);
-
-        service.delete(key);
-        assertStoreDoesNotContain(key);
-    }
-
-    @Test
-    public void deleteRemovesAllGivenEntities() throws Exception {
-        Collection<Entity> entities = createTestEntities();
-        Collection<Key> keys = extractKeys(entities);
-        service.put(entities);
-
-        service.delete(keys);
-        assertStoreDoesNotContain(keys);
+        tx.rollback();
+        Object result = service.get(key);
+        Assert.assertNotNull(result); // should not be there due to rollback
     }
 }
