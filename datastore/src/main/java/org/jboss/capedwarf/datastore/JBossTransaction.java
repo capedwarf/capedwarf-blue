@@ -31,9 +31,8 @@ import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -47,26 +46,31 @@ public class JBossTransaction implements Transaction {
 
     private final TransactionManager tm;
 
-    private static ThreadLocal<Transaction> current = new ThreadLocal<Transaction>();
-    private static Set<Transaction> transactions = new ConcurrentSkipListSet<Transaction>();
+    private static ThreadLocal<Stack<Transaction>> current = new ThreadLocal<Stack<Transaction>>();
 
-    static Transaction getTransaction(boolean createNew) {
-        Transaction tx = current.get();
-        if (tx == null && createNew) {
-            tx = new JBossTransaction();
-            init(tx);
+    static Transaction newTransaction() {
+        Transaction tx = new JBossTransaction();
+        Stack<Transaction> stack = current.get();
+        if (stack == null) {
+            stack = new Stack<Transaction>();
+            current.set(stack);
         }
+        stack.push(tx);
         return tx;
     }
 
-    private static void init(Transaction tx) {
-        current.set(tx);
-        transactions.add(tx);
+    static Transaction currentTransaction() {
+        Stack<Transaction> stack = current.get();
+        return (stack != null) ? stack.peek() : null;
     }
 
     private static void cleanup(Transaction tx) {
-        current.remove();
-        transactions.remove(tx);
+        Stack<Transaction> stack = current.get();
+        if (stack == null)
+            throw new IllegalStateException("Illegal call to cleanup - stack should exist");
+        stack.remove(tx);
+        if (stack.isEmpty())
+            current.remove();
     }
 
     private JBossTransaction() {
@@ -74,7 +78,8 @@ public class JBossTransaction implements Transaction {
     }
 
     static Collection<Transaction> getTransactions() {
-        return Collections.unmodifiableCollection(transactions);
+        Stack<Transaction> stack = current.get();
+        return (stack != null) ? Collections.unmodifiableCollection(stack) : Collections.<Transaction>emptyList();
     }
 
     public void commit() {

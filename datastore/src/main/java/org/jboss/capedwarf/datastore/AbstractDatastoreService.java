@@ -38,6 +38,7 @@ import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 /**
@@ -81,11 +82,15 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     public Transaction getCurrentTransaction() {
-        return JBossTransaction.getTransaction(true);
+        Transaction tx = JBossTransaction.currentTransaction();
+        if (tx == null)
+            throw new NoSuchElementException("No current transaction.");
+
+        return tx;
     }
 
     public Transaction getCurrentTransaction(Transaction transaction) {
-        Transaction tx = JBossTransaction.getTransaction(false);
+        Transaction tx = JBossTransaction.currentTransaction();
         return (tx != null) ? tx : transaction;
     }
 
