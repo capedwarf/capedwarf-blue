@@ -45,4 +45,13 @@ public final class Application {
         return environment.getAppId();
     }
 
+    /**
+     * Get app's classloader.
+     *
+     * @return the app's classloader
+     */
+    public static ClassLoader getAppClassloader() {
+        // TCCL should do for now
+        return Thread.currentThread().getContextClassLoader();
+    }
 }

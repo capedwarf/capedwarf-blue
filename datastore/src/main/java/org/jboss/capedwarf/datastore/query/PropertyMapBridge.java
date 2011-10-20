@@ -25,13 +25,24 @@
 package org.jboss.capedwarf.datastore.query;
 
 import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.datastore.Blob;
+import com.google.appengine.api.datastore.Category;
+import com.google.appengine.api.datastore.Email;
+import com.google.appengine.api.datastore.GeoPt;
+import com.google.appengine.api.datastore.IMHandle;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Link;
+import com.google.appengine.api.datastore.PhoneNumber;
+import com.google.appengine.api.datastore.PostalAddress;
+import com.google.appengine.api.datastore.Rating;
+import com.google.appengine.api.datastore.ShortBlob;
+import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.User;
 import org.apache.lucene.document.Document;
-import org.hibernate.search.bridge.BridgeFactory;
 import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.LuceneOptions;
 import org.hibernate.search.bridge.TwoWayFieldBridge;
+import org.hibernate.search.bridge.impl.BridgeFactory;
 
 import java.util.Date;
 import java.util.Map;

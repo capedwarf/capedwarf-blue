@@ -51,6 +51,7 @@ public class AbstractTest {
     @Deployment
     public static Archive getDeployment() {
         return ShrinkWrap.create(JavaArchive.class)
+                .addClass(AbstractTest.class)
                 .addAsManifestResource("jboss/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
     }
 

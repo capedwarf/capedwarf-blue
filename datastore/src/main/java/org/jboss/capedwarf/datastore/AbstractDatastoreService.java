@@ -33,6 +33,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
+import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
@@ -54,7 +55,8 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     private final QueryConverter queryConverter;
 
     public AbstractDatastoreService() {
-        this.store = createStore();
+        ClassLoader classLoader = Application.getAppClassloader();
+        this.store = createStore().getAdvancedCache().with(classLoader);
         this.searchManager = Search.getSearchManager(store);
         this.queryConverter = new QueryConverter(searchManager);
     }
