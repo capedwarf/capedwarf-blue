@@ -34,7 +34,13 @@ import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.ClassMemberValue;
 import javassist.bytecode.annotation.EnumMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
-import org.hibernate.search.annotations.*;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.ProvidedId;
+import org.hibernate.search.annotations.Store;
 import org.jboss.capedwarf.datastore.query.PropertyMapBridge;
 
 import java.util.LinkedList;
@@ -102,10 +108,14 @@ public class EntityTransformer extends JavassistTransformer {
         int yesEnumValueIndex = constPool.addUtf8Info(Store.YES.name());
 
         int indexEnumClassIndex = constPool.addUtf8Info(Index.class.getName());
-        int unTokenizedEnumValueIndex = constPool.addUtf8Info(Index.UN_TOKENIZED.name());
+        int yesTokenizedEnumValueIndex = constPool.addUtf8Info(Index.YES.name());
+
+        int analyzeEnumClassIndex = constPool.addUtf8Info(Analyze.class.getName());
+        int noTokenizedEnumValueAnalyze = constPool.addUtf8Info(Analyze.NO.name());
 
         Annotation annotation = new Annotation(Field.class.getName(), constPool);
-        annotation.addMemberValue("index", new EnumMemberValue(indexEnumClassIndex, unTokenizedEnumValueIndex, constPool));
+        annotation.addMemberValue("index", new EnumMemberValue(indexEnumClassIndex, yesTokenizedEnumValueIndex, constPool));
+        annotation.addMemberValue("analyze", new EnumMemberValue(analyzeEnumClassIndex, noTokenizedEnumValueAnalyze, constPool));
         annotation.addMemberValue("store", new EnumMemberValue(storeEnumClassIndex, yesEnumValueIndex, constPool));
         return annotation;
     }

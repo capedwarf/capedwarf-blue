@@ -2,6 +2,8 @@
     <deployment>
         <dependencies>
             <module name="com.google.appengine"/>
+            <!-- TODO remove this, as it's a workaround -->
+            <module name="org.hibernate.search"/>
         </dependencies>
     </deployment>
 </jboss-deployment-structure>
