@@ -24,10 +24,12 @@ package org.jboss.capedwarf.datastore;
 
 import com.google.appengine.api.datastore.DatastoreFailureException;
 import com.google.appengine.api.datastore.Transaction;
+import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,44 +47,86 @@ import java.util.concurrent.FutureTask;
 public class JBossTransaction implements Transaction {
 
     private final TransactionManager tm;
+    private javax.transaction.Transaction transaction;
 
-    private static ThreadLocal<Stack<Transaction>> current = new ThreadLocal<Stack<Transaction>>();
+    private static ThreadLocal<Stack<JBossTransaction>> current = new ThreadLocal<Stack<JBossTransaction>>();
 
     static Transaction newTransaction() {
-        Transaction tx = new JBossTransaction();
-        Stack<Transaction> stack = current.get();
+        JBossTransaction tx = new JBossTransaction();
+        Stack<JBossTransaction> stack = current.get();
         if (stack == null) {
-            stack = new Stack<Transaction>();
+            stack = new Stack<JBossTransaction>();
             current.set(stack);
+        } else {
+            JBossTransaction jt = stack.peek();
+            jt.suspend(); // suspend existing
+        }
+        try {
+            tx.tm.begin(); // being new
+        } catch (Exception e) {
+            if (stack.isEmpty())
+                current.remove();
+
+            throw new DatastoreFailureException("Cannot begin tx.", e);
         }
         stack.push(tx);
         return tx;
     }
 
+    private void suspend() {
+        try {
+            transaction = tm.suspend();
+        } catch (SystemException e) {
+            throw new DatastoreFailureException("Cannot suspend tx.", e);
+        }
+    }
+
+    private void resume() {
+        try {
+            javax.transaction.Transaction t = transaction;
+            transaction = null; // cleanup
+            tm.resume(t);
+        } catch (Exception e) {
+            throw new DatastoreFailureException("Cannot resume tx.", e);
+        }
+    }
+
     static Transaction currentTransaction() {
-        Stack<Transaction> stack = current.get();
+        Stack<JBossTransaction> stack = current.get();
         return (stack != null) ? stack.peek() : null;
     }
 
-    private static void cleanup(Transaction tx) {
-        Stack<Transaction> stack = current.get();
+    private static void cleanup(JBossTransaction tx) {
+        Stack<JBossTransaction> stack = current.get();
         if (stack == null)
             throw new IllegalStateException("Illegal call to cleanup - stack should exist");
-        stack.remove(tx);
+
+        JBossTransaction jt = stack.peek();
+        if (jt != tx)
+            throw new IllegalArgumentException("Cannot cleanup non-current tx!");
+
+        stack.pop(); // remove current
+
         if (stack.isEmpty())
             current.remove();
+        else
+            stack.peek().resume(); // resume previous
     }
 
     private JBossTransaction() {
         tm = JndiLookupUtils.lookup("tm.jndi.name", TransactionManager.class, "java:jboss/TransactionManager");
     }
 
+    @SuppressWarnings({"unchecked"})
     static Collection<Transaction> getTransactions() {
-        Stack<Transaction> stack = current.get();
+        Stack stack = current.get();
         return (stack != null) ? Collections.unmodifiableCollection(stack) : Collections.<Transaction>emptyList();
     }
 
     public void commit() {
+        if (transaction != null)
+            throw new IllegalStateException("Not current transaction -- other tx in progress!");
+
         try {
             tm.commit();
         } catch (Exception e) {
@@ -105,6 +149,9 @@ public class JBossTransaction implements Transaction {
     }
 
     public void rollback() {
+        if (transaction != null)
+            throw new IllegalStateException("Not current transaction -- other tx in progress!");
+
         try {
             tm.rollback();
         } catch (Exception e) {
@@ -127,11 +174,11 @@ public class JBossTransaction implements Transaction {
     }
 
     public String getId() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null; // TODO
     }
 
     public String getApp() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return Application.getAppId();
     }
 
     public boolean isActive() {
