@@ -38,6 +38,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.logging.Logger;
 
 /**
  * JBoss GAE transaction.
@@ -45,14 +46,17 @@ import java.util.concurrent.FutureTask;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class JBossTransaction implements Transaction {
+    private static final Logger log = Logger.getLogger(JBossTransaction.class.getName());
 
-    private final TransactionManager tm;
+    private final static TransactionManager tm = JndiLookupUtils.lookup("tm.jndi.name", TransactionManager.class, "java:jboss/TransactionManager");
+    private final static ThreadLocal<Stack<JBossTransaction>> current = new ThreadLocal<Stack<JBossTransaction>>();
+
     private javax.transaction.Transaction transaction;
 
-    private static ThreadLocal<Stack<JBossTransaction>> current = new ThreadLocal<Stack<JBossTransaction>>();
+    private JBossTransaction() {
+    }
 
     static Transaction newTransaction() {
-        JBossTransaction tx = new JBossTransaction();
         Stack<JBossTransaction> stack = current.get();
         if (stack == null) {
             stack = new Stack<JBossTransaction>();
@@ -62,13 +66,16 @@ public class JBossTransaction implements Transaction {
             jt.suspend(); // suspend existing
         }
         try {
-            tx.tm.begin(); // being new
+            tm.begin(); // being new
         } catch (Exception e) {
             if (stack.isEmpty())
                 current.remove();
+            else
+                stack.peek().resume(true); // resume back previous
 
             throw new DatastoreFailureException("Cannot begin tx.", e);
         }
+        JBossTransaction tx = new JBossTransaction();
         stack.push(tx);
         return tx;
     }
@@ -81,13 +88,16 @@ public class JBossTransaction implements Transaction {
         }
     }
 
-    private void resume() {
+    private void resume(boolean ignoreException) {
+        javax.transaction.Transaction t = transaction;
         try {
-            javax.transaction.Transaction t = transaction;
             transaction = null; // cleanup
             tm.resume(t);
         } catch (Exception e) {
-            throw new DatastoreFailureException("Cannot resume tx.", e);
+            if (ignoreException == false)
+                throw new DatastoreFailureException("Cannot resume tx.", e);
+            else
+                log.warning("Failed to resume previous tx: " + t);
         }
     }
 
@@ -110,11 +120,7 @@ public class JBossTransaction implements Transaction {
         if (stack.isEmpty())
             current.remove();
         else
-            stack.peek().resume(); // resume previous
-    }
-
-    private JBossTransaction() {
-        tm = JndiLookupUtils.lookup("tm.jndi.name", TransactionManager.class, "java:jboss/TransactionManager");
+            stack.peek().resume(false); // resume previous
     }
 
     @SuppressWarnings({"unchecked"})
