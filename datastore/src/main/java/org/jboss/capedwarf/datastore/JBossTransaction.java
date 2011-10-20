@@ -46,7 +46,6 @@ import java.util.concurrent.FutureTask;
 public class JBossTransaction implements Transaction {
 
     private final TransactionManager tm;
-    private final Executor executor;
 
     private static ThreadLocal<Transaction> current = new ThreadLocal<Transaction>();
     private static Set<Transaction> transactions = new ConcurrentSkipListSet<Transaction>();
@@ -72,7 +71,6 @@ public class JBossTransaction implements Transaction {
 
     private JBossTransaction() {
         tm = JndiLookupUtils.lookup("tm.jndi.name", TransactionManager.class, "java:jboss/TransactionManager");
-        executor = ExecutorFactory.getInstance();
     }
 
     static Collection<Transaction> getTransactions() {
@@ -92,6 +90,7 @@ public class JBossTransaction implements Transaction {
     public Future<Void> commitAsync() {
         return new FutureTask<Void>(new Callable<Void>() {
             public Void call() throws Exception {
+                final Executor executor = ExecutorFactory.getInstance();
                 executor.execute(new Runnable() {
                     public void run() {
                         commit();
@@ -115,6 +114,7 @@ public class JBossTransaction implements Transaction {
     public Future<Void> rollbackAsync() {
         return new FutureTask<Void>(new Callable<Void>() {
             public Void call() throws Exception {
+                final Executor executor = ExecutorFactory.getInstance();
                 executor.execute(new Runnable() {
                     public void run() {
                         rollback();
