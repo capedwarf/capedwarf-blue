@@ -23,10 +23,8 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,6 +43,7 @@ public class TransactionsTestCase extends AbstractTest
       try
       {
          service.put(tx, entity);
+         assertStoreContains(entity);
          tx.commit();
          assertStoreContains(entity);
       }
@@ -57,12 +56,12 @@ public class TransactionsTestCase extends AbstractTest
    @Test
    public void testRollback() throws Exception
    {
-      Entity entity = createTestEntity();
+      Entity entity = createTestEntity("ROLLBACK", 1);
       Transaction tx = service.beginTransaction();
-      Key key = service.put(tx, entity);
+      service.put(tx, entity);
       tx.rollback();
-      Object result = service.get(key);
-      Assert.assertNull(result); // should not be there due to rollback
+      // should not be there due to rollback
+      assertStoreDoesNotContain(entity);
    }
 
    @Test
@@ -70,14 +69,16 @@ public class TransactionsTestCase extends AbstractTest
    {
       Entity e1 = createTestEntity("DUMMY", 1);
       Transaction t1 = service.beginTransaction();
-      Key k1 = service.put(t1, e1);
+      service.put(t1, e1);
       Transaction t2 = service.beginTransaction();
-      Key k2 = service.put(createTestEntity("DUMMY", 2));
+      Entity e2 = createTestEntity("DUMMY", 2);
+      service.put(e2);
+      assertStoreContains(e1);
+      assertStoreContains(e2);
       t2.rollback();
-      Object result = service.get(k2);
-      Assert.assertNull(result); // should not be there due to rollback
+      // should not be there due to rollback
+      assertStoreDoesNotContain(e2);
       t1.commit();
-      result = service.get(k1);
-      Assert.assertNotNull(result);
+      assertStoreContains(e1);
    }
 }
