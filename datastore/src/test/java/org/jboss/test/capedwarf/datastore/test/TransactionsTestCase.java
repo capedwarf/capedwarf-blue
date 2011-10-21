@@ -23,6 +23,7 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Assert;
@@ -62,6 +63,13 @@ public class TransactionsTestCase extends AbstractTest {
         tx.rollback();
         // should not be there due to rollback
         assertStoreDoesNotContain(entity);
+    }
+
+    @Test
+    public void testNoIdKey() throws Exception {
+        Entity entity = new Entity("NO_ID");
+        Key key = service.put(entity);
+        Assert.assertTrue(key.isComplete());
     }
 
     @Test

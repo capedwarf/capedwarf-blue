@@ -31,6 +31,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +46,7 @@ import java.util.Map;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class JBossDatastoreService extends AbstractDatastoreService implements DatastoreService {
+    private DatastoreAttributes datastoreAttributes;
 
     public Entity get(Key key) throws EntityNotFoundException {
         Entity entity = store.get(key);
@@ -70,8 +72,13 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public Key put(Entity entity) {
-        Entity v = store.put(entity.getKey(), entity);
-        return v == null ? null : v.getKey();
+        Key key = entity.getKey();
+        if (key.isComplete() == false) {
+            long id = KeyGenerator.generateKeyId();
+            ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
+        }
+        store.put(key, entity);
+        return key;
     }
 
     public Key put(Transaction transaction, Entity entity) {
@@ -112,10 +119,6 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         delete(keyIterable);
     }
 
-    public Map<Index, Index.IndexState> getIndexes() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     public Transaction beginTransaction() {
         return beginTransaction(TransactionOptions.Builder.withDefaults());
     }
@@ -124,11 +127,15 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         return JBossTransaction.newTransaction();
     }
 
-    public KeyRange allocateIds(String s, long l) {
+    public Map<Index, Index.IndexState> getIndexes() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public KeyRange allocateIds(Key key, String s, long l) {
+    public KeyRange allocateIds(String kind, long num) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public KeyRange allocateIds(Key parent, String kind, long num) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -137,9 +144,12 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public DatastoreAttributes getDatastoreAttributes() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        if (datastoreAttributes == null)
+            datastoreAttributes = ReflectionUtils.newInstance(DatastoreAttributes.class);
+        return datastoreAttributes;
     }
 
+    // TODO -- what's this?
     public void clearCache() {
         System.out.println("JBossDatastoreService.clearCache");
         System.out.println("store.size() = " + store.size());
