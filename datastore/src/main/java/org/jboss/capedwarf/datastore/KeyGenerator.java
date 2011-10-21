@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.datastore;
 
+import com.google.appengine.api.datastore.Key;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -35,7 +37,7 @@ class KeyGenerator {
 
     private static final AtomicLong gen = new AtomicLong(1);
 
-    static long generateKeyId() {
+    static long generateKeyId(Key key) {
         return gen.getAndIncrement();
     }
 

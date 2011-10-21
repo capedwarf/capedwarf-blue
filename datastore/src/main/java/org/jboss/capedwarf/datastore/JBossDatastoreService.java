@@ -74,7 +74,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     public Key put(Entity entity) {
         Key key = entity.getKey();
         if (key.isComplete() == false) {
-            long id = KeyGenerator.generateKeyId();
+            long id = KeyGenerator.generateKeyId(key);
             ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
         }
         store.put(key, entity);
