@@ -81,6 +81,19 @@ public class JBossTransaction implements Transaction {
         return tx;
     }
 
+    private javax.transaction.Transaction getTx() {
+        try {
+            return tm.getTransaction();
+        } catch (SystemException e) {
+            throw new DatastoreFailureException("Cannot suspend tx.", e);
+        }
+    }
+
+    private void checkIfCurrent() {
+        if (transaction != null)
+            throw new IllegalStateException("Not current transaction -- other tx in progress!");
+    }
+
     private void suspend() {
         try {
             transaction = tm.suspend();
@@ -131,9 +144,7 @@ public class JBossTransaction implements Transaction {
     }
 
     public void commit() {
-        if (transaction != null)
-            throw new IllegalStateException("Not current transaction -- other tx in progress!");
-
+        checkIfCurrent();
         try {
             tm.commit();
         } catch (Exception e) {
@@ -144,9 +155,11 @@ public class JBossTransaction implements Transaction {
     }
 
     public Future<Void> commitAsync() {
+        checkIfCurrent();
+        final javax.transaction.Transaction tx = getTx();
         FutureTask<Void> task = new FutureTask<Void>(new Callable<Void>() {
             public Void call() throws Exception {
-                commit();
+                tx.commit();
                 return null;
             }
         });
@@ -156,9 +169,7 @@ public class JBossTransaction implements Transaction {
     }
 
     public void rollback() {
-        if (transaction != null)
-            throw new IllegalStateException("Not current transaction -- other tx in progress!");
-
+        checkIfCurrent();
         try {
             tm.rollback();
         } catch (Exception e) {
@@ -169,9 +180,11 @@ public class JBossTransaction implements Transaction {
     }
 
     public Future<Void> rollbackAsync() {
+        checkIfCurrent();
+        final javax.transaction.Transaction tx = getTx();
         FutureTask<Void> task = new FutureTask<Void>(new Callable<Void>() {
             public Void call() throws Exception {
-                rollback();
+                tx.rollback();
                 return null;
             }
         });

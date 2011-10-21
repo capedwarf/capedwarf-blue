@@ -25,60 +25,85 @@ package org.jboss.test.capedwarf.datastore.test;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-public class TransactionsTestCase extends AbstractTest
-{
+public class TransactionsTestCase extends AbstractTest {
 
-   @Test
-   public void testBasicTxOps() throws Exception
-   {
-      Entity entity = createTestEntity();
-      Transaction tx = service.beginTransaction();
-      try
-      {
-         service.put(tx, entity);
-         assertStoreContains(entity);
-         tx.commit();
-         assertStoreContains(entity);
-      }
-      catch (Exception e)
-      {
-         tx.rollback();
-      }
-   }
+    @Test
+    public void testBasicTxOps() throws Exception {
+        Entity entity = createTestEntity();
+        Transaction tx = service.beginTransaction();
+        try {
+            service.put(tx, entity);
+            assertStoreContains(entity);
+            tx.commit();
+            assertStoreContains(entity);
+        } catch (Exception e) {
+            tx.rollback();
+        }
+    }
 
-   @Test
-   public void testRollback() throws Exception
-   {
-      Entity entity = createTestEntity("ROLLBACK", 1);
-      Transaction tx = service.beginTransaction();
-      service.put(tx, entity);
-      tx.rollback();
-      // should not be there due to rollback
-      assertStoreDoesNotContain(entity);
-   }
+    @Test
+    public void testRollback() throws Exception {
+        Entity entity = createTestEntity("ROLLBACK", 1);
+        Transaction tx = service.beginTransaction();
+        service.put(tx, entity);
+        tx.rollback();
+        // should not be there due to rollback
+        assertStoreDoesNotContain(entity);
+    }
 
-   @Test
-   public void testNested() throws Exception
-   {
-      Entity e1 = createTestEntity("DUMMY", 1);
-      Transaction t1 = service.beginTransaction();
-      service.put(t1, e1);
-      Transaction t2 = service.beginTransaction();
-      Entity e2 = createTestEntity("DUMMY", 2);
-      service.put(e2);
-      assertStoreContains(e1);
-      assertStoreContains(e2);
-      t2.rollback();
-      // should not be there due to rollback
-      assertStoreDoesNotContain(e2);
-      t1.commit();
-      assertStoreContains(e1);
-   }
+    @Test
+    public void testNested() throws Exception {
+        assertTxs();
+
+        Entity e1 = createTestEntity("DUMMY", 1);
+        Transaction t1 = service.beginTransaction();
+        service.put(t1, e1);
+
+        assertStoreContains(e1);
+
+        assertTxs(t1);
+        Assert.assertTrue(t1.isActive());
+
+        Transaction t2 = service.beginTransaction();
+        Entity e2 = createTestEntity("DUMMY", 2);
+        service.put(e2);
+
+        assertTxs(t1, t2);
+        Assert.assertTrue(t1.isActive());
+        Assert.assertTrue(t2.isActive());
+
+        assertStoreContains(e2);
+        t2.rollback();
+
+        assertTxs(t1);
+        Assert.assertTrue(t1.isActive());
+
+        // should not be there due to rollback
+        assertStoreDoesNotContain(e2);
+        t1.commit();
+        assertStoreContains(e1);
+
+        assertTxs();
+    }
+
+    protected void assertTxs(Transaction... txs) {
+        Collection<Transaction> transactions = service.getActiveTransactions();
+        Assert.assertNotNull(txs);
+        Set<Transaction> expected = new HashSet<Transaction>(transactions);
+        Set<Transaction> existing = new HashSet<Transaction>(Arrays.asList(txs));
+        Assert.assertEquals(expected, existing);
+    }
 }
