@@ -34,29 +34,50 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-public class TransactionsTestCase extends AbstractTest {
+public class TransactionsTestCase extends AbstractTest
+{
 
-    @Test
-    public void testBasicTxOps() throws Exception {
-        Entity entity = createTestEntity();
-        Transaction tx = service.beginTransaction();
-        try {
-            service.put(tx, entity);
-            assertStoreContains(entity);
-            tx.commit();
-        } catch (Exception e) {
-            tx.rollback();
-        }
-    }
+   @Test
+   public void testBasicTxOps() throws Exception
+   {
+      Entity entity = createTestEntity();
+      Transaction tx = service.beginTransaction();
+      try
+      {
+         service.put(tx, entity);
+         tx.commit();
+         assertStoreContains(entity);
+      }
+      catch (Exception e)
+      {
+         tx.rollback();
+      }
+   }
 
-    @Test
-    public void testRollback() throws Exception {
-        Entity entity = createTestEntity();
-        Transaction tx = service.beginTransaction();
-        Key key = service.put(tx, entity);
-        assertStoreContains(entity);
-        tx.rollback();
-        Object result = service.get(key);
-        Assert.assertNotNull(result); // should not be there due to rollback
-    }
+   @Test
+   public void testRollback() throws Exception
+   {
+      Entity entity = createTestEntity();
+      Transaction tx = service.beginTransaction();
+      Key key = service.put(tx, entity);
+      tx.rollback();
+      Object result = service.get(key);
+      Assert.assertNull(result); // should not be there due to rollback
+   }
+
+   @Test
+   public void testNested() throws Exception
+   {
+      Entity e1 = createTestEntity("DUMMY", 1);
+      Transaction t1 = service.beginTransaction();
+      Key k1 = service.put(t1, e1);
+      Transaction t2 = service.beginTransaction();
+      Key k2 = service.put(createTestEntity("DUMMY", 2));
+      t2.rollback();
+      Object result = service.get(k2);
+      Assert.assertNull(result); // should not be there due to rollback
+      t1.commit();
+      result = service.get(k1);
+      Assert.assertNotNull(result);
+   }
 }
