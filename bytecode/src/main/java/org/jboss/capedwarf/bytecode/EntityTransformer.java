@@ -24,7 +24,6 @@
 
 package org.jboss.capedwarf.bytecode;
 
-import com.google.appengine.api.datastore.Entity;
 import javassist.CtClass;
 import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
@@ -34,14 +33,9 @@ import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.ClassMemberValue;
 import javassist.bytecode.annotation.EnumMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.ProvidedId;
-import org.hibernate.search.annotations.Store;
+import org.hibernate.search.annotations.*;
 import org.jboss.capedwarf.datastore.query.PropertyMapBridge;
+import org.jboss.capedwarf.datastore.query.QueryConverter;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -62,7 +56,7 @@ public class EntityTransformer extends JavassistTransformer {
         ConstPool constPool = getConstPool(clazz);
         constPool.addClassInfo(Field.class.getName());
 
-        Annotation fieldAnnotation = createFieldAnnotation(Entity.KEY_RESERVED_PROPERTY, constPool);
+        Annotation fieldAnnotation = createFieldAnnotation(QueryConverter.KIND_PROPERTY_KEY, constPool);
         addAnnotationsToMethod(clazz, "getKind", fieldAnnotation);
     }
 
