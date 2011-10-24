@@ -45,6 +45,7 @@ public class FactoriesTransformer implements ClassFileTransformer {
         transformers.put("com.google.appengine.api.datastore.Entity", new EntityTransformer());
         transformers.put("com.google.appengine.api.datastore.Key", new KeyTransformer());
         transformers.put("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
+        transformers.put("com.google.appengine.api.memcache.MemcacheServiceFactory", new MemcacheServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
         transformers.put("com.google.apphosting.api.ApiProxy", new ApiProxyTransformer());
