@@ -17,6 +17,8 @@ import java.util.List;
  */
 public class QueryConverter {
 
+    public static final String KIND_PROPERTY_KEY = "____capedwarf.entity.kind___";
+
     private SearchManager searchManager;
 
     private FilterPredicateConverter filterPredicateConverter;
@@ -62,7 +64,7 @@ public class QueryConverter {
     }
 
     private Query.FilterPredicate createEntityKindFilterPredicate(Query gaeQuery) {
-        return new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, Query.FilterOperator.EQUAL, gaeQuery.getKind());
+        return new Query.FilterPredicate(KIND_PROPERTY_KEY, Query.FilterOperator.EQUAL, gaeQuery.getKind());
     }
 
 
