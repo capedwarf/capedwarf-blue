@@ -27,19 +27,22 @@ package org.jboss.capedwarf.memcache;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
+@RunWith(Arquillian.class)
 public class MemcacheStatisticsTestCase {
 
     protected MemcacheService service;
@@ -58,9 +61,9 @@ public class MemcacheStatisticsTestCase {
     @After
     public void tearDown() {
         service.clearAll();
+        service = null;
     }
 
-    @Ignore("Must enable JMX statistics to get this to work")
     @Test
     public void testItemCount() {
         assertEquals(0, service.getStatistics().getItemCount());
@@ -68,7 +71,6 @@ public class MemcacheStatisticsTestCase {
         assertEquals(1, service.getStatistics().getItemCount());
     }
 
-    @Ignore("Must enable JMX statistics to get this to work")
     @Test
     public void testHitAndMissCount() {
         service.put("key1", "value1");
