@@ -56,8 +56,8 @@
         <version.javax.jpa2>1.0.0.Final</version.javax.jpa2>
         <version.org.datanucleus.jpa.spec>1.1.1</version.org.datanucleus.jpa.spec>
         <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
-        <version.org.hibernate.search>4.0.0-SNAPSHOT</version.org.hibernate.search>
-        <version.org.infinispan>5.1.0-SNAPSHOT</version.org.infinispan>
+        <version.org.hibernate.search>4.0.0.CR1</version.org.hibernate.search>
+        <version.org.infinispan>5.1.0.BETA2</version.org.infinispan>
         <version.junit>4.7</version.junit>
         <version.arquillian>1.0.0.CR4</version.arquillian>
         <version.jboss.as7>7.1.0.Alpha2-SNAPSHOT</version.jboss.as7>
