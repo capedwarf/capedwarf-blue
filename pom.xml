@@ -43,9 +43,9 @@
         <version.com.google.guava>1.0.0.R05</version.com.google.guava>
         <version.json>20090211</version.json>
         <version.org.jboss.seam>3.0.0.Final</version.org.jboss.seam>
-        <version.org.jboss.logging>3.0.0.GA</version.org.jboss.logging>
-        <version.org.jboss.xnio.xnio-api>3.0.0.Beta5</version.org.jboss.xnio.xnio-api>
-        <version.org.jboss.xnio.xnio-nio>3.0.0.Beta5</version.org.jboss.xnio.xnio-nio>
+        <version.org.jboss.logging>3.1.0.Beta3</version.org.jboss.logging>
+        <version.org.jboss.xnio.xnio-api>3.0.0.Beta7</version.org.jboss.xnio.xnio-api>
+        <version.org.jboss.xnio.xnio-nio>3.0.0.Beta7</version.org.jboss.xnio.xnio-nio>
         <version.javassist>3.14.0-GA</version.javassist>
         <version.slf4j>1.5.10</version.slf4j>
         <version.javax.validation>1.0.0.GA</version.javax.validation>
