@@ -28,6 +28,7 @@ import com.google.appengine.api.datastore.*;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsEqual;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.capedwarf.datastore.JBossDatastoreService;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -74,7 +75,7 @@ public abstract class QueryTestCase {
 
     @After
     public void tearDown() {
-        service.delete((Iterable) null);  // clears cache completely
+        ((JBossDatastoreService) service).clearCache();
     }
 
     protected void assertSingleResult(Entity expectedEntity, Query query) {
