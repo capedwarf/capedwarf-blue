@@ -35,13 +35,18 @@ import javassist.NotFoundException;
 public class MemcacheServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         transformGetMemcacheServiceMethod(clazz);
+        transformParameterizedGetMemcacheServiceMethod(clazz);
 //        transformGetAsyncMemcacheServiceMethod(clazz);
-        // TODO: there are also two parameterized methods we need to transform
     }
 
     private void transformGetMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
         CtMethod method = clazz.getDeclaredMethod("getMemcacheService");
         method.setBody("return new org.jboss.capedwarf.memcache.InfinispanMemcacheService();");
+    }
+
+    private void transformParameterizedGetMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
+        CtMethod method = clazz.getDeclaredMethod("getMemcacheService", new CtClass[]{clazz.getClassPool().get("java.lang.String")});
+        method.setBody("return new org.jboss.capedwarf.memcache.InfinispanMemcacheService($1);");
     }
 
     private void transformGetAsyncMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
