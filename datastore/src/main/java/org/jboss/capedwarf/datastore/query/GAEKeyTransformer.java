@@ -28,8 +28,6 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import org.infinispan.query.Transformer;
 
-import java.util.StringTokenizer;
-
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -37,17 +35,11 @@ import java.util.StringTokenizer;
 public class GAEKeyTransformer implements Transformer {
 
     public Object fromString(String s) {
-        StringTokenizer tokenizer = new StringTokenizer(s, ":");
-        String kind = tokenizer.nextToken();
-        String namespace = tokenizer.nextToken();
-        String name = tokenizer.nextToken();
-        Long id = Long.parseLong(tokenizer.nextToken());
-
-        return KeyFactory.createKey(kind, id);
+        return KeyFactory.stringToKey(s);
     }
 
     public String toString(Object customType) {
         Key key = (Key) customType;
-        return key.getKind() + ":" + key.getNamespace() + ":" + key.getName() + ":" + key.getId();
+        return KeyFactory.keyToString(key);
     }
 }

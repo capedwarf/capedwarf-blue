@@ -83,9 +83,6 @@ public class MemcacheTestCase {
         service.put("key", "value");
         assertTrue(service.contains("key"));
         assertEquals("value", service.get("key"));
-
-        System.out.println("service.getStatistics() = " + service.getStatistics());
-        assertEquals(1, service.getStatistics().getItemCount());
     }
 
     @Test

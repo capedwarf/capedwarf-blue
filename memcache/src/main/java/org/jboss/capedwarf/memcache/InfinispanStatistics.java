@@ -32,9 +32,9 @@ import org.infinispan.AdvancedCache;
  */
 public class InfinispanStatistics implements Stats {
 
-    private AdvancedCache<Object, Object> advancedCache;
+    private AdvancedCache<?, ?> advancedCache;
 
-    public InfinispanStatistics(AdvancedCache<Object, Object> cache) {
+    public InfinispanStatistics(AdvancedCache<?, ?> cache) {
         this.advancedCache = cache;
     }
 

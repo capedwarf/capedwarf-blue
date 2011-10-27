@@ -37,8 +37,9 @@ public class JBossEnvironment implements ApiProxy.Environment {
 
     private static final ThreadLocal<JBossEnvironment> threadLocalInstance = new ThreadLocal<JBossEnvironment>();
 
-    private String appId;
+    private String appId = "no-app-id";
     private String versionId;
+    private Map<String, Object> attributes = new HashMap<String, Object>();
 
     public String getAppId() {
         return appId;
@@ -69,7 +70,7 @@ public class JBossEnvironment implements ApiProxy.Environment {
     }
 
     public Map<String, Object> getAttributes() {
-        return new HashMap<String, Object>();
+        return attributes;
     }
 
     public void setAppId(String appId) {

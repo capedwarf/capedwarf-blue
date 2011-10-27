@@ -1,0 +1,117 @@
+/*
+ *
+ *  * JBoss, Home of Professional Open Source.
+ *  * Copyright 2011, Red Hat, Inc., and individual contributors
+ *  * as indicated by the @author tags. See the copyright.txt file in the
+ *  * distribution for a full listing of individual contributors.
+ *  *
+ *  * This is free software; you can redistribute it and/or modify it
+ *  * under the terms of the GNU Lesser General Public License as
+ *  * published by the Free Software Foundation; either version 2.1 of
+ *  * the License, or (at your option) any later version.
+ *  *
+ *  * This software is distributed in the hope that it will be useful,
+ *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  * Lesser General Public License for more details.
+ *  *
+ *  * You should have received a copy of the GNU Lesser General Public
+ *  * License along with this software; if not, write to the Free
+ *  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
+ */
+
+package org.jboss.test.capedwarf.datastore.test;
+
+import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.capedwarf.datastore.query.GAEKeyTransformer;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.junit.Assert.*;
+
+/**
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ */
+@RunWith(Arquillian.class)
+public class DatastoreMultitenancyTestCase extends AbstractTest {
+
+    private String originalNamespace;
+
+    @Before
+    public void setUp() {
+        super.setUp();
+        originalNamespace = NamespaceManager.get();
+    }
+
+    @After
+    @Override
+    public void tearDown() {
+        super.tearDown();
+        NamespaceManager.set(originalNamespace);
+    }
+
+    @Test
+    public void testKeysCreatedUnderDifferentNamespacesAreNotEqual() throws Exception {
+        NamespaceManager.set("one");
+        Key key1 = KeyFactory.createKey("Test", 1);
+
+        NamespaceManager.set("two");
+        Key key2 = KeyFactory.createKey("Test", 1);
+
+        assertFalse(key1.equals(key2));
+    }
+
+    @Test
+    public void testKeyTransformerCorrectlyHandlesNamespaces() throws Exception {
+        GAEKeyTransformer transformer = new GAEKeyTransformer();
+
+        NamespaceManager.set("one");
+        Key key1 = KeyFactory.createKey("Test", 1);
+        String string = transformer.toString(key1);
+
+        NamespaceManager.set("two");
+        Object transformedKey1 = transformer.fromString(string);
+
+        assertEquals(key1, transformedKey1);
+
+        Key key2 = KeyFactory.createKey("Test", 1);
+        Object transformedKey2 = transformer.fromString(transformer.toString(key2));
+
+        assertEquals(key2, transformedKey2);
+        assertFalse(key1.equals(key2));
+    }
+
+    @Test
+    public void testTwoEntitiesWithSameKeyButDifferentNamespaceDontOverwriteEachOther() throws EntityNotFoundException {
+        NamespaceManager.set("one");
+        Key key1 = KeyFactory.createKey("Test", 1);
+        Entity entity1 = new Entity(key1);
+        service.put(entity1);
+        assertEquals(entity1, service.get(key1));
+
+        NamespaceManager.set("two");
+        Key key2 = KeyFactory.createKey("Test", 1);
+
+        try {
+            Entity entity = service.get(key2);
+            fail("Expected no entity in namespace 'two'; but got: " + entity);
+        } catch (EntityNotFoundException e) {
+        }
+
+        Entity entity2 = new Entity(key2);
+        service.put(entity2);
+        assertEquals(entity2, service.get(key2));
+
+        NamespaceManager.set("one");
+        assertEquals(entity1, service.get(key1));
+    }
+}

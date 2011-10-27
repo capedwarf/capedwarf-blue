@@ -22,22 +22,10 @@
 
 package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.DatastoreAttributes;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.Index;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyRange;
-import com.google.appengine.api.datastore.Transaction;
-import com.google.appengine.api.datastore.TransactionOptions;
+import com.google.appengine.api.datastore.*;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * JBoss DatastoreService impl.
@@ -107,10 +95,6 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public void delete(Iterable<Key> keyIterable) {
-        if (keyIterable == null) {
-            clearCache();
-            return;
-        }
         for (Key key : keyIterable)
             store.remove(key);
     }
@@ -149,15 +133,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         return datastoreAttributes;
     }
 
-    // TODO -- what's this?
     public void clearCache() {
-        System.out.println("JBossDatastoreService.clearCache");
-        System.out.println("store.size() = " + store.size());
         store.clear();
-        for (Key key : store.keySet()) {
-            System.out.println("Removing key " + key);
-            store.evict(key);
-        }
-        System.out.println("store.size() = " + store.size());
     }
 }
