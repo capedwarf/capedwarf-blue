@@ -105,21 +105,20 @@ public class InfinispanMemcacheService implements MemcacheService {
     }
 
     public boolean put(Object key, Object value, Expiration expiration, SetPolicy policy) {
-        long lifespan = toLifespanMillis(expiration);
         NamespacedKey namespacedKey = namespacedKey(key);
         switch (policy) {
             case SET_ALWAYS: {
                 cache.getAdvancedCache()
                         .withFlags(Flag.SKIP_CACHE_LOAD, Flag.SKIP_REMOTE_LOOKUP)
-                        .put(namespacedKey, value, lifespan, TimeUnit.MILLISECONDS);
+                        .put(namespacedKey, value, toLifespanMillis(expiration), TimeUnit.MILLISECONDS);
                 return true;
             }
             case ADD_ONLY_IF_NOT_PRESENT: {
-                Object previousValue = cache.putIfAbsent(namespacedKey, value, lifespan, TimeUnit.MILLISECONDS);
+                Object previousValue = cache.putIfAbsent(namespacedKey, value, toLifespanMillis(expiration), TimeUnit.MILLISECONDS);
                 return previousValue == null;
             }
             case REPLACE_ONLY_IF_PRESENT: {
-                Object previousValue = cache.replace(namespacedKey, value, lifespan, TimeUnit.MILLISECONDS);
+                Object previousValue = cache.replace(namespacedKey, value, toLifespanMillis(expiration), TimeUnit.MILLISECONDS);
                 return previousValue != null;
             }
             default:
@@ -144,18 +143,17 @@ public class InfinispanMemcacheService implements MemcacheService {
     }
 
     public <T> Set<T> putAll(Map<T, ?> map, Expiration expiration, SetPolicy policy) {
-        long lifespan = toLifespanMillis(expiration);   // TODO: should lifespan be subtracted after each put() ?
-//        TODO: cache.startBatch();
+        //        TODO: cache.startBatch();
         switch (policy) {
             case SET_ALWAYS:
                 cache.getAdvancedCache()
                         .withFlags(Flag.SKIP_CACHE_LOAD, Flag.SKIP_REMOTE_LOOKUP)
-                        .putAll(toNamespacedMap(map), lifespan, TimeUnit.MILLISECONDS);
+                        .putAll(toNamespacedMap(map), toLifespanMillis(expiration), TimeUnit.MILLISECONDS);
                 return map.keySet();
             case ADD_ONLY_IF_NOT_PRESENT:
                 Set<T> addedKeys = new HashSet<T>();
                 for (Map.Entry<T, ?> entry : map.entrySet()) {
-                    Object previousValue = cache.putIfAbsent(namespacedKey(entry.getKey()), entry.getValue(), lifespan, TimeUnit.MILLISECONDS);
+                    Object previousValue = cache.putIfAbsent(namespacedKey(entry.getKey()), entry.getValue(), toLifespanMillis(expiration), TimeUnit.MILLISECONDS);
                     if (previousValue == null) {
                         addedKeys.add(entry.getKey());
                     }
@@ -164,7 +162,7 @@ public class InfinispanMemcacheService implements MemcacheService {
             case REPLACE_ONLY_IF_PRESENT:
                 Set<T> replacedKeys = new HashSet<T>();
                 for (Map.Entry<T, ?> entry : map.entrySet()) {
-                    Object previousValue = cache.replace(namespacedKey(entry.getKey()), entry.getValue(), lifespan, TimeUnit.MILLISECONDS);
+                    Object previousValue = cache.replace(namespacedKey(entry.getKey()), entry.getValue(), toLifespanMillis(expiration), TimeUnit.MILLISECONDS);
                     if (previousValue != null) {
                         replacedKeys.add(entry.getKey());
                     }
