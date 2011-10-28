@@ -40,6 +40,7 @@ public class FactoriesTransformer implements ClassFileTransformer {
 
     static {
         transformers.put("com.google.appengine.api.blobstore.BlobstoreServiceFactory", new BlobstoreServiceFactoryTransformer());
+        transformers.put("com.google.appengine.api.capabilities.CapabilitiesServiceFactory", new CapabilitiesServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreServiceFactoryTransformer());
         transformers.put("com.google.appengine.api.datastore.Entity", new EntityTransformer());
         transformers.put("com.google.appengine.api.datastore.Key", new KeyTransformer());
