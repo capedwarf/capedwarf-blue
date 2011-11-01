@@ -85,7 +85,7 @@ public class JBossTransaction implements Transaction {
         try {
             return tm.getTransaction();
         } catch (SystemException e) {
-            throw new DatastoreFailureException("Cannot suspend tx.", e);
+            throw new DatastoreFailureException("Cannot obtain tx.", e);
         }
     }
 
@@ -163,8 +163,7 @@ public class JBossTransaction implements Transaction {
                 return null;
             }
         });
-        final Executor executor = ExecutorFactory.getInstance();
-        executor.execute(task);
+        executeTask(task);
         return task;
     }
 
@@ -188,9 +187,13 @@ public class JBossTransaction implements Transaction {
                 return null;
             }
         });
+        executeTask(task);
+        return task;
+    }
+
+    private void executeTask(FutureTask<Void> task) {
         final Executor executor = ExecutorFactory.getInstance();
         executor.execute(task);
-        return task;
     }
 
     public String getId() {
