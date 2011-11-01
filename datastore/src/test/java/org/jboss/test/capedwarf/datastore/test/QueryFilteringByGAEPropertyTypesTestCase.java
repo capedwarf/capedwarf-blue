@@ -28,6 +28,7 @@ import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.users.User;
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,36 +41,42 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTestCase {
 
+    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testTextProperty() {
         testEqualityQueries(new Text("foo"), new Text("bar"));
         testInequalityQueries(new Text("aaa"), new Text("bbb"), new Text("ccc"));
     }
 
+    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testPhoneNumberProperty() {
         testEqualityQueries(new PhoneNumber("foo"), new PhoneNumber("bar"));
         testInequalityQueries(new PhoneNumber("111"), new PhoneNumber("222"), new PhoneNumber("333"));
     }
 
+    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testPostalAddressProperty() {
         testEqualityQueries(new PostalAddress("foo"), new PostalAddress("bar"));
         testInequalityQueries(new PostalAddress("aaa"), new PostalAddress("bbb"), new PostalAddress("ccc"));
     }
 
+    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testEmailProperty() {
         testEqualityQueries(new PostalAddress("foo@foo.com"), new PostalAddress("bar@bar.com"));
         testInequalityQueries(new PostalAddress("aaa@foo.com"), new PostalAddress("bbb@foo.com"), new PostalAddress("ccc@foo.com"));
     }
 
+    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testUserProperty() {
         testEqualityQueries(new User("foo@foo.com", "authDomain", "userId", "federatedIdentity"), new User("bar@bar.com", "authDomain", "userId", "federatedIdentity"));
         testInequalityQueries(new User("aaa@foo.com", "authDomain"), new User("bbb@foo.com", "authDomain"), new User("ccc@foo.com", "authDomain"));
     }
 
+    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testLinkProperty() {
         testEqualityQueries(new Link("http://foo.com"), new Link("http://bar.com"));
@@ -81,12 +88,14 @@ public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTestCase {
         testEqualityQueries(KeyFactory.createKey("foo", "foo"), KeyFactory.createKey("bar", "bar"));
     }
 
+    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testRatingProperty() {
         testEqualityQueries(new Rating(1), new Rating(2));
         testInequalityQueries(new Rating(1), new Rating(2), new Rating(3));
     }
 
+    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testGeoPtProperty() {
         testEqualityQueries(new GeoPt(45f, 15f), new GeoPt(50f, 20f));
@@ -94,6 +103,7 @@ public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTestCase {
         testInequalityQueries(new GeoPt(0f, 10f), new GeoPt(0f, 20f), new GeoPt(0f, 30f));
     }
 
+    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testCategoryProperty() {
         testEqualityQueries(new Category("foo"), new Category("bar"));
@@ -115,6 +125,7 @@ public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTestCase {
         testEqualityQueries(new Blob("foo".getBytes()), new Blob("bar".getBytes()));
     }
 
+    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testBlobKeyProperty() {
         testEqualityQueries(new BlobKey("foo"), new BlobKey("bar"));
