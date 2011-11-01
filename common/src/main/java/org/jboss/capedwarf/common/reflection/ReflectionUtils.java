@@ -64,6 +64,17 @@ public final class ReflectionUtils {
     }
 
     /**
+     * Invoke no-param method.
+     *
+     * @param target     the object on which to invoke method
+     * @param methodName the name of the method
+     * @return value returned by invoked method
+     */
+    public static Object invokeInstanceMethod(Object target, String methodName) {
+        return invokeInstanceMethod(target, methodName, new Class[0], new Object[0]);
+    }
+
+    /**
      * Invoke method.
      *
      * @param target     the target

@@ -30,6 +30,7 @@ import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.files.*;
 import org.infinispan.io.GridFilesystem;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -217,12 +218,10 @@ public class JBossFileService implements FileService {
     }
 
     private BlobKey getCachedBlobKey(AppEngineFile file) {
-        // TODO -- reflection utils
-//        BlobKey cached = file.getCachedBlobKey();
-        return null;
+        return (BlobKey) ReflectionUtils.invokeInstanceMethod(file, "getCachedBlobKey");
     }
 
     private void setCachedBlobKey(AppEngineFile file, BlobKey blobKey) {
-        // file.setCachedBlobKey(blobKey); // TODO
+        ReflectionUtils.invokeInstanceMethod(file, "setCachedBlobKey", BlobKey.class, blobKey);
     }
 }
