@@ -26,24 +26,11 @@ import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.files.AppEngineFile;
-import com.google.appengine.api.files.FileReadChannel;
-import com.google.appengine.api.files.FileService;
-import com.google.appengine.api.files.FileServicePb;
-import com.google.appengine.api.files.FileWriteChannel;
-import com.google.appengine.api.files.FinalizationException;
-import com.google.appengine.api.files.LockException;
-import com.google.appengine.api.files.RecordReadChannel;
-import com.google.appengine.api.files.RecordWriteChannel;
+import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.files.*;
 import org.infinispan.io.GridFilesystem;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -57,6 +44,7 @@ import java.util.TreeMap;
  * or can we just be consistent on our own, and it will work?
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class JBossFileService implements FileService {
     static final String PACKAGE = "file";
@@ -133,69 +121,107 @@ public class JBossFileService implements FileService {
         if (file.getFileSystem() != AppEngineFile.FileSystem.BLOBSTORE) {
             throw new IllegalArgumentException("file is not of type BLOBSTORE");
         }
-        // TODO -- reflection utils
-//        BlobKey cached = file.getCachedBlobKey();
-//        if (null != cached) {
-//            return cached;
-//        }
-        String namePart = file.getNamePart();
-        String creationHandle = (namePart.startsWith(CREATION_HANDLE_PREFIX) ? namePart : null);
 
-        if (creationHandle == null) {
-            return new BlobKey(namePart);
+        BlobKey cached = getCachedBlobKey(file);
+        if (null != cached) {
+            return cached;
         }
 
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        String creationHandle = getCreationHandle(file);
+        if (creationHandle == null) {
+            return new BlobKey(file.getNamePart());
+        }
+
+        Entity blobInfoEntity = getBlobInfoEntity(creationHandle);
+        if (blobInfoEntity == null) {
+            return null;
+        }
+
+        BlobInfo blobInfo = new BlobInfoFactory().createBlobInfo(blobInfoEntity);
+        return blobInfo.getBlobKey();
+    }
+
+    private String getCreationHandle(AppEngineFile file) {
+        String namePart = file.getNamePart();
+        return (namePart.startsWith(CREATION_HANDLE_PREFIX) ? namePart : null);
+    }
+
+    private Entity getBlobInfoEntity(String creationHandle) {
         String origNamespace = NamespaceManager.get();
-        Query query;
-        Entity blobInfoEntity;
+        NamespaceManager.set("");
         try {
-            NamespaceManager.set("");
             try {
-                Entity blobFileIndexEntity = datastore.get(KeyFactory.createKey(BLOB_FILE_INDEX_KIND, creationHandle));
-                String blobKey = (String) blobFileIndexEntity.getProperty("blob_key");
-                blobInfoEntity = datastore.get(KeyFactory.createKey(BlobInfoFactory.KIND, blobKey));
+                return getBlobInfoEntityDirectly(creationHandle);
             } catch (EntityNotFoundException ex) {
-                query = new Query(BlobInfoFactory.KIND);
-                query.addFilter(BLOB_INFO_CREATION_HANDLE_PROPERTY, Query.FilterOperator.EQUAL, creationHandle);
-                blobInfoEntity = datastore.prepare(query).asSingleEntity();
+                return getBlobInfoEntityThroughQuery(creationHandle);
             }
         } finally {
             NamespaceManager.set(origNamespace);
         }
+    }
 
-        if (blobInfoEntity == null) {
-            return null;
-        }
-        BlobInfo blobInfo = new BlobInfoFactory().createBlobInfo(blobInfoEntity);
-        return blobInfo.getBlobKey();
+    private Entity getBlobInfoEntityDirectly(String creationHandle) throws EntityNotFoundException {
+        Entity blobFileIndexEntity = getBlobFileIndexEntity(creationHandle);
+        String blobKey = getBlobKey(blobFileIndexEntity);
+
+        return getDatastoreService().get(KeyFactory.createKey(BlobInfoFactory.KIND, blobKey));
+    }
+
+    private Entity getBlobFileIndexEntity(String creationHandle) throws EntityNotFoundException {
+        DatastoreService datastore = getDatastoreService();
+        return datastore.get(KeyFactory.createKey(BLOB_FILE_INDEX_KIND, creationHandle));
+    }
+
+    private String getBlobKey(Entity blobFileIndexEntity) {
+        return (String) blobFileIndexEntity.getProperty(BLOB_KEY_PROPERTY_NAME);
+    }
+
+    private Entity getBlobInfoEntityThroughQuery(String creationHandle) {
+        Query query = new Query(BlobInfoFactory.KIND);
+        query.addFilter(BLOB_INFO_CREATION_HANDLE_PROPERTY, Query.FilterOperator.EQUAL, creationHandle);
+        return getDatastoreService().prepare(query).asSingleEntity();
+    }
+
+    private DatastoreService getDatastoreService() {
+        return DatastoreServiceFactory.getDatastoreService();
     }
 
     public AppEngineFile getBlobFile(BlobKey blobKey) throws FileNotFoundException {
         if (blobKey == null) {
             throw new NullPointerException("blobKey is null");
         }
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        Entity entity;
-        try {
-            entity = datastore.get(getMetadataKeyForBlobKey(blobKey));
-        } catch (EntityNotFoundException ex) {
-            throw new FileNotFoundException();
-        }
+        Entity entity = getEntity(blobKey);
         String creationHandle = (String) entity.getProperty(BLOB_INFO_CREATION_HANDLE_PROPERTY);
         String namePart = (creationHandle == null ? blobKey.getKeyString() : creationHandle);
         AppEngineFile file = new AppEngineFile(AppEngineFile.FileSystem.BLOBSTORE, namePart);
-        // file.setCachedBlobKey(blobKey); // TODO
+        setCachedBlobKey(file, blobKey);
         return file;
+    }
+
+    private Entity getEntity(BlobKey blobKey) throws FileNotFoundException {
+        DatastoreService datastore = getDatastoreService();
+        try {
+            return datastore.get(getMetadataKeyForBlobKey(blobKey));
+        } catch (EntityNotFoundException ex) {
+            throw new FileNotFoundException();
+        }
     }
 
     protected Key getMetadataKeyForBlobKey(BlobKey blobKey) {
         String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
         try {
-            NamespaceManager.set("");
             return KeyFactory.createKey(null, BlobInfoFactory.KIND, blobKey.getKeyString());
         } finally {
             NamespaceManager.set(origNamespace);
         }
+    }
+
+    private BlobKey getCachedBlobKey(AppEngineFile file) {
+        return (BlobKey) ReflectionUtils.invokeInstanceMethod(file, "getCachedBlobKey");
+    }
+
+    private void setCachedBlobKey(AppEngineFile file, BlobKey blobKey) {
+        ReflectionUtils.invokeInstanceMethod(file, "setCachedBlobKey", BlobKey.class, blobKey);
     }
 }

@@ -20,17 +20,23 @@ import java.util.Collection;
 public class MessageConverter {
 
     private MailService.Message message;
+    private Collection<String> to;
     private Session session;
 
     public MessageConverter(MailService.Message message, Session session) {
+        this(message, null, session);
+    }
+
+    public MessageConverter(MailService.Message message, Collection<String> to, Session session) {
         this.message = message;
+        this.to = to;
         this.session = session;
     }
 
     public Message convert() throws MessagingException {
         MimeMessage msg = new MimeMessage(session);
         msg.setSender(toAddress(message.getSender()));
-        msg.addRecipients(Message.RecipientType.TO, toAddressArray(message.getTo()));
+        msg.addRecipients(Message.RecipientType.TO, toAddressArray(to == null ? message.getTo() : to));
         msg.addRecipients(Message.RecipientType.CC, toAddressArray(message.getCc()));
         msg.addRecipients(Message.RecipientType.BCC, toAddressArray(message.getBcc()));
         msg.setSubject(message.getSubject());
