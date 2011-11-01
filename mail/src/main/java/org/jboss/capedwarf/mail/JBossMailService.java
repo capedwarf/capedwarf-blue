@@ -23,12 +23,14 @@
 package org.jboss.capedwarf.mail;
 
 import com.google.appengine.api.mail.MailService;
+import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -47,7 +49,24 @@ public class JBossMailService implements MailService {
     }
 
     public void sendToAdmins(Message message) throws IOException {
-        // TODO
+        asssertAllRecipientFieldsAreEmpty(message);
+        try {
+            send(convertToJavaMail(message, Application.getAdmins()));
+        } catch (MessagingException e) {
+            throw new IOException("Could not send message", e);
+        }
+    }
+
+    private void asssertAllRecipientFieldsAreEmpty(Message message) {
+        if (!message.getTo().isEmpty()) {
+            throw new IllegalArgumentException("to should be empty");
+        }
+        if (!message.getCc().isEmpty()) {
+            throw new IllegalArgumentException("cc should be empty");
+        }
+        if (!message.getBcc().isEmpty()) {
+            throw new IllegalArgumentException("bcc should be empty");
+        }
     }
 
     private Session getSession() {
@@ -62,13 +81,23 @@ public class JBossMailService implements MailService {
         return converter.convert();
     }
 
-    private void send(javax.mail.Message javaMailMessage) throws MessagingException {
-        Transport transport = getSession().getTransport();
-        transport.connect();
+    private javax.mail.Message convertToJavaMail(Message message, Collection<String> to) throws MessagingException {
+        MessageConverter converter = new MessageConverter(message, to, getSession());
+        return converter.convert();
+    }
+
+    private void send(javax.mail.Message message) throws MessagingException {
+        Transport transport = openTransport();
         try {
-            transport.sendMessage(javaMailMessage, javaMailMessage.getAllRecipients());
+            transport.sendMessage(message, message.getAllRecipients());
         } finally {
             transport.close();
         }
+    }
+
+    private Transport openTransport() throws MessagingException {
+        Transport transport = getSession().getTransport();
+        transport.connect();
+        return transport;
     }
 }

@@ -29,6 +29,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,17 +40,30 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class MailTestCase {
 
+    private MailService service;
+
+    @Before
+    public void setUp() throws Exception {
+        service = MailServiceFactory.getMailService();
+    }
+
     @Deployment
     public static Archive getDeployment() {
         return ShrinkWrap.create(JavaArchive.class)
                 .addAsManifestResource("jboss/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
     }
 
+    @Ignore("must add assertions")
     @Test
-    public void testBasicOps() throws Exception {
-        MailService service = MailServiceFactory.getMailService();
-
+    public void testSend() throws Exception {
         MailService.Message message = new MailService.Message("sender@internet.com", "recipient@internet.com", "Subject", "Text body");
         service.send(message);
+    }
+
+    @Ignore("must add assertions")
+    @Test
+    public void testSendToAdmins() throws Exception {
+        MailService.Message message = new MailService.Message("sender@internet.com", "recipient@internet.com", "Subject", "Text body");
+        service.sendToAdmins(message);
     }
 }
