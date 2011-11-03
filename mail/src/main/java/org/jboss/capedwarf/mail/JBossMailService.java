@@ -22,82 +22,103 @@
 
 package org.jboss.capedwarf.mail;
 
-import com.google.appengine.api.mail.MailService;
-import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
-
+import java.io.IOException;
+import java.util.Collection;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
-import java.io.IOException;
-import java.util.Collection;
+
+import com.google.appengine.api.mail.MailService;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class JBossMailService implements MailService {
+public class JBossMailService implements MailService
+{
 
-    private volatile Session session;
+   private volatile Session session;
 
-    public void send(Message message) throws IOException {
-        try {
-            send(convertToJavaMail(message));
-        } catch (MessagingException e) {
-            throw new IOException("Could not send message", e);
-        }
-    }
+   public void send(Message message) throws IOException
+   {
+      try
+      {
+         send(convertToJavaMail(message));
+      }
+      catch (MessagingException e)
+      {
+         throw new IOException("Could not send message", e);
+      }
+   }
 
-    public void sendToAdmins(Message message) throws IOException {
-        asssertAllRecipientFieldsAreEmpty(message);
-        try {
-            send(convertToJavaMail(message, Application.getAdmins()));
-        } catch (MessagingException e) {
-            throw new IOException("Could not send message", e);
-        }
-    }
+   public void sendToAdmins(Message message) throws IOException
+   {
+      assertAllRecipientFieldsAreEmpty(message);
+      try
+      {
+         send(convertToJavaMail(message, Application.getAdmins()));
+      }
+      catch (MessagingException e)
+      {
+         throw new IOException("Could not send message", e);
+      }
+   }
 
-    private void asssertAllRecipientFieldsAreEmpty(Message message) {
-        if (!message.getTo().isEmpty()) {
-            throw new IllegalArgumentException("to should be empty");
-        }
-        if (!message.getCc().isEmpty()) {
-            throw new IllegalArgumentException("cc should be empty");
-        }
-        if (!message.getBcc().isEmpty()) {
-            throw new IllegalArgumentException("bcc should be empty");
-        }
-    }
+   private void assertAllRecipientFieldsAreEmpty(Message message)
+   {
+      if (!message.getTo().isEmpty())
+      {
+         throw new IllegalArgumentException("to should be empty");
+      }
+      if (!message.getCc().isEmpty())
+      {
+         throw new IllegalArgumentException("cc should be empty");
+      }
+      if (!message.getBcc().isEmpty())
+      {
+         throw new IllegalArgumentException("bcc should be empty");
+      }
+   }
 
-    private Session getSession() {
-        if (session == null)
-            session = JndiLookupUtils.lookup("mail.jndi.name", Session.class, "java:jboss/mail/Default");
+   private Session getSession()
+   {
+      if (session == null)
+         session = JndiLookupUtils.lookup("mail.jndi.name", Session.class, "java:jboss/mail/Default");
 
-        return session;
-    }
+      return session;
+   }
 
-    private javax.mail.Message convertToJavaMail(Message message) throws MessagingException {
-        MessageConverter converter = new MessageConverter(message, getSession());
-        return converter.convert();
-    }
+   private javax.mail.Message convertToJavaMail(Message message) throws MessagingException
+   {
+      MessageConverter converter = new MessageConverter(message, getSession());
+      return converter.convert();
+   }
 
-    private javax.mail.Message convertToJavaMail(Message message, Collection<String> to) throws MessagingException {
-        MessageConverter converter = new MessageConverter(message, to, getSession());
-        return converter.convert();
-    }
+   private javax.mail.Message convertToJavaMail(Message message, Collection<String> to) throws MessagingException
+   {
+      MessageConverter converter = new MessageConverter(message, to, getSession());
+      return converter.convert();
+   }
 
-    private void send(javax.mail.Message message) throws MessagingException {
-        Transport transport = openTransport();
-        try {
-            transport.sendMessage(message, message.getAllRecipients());
-        } finally {
-            transport.close();
-        }
-    }
+   private void send(javax.mail.Message message) throws MessagingException
+   {
+      Transport transport = openTransport();
+      try
+      {
+         transport.sendMessage(message, message.getAllRecipients());
+      }
+      finally
+      {
+         transport.close();
+      }
+   }
 
-    private Transport openTransport() throws MessagingException {
-        Transport transport = getSession().getTransport();
-        transport.connect();
-        return transport;
-    }
+   private Transport openTransport() throws MessagingException
+   {
+      Transport transport = getSession().getTransport();
+      transport.connect();
+      return transport;
+   }
 }
