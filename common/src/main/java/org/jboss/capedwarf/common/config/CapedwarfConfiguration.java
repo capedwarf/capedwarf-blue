@@ -22,17 +22,29 @@
  *
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.common.config;
 
-import javassist.CtClass;
-import javassist.CtMethod;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class ApiProxyTransformer extends JavassistTransformer {
-    protected void transform(CtClass clazz) throws Exception {
-        CtMethod method = clazz.getDeclaredMethod("getCurrentEnvironment");
-        method.setBody("return org.jboss.capedwarf.common.config.JBossEnvironment.getThreadLocalInstance();");
+public class CapedwarfConfiguration {
+
+    private Set<String> admins = new HashSet<String>();
+
+    void addAdmin(String email) {
+        admins.add(email.toLowerCase());
     }
+
+    public Set<String> getAdmins() {
+        return Collections.unmodifiableSet(admins);
+    }
+
+    public boolean isAdmin(String email) {
+        return admins.contains(email.toLowerCase());
+    }
+
 }

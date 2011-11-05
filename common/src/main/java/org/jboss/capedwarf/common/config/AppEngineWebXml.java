@@ -22,17 +22,26 @@
  *
  */
 
-package org.jboss.capedwarf.bytecode;
-
-import javassist.CtClass;
-import javassist.CtMethod;
+package org.jboss.capedwarf.common.config;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class ApiProxyTransformer extends JavassistTransformer {
-    protected void transform(CtClass clazz) throws Exception {
-        CtMethod method = clazz.getDeclaredMethod("getCurrentEnvironment");
-        method.setBody("return org.jboss.capedwarf.common.config.JBossEnvironment.getThreadLocalInstance();");
+public class AppEngineWebXml {
+
+    private String application;
+    private String version;
+
+    public AppEngineWebXml(String application, String version) {
+        this.application = application;
+        this.version = version;
+    }
+
+    public String getApplication() {
+        return application;
+    }
+
+    public String getVersion() {
+        return version;
     }
 }

@@ -24,19 +24,62 @@
 
 package org.jboss.capedwarf.appidentity;
 
+import org.jboss.capedwarf.common.config.*;
+
 import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class GAEFilter implements Filter {
 
+    private static final String APPENGINE_WEB_XML = "/WEB-INF/appengine-web.xml";
+    private static final String CAPEDWARF_WEB_XML = "/WEB-INF/capedwarf-web.xml";
+
+    private FilterConfig filterConfig;
+
+    private AppEngineWebXml appEngineWebXml;
+    private CapedwarfConfiguration capedwarfConfiguration;
+
     public void init(FilterConfig filterConfig) throws ServletException {
+        this.filterConfig = filterConfig;
+
+        try {
+            appEngineWebXml = readAppEngineWebXml();
+            capedwarfConfiguration = readCapedwarfConfig();
+        } catch (Exception e) {
+            throw new ServletException("Unable to read configuration files", e);
+        }
+    }
+
+    private AppEngineWebXml readAppEngineWebXml() throws IOException {
+        InputStream stream = getWebResourceAsStream(APPENGINE_WEB_XML);
+        try {
+            return AppEngineWebXmlParser.parse(stream);
+        } finally {
+            stream.close();
+        }
+    }
+
+    private CapedwarfConfiguration readCapedwarfConfig() throws IOException {
+        InputStream stream = getWebResourceAsStream(CAPEDWARF_WEB_XML);
+        try {
+            return CapedwarfConfigurationParser.parse(stream);
+        } finally {
+            stream.close();
+        }
+    }
+
+
+    private InputStream getWebResourceAsStream(String path) {
+        return filterConfig.getServletContext().getResourceAsStream(path);
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        createJBossEnvironment();
+        initJBossEnvironment((HttpServletRequest) request);
         try {
             chain.doFilter(request, response);
         } finally {
@@ -44,14 +87,14 @@ public class GAEFilter implements Filter {
         }
     }
 
-    private void clearJBossEnvironment() {
-        JBossEnvironment.clearThreadLocalInstance();
+    private void initJBossEnvironment(HttpServletRequest request) {
+        JBossEnvironment environment = JBossEnvironment.getThreadLocalInstance();
+        environment.setAppEngineWebXml(appEngineWebXml);
+        environment.setCapedwarfConfiguration(capedwarfConfiguration);
     }
 
-    private void createJBossEnvironment() {
-        JBossEnvironment environment = JBossEnvironment.getThreadLocalInstance();
-        environment.setAppId("dummy-app-id");  // TODO
-        environment.setVersionId("1.0");  // TODO
+    private void clearJBossEnvironment() {
+        JBossEnvironment.clearThreadLocalInstance();
     }
 
     public void destroy() {

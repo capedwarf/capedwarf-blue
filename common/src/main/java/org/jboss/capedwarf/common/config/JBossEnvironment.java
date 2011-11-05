@@ -22,11 +22,12 @@
  *
  */
 
-package org.jboss.capedwarf.appidentity;
+package org.jboss.capedwarf.common.config;
 
 import com.google.appengine.api.NamespaceManager;
 import com.google.apphosting.api.ApiProxy;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,33 +37,37 @@ import java.util.Map;
 public class JBossEnvironment implements ApiProxy.Environment {
 
     private static final ThreadLocal<JBossEnvironment> threadLocalInstance = new ThreadLocal<JBossEnvironment>();
+    private static final String NO_APP_ID = "no-app-id";
 
-    private String appId = "no-app-id";
-    private String versionId;
+    private String email;
+    private String authDomain;
     private Map<String, Object> attributes = new HashMap<String, Object>();
 
+    private CapedwarfConfiguration capedwarfConfiguration;
+    private AppEngineWebXml appEngineWebXml = new AppEngineWebXml(NO_APP_ID, "0");
+
     public String getAppId() {
-        return appId;
+        return appEngineWebXml.getApplication();
     }
 
     public String getVersionId() {
-        return versionId;
+        return appEngineWebXml.getVersion();
     }
 
     public String getEmail() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return email;
     }
 
     public boolean isLoggedIn() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return email != null;
     }
 
     public boolean isAdmin() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return isLoggedIn() && capedwarfConfiguration.isAdmin(getEmail());
     }
 
     public String getAuthDomain() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return authDomain;
     }
 
     public String getRequestNamespace() {
@@ -73,12 +78,24 @@ public class JBossEnvironment implements ApiProxy.Environment {
         return attributes;
     }
 
-    public void setAppId(String appId) {
-        this.appId = appId;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public void setVersionId(String versionId) {
-        this.versionId = versionId;
+    public void setAuthDomain(String authDomain) {
+        this.authDomain = authDomain;
+    }
+
+    public void setCapedwarfConfiguration(CapedwarfConfiguration capedwarfConfiguration) {
+        this.capedwarfConfiguration = capedwarfConfiguration;
+    }
+
+    public void setAppEngineWebXml(AppEngineWebXml appEngineWebXml) {
+        this.appEngineWebXml = appEngineWebXml;
+    }
+
+    public Collection<String> getAdmins() {
+        return capedwarfConfiguration.getAdmins();
     }
 
     public static JBossEnvironment getThreadLocalInstance() {
