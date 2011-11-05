@@ -24,9 +24,6 @@ package org.jboss.capedwarf.common.app;
 
 import com.google.apphosting.api.ApiProxy;
 
-import java.util.Collections;
-import java.util.Set;
-
 /**
  * Application info.
  * Hide GAE API usage.
@@ -42,20 +39,15 @@ public final class Application {
      * @return the app id
      */
     public static String getAppId() {
+        return getJBossEnvironment().getAppId();
+    }
+
+    private static ApiProxy.Environment getJBossEnvironment() {
         ApiProxy.Environment environment = ApiProxy.getCurrentEnvironment();
         if (environment == null) {
             throw new NullPointerException("No API environment is registered for this thread.");
         }
-        return environment.getAppId();
-    }
-
-    /**
-     * Get email addresses of this application's administrators.
-     *
-     * @return admin email addresses
-     */
-    public static Set<String> getAdmins() {
-        return Collections.emptySet();  // TODO: read from file(?)
+        return environment;
     }
 
     /**

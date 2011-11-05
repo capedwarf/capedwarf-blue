@@ -22,36 +22,43 @@
  *
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.common.config;
 
-import org.jboss.maven.plugins.transformer.TransformerMojo;
+import org.jboss.capedwarf.common.xml.XmlUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfTransformerMojo {
+public class CapedwarfConfigurationParser {
 
-    public static void main(String[] args) {
-        String pathToAppEngineJar = args[0];
-        TransformerMojo.main(createArgs(pathToAppEngineJar));
+    public static CapedwarfConfiguration parse(InputStream inputStream) throws IOException {
+        try {
+            return tryParse(inputStream);
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    private static String[] createArgs(String pathToAppEngineJar) {
-        return new String[]{
-                pathToAppEngineJar,
-                FactoriesTransformer.class.getName(),
-                "(([.]*ApiProxy*)" +
-                        "|([.]*BlobstoreServiceFactory*)" +
-                        "|([.]*CapabilitiesServiceFactory*)" +
-                        "|([.]*DatastoreServiceFactory*)" +
-                        "|([.]*FileServiceFactory*)" +
-                        "|([.]*ImagesServiceFactory*)" +
-                        "|([.]*MailServiceFactory*)" +
-                        "|([.]*MemcacheServiceFactory*)" +
-                        "|([.]*URLFetchServiceFactory*)" +
-                        "|([.]*UserServiceFactory*)" +
-                        "|([.]*datastore.Entity*)" +
-                        "|([.]*datastore.Key*))"};
+    private static CapedwarfConfiguration tryParse(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
+        Document doc = XmlUtils.parseXml(inputStream);
+        Element documentElement = doc.getDocumentElement();
 
+        CapedwarfConfiguration config = new CapedwarfConfiguration();
+
+        for (Element adminElem : XmlUtils.getChildren(documentElement, "admin")) {
+            config.addAdmin(XmlUtils.getBody(adminElem));
+        }
+        return config;
     }
+
+
 }

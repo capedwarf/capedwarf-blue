@@ -22,17 +22,32 @@
  *
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.common.config;
 
-import javassist.CtClass;
-import javassist.CtMethod;
+
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class ApiProxyTransformer extends JavassistTransformer {
-    protected void transform(CtClass clazz) throws Exception {
-        CtMethod method = clazz.getDeclaredMethod("getCurrentEnvironment");
-        method.setBody("return org.jboss.capedwarf.common.config.JBossEnvironment.getThreadLocalInstance();");
+public class AppEngineWebXmlParserTestCase {
+
+    @Test
+    public void testParse() throws Exception {
+        String xml = "<appengine-web-app>" +
+                "    <application>appName</application>" +
+                "    <version>2</version>" +
+                "</appengine-web-app>";
+
+        AppEngineWebXml appEngineWebXml = AppEngineWebXmlParser.parse(new ByteArrayInputStream(xml.getBytes()));
+
+        assertEquals("appName", appEngineWebXml.getApplication());
+        assertEquals("2", appEngineWebXml.getVersion());
     }
+
+
 }

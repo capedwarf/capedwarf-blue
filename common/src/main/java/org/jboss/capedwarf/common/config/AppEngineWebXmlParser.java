@@ -22,17 +22,41 @@
  *
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.common.config;
 
-import javassist.CtClass;
-import javassist.CtMethod;
+import org.jboss.capedwarf.common.xml.XmlUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
+ * Parses the appengine-web.xml file
+ *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class ApiProxyTransformer extends JavassistTransformer {
-    protected void transform(CtClass clazz) throws Exception {
-        CtMethod method = clazz.getDeclaredMethod("getCurrentEnvironment");
-        method.setBody("return org.jboss.capedwarf.common.config.JBossEnvironment.getThreadLocalInstance();");
+public class AppEngineWebXmlParser {
+
+    public static AppEngineWebXml parse(InputStream inputStream) throws IOException {
+        try {
+            return tryParse(inputStream);
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        } catch (SAXException e) {
+            throw new RuntimeException(e);
+        }
     }
+
+    private static AppEngineWebXml tryParse(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
+        Document doc = XmlUtils.parseXml(inputStream);
+        Element documentElement = doc.getDocumentElement();
+
+        return new AppEngineWebXml(
+                XmlUtils.getChildElementBody(documentElement, "application"),
+                XmlUtils.getChildElementBody(documentElement, "version"));
+    }
+
 }
