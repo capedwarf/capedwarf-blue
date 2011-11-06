@@ -45,6 +45,7 @@ public class JBossEnvironment implements ApiProxy.Environment {
 
     private CapedwarfConfiguration capedwarfConfiguration;
     private AppEngineWebXml appEngineWebXml = new AppEngineWebXml(NO_APP_ID, "0");
+    private String baseApplicationUrl;
 
     public String getAppId() {
         return appEngineWebXml.getApplication();
@@ -96,6 +97,14 @@ public class JBossEnvironment implements ApiProxy.Environment {
 
     public Collection<String> getAdmins() {
         return capedwarfConfiguration.getAdmins();
+    }
+
+    public void setBaseApplicationUrl(String baseApplicationUrl) {
+        this.baseApplicationUrl = baseApplicationUrl;
+    }
+
+    public String getBaseApplicationUrl() {
+        return baseApplicationUrl;
     }
 
     public static JBossEnvironment getThreadLocalInstance() {

@@ -22,82 +22,112 @@
 
 package org.jboss.capedwarf.blobstore;
 
-import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.blobstore.BlobstoreService;
-import com.google.appengine.api.blobstore.ByteRange;
-import com.google.appengine.api.blobstore.UnsupportedRangeFormatException;
-import com.google.appengine.api.blobstore.UploadOptions;
-import org.infinispan.io.GridFilesystem;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import com.google.appengine.api.blobstore.*;
+import com.google.appengine.api.files.AppEngineFile;
+import com.google.appengine.api.files.FileServiceFactory;
 import org.jboss.capedwarf.common.io.IOUtils;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
+import org.jboss.capedwarf.files.JBossFileService;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class JBossBlobstoreService implements BlobstoreService {
 
-    static final String SERVE_HEADER = "X-AppEngine-BlobKey";
-    static final String UPLOADED_BLOBKEY_ATTR = "com.google.appengine.api.blobstore.upload.blobkeys";
-    static final String BLOB_RANGE_HEADER = "X-AppEngine-BlobRange";
-
-    public String createUploadUrl(String successPath, UploadOptions uploadOptions) {
-        return null;  // TODO
-    }
-
-    public void delete(BlobKey... blobKeys) {
-        GridFilesystem gfs = InfinispanUtils.getGridFilesystem();
-        for (BlobKey key : blobKeys)
-            gfs.remove(key.getKeyString(), true);
-    }
-
-    public void serve(BlobKey blobKey, ByteRange byteRange, HttpServletResponse response) {
-        if (response.isCommitted()) {
-            throw new IllegalStateException("Response was already committed.");
-        }
-
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setHeader(SERVE_HEADER, blobKey.getKeyString());
-        if (byteRange != null) {
-            response.setHeader(BLOB_RANGE_HEADER, byteRange.toString());
-        }
-
-        // TODO
-    }
-
-    public byte[] fetchData(BlobKey blobKey, long start, long end) {
-        try {
-            GridFilesystem gfs = InfinispanUtils.getGridFilesystem();
-            return IOUtils.toBytes(gfs.getInput(blobKey.getKeyString()), start, end, true);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    // ------
+    private static final String SERVE_HEADER = "X-AppEngine-BlobKey";
+    private static final String UPLOADED_BLOBKEY_ATTR = "com.google.appengine.api.blobstore.upload.blobkeys";
+    private static final String BLOB_RANGE_HEADER = "X-AppEngine-BlobRange";
 
     public String createUploadUrl(String successPath) {
         return createUploadUrl(successPath, UploadOptions.Builder.withDefaults());
     }
 
-    public void serve(BlobKey blobKey, HttpServletResponse response) {
+    public String createUploadUrl(String successPath, UploadOptions uploadOptions) {
+        return UploadServlet.createUploadUrl(successPath, uploadOptions);
+    }
+
+    public void delete(BlobKey... blobKeys) {
+        getFileService().delete(blobKeys);
+    }
+
+    public void serve(BlobKey blobKey, HttpServletResponse response) throws IOException {
         serve(blobKey, (ByteRange) null, response);
     }
 
-    public void serve(BlobKey blobKey, String rangeHeader, HttpServletResponse response) {
+    public void serve(BlobKey blobKey, String rangeHeader, HttpServletResponse response) throws IOException {
         serve(blobKey, ByteRange.parse(rangeHeader), response);
+    }
+
+    public void serve(BlobKey blobKey, ByteRange byteRange, HttpServletResponse response) throws IOException {
+        assertNotCommited(response);
+        try {
+            InputStream in = getStream(blobKey);
+            try {
+                response.setStatus(HttpServletResponse.SC_OK);
+                setHeaders(response, blobKey, byteRange);
+                copyStream(in, response.getOutputStream(), byteRange);
+            } finally {
+                in.close();
+            }
+        } catch (FileNotFoundException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    private void assertNotCommited(HttpServletResponse response) {
+        if (response.isCommitted()) {
+            throw new IllegalStateException("Response was already committed.");
+        }
+    }
+
+    private void setHeaders(HttpServletResponse response, BlobKey blobKey, ByteRange byteRange) {
+        response.setHeader(SERVE_HEADER, blobKey.getKeyString());
+        if (byteRange != null) {
+            response.setHeader(BLOB_RANGE_HEADER, byteRange.toString());
+        }
+    }
+
+    private void copyStream(InputStream in, OutputStream out, ByteRange range) throws IOException {
+        if (range == null) {
+            IOUtils.copyStream(in, out);
+        } else {
+            if (range.hasEnd()) {
+                long length = range.getEnd() + 1 - range.getStart();  // end is inclusive, hence +1
+                IOUtils.copyStream(in, out, range.getStart(), length);
+            } else {
+                IOUtils.copyStream(in, out, range.getStart());
+            }
+        }
+    }
+
+    public byte[] fetchData(BlobKey blobKey, long start, long end) {
+        try {
+            InputStream stream = getStream(blobKey);
+            return IOUtils.toBytes(stream, start, end, true);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @SuppressWarnings("unchecked")
     public ByteRange getByteRange(HttpServletRequest request) {
         Enumeration<String> rangeHeaders = request.getHeaders("range");
-        if (rangeHeaders.hasMoreElements() == false) {
+        if (!rangeHeaders.hasMoreElements()) {
             return null;
         }
 
@@ -109,16 +139,45 @@ public class JBossBlobstoreService implements BlobstoreService {
         return ByteRange.parse(rangeHeader);
     }
 
+    public void storeUploadedBlobs(HttpServletRequest request) throws IOException, ServletException {
+        Map<String, BlobKey> map = new HashMap<String, BlobKey>();
+        for (Part part : request.getParts()) {
+            if (ServletUtils.isFile(part)) {
+                BlobKey blobKey = storeUploadedBlob(part);
+                map.put(part.getName(), blobKey);
+            }
+        }
+
+        request.setAttribute(UPLOADED_BLOBKEY_ATTR, map);
+    }
+
+    private BlobKey storeUploadedBlob(Part part) throws IOException {
+        ReadableByteChannel channel = Channels.newChannel(part.getInputStream());
+        try {
+            JBossFileService fileService = getFileService();
+            AppEngineFile file = fileService.createNewBlobFile(part.getContentType(), ServletUtils.getFileName(part), channel);
+            return fileService.getBlobKey(file);
+        } finally {
+            channel.close();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public Map<String, BlobKey> getUploadedBlobs(HttpServletRequest request) {
-        Map<String, String> attributes = (Map<String, String>) request.getAttribute(UPLOADED_BLOBKEY_ATTR);
-        if (attributes == null) {
+        Map<String, BlobKey> map = (Map<String, BlobKey>) request.getAttribute(UPLOADED_BLOBKEY_ATTR);
+        if (map == null) {
             throw new IllegalStateException("Must be called from a blob upload callback request.");
         }
-        Map<String, BlobKey> blobKeys = new HashMap<String, BlobKey>(attributes.size());
-        for (Map.Entry<String, String> attr : attributes.entrySet()) {
-            blobKeys.put(attr.getKey(), new BlobKey(attr.getValue()));
-        }
-        return blobKeys;
+        return map;
     }
+
+    public InputStream getStream(BlobKey blobKey) throws FileNotFoundException {
+        return getFileService().getStream(blobKey);
+    }
+
+    private JBossFileService getFileService() {
+        return (JBossFileService) FileServiceFactory.getFileService();
+    }
+
+
 }

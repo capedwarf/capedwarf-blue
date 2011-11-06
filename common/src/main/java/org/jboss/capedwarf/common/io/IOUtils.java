@@ -22,10 +22,11 @@
 
 package org.jboss.capedwarf.common.io;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.google.appengine.api.files.FileWriteChannel;
+
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -84,6 +85,64 @@ public class IOUtils {
         int cnt;
         while ((cnt = in.read(bytes)) != -1) {
             out.write(bytes, 0, cnt);
+        }
+    }
+
+    /**
+     * Copy stream.
+     *
+     * @param in     the input stream
+     * @param out    the output stream
+     * @param offset how many input bytes should be skipped
+     * @throws IOException for any IO error
+     */
+    public static void copyStream(final InputStream in, final OutputStream out, long offset) throws IOException {
+        skip(in, offset);
+        copyStream(in, out);
+    }
+
+    /**
+     * Copy stream.
+     *
+     * @param in     the input stream
+     * @param out    the output stream
+     * @param offset how many input bytes should be skipped
+     * @param length how many bytes should be copied
+     * @throws IOException for any IO error
+     */
+    public static void copyStream(final InputStream in, final OutputStream out, long offset, long length) throws IOException {
+        skip(in, offset);
+        copyStreamBounded(in, out, length);
+    }
+
+    public static void skip(InputStream stream, long count) throws IOException {
+        while (count > 0) {
+            count -= stream.skip(count);
+        }
+    }
+
+    public static void copyStreamBounded(InputStream in, OutputStream out, long length) throws IOException {
+        final byte[] bytes = new byte[8192];
+        long totalCount = 0;
+        while (totalCount < length) {
+            int len = (int) Math.min(bytes.length, length - totalCount);
+            int count = in.read(bytes, 0, len);
+            if (count == -1) {
+                throw new EOFException("Reached end of stream prematurely.");
+            }
+            out.write(bytes, 0, count);
+            totalCount += count;
+        }
+    }
+
+    public static void copy(ReadableByteChannel in, FileWriteChannel out) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(16 * 1024);
+        while (in.read(buffer) != -1) {
+            buffer.flip(); // Prepare the buffer to be drained
+            while (buffer.hasRemaining()) {
+                out.write(buffer);
+            }
+            buffer.clear(); // Empty buffer to get ready for filling
         }
     }
 }

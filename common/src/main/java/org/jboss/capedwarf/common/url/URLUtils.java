@@ -22,28 +22,21 @@
  *
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.common.url;
 
-import org.jboss.maven.plugins.transformer.TransformerMojo;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfTransformerMojo {
+public class URLUtils {
 
-    public static void main(String[] args) {
-        String pathToAppEngineJar = args[0];
-        TransformerMojo.main(createArgs(pathToAppEngineJar));
-    }
-
-    private static String[] createArgs(String pathToAppEngineJar) {
-        return new String[]{
-                pathToAppEngineJar,
-                FactoriesTransformer.class.getName(),
-                "(([.]*ApiProxy*)" +
-                        "|([.]*ServiceFactory*)" +
-                        "|([.]*datastore.Entity*)" +
-                        "|([.]*datastore.Key*))"};
-
+    public static String encode(String value) {
+        try {
+            return value == null ? "" : URLEncoder.encode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

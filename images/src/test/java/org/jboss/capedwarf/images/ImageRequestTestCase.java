@@ -22,28 +22,42 @@
  *
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.images;
 
-import org.jboss.maven.plugins.transformer.TransformerMojo;
+import com.google.appengine.api.blobstore.BlobKey;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfTransformerMojo {
+public class ImageRequestTestCase {
 
-    public static void main(String[] args) {
-        String pathToAppEngineJar = args[0];
-        TransformerMojo.main(createArgs(pathToAppEngineJar));
+    @Test
+    public void blobKeyOnly() throws Exception {
+        ImageRequest request = new ImageRequest("/blobkey123/");
+        assertEquals(new BlobKey("blobkey123"), request.getBlobKey());
+        assertFalse(request.isTransformationRequested());
     }
 
-    private static String[] createArgs(String pathToAppEngineJar) {
-        return new String[]{
-                pathToAppEngineJar,
-                FactoriesTransformer.class.getName(),
-                "(([.]*ApiProxy*)" +
-                        "|([.]*ServiceFactory*)" +
-                        "|([.]*datastore.Entity*)" +
-                        "|([.]*datastore.Key*))"};
-
+    @Test
+    public void blobKeyAndImageSize() throws Exception {
+        ImageRequest request = new ImageRequest("/blobkey123/=s32");
+        assertEquals(new BlobKey("blobkey123"), request.getBlobKey());
+        assertTrue(request.isTransformationRequested());
+        assertEquals(32, request.getImageSize());
+        assertFalse(request.isCrop());
     }
+
+    @Test
+    public void blobKeyAndImageSizeAndCrop() throws Exception {
+        ImageRequest request = new ImageRequest("/blobkey123/=s32-c");
+        assertEquals(new BlobKey("blobkey123"), request.getBlobKey());
+        assertTrue(request.isTransformationRequested());
+        assertEquals(32, request.getImageSize());
+        assertTrue(request.isCrop());
+    }
+
+
 }

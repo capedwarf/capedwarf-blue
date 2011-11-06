@@ -22,28 +22,29 @@
  *
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.common.servlet;
 
-import org.jboss.maven.plugins.transformer.TransformerMojo;
+import javax.servlet.http.Part;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfTransformerMojo {
+public class ServletUtils {
 
-    public static void main(String[] args) {
-        String pathToAppEngineJar = args[0];
-        TransformerMojo.main(createArgs(pathToAppEngineJar));
+    public static boolean isFile(Part part) {
+        return getFileName(part) != null;
     }
 
-    private static String[] createArgs(String pathToAppEngineJar) {
-        return new String[]{
-                pathToAppEngineJar,
-                FactoriesTransformer.class.getName(),
-                "(([.]*ApiProxy*)" +
-                        "|([.]*ServiceFactory*)" +
-                        "|([.]*datastore.Entity*)" +
-                        "|([.]*datastore.Key*))"};
-
+    public static String getFileName(Part part) {
+        // TODO: surely, there is an existing servlet api method that does this. Googled it, but found nothing (!?)
+        String contentDisposition = part.getHeader("content-disposition");
+        for (String token : contentDisposition.split(";")) {
+            if (token.trim().startsWith("filename")) {
+                return token.substring(token.indexOf('=') + 1).trim().replace("\"", "");
+            }
+        }
+        return null;
     }
+
+
 }

@@ -22,28 +22,44 @@
  *
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.images;
 
-import org.jboss.maven.plugins.transformer.TransformerMojo;
+import com.google.appengine.api.blobstore.BlobKey;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfTransformerMojo {
+public class ImageServletTestCase {
 
-    public static void main(String[] args) {
-        String pathToAppEngineJar = args[0];
-        TransformerMojo.main(createArgs(pathToAppEngineJar));
+    private static final String BLOB_KEY_STRING = "key123";
+    private static final BlobKey BLOB_KEY = new BlobKey(BLOB_KEY_STRING);
+
+    @Test
+    public void servingUrlContainsBlobKey() throws Exception {
+        String url = ImageServlet.getServingUrl(BLOB_KEY);
+        assertTrue(url.contains(BLOB_KEY_STRING));
     }
 
-    private static String[] createArgs(String pathToAppEngineJar) {
-        return new String[]{
-                pathToAppEngineJar,
-                FactoriesTransformer.class.getName(),
-                "(([.]*ApiProxy*)" +
-                        "|([.]*ServiceFactory*)" +
-                        "|([.]*datastore.Entity*)" +
-                        "|([.]*datastore.Key*))"};
+    @Test
+    public void servingUrlWithImageSize() throws Exception {
+        String baseUrl = ImageServlet.getServingUrl(BLOB_KEY);
 
+        String actualUrl = ImageServlet.getServingUrl(BLOB_KEY, 32, false);
+        String expectedUrl = baseUrl + "=s32";
+        assertEquals(expectedUrl, actualUrl);
     }
+
+    @Test
+    public void servingUrlWithImageSizeAndCrop() throws Exception {
+        String baseUrl = ImageServlet.getServingUrl(BLOB_KEY);
+
+        String actualUrl = ImageServlet.getServingUrl(BLOB_KEY, 32, true);
+        String expectedUrl = baseUrl + "=s32-c";
+        assertEquals(expectedUrl, actualUrl);
+    }
+
 }
