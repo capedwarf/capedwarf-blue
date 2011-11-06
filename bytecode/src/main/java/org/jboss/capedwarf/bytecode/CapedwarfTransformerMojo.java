@@ -41,15 +41,7 @@ public class CapedwarfTransformerMojo {
                 pathToAppEngineJar,
                 FactoriesTransformer.class.getName(),
                 "(([.]*ApiProxy*)" +
-                        "|([.]*BlobstoreServiceFactory*)" +
-                        "|([.]*CapabilitiesServiceFactory*)" +
-                        "|([.]*DatastoreServiceFactory*)" +
-                        "|([.]*FileServiceFactory*)" +
-                        "|([.]*ImagesServiceFactory*)" +
-                        "|([.]*MailServiceFactory*)" +
-                        "|([.]*MemcacheServiceFactory*)" +
-                        "|([.]*URLFetchServiceFactory*)" +
-                        "|([.]*UserServiceFactory*)" +
+                        "|([.]*ServiceFactory*)" +
                         "|([.]*datastore.Entity*)" +
                         "|([.]*datastore.Key*))"};
 
