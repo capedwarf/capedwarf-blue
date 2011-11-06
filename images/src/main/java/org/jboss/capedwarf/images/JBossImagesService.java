@@ -120,11 +120,11 @@ public class JBossImagesService implements ImagesService {
 
 
     public String getServingUrl(BlobKey blobKey) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return ImageServlet.getServingUrl(blobKey);
     }
 
     public String getServingUrl(BlobKey blobKey, int imageSize, boolean crop) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return ImageServlet.getServingUrl(blobKey, imageSize, crop);
     }
 
 
