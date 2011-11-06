@@ -30,10 +30,13 @@ import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.files.*;
 import org.infinispan.io.GridFilesystem;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -66,44 +69,69 @@ public class JBossFileService implements FileService {
         return createNewBlobFile(mimeType, "");
     }
 
-    public AppEngineFile createNewBlobFile(String mimeType, String blobInfoUploadedFileName) throws IOException {
+    public AppEngineFile createNewBlobFile(String mimeType, String uploadedFileName) throws IOException {
         if (mimeType == null || mimeType.trim().isEmpty()) {
             mimeType = DEFAULT_MIME_TYPE;
         }
 
         Map<String, String> params = new TreeMap<String, String>();
         params.put(PARAMETER_MIME_TYPE, mimeType);
-        if (blobInfoUploadedFileName != null && blobInfoUploadedFileName.isEmpty() == false) {
-            params.put(PARAMETER_BLOB_INFO_UPLOADED_FILE_NAME, blobInfoUploadedFileName);
+        if (uploadedFileName != null && !uploadedFileName.isEmpty()) {
+            params.put(PARAMETER_BLOB_INFO_UPLOADED_FILE_NAME, uploadedFileName);
         }
-        String filePath = create(FILESYSTEM_BLOBSTORE, null, FileServicePb.FileContentType.ContentType.RAW, params);
+        String filePath = createFilePath(FILESYSTEM_BLOBSTORE, null, FileServicePb.FileContentType.ContentType.RAW, params);
         AppEngineFile file = new AppEngineFile(filePath);
-        if (file.getNamePart().startsWith(CREATION_HANDLE_PREFIX) == false) {
+        if (!file.getNamePart().startsWith(CREATION_HANDLE_PREFIX)) {
             throw new RuntimeException("Expected creation handle: " + file.getFullPath());
         }
         return file;
     }
 
-    /**
-     * Create a file path.
-     *
-     * @return created file name.
-     */
-    private String create(
+    public AppEngineFile createNewBlobFile(String mimeType, String uploadedFileName, ReadableByteChannel in) throws IOException {
+        AppEngineFile file = createNewBlobFile(mimeType, uploadedFileName);
+        writeTo(file, in);
+        return file;
+    }
+
+    private void writeTo(AppEngineFile file, ReadableByteChannel in) throws IOException {
+        FileWriteChannel out = openWriteChannel(file, true);
+        try {
+            IOUtils.copy(in, out);
+        } finally {
+            out.closeFinally();
+        }
+    }
+
+    private String createFilePath(
             String fileSystem, String fileName, FileServicePb.FileContentType.ContentType contentType, Map<String, String> parameters)
             throws IOException {
 
         return fileSystem + "-" + fileName;
     }
 
+    public void delete(BlobKey... blobKeys) {
+        GridFilesystem gfs = getGridFilesystem();
+        for (BlobKey key : blobKeys)
+            gfs.remove(key.getKeyString(), true);
+    }
+
+    public InputStream getStream(BlobKey blobKey) throws FileNotFoundException {
+        GridFilesystem gfs = getGridFilesystem();
+        return gfs.getInput(blobKey.getKeyString());
+    }
+
     public FileWriteChannel openWriteChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, FinalizationException, LockException, IOException {
-        GridFilesystem gfs = InfinispanUtils.getGridFilesystem();
+        GridFilesystem gfs = getGridFilesystem();
         return new JBossFileWriteChannel(gfs.getOutput(file.getFullPath())); // TODO lock?
     }
 
     public FileReadChannel openReadChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, LockException, IOException {
-        GridFilesystem gfs = InfinispanUtils.getGridFilesystem();
+        GridFilesystem gfs = getGridFilesystem();
         return new JBossFileReadChannel(gfs.getInput(file.getFullPath())); // TODO lock?
+    }
+
+    private GridFilesystem getGridFilesystem() {
+        return InfinispanUtils.getGridFilesystem();
     }
 
     public RecordWriteChannel openRecordWriteChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, FinalizationException, LockException, IOException {
