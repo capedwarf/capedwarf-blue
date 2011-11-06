@@ -36,6 +36,8 @@ import java.io.InputStream;
  */
 public class GAEFilter implements Filter {
 
+    private static final int DEFAULT_HTTP_PORT = 80;
+
     private static final String APPENGINE_WEB_XML = "/WEB-INF/appengine-web.xml";
     private static final String CAPEDWARF_WEB_XML = "/WEB-INF/capedwarf-web.xml";
 
@@ -89,8 +91,20 @@ public class GAEFilter implements Filter {
 
     private void initJBossEnvironment(HttpServletRequest request) {
         JBossEnvironment environment = JBossEnvironment.getThreadLocalInstance();
+        initApplicationData(environment);
+        initRequestData(environment, request);
+    }
+
+    private void initApplicationData(JBossEnvironment environment) {
         environment.setAppEngineWebXml(appEngineWebXml);
         environment.setCapedwarfConfiguration(capedwarfConfiguration);
+    }
+
+    private void initRequestData(JBossEnvironment environment, HttpServletRequest request) {
+        environment.setBaseApplicationUrl(request.getScheme() + "://"
+                + request.getServerName()
+                + (request.getServerPort() == DEFAULT_HTTP_PORT ? "" : (":" + request.getServerPort()))
+                + request.getContextPath());
     }
 
     private void clearJBossEnvironment() {
