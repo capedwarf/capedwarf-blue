@@ -46,10 +46,10 @@
         <version.org.jboss.logging>3.1.0.Beta3</version.org.jboss.logging>
         <version.org.jboss.xnio.xnio-api>3.0.0.Beta7</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>3.0.0.Beta7</version.org.jboss.xnio.xnio-nio>
+        <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
         <version.javassist>3.14.0-GA</version.javassist>
         <version.slf4j>1.5.10</version.slf4j>
         <version.javax.validation>1.0.0.GA</version.javax.validation>
-        <version.javax.servlet>2.5</version.javax.servlet>
         <version.javax.servlet.jsp>2.1</version.javax.servlet.jsp>
         <version.javax.cache>1.0-dev-2</version.javax.cache>
         <version.javax.mail>1.4</version.javax.mail>
@@ -346,9 +346,10 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>${version.javax.servlet}</version>
+                <groupId>org.jboss.spec.javax.servlet</groupId>
+                <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.servlet.api}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
