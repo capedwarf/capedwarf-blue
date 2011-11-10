@@ -30,6 +30,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Principal;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -80,8 +81,10 @@ public class GAEFilter implements Filter {
         return filterConfig.getServletContext().getResourceAsStream(path);
     }
 
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        initJBossEnvironment((HttpServletRequest) request);
+    public void doFilter(ServletRequest req, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest request = new CapedwarfHttpServletRequestWrapper((HttpServletRequest) req);
+
+        initJBossEnvironment(request);
         try {
             chain.doFilter(request, response);
         } finally {
@@ -93,6 +96,7 @@ public class GAEFilter implements Filter {
         JBossEnvironment environment = JBossEnvironment.getThreadLocalInstance();
         initApplicationData(environment);
         initRequestData(environment, request);
+        initUserData(environment, request);
     }
 
     private void initApplicationData(JBossEnvironment environment) {
@@ -105,6 +109,14 @@ public class GAEFilter implements Filter {
                 + request.getServerName()
                 + (request.getServerPort() == DEFAULT_HTTP_PORT ? "" : (":" + request.getServerPort()))
                 + request.getContextPath());
+    }
+
+    private void initUserData(JBossEnvironment environment, HttpServletRequest request) {
+        Principal principal = request.getUserPrincipal();
+        if (principal != null) {
+            environment.setEmail(principal.getName());
+//            environment.setAuthDomain();
+        }
     }
 
     private void clearJBossEnvironment() {

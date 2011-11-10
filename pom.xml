@@ -47,6 +47,7 @@
         <version.org.jboss.xnio.xnio-api>3.0.0.Beta7</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>3.0.0.Beta7</version.org.jboss.xnio.xnio-nio>
         <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
+        <version.org.picketlink>1.0.4.final</version.org.picketlink>
         <version.javassist>3.14.0-GA</version.javassist>
         <version.slf4j>1.5.10</version.slf4j>
         <version.javax.validation>1.0.0.GA</version.javax.validation>
@@ -321,6 +322,12 @@
                 <version>${version.org.jboss.seam}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-fed-api</artifactId>
+                <version>${version.org.picketlink}</version>
             </dependency>
 
             <!-- JPA2 -->
