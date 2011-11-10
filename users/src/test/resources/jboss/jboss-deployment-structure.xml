@@ -2,6 +2,7 @@
     <deployment>
         <dependencies>
             <module name="com.google.appengine"/>
+            <module name="org.jboss.capedwarf"/>
         </dependencies>
     </deployment>
 </jboss-deployment-structure>

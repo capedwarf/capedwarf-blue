@@ -24,42 +24,75 @@ package org.jboss.capedwarf.users;
 
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
+import com.google.apphosting.api.ApiProxy;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class JBossUserService implements UserService {
-    public String createLoginURL(String s) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+
+    private static final String USER_ID_KEY = "com.google.appengine.api.users.UserService.user_id_key";
+    private static final String IS_FEDERATED_USER_KEY = "com.google.appengine.api.users.UserService.is_federated_user";
+    private static final String FEDERATED_AUTHORITY_KEY = "com.google.appengine.api.users.UserService.federated_authority";
+    private static final String FEDERATED_IDENTITY_KEY = "com.google.appengine.api.users.UserService.federated_identity";
+
+    public String createLoginURL(String destinationURL) {
+        return createLoginURL(destinationURL, null);
     }
 
-    public String createLoginURL(String s, String s1) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public String createLoginURL(String destinationURL, String authDomain) {
+        return createLoginURL(destinationURL, authDomain, null, null);
     }
 
-    public String createLoginURL(String s, String s1, String s2, Set<String> strings) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public String createLoginURL(String destinationURL, String authDomain, String federatedIdentity, Set<String> attributesRequest) {
+        return AuthServlet.createLoginURL(destinationURL, authDomain, federatedIdentity, attributesRequest);
     }
 
-    public String createLogoutURL(String s) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public String createLogoutURL(String destinationURL) {
+        return createLogoutURL(destinationURL, null);
     }
 
-    public String createLogoutURL(String s, String s1) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public String createLogoutURL(String destinationURL, String authDomain) {
+        return AuthServlet.createLogoutURL(destinationURL, authDomain);
     }
 
     public boolean isUserLoggedIn() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return ApiProxy.getCurrentEnvironment().isLoggedIn();
     }
 
     public boolean isUserAdmin() {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (isUserLoggedIn())
+            return ApiProxy.getCurrentEnvironment().isAdmin();
+        else
+            throw new IllegalStateException("The current user is not logged in.");
     }
 
     public User getCurrentUser() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        ApiProxy.Environment environment = ApiProxy.getCurrentEnvironment();
+        if (!environment.isLoggedIn())
+            return null;
+
+        String userId = getEnvAttribute(USER_ID_KEY);
+        Boolean isFederated = getEnvAttribute(IS_FEDERATED_USER_KEY);
+
+        if (isFederated == null || !isFederated) {
+            String authDomain = environment.getAuthDomain() == null ? "" : environment.getAuthDomain();
+            return new User(environment.getEmail(), authDomain, userId);
+        } else
+            return new User(
+                    environment.getEmail(),
+                    (String) getEnvAttribute(FEDERATED_AUTHORITY_KEY),
+                    userId,
+                    (String) getEnvAttribute(FEDERATED_IDENTITY_KEY));
+    }
+
+    private <T> T getEnvAttribute(String key) {
+        ApiProxy.Environment environment = ApiProxy.getCurrentEnvironment();
+        Map<String, Object> attributes = environment.getAttributes();
+        return (T) attributes.get(key);
     }
 }

@@ -21,9 +21,27 @@
             <artifactId>capedwarf-common</artifactId>
         </dependency>
 
+        <!-- TODO: clean this up -->
+        <!-- this dep is needed by AuthServlet -->
+        <dependency>
+            <groupId>org.jboss.capedwarf.blue</groupId>
+            <artifactId>capedwarf-appidentity</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.google.appengine</groupId>
             <artifactId>appengine-api-1.0-sdk</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.picketlink</groupId>
+            <artifactId>picketlink-fed-api</artifactId>
         </dependency>
 
         <dependency>
