@@ -25,6 +25,7 @@
 package org.jboss.capedwarf.appidentity;
 
 import org.jboss.capedwarf.common.config.*;
+import org.jboss.capedwarf.common.io.IOUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -60,6 +61,9 @@ public class GAEFilter implements Filter {
 
     private AppEngineWebXml readAppEngineWebXml() throws IOException {
         InputStream stream = getWebResourceAsStream(APPENGINE_WEB_XML);
+        if (stream == null)
+            throw new IOException("No appengine-web.xml found: " + filterConfig);
+
         try {
             return AppEngineWebXmlParser.parse(stream);
         } finally {
@@ -69,10 +73,13 @@ public class GAEFilter implements Filter {
 
     private CapedwarfConfiguration readCapedwarfConfig() throws IOException {
         InputStream stream = getWebResourceAsStream(CAPEDWARF_WEB_XML);
+        if (stream == null)
+            return new CapedwarfConfiguration();
+
         try {
             return CapedwarfConfigurationParser.parse(stream);
         } finally {
-            stream.close();
+            IOUtils.safeClose(stream);
         }
     }
 

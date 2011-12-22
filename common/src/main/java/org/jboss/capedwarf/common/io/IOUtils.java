@@ -33,6 +33,19 @@ import java.nio.channels.ReadableByteChannel;
  */
 public class IOUtils {
     /**
+     * Safe close.
+     *
+     * @param closeable the closeable resource
+     */
+    public static void safeClose(Closeable closeable) {
+        if (closeable != null)
+            try {
+                closeable.close();
+            } catch (IOException ignored) {
+            }
+    }
+
+    /**
      * Get bytes from input stream.
      *
      * @param is          the input stream
@@ -69,7 +82,7 @@ public class IOUtils {
             return baos.toByteArray();
         } finally {
             if (closeStream)
-                is.close();
+                safeClose(is);
         }
     }
 
