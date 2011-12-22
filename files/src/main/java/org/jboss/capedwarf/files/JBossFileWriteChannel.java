@@ -23,12 +23,10 @@
 package org.jboss.capedwarf.files;
 
 import com.google.appengine.api.files.FileWriteChannel;
+import org.infinispan.io.WritableGridFileChannel;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 
 /**
  * JBoss file write channel.
@@ -36,18 +34,16 @@ import java.nio.channels.WritableByteChannel;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class JBossFileWriteChannel implements FileWriteChannel {
-    private final WritableByteChannel delegate;
+    private final WritableGridFileChannel delegate;
+    private boolean lockHeld;
 
-    JBossFileWriteChannel(OutputStream out) {
-        delegate = Channels.newChannel(out);
+    JBossFileWriteChannel(WritableGridFileChannel channel, boolean lock) {
+        delegate = channel;
+        lockHeld = lock;
     }
 
     public int write(ByteBuffer buffer, String sequenceKey) throws IOException {
         return write(buffer);  // TODO
-    }
-
-    public void closeFinally() throws IllegalStateException, IOException {
-        // TODO
     }
 
     public int write(ByteBuffer buffer) throws IOException {
@@ -60,5 +56,12 @@ class JBossFileWriteChannel implements FileWriteChannel {
 
     public void close() throws IOException {
         delegate.close();
+    }
+
+    public void closeFinally() throws IllegalStateException, IOException {
+        if (!lockHeld) {
+            throw new IllegalStateException("The lock for this file is not held by the current request");
+        }
+        close();
     }
 }

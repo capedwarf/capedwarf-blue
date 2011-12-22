@@ -22,8 +22,13 @@
 
 package org.jboss.test.capedwarf.blobstore.test;
 
+import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
+import com.google.appengine.api.files.AppEngineFile;
+import com.google.appengine.api.files.FileService;
+import com.google.appengine.api.files.FileServiceFactory;
+import com.google.appengine.api.files.FileWriteChannel;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -32,22 +37,33 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.nio.ByteBuffer;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-public class BlobstoreTestCase
-{
-   @Deployment
-   public static Archive getDeployment()
-   {
-      return ShrinkWrap.create(JavaArchive.class).addAsManifestResource("jboss/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
-   }
+public class BlobstoreTestCase {
+    @Deployment
+    public static Archive getDeployment() {
+        return ShrinkWrap.create(JavaArchive.class).addAsManifestResource("jboss/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+    }
 
-   @Test
-   public void testBasicOps() throws Exception
-   {
-      BlobstoreService service = BlobstoreServiceFactory.getBlobstoreService();
-      // TODO
-   }
+    @Test
+    public void testBasicOps() throws Exception {
+        BlobstoreService service = BlobstoreServiceFactory.getBlobstoreService();
+
+        FileService fileService = FileServiceFactory.getFileService();
+        AppEngineFile file = fileService.createNewBlobFile("text/plain", "uploadedText.txt");
+        FileWriteChannel channel = fileService.openWriteChannel(file, false);
+        try {
+            channel.write(ByteBuffer.wrap("Uploaded text".getBytes()));
+        } finally {
+            channel.closeFinally();
+        }
+
+        BlobKey blobKey = fileService.getBlobKey(file);
+
+        // TODO
+    }
 }

@@ -22,43 +22,33 @@
 
 package org.jboss.capedwarf.files;
 
-import com.google.appengine.api.files.FileReadChannel;
-import org.infinispan.io.ReadableGridFileChannel;
+import com.google.appengine.api.files.RecordWriteChannel;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
- * JBoss file read channel.
  *
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-class JBossFileReadChannel implements FileReadChannel {
-    private final ReadableGridFileChannel delegate;
+public class JBossRecordWriteChannel implements RecordWriteChannel {
 
-    JBossFileReadChannel(ReadableGridFileChannel channel) {
-        delegate = channel;
+    public int write(ByteBuffer src) throws IOException {
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public long position() throws IOException {
-        return delegate.position();
+    public int write(ByteBuffer src, String sequenceKey) throws IOException {
+        return write(src);
     }
 
-    public FileReadChannel position(long newPosition) throws IOException {
-        delegate.position(newPosition);
-        return this;
-    }
-
-    public int read(ByteBuffer dst) throws IOException {
-        return delegate.read(dst);
+    public void closeFinally() throws IllegalStateException, IOException {
+        close();
     }
 
     public boolean isOpen() {
-        return delegate.isOpen();
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void close() throws IOException {
-        delegate.close();
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

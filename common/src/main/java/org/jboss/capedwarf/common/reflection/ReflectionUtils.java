@@ -63,6 +63,15 @@ public final class ReflectionUtils {
         }
     }
 
+    public static <T> T newInstance(String className, Class[] types, Object[] args) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return (T) newInstance(clazz, types, args);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Invoke no-param method.
      *
