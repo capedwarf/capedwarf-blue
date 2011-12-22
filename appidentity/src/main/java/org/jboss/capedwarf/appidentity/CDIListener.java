@@ -25,25 +25,47 @@
 package org.jboss.capedwarf.appidentity;
 
 import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CDIListener implements ServletContextListener {
 
+    private static Logger log = Logger.getLogger(CDIListener.class.getName());
     /**
      * The impl detail
      */
     private static final String BM_KEY = "org.jboss.weld.environment.servlet" + "." + BeanManager.class.getName();
+    private static final String STANDARD_BEAN_MANAGER_JNDI_NAME = "java:comp/BeanManager";
 
-    @Inject
-    BeanManager manager;
+    protected BeanManager getBeanManager() {
+        Context nc = null;
+        try {
+            nc = new InitialContext();
+            return (BeanManager) nc.lookup(STANDARD_BEAN_MANAGER_JNDI_NAME);
+        } catch (Exception e) {
+            log.warning("Cannot find BeanManager: " + e);
+            return null;
+        } finally {
+            if (nc != null) {
+                try {
+                    nc.close();
+                } catch (NamingException ignored) {
+                }
+            }
+        }
+    }
 
     public void contextInitialized(ServletContextEvent sce) {
-        sce.getServletContext().setAttribute(BM_KEY, manager);
+        final BeanManager manager = getBeanManager();
+        if (manager != null)
+            sce.getServletContext().setAttribute(BM_KEY, manager);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
