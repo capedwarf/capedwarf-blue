@@ -37,10 +37,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -152,14 +151,10 @@ public class JBossBlobstoreService implements BlobstoreService {
     }
 
     private BlobKey storeUploadedBlob(Part part) throws IOException {
-        ReadableByteChannel channel = Channels.newChannel(part.getInputStream());
-        try {
-            JBossFileService fileService = getFileService();
-            AppEngineFile file = fileService.createNewBlobFile(part.getContentType(), ServletUtils.getFileName(part), channel);
-            return fileService.getBlobKey(file);
-        } finally {
-            channel.close();
-        }
+        JBossFileService fileService = getFileService();
+        // TODO -- this was changed due to new GAE API, check it?
+        AppEngineFile file = fileService.createNewBlobFile(part.getContentType(), ServletUtils.getFileName(part));
+        return fileService.getBlobKey(file);
     }
 
     @SuppressWarnings("unchecked")
@@ -169,6 +164,10 @@ public class JBossBlobstoreService implements BlobstoreService {
             throw new IllegalStateException("Must be called from a blob upload callback request.");
         }
         return map;
+    }
+
+    public Map<String, List<BlobKey>> getUploads(HttpServletRequest httpServletRequest) {
+        return new HashMap<String, List<BlobKey>>(); // TODO
     }
 
     public InputStream getStream(BlobKey blobKey) throws FileNotFoundException {

@@ -87,10 +87,8 @@ public class JBossFileService implements FileService {
         return file;
     }
 
-    public AppEngineFile createNewBlobFile(String mimeType, String uploadedFileName, ReadableByteChannel in) throws IOException {
-        AppEngineFile file = createNewBlobFile(mimeType, uploadedFileName);
-        writeTo(file, in);
-        return file;
+    public AppEngineFile createNewGSFile(GSFileOptions gsFileOptions) throws IOException {
+        return null; // TODO
     }
 
     private void writeTo(AppEngineFile file, ReadableByteChannel in) throws IOException {

@@ -66,6 +66,17 @@ public class InfinispanMemcacheService implements MemcacheService {
         return "memcache"; // TODO
     }
 
+    public <T> Map<T, IdentifiableValue> getIdentifiables(Collection<T> ts) {
+        return null; // TODO
+    }
+
+    public <T> Set<T> putIfUntouched(Map<T, CasValues> tCasValuesMap) {
+        return null; // TODO
+    }
+
+    public <T> Set<T> putIfUntouched(Map<T, CasValues> tCasValuesMap, Expiration expiration) {
+        return null; // TODO
+    }
 
     public String getNamespace() {
         return namespace;
