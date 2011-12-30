@@ -22,6 +22,8 @@
 
 package org.jboss.test.capedwarf.files.test;
 
+import com.google.appengine.api.blobstore.BlobInfo;
+import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileReadChannel;
@@ -37,7 +39,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,11 +46,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
 public class FilesTestCase {
@@ -118,7 +119,6 @@ public class FilesTestCase {
         service.openReadChannel(nonExistentFile, false);
     }
 
-    @Ignore("not implemented yet")
     @Test(expected = FinalizationException.class)
     public void testFileNotReadableUntilFinalized() throws Exception {
         AppEngineFile file = service.createNewBlobFile("text/plain", "notFinalized.txt");
@@ -130,12 +130,31 @@ public class FilesTestCase {
     @Test
     public void testBlobKey() throws Exception {
         AppEngineFile file = service.createNewBlobFile("image/jpeg");
-        writeToFile(file, "some-bytes");
+        writeToFileAndFinalize(file, "some-bytes");
         BlobKey blobKey = service.getBlobKey(file);
 
         AppEngineFile file2 = service.getBlobFile(blobKey);
         String contents = getFileContents(file2);
         assertEquals("some-bytes", contents);
+    }
+
+    @Test
+    public void testBlobInfo() throws Exception {
+        BlobInfoFactory blobInfoFactory = new BlobInfoFactory();
+
+        AppEngineFile file = service.createNewBlobFile("text/plain", "blobInfo.txt");
+        writeToFileAndFinalize(file, "some-bytes");
+
+        BlobKey blobKey = service.getBlobKey(file);
+        BlobInfo blobInfo = blobInfoFactory.loadBlobInfo(blobKey);
+
+        assertEquals(blobKey, blobInfo.getBlobKey());
+        assertEquals("text/plain", blobInfo.getContentType());
+        assertEquals("blobInfo.txt", blobInfo.getFilename());
+        assertEquals("some-bytes".length(), blobInfo.getSize());
+        assertNotNull(blobInfo.getCreation());
+
+        // TODO: test MD5 hash
     }
 
 

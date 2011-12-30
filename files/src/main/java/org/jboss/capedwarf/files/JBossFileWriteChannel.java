@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.files;
 
+import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileWriteChannel;
 import org.infinispan.io.WritableGridFileChannel;
 
@@ -32,14 +33,19 @@ import java.nio.ByteBuffer;
  * JBoss file write channel.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 class JBossFileWriteChannel implements FileWriteChannel {
+    private AppEngineFile file;
     private final WritableGridFileChannel delegate;
+    private JBossFileService fileService;
     private boolean lockHeld;
 
-    JBossFileWriteChannel(WritableGridFileChannel channel, boolean lock) {
-        delegate = channel;
-        lockHeld = lock;
+    JBossFileWriteChannel(AppEngineFile file, WritableGridFileChannel channel, JBossFileService fileService, boolean lock) {
+        this.file = file;
+        this.delegate = channel;
+        this.fileService = fileService;
+        this.lockHeld = lock;
     }
 
     public int write(ByteBuffer buffer, String sequenceKey) throws IOException {
@@ -63,5 +69,6 @@ class JBossFileWriteChannel implements FileWriteChannel {
             throw new IllegalStateException("The lock for this file is not held by the current request");
         }
         close();
+        fileService.finalizeFile(file);
     }
 }

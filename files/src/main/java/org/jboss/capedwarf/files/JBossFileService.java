@@ -22,7 +22,16 @@
 
 package org.jboss.capedwarf.files;
 
+import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.blobstore.BlobInfo;
+import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileReadChannel;
 import com.google.appengine.api.files.FileService;
@@ -37,9 +46,11 @@ import org.infinispan.io.GridFilesystem;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Random;
 
 /**
@@ -50,23 +61,77 @@ import java.util.Random;
  */
 public class JBossFileService implements FileService {
 
-    static final String DEFAULT_MIME_TYPE = "application/octet-stream";
+    private static final String DEFAULT_MIME_TYPE = "application/octet-stream";
+    private static final String KIND_TEMP_BLOB_INFO = "__BlobInfo_temp__";
 
     public AppEngineFile createNewBlobFile(String mimeType) throws IOException {
         return createNewBlobFile(mimeType, "");
     }
 
-    public AppEngineFile createNewBlobFile(String mimeType, String uploadedFileName) throws IOException {
-        if (mimeType == null || mimeType.trim().isEmpty()) {
-            mimeType = DEFAULT_MIME_TYPE;
+    public AppEngineFile createNewBlobFile(String contentType, String uploadedFileName) throws IOException {
+        if (contentType == null || contentType.trim().isEmpty()) {
+            contentType = DEFAULT_MIME_TYPE;
         }
 
         String fileName = generateUniqueFileName();
         AppEngineFile file = new AppEngineFile(AppEngineFile.FileSystem.BLOBSTORE, fileName);
-//        String blobKeyString = file.getFullPath();
-//        new BlobInfo(new BlobKey(blobKeyString), mimeType, new Date(), uploadedFileName, 0);    // TODO: size
-//        new BlobInfoFactory().loadBlobInfo(new BlobKey(blobKeyString))
+
+        storeTemporaryBlobInfo(file, contentType, new Date(), uploadedFileName);
         return file;
+    }
+
+    private void storeTemporaryBlobInfo(AppEngineFile file, String contentType, Date creationTimestamp, String uploadedFileName) {
+        String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+            Entity tempBlobInfo = new Entity(getTempBlobInfoKey(file));
+            tempBlobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, contentType);
+            tempBlobInfo.setProperty(BlobInfoFactory.CREATION, creationTimestamp);
+            tempBlobInfo.setProperty(BlobInfoFactory.FILENAME, uploadedFileName);
+            datastoreService.put(tempBlobInfo);
+        } finally {
+            NamespaceManager.set(origNamespace);
+        }
+    }
+
+    private Key getTempBlobInfoKey(AppEngineFile file) {
+        return KeyFactory.createKey(KIND_TEMP_BLOB_INFO, file.getFullPath());
+    }
+
+    void finalizeFile(AppEngineFile file) {
+        String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+            Entity tempBlobInfo;
+            try {
+                tempBlobInfo = datastoreService.get(getTempBlobInfoKey(file));
+            } catch (EntityNotFoundException e) {
+                throw new IllegalStateException("Cannot finalize file " + file + ". Cannot find temp blob info.");
+            }
+
+            File gfsFile = getGfsFile(file);
+            if (!gfsFile.exists()) {
+                throw new IllegalStateException("Cannot finalize file " + file + ". Cannot find file on grid filesystem.");
+            }
+            long fileSize = gfsFile.length();
+
+            String blobKeyString = getBlobKey(file).getKeyString();
+            Entity blobInfo = new Entity(BlobInfoFactory.KIND, blobKeyString);
+            blobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, tempBlobInfo.getProperty(BlobInfoFactory.CONTENT_TYPE));
+            blobInfo.setProperty(BlobInfoFactory.CREATION, tempBlobInfo.getProperty(BlobInfoFactory.CREATION));
+            blobInfo.setProperty(BlobInfoFactory.FILENAME, tempBlobInfo.getProperty(BlobInfoFactory.FILENAME));
+            blobInfo.setProperty(BlobInfoFactory.SIZE, fileSize);
+            datastoreService.put(blobInfo);
+        } finally {
+            NamespaceManager.set(origNamespace);
+        }
+    }
+
+    private File getGfsFile(AppEngineFile file) {
+        GridFilesystem gfs = getGridFilesystem();
+        return gfs.getFile(getFilePath(file));
     }
 
     private String generateUniqueFileName() {
@@ -80,22 +145,21 @@ public class JBossFileService implements FileService {
     public void delete(BlobKey... blobKeys) {
         GridFilesystem gfs = getGridFilesystem();
         for (BlobKey key : blobKeys)
-            gfs.remove(removeLeadingSeparator(key.getKeyString()), true);
+            gfs.remove(getFilePath(key), true);
     }
 
     public InputStream getStream(BlobKey blobKey) throws FileNotFoundException {
         GridFilesystem gfs = getGridFilesystem();
-        return gfs.getInput(removeLeadingSeparator(blobKey.getKeyString()));
+        return gfs.getInput(getFilePath(blobKey));
     }
 
     public FileWriteChannel openWriteChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, FinalizationException, LockException, IOException {
         if (isFinalized(file)) {
             throwFinalizationException();
         }
-        GridFilesystem gfs = getGridFilesystem();
-        String pathName = removeLeadingSeparator(file.getFullPath());
         createBlobstoreDirIfNeeded();
-        return new JBossFileWriteChannel(gfs.getWritableChannel(pathName, true), lock);
+        GridFilesystem gfs = getGridFilesystem();
+        return new JBossFileWriteChannel(file, gfs.getWritableChannel(getFilePath(file), true), this, lock);
     }
 
     private void throwFinalizationException() throws FinalizationException {
@@ -103,7 +167,9 @@ public class JBossFileService implements FileService {
     }
 
     private boolean isFinalized(AppEngineFile file) {
-        return false;
+        BlobKey blobKey = getBlobKey(file);
+        BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(blobKey);
+        return blobInfo != null;
     }
 
     private void createBlobstoreDirIfNeeded() {
@@ -111,12 +177,26 @@ public class JBossFileService implements FileService {
     }
 
     public FileReadChannel openReadChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, LockException, IOException {
+        if (!exists(file)) {
+            throw new FileNotFoundException("File " + file + " not found.");
+        }
         if (!isFinalized(file)) {
             throwFinalizationException();
         }
         GridFilesystem gfs = getGridFilesystem();
-        String pathName = removeLeadingSeparator(file.getFullPath());
-        return new JBossFileReadChannel(gfs.getReadableChannel(pathName));
+        return new JBossFileReadChannel(gfs.getReadableChannel(getFilePath(file)));
+    }
+
+    private boolean exists(AppEngineFile file) {
+        return getGfsFile(file).exists();
+    }
+
+    private String getFilePath(AppEngineFile file) {
+        return removeLeadingSeparator(file.getFullPath());
+    }
+
+    private String getFilePath(BlobKey blobKey) {
+        return removeLeadingSeparator(blobKey.getKeyString());
     }
 
     private String removeLeadingSeparator(String fullPath) {

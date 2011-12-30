@@ -27,9 +27,9 @@ import com.google.appengine.api.files.AppEngineFile;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
- *
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class AppEngineFileAdapter {
+class AppEngineFileAdapter {
 
     private AppEngineFile file;
 
