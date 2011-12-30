@@ -22,53 +22,60 @@
 
 package org.jboss.capedwarf.files;
 
+import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.files.AppEngineFile;
-import com.google.appengine.api.files.FileWriteChannel;
-import org.infinispan.io.WritableGridFileChannel;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
- * JBoss file write channel.
- *
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-class JBossFileWriteChannel implements FileWriteChannel {
+class AppEngineFileAdapter {
+
     private AppEngineFile file;
-    private final WritableGridFileChannel delegate;
-    private JBossFileService fileService;
-    private boolean lockHeld;
 
-    JBossFileWriteChannel(AppEngineFile file, WritableGridFileChannel channel, JBossFileService fileService, boolean lock) {
-        this.file = file;
-        this.delegate = channel;
-        this.fileService = fileService;
-        this.lockHeld = lock;
-    }
-
-    public int write(ByteBuffer buffer, String sequenceKey) throws IOException {
-        return write(buffer);  // TODO
-    }
-
-    public int write(ByteBuffer buffer) throws IOException {
-        return delegate.write(buffer);
-    }
-
-    public boolean isOpen() {
-        return delegate.isOpen();
-    }
-
-    public void close() throws IOException {
-        delegate.close();
-    }
-
-    public void closeFinally() throws IllegalStateException, IOException {
-        if (!lockHeld) {
-            throw new IllegalStateException("The lock for this file is not held by the current request");
+    public AppEngineFileAdapter(AppEngineFile file) {
+        if (file == null) {
+            throw new NullPointerException("file is null");
         }
-        close();
-        fileService.finalizeFile(file);
+
+        this.file = file;
     }
+
+    public String getNamePart() {
+        return file.getNamePart();
+    }
+
+    public String getFullPath() {
+        return file.getFullPath();
+    }
+
+    private AppEngineFile.FileSystem getFileSystem() {
+        return file.getFileSystem();
+    }
+
+    public BlobKey getBlobKey() {
+        assertBlobStoreFileSystem();
+
+        BlobKey cached = getCachedBlobKey();
+        if (cached != null) {
+            return cached;
+        }
+
+        return new BlobKey(file.getFullPath());
+    }
+
+    private void assertBlobStoreFileSystem() {
+        if (getFileSystem() != AppEngineFile.FileSystem.BLOBSTORE) {
+            throw new IllegalArgumentException("file is not of type BLOBSTORE");
+        }
+    }
+
+    public BlobKey getCachedBlobKey() {
+        return (BlobKey) ReflectionUtils.invokeInstanceMethod(file, "getCachedBlobKey");
+    }
+
+    public void setCachedBlobKey(BlobKey blobKey) {
+        ReflectionUtils.invokeInstanceMethod(file, "setCachedBlobKey", BlobKey.class, blobKey);
+    }
+
 }

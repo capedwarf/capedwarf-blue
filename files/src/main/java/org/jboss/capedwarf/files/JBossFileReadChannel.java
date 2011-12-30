@@ -23,45 +23,30 @@
 package org.jboss.capedwarf.files;
 
 import com.google.appengine.api.files.FileReadChannel;
+import org.infinispan.io.ReadableGridFileChannel;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ClosedChannelException;
-import java.nio.channels.ReadableByteChannel;
 
 /**
  * JBoss file read channel.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 class JBossFileReadChannel implements FileReadChannel {
-    private final ReadableByteChannel delegate;
-    private long position;
+    private final ReadableGridFileChannel delegate;
 
-    JBossFileReadChannel(InputStream in) {
-        delegate = Channels.newChannel(in);
-    }
-
-    protected void checkOpen() throws ClosedChannelException {
-        if (isOpen() == false) {
-            throw new ClosedChannelException();
-        }
+    JBossFileReadChannel(ReadableGridFileChannel channel) {
+        delegate = channel;
     }
 
     public long position() throws IOException {
-        checkOpen();
-        return position;
+        return delegate.position();
     }
 
     public FileReadChannel position(long newPosition) throws IOException {
-        if (newPosition < 0) {
-            throw new IllegalArgumentException("newPosition may not be negative");
-        }
-        checkOpen();
-        position = newPosition;
-        // TODO -- move position
+        delegate.position(newPosition);
         return this;
     }
 

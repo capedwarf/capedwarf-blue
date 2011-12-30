@@ -22,9 +22,14 @@
 
 package org.jboss.capedwarf.blobstore;
 
-import com.google.appengine.api.blobstore.*;
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreService;
+import com.google.appengine.api.blobstore.ByteRange;
+import com.google.appengine.api.blobstore.UnsupportedRangeFormatException;
+import com.google.appengine.api.blobstore.UploadOptions;
 import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileServiceFactory;
+import com.google.appengine.api.files.FileWriteChannel;
 import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.files.JBossFileService;
@@ -37,6 +42,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -152,8 +159,20 @@ public class JBossBlobstoreService implements BlobstoreService {
 
     private BlobKey storeUploadedBlob(Part part) throws IOException {
         JBossFileService fileService = getFileService();
-        // TODO -- this was changed due to new GAE API, check it?
         AppEngineFile file = fileService.createNewBlobFile(part.getContentType(), ServletUtils.getFileName(part));
+
+        ReadableByteChannel in = Channels.newChannel(part.getInputStream());
+        try {
+            FileWriteChannel out = fileService.openWriteChannel(file, true);
+            try {
+                IOUtils.copy(in, out);
+            } finally {
+                out.closeFinally();
+            }
+        } finally {
+            in.close();
+        }
+
         return fileService.getBlobKey(file);
     }
 
