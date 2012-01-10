@@ -26,22 +26,8 @@ import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.files.AppEngineFile;
-import com.google.appengine.api.files.FileReadChannel;
-import com.google.appengine.api.files.FileService;
-import com.google.appengine.api.files.FileWriteChannel;
-import com.google.appengine.api.files.FinalizationException;
-import com.google.appengine.api.files.GSFileOptions;
-import com.google.appengine.api.files.LockException;
-import com.google.appengine.api.files.RecordReadChannel;
-import com.google.appengine.api.files.RecordWriteChannel;
-import com.google.appengine.api.files.RecordWriteChannelImpl;
+import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.files.*;
 import org.infinispan.io.GridFilesystem;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
@@ -52,8 +38,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * JBoss GAE File service.
@@ -148,10 +132,8 @@ public class JBossFileService implements FileService {
         GridFilesystem gfs = getGridFilesystem();
         for (BlobKey key : blobKeys) {
             File file = gfs.getFile(getFilePath(key));
-            if (file.exists()) {
-                //noinspection ResultOfMethodCallIgnored
-                file.delete();
-            }
+            //noinspection ResultOfMethodCallIgnored
+            file.delete();
         }
     }
 
@@ -160,7 +142,7 @@ public class JBossFileService implements FileService {
         return gfs.getInput(getFilePath(blobKey));
     }
 
-    public FileWriteChannel openWriteChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, FinalizationException, LockException, IOException {
+    public FileWriteChannel openWriteChannel(AppEngineFile file, boolean lock) throws IOException {
         if (isFinalized(file)) {
             throwFinalizationException();
         }
@@ -180,10 +162,11 @@ public class JBossFileService implements FileService {
     }
 
     private void createBlobstoreDirIfNeeded() {
+        //noinspection ResultOfMethodCallIgnored
         getGridFilesystem().getFile("blobstore").mkdirs();  // TODO: this is temporary
     }
 
-    public FileReadChannel openReadChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, LockException, IOException {
+    public FileReadChannel openReadChannel(AppEngineFile file, boolean lock) throws IOException {
         if (!exists(file)) {
             throw new FileNotFoundException("File " + file + " not found.");
         }
@@ -214,11 +197,11 @@ public class JBossFileService implements FileService {
         return InfinispanUtils.getGridFilesystem();
     }
 
-    public RecordWriteChannel openRecordWriteChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, FinalizationException, LockException, IOException {
+    public RecordWriteChannel openRecordWriteChannel(AppEngineFile file, boolean lock) throws IOException {
         return new RecordWriteChannelImpl(openWriteChannel(file, lock));
     }
 
-    public RecordReadChannel openRecordReadChannel(AppEngineFile file, boolean lock) throws FileNotFoundException, LockException, IOException {
+    public RecordReadChannel openRecordReadChannel(AppEngineFile file, boolean lock) throws IOException {
         return ReflectionUtils.newInstance(
                 "com.google.appengine.api.files.RecordReadChannelImpl",
                 new Class[]{FileReadChannel.class},
