@@ -52,6 +52,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * JBoss GAE File service.
@@ -144,8 +146,13 @@ public class JBossFileService implements FileService {
 
     public void delete(BlobKey... blobKeys) {
         GridFilesystem gfs = getGridFilesystem();
-        for (BlobKey key : blobKeys)
-            gfs.remove(getFilePath(key), true);
+        for (BlobKey key : blobKeys) {
+            File file = gfs.getFile(getFilePath(key));
+            if (file.exists()) {
+                //noinspection ResultOfMethodCallIgnored
+                file.delete();
+            }
+        }
     }
 
     public InputStream getStream(BlobKey blobKey) throws FileNotFoundException {
