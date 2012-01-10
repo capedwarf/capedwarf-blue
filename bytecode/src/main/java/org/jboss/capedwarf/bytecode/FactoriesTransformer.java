@@ -27,6 +27,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -34,24 +35,35 @@ import java.util.Map;
  */
 public class FactoriesTransformer implements ClassFileTransformer {
 
+    private static Logger log = Logger.getLogger(FactoriesTransformer.class.getName());
+
     private static Map<String, ClassFileTransformer> transformers = new HashMap<String, ClassFileTransformer>();
 
     // -- Keep lexicographical order --
 
     static {
-        transformers.put("com.google.appengine.api.blobstore.BlobstoreServiceFactory", new BlobstoreServiceFactoryTransformer());
-        transformers.put("com.google.appengine.api.capabilities.CapabilitiesServiceFactory", new CapabilitiesServiceFactoryTransformer());
-        transformers.put("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreServiceFactoryTransformer());
-        transformers.put("com.google.appengine.api.datastore.Entity", new EntityTransformer());
-        transformers.put("com.google.appengine.api.datastore.Key", new KeyTransformer());
-        transformers.put("com.google.appengine.api.files.FileServiceFactory", new FileServiceFactoryTransformer());
-        transformers.put("com.google.appengine.api.images.ImagesServiceFactory", new ImagesServiceFactoryTransformer());
-        transformers.put("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
-        transformers.put("com.google.appengine.api.memcache.MemcacheServiceFactory", new MemcacheServiceFactoryTransformer());
-        transformers.put("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());
-        transformers.put("com.google.appengine.api.xmpp.XMPPServiceFactory", new XMPPServiceFactoryTransformer());
-        transformers.put("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
-        transformers.put("com.google.apphosting.api.ApiProxy", new ApiProxyTransformer());
+        register("com.google.appengine.api.blobstore.BlobstoreServiceFactory", new BlobstoreServiceFactoryTransformer());
+        register("com.google.appengine.api.capabilities.CapabilitiesServiceFactory", new CapabilitiesServiceFactoryTransformer());
+        register("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreServiceFactoryTransformer());
+        register("com.google.appengine.api.datastore.Entity", new EntityTransformer());
+        register("com.google.appengine.api.datastore.Key", new KeyTransformer());
+        register("com.google.appengine.api.files.FileServiceFactory", new FileServiceFactoryTransformer());
+        register("com.google.appengine.api.images.ImagesServiceFactory", new ImagesServiceFactoryTransformer());
+        register("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
+        register("com.google.appengine.api.memcache.MemcacheServiceFactory", new MemcacheServiceFactoryTransformer());
+        register("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());
+        register("com.google.appengine.api.xmpp.XMPPServiceFactory", new XMPPServiceFactoryTransformer());
+        register("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
+        register("com.google.apphosting.api.ApiProxy", new ApiProxyTransformer());
+    }
+
+    private static void register(String fullName, ClassFileTransformer transformer) {
+        transformers.put(fullName, transformer);
+        transformers.put(convertToPath(fullName), transformer);
+    }
+
+    private static String convertToPath(String fullName) {
+        return fullName.replace(".", "/");
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {

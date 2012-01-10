@@ -1,42 +1,54 @@
 /*
  *
- *  * JBoss, Home of Professional Open Source.
- *  * Copyright 2011, Red Hat, Inc., and individual contributors
- *  * as indicated by the @author tags. See the copyright.txt file in the
- *  * distribution for a full listing of individual contributors.
- *  *
- *  * This is free software; you can redistribute it and/or modify it
- *  * under the terms of the GNU Lesser General Public License as
- *  * published by the Free Software Foundation; either version 2.1 of
- *  * the License, or (at your option) any later version.
- *  *
- *  * This software is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *  * Lesser General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU Lesser General Public
- *  * License along with this software; if not, write to the Free
- *  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- *  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  *
  */
 
 package org.jboss.capedwarf.appidentity;
 
-import org.jboss.capedwarf.common.config.*;
+import org.jboss.capedwarf.common.config.AppEngineWebXml;
+import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
+import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
+import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
+import org.jboss.capedwarf.common.config.JBossEnvironment;
 import org.jboss.capedwarf.common.io.IOUtils;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.Principal;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class GAEFilter implements Filter {
+
+    private static Logger log = Logger.getLogger(GAEFilter.class.getName());
 
     private static final int DEFAULT_HTTP_PORT = 80;
 
@@ -73,8 +85,10 @@ public class GAEFilter implements Filter {
 
     private CapedwarfConfiguration readCapedwarfConfig() throws IOException {
         InputStream stream = getWebResourceAsStream(CAPEDWARF_WEB_XML);
-        if (stream == null)
+        if (stream == null) {
+            log.warning("No capedwarf-web.xml found.");
             return new CapedwarfConfiguration();
+        }
 
         try {
             return CapedwarfConfigurationParser.parse(stream);
