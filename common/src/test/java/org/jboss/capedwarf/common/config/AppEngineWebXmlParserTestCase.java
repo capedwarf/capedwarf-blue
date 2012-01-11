@@ -49,5 +49,20 @@ public class AppEngineWebXmlParserTestCase {
         assertEquals("2", appEngineWebXml.getVersion());
     }
 
+    @Test
+    public void testSystemProperties() throws Exception {
+        String xml = "<appengine-web-app>" +
+                "    <application>appName</application>" +
+                "    <version>2</version>" +
+                "    <system-properties>" +
+                "        <property name=\"foo\" value=\"bar\"/>" +
+                "    </system-properties>" +
+                "</appengine-web-app>";
+
+        AppEngineWebXmlParser.parse(new ByteArrayInputStream(xml.getBytes()));
+
+        assertEquals("bar", System.getProperty("foo"));
+    }
+
 
 }

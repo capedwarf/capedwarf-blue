@@ -27,10 +27,14 @@ package org.jboss.capedwarf.users;
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
 import org.jboss.capedwarf.common.config.JBossEnvironment;
 import org.jboss.capedwarf.common.url.URLUtils;
-import org.picketlink.identity.federation.api.openid.OpenIDManager;
-import org.picketlink.identity.federation.api.openid.OpenIDProtocolAdapter;
-import org.picketlink.identity.federation.api.openid.OpenIDRequest;
-import org.picketlink.identity.federation.api.openid.exceptions.*;
+import org.picketlink.social.openid.api.OpenIDManager;
+import org.picketlink.social.openid.api.OpenIDProtocolAdapter;
+import org.picketlink.social.openid.api.OpenIDRequest;
+import org.picketlink.social.openid.api.exceptions.OpenIDAssociationException;
+import org.picketlink.social.openid.api.exceptions.OpenIDDiscoveryException;
+import org.picketlink.social.openid.api.exceptions.OpenIDGeneralException;
+import org.picketlink.social.openid.api.exceptions.OpenIDLifeCycleException;
+import org.picketlink.social.openid.api.exceptions.OpenIDMessageException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
