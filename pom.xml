@@ -47,7 +47,8 @@
         <version.org.jboss.xnio.xnio-api>3.0.0.CR5</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>3.0.0.CR5</version.org.jboss.xnio.xnio-nio>
         <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
-        <version.org.picketlink>1.0.4.final</version.org.picketlink>
+        <version.org.picketlink>2.0.1.Final</version.org.picketlink>
+        <version.org.picketlink.consolidated.social>2.0.0.Beta1</version.org.picketlink.consolidated.social>
         <version.javassist>3.14.0-GA</version.javassist>
         <version.slf4j>1.5.10</version.slf4j>
         <version.javax.validation>1.0.0.GA</version.javax.validation>
@@ -328,6 +329,12 @@
                 <groupId>org.picketlink</groupId>
                 <artifactId>picketlink-fed-api</artifactId>
                 <version>${version.org.picketlink}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-consolidated-social</artifactId>
+                <version>${version.org.picketlink.consolidated.social}</version>
             </dependency>
 
             <!-- JPA2 -->
