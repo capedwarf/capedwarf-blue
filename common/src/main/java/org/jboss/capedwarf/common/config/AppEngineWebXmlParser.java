@@ -32,6 +32,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Parses the appengine-web.xml file
@@ -53,6 +54,16 @@ public class AppEngineWebXmlParser {
     private static AppEngineWebXml tryParse(InputStream inputStream) throws ParserConfigurationException, SAXException, IOException {
         Document doc = XmlUtils.parseXml(inputStream);
         Element documentElement = doc.getDocumentElement();
+
+        Element systemPropertiesElement = XmlUtils.getChildElement(documentElement, "system-properties");
+        if (systemPropertiesElement != null) {
+            List<Element> propertyElements = XmlUtils.getChildren(systemPropertiesElement, "property");
+            for (Element propertyElement : propertyElements) {
+                String name = propertyElement.getAttribute("name");
+                String value = propertyElement.getAttribute("value");
+                System.setProperty(name, value);
+            }
+        }
 
         return new AppEngineWebXml(
                 XmlUtils.getChildElementBody(documentElement, "application"),
