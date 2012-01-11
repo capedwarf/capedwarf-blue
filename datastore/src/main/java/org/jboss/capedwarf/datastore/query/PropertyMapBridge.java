@@ -74,6 +74,9 @@ public class PropertyMapBridge implements FieldBridge {
     }
 
     public String convertToString(Object value) {
+        if (value == null) {
+            return null;
+        }
         if (value instanceof String) {
             return String.valueOf(value);
 //            return BridgeFactory.STRING.objectToString(value);

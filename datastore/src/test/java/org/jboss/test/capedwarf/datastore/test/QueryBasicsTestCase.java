@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Datastore querying basic tests.
@@ -99,6 +100,17 @@ public class QueryBasicsTestCase extends QueryTestCase {
 
         Entity entity = preparedQuery.asSingleEntity();
         assertEquals(john.getKey(), entity.getKey());
+    }
+
+    @Test
+    public void testNullPropertyValue() throws Exception {
+        Entity entity = createEntity("Entry", 1)
+                .withProperty("user", null)
+                .store();
+
+        PreparedQuery preparedQuery = service.prepare(new Query("Entry"));
+        Entity entity2 = preparedQuery.asSingleEntity();
+        assertNull(entity2.getProperty("user"));
     }
 
 }
