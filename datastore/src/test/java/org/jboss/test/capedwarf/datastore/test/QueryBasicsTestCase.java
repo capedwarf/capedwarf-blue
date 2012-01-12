@@ -25,12 +25,18 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static org.junit.Assert.assertEquals;
@@ -111,6 +117,42 @@ public class QueryBasicsTestCase extends QueryTestCase {
         PreparedQuery preparedQuery = service.prepare(new Query("Entry"));
         Entity entity2 = preparedQuery.asSingleEntity();
         assertNull(entity2.getProperty("user"));
+    }
+
+    @Test
+    public void testFilteringByKind() throws Exception {
+        Entity foo = createEntity("foo", 1).store();
+        Entity bar = createEntity("bar", 2).store();
+
+        PreparedQuery preparedQuery = service.prepare(new Query("foo"));
+        List<Entity> results = preparedQuery.asList(FetchOptions.Builder.withDefaults());
+        assertEquals(1, results.size());
+        assertEquals(foo, results.get(0));
+    }
+
+    @Test
+    public void testFilteringByAncestor() throws Exception {
+        Key rootKey = KeyFactory.createKey("foo", "root");
+        Entity root = createEntity(rootKey).store();
+
+        Key barKey = KeyFactory.createKey(rootKey, "bar", 10);
+        Entity bar = createEntity(barKey).store();
+
+        Key fooKey = KeyFactory.createKey(barKey, "foo", 20);
+        Entity foo = createEntity(fooKey).store();
+
+        List<Entity> list = service.prepare(new Query("foo", rootKey)).asList(FetchOptions.Builder.withDefaults());
+        assertEquals(asSet(Arrays.asList(root, foo)), asSet(list));
+
+        list = service.prepare(new Query(rootKey)).asList(FetchOptions.Builder.withDefaults());
+        assertEquals(asSet(Arrays.asList(root, foo, bar)), asSet(list));
+
+        list = service.prepare(new Query("foo", barKey)).asList(FetchOptions.Builder.withDefaults());
+        assertEquals(asSet(Arrays.asList(foo)), asSet(list));
+    }
+
+    private HashSet<Entity> asSet(List<Entity> collection) {
+        return new HashSet<Entity>(collection);
     }
 
 }
