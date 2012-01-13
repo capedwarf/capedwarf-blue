@@ -26,7 +26,6 @@ package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
 import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,7 +44,6 @@ import static org.junit.Assert.assertThat;
 public class QueryFilteringByDatePropertyTypeTestCase extends QueryTestCase {
 
 
-    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void queryByEqualReturnsEntityWithEqualPropertyValue() throws Exception {
         testEqualityQueries(createDate(2011, 10, 15), createDate(2011, 10, 16));

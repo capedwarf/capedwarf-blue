@@ -25,7 +25,6 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -42,42 +41,36 @@ public class QueryFilteringByBasicPropertyTypesTestCase extends QueryTestCase {
         testEqualityQueries(Boolean.TRUE, Boolean.FALSE);
     }
 
-    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testIntegerProperty() {
         testEqualityQueries(1, 2);
         testInequalityQueries(1, 2, 3);
     }
 
-    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testByteProperty() {
         testEqualityQueries((byte) 1, (byte) 2);
         testInequalityQueries((byte) 1, (byte) 2, (byte) 3);
     }
 
-    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testShortProperty() {
         testEqualityQueries((short) 1, (short) 2);
         testInequalityQueries((short) 1, (short) 2, (short) 3);
     }
 
-    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testLongProperty() {
         testEqualityQueries(1L, 2L);
         testInequalityQueries(1L, 2L, 3L);
     }
 
-    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testFloatProperty() {
         testEqualityQueries(1f, 2f);
         testInequalityQueries(1f, 2f, 3f);
     }
 
-    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void testDoubleProperty() {
         testEqualityQueries(1.0, 2.0);
