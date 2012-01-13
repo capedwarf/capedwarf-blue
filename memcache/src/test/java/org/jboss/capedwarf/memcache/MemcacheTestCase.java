@@ -31,7 +31,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,8 +54,9 @@ public class MemcacheTestCase {
 
     @Deployment
     public static Archive getDeployment() {
-        return ShrinkWrap.create(JavaArchive.class)
-                .addAsManifestResource("jboss/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+        return ShrinkWrap.create(WebArchive.class)
+                .setWebXML(new StringAsset("<web/>"))
+                .addAsWebInfResource("appengine-web.xml");
     }
 
     @Before

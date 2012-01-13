@@ -22,7 +22,12 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
-import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.capedwarf.datastore.JBossDatastoreService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -50,7 +55,7 @@ public class AbstractTest {
         return ShrinkWrap.create(WebArchive.class)
                 .addClass(AbstractTest.class)
                 .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine/appengine-web.xml", "appengine-web.xml");
+                .addAsWebInfResource("appengine-web.xml");
     }
 
     @Before

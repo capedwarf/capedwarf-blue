@@ -3,7 +3,6 @@ package org.jboss.test.capedwarf.datastore.test;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,7 +20,6 @@ import static org.junit.Assert.assertThat;
 @RunWith(Arquillian.class)
 public class QueryFilteringByStringPropertyTypeTestCase extends QueryTestCase {
 
-    @Ignore("Need hibernate-search-4.0.0.CR2 for this to work")
     @Test
     public void queryByEqualReturnsEntityWithEqualPropertyValue() throws Exception {
         testEqualityQueries("foo", "bar");

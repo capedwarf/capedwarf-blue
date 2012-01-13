@@ -66,7 +66,7 @@ public class FilesTestCase {
     public static Archive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
                 .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine/appengine-web.xml", "appengine-web.xml");
+                .addAsWebInfResource("appengine-web.xml");
     }
 
     @Test

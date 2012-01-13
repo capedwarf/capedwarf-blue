@@ -22,39 +22,56 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
+import com.google.apphosting.api.ApiProxy;
 import org.infinispan.Cache;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InfinispanUtils {
+    private static Logger log = Logger.getLogger(InfinispanUtils.class.getName());
+
     private static String[] defaultJndiNames = {"java:jboss/infinispan/capedwarf", "java:CacheManager/capedwarf"};
     private static final String DATA = "GridFilesystem_DATA";
     private static final String METADATA = "GridFilesystem_METADATA";
 
-    private static volatile GridFilesystem gridFilesystem;
+    private static final Map<String, GridFilesystem> gridFilesystems = new HashMap<String, GridFilesystem>();
 
     public static EmbeddedCacheManager getCacheManager() {
         return JndiLookupUtils.lazyLookup("infinispan.jndi.name", EmbeddedCacheManager.class, defaultJndiNames);
     }
 
     public static GridFilesystem getGridFilesystem() {
-        if (gridFilesystem == null) {
-            synchronized (InfinispanUtils.class) {
-                if (gridFilesystem == null) {
+        String appId = ApiProxy.getCurrentEnvironment().getAppId();
+        GridFilesystem gfs = gridFilesystems.get(appId);
+        if (gfs == null) {
+            synchronized (gridFilesystems) {
+                gfs = gridFilesystems.get(appId);
+                if (gfs == null) {
                     EmbeddedCacheManager cm = getCacheManager();
                     Cache<String, byte[]> data = cm.getCache(DATA);
                     Cache<String, GridFile.Metadata> metadata = cm.getCache(METADATA);
                     data.start();
                     metadata.start();
-                    gridFilesystem = new GridFilesystem(data, metadata);
+                    gfs = new GridFilesystem(data, metadata);
+                    gridFilesystems.put(appId, gfs);
                 }
             }
         }
-        return gridFilesystem;
+        return gfs;
+    }
+
+    public static void clearApplicationData(String appId) {
+        synchronized (gridFilesystems) {
+            gridFilesystems.remove(appId);
+        }
     }
 }

@@ -71,7 +71,7 @@ public abstract class QueryTestCase {
         return ShrinkWrap.create(WebArchive.class)
                 .addClass(QueryTestCase.class)
                 .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine/appengine-web.xml", "appengine-web.xml");
+                .addAsWebInfResource("appengine-web.xml");
     }
 
     protected static Date createDate(int year, int month, int day) {
