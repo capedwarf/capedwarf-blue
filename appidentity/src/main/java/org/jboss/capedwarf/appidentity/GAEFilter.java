@@ -29,6 +29,7 @@ import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
 import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
 import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
 import org.jboss.capedwarf.common.config.JBossEnvironment;
+import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.io.IOUtils;
 
 import javax.servlet.Filter;
@@ -145,5 +146,6 @@ public class GAEFilter implements Filter {
     }
 
     public void destroy() {
+        InfinispanUtils.clearApplicationData(appEngineWebXml.getApplication());
     }
 }
