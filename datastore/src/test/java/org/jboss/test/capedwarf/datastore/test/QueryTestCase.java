@@ -27,6 +27,7 @@ package org.jboss.test.capedwarf.datastore.test;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import org.hamcrest.Matcher;
@@ -110,6 +111,14 @@ public abstract class QueryTestCase {
         return new TestEntityBuilder(kind, id);
     }
 
+    protected TestEntityBuilder createEntity(String kind, Key parent) {
+        return new TestEntityBuilder(kind, parent);
+    }
+
+    protected TestEntityBuilder createEntity(Key key) {
+        return new TestEntityBuilder(key);
+    }
+
     protected Entity storeTestEntityWithSingleProperty(Object value) {
         return createTestEntity()
                 .withProperty(SINGLE_PROPERTY_NAME, value)
@@ -184,6 +193,14 @@ public abstract class QueryTestCase {
 
         public TestEntityBuilder(String kind, int id) {
             entity = new Entity(kind, id);
+        }
+
+        public TestEntityBuilder(String kind, Key parent) {
+            entity = new Entity(kind, parent);
+        }
+
+        public TestEntityBuilder(Key key) {
+            entity = new Entity(key);
         }
 
         public TestEntityBuilder withProperty(String key, Object value) {

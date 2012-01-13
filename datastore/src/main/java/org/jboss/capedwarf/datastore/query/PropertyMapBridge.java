@@ -168,7 +168,7 @@ public class PropertyMapBridge implements FieldBridge {
 
     private static class KeyBridge extends ObjectToStringFieldBridge {
         public String objectToString(Object object) {
-            return ((Key) object).getKind();    // TODO: add other properties
+            return ((Key) object).toString();
         }
     }
 

@@ -33,7 +33,14 @@ import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.ClassMemberValue;
 import javassist.bytecode.annotation.EnumMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
-import org.hibernate.search.annotations.*;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.ProvidedId;
+import org.hibernate.search.annotations.Store;
+import org.jboss.capedwarf.datastore.query.EntityKeyBridge;
 import org.jboss.capedwarf.datastore.query.PropertyMapBridge;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
 
@@ -49,6 +56,7 @@ public class EntityTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         annotateClass(clazz, ProvidedId.class, Indexed.class);
         annotateGetKindMethod(clazz);
+        annotateGetKeyMethod(clazz);
         annotateGetPropertyMapMethod(clazz);
     }
 
@@ -58,6 +66,13 @@ public class EntityTransformer extends JavassistTransformer {
 
         Annotation fieldAnnotation = createFieldAnnotation(QueryConverter.KIND_PROPERTY_KEY, constPool);
         addAnnotationsToMethod(clazz, "getKind", fieldAnnotation);
+    }
+
+    private void annotateGetKeyMethod(CtClass clazz) throws NotFoundException {
+        ConstPool constPool = getConstPool(clazz);
+        Annotation fieldAnnotation = createFieldAnnotation(QueryConverter.KEY_PROPERTY_KEY, constPool);
+        Annotation fieldBridgeAnnotation = createFieldBridgeAnnotation(EntityKeyBridge.class, constPool);
+        addAnnotationsToMethod(clazz, "getKey", fieldAnnotation, fieldBridgeAnnotation);
     }
 
     private void addAnnotationsToMethod(CtClass clazz, String methodName, Annotation... annotations) throws NotFoundException {
@@ -85,7 +100,7 @@ public class EntityTransformer extends JavassistTransformer {
 //        constPool.addClassInfo(PropertyMapBridge.class.getName());
 
         Annotation fieldAnnotation = createFieldAnnotation(constPool);
-        Annotation fieldBridgeAnnotation = createFieldBridgeAnnotation(constPool);
+        Annotation fieldBridgeAnnotation = createFieldBridgeAnnotation(PropertyMapBridge.class, constPool);
         addAnnotationsToMethod(clazz, "getPropertyMap", fieldAnnotation, fieldBridgeAnnotation);
     }
 
@@ -114,16 +129,9 @@ public class EntityTransformer extends JavassistTransformer {
         return annotation;
     }
 
-    /**
-     * Creates the following annotation: @FieldBridge(impl=PropertyMapBridge.class)
-     *
-     * @param constPool constant pool
-     * @return the @FieldBridge annotation
-     */
-    private Annotation createFieldBridgeAnnotation(ConstPool constPool) {
-
+    private Annotation createFieldBridgeAnnotation(Class<? extends org.hibernate.search.bridge.FieldBridge> implClass, ConstPool constPool) {
         Annotation fieldBridgeAnnotation = new Annotation(FieldBridge.class.getName(), constPool);
-        fieldBridgeAnnotation.addMemberValue("impl", new ClassMemberValue(PropertyMapBridge.class.getName(), constPool));
+        fieldBridgeAnnotation.addMemberValue("impl", new ClassMemberValue(implClass.getName(), constPool));
         return fieldBridgeAnnotation;
     }
 

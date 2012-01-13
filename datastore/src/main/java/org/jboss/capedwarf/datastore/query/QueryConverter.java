@@ -1,6 +1,7 @@
 package org.jboss.capedwarf.datastore.query;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import org.apache.lucene.search.Sort;
 import org.hibernate.search.query.dsl.QueryBuilder;
@@ -10,6 +11,8 @@ import org.infinispan.query.SearchManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
+
 /**
  * Converts a GAE query to Infinispan's CacheQuery
  *
@@ -18,6 +21,7 @@ import java.util.List;
 public class QueryConverter {
 
     public static final String KIND_PROPERTY_KEY = "____capedwarf.entity.kind___";
+    public static final String KEY_PROPERTY_KEY = "____capedwarf.entity.key___";
 
     private SearchManager searchManager;
 
@@ -58,13 +62,22 @@ public class QueryConverter {
 
     private List<Query.FilterPredicate> getAllFilterPredicates(Query gaeQuery) {
         List<Query.FilterPredicate> list = new ArrayList<Query.FilterPredicate>();
-        list.add(createEntityKindFilterPredicate(gaeQuery));
+        addEntityKindFilterPredicate(list, gaeQuery.getKind());
+        addAncestorFilterPredicate(list, gaeQuery.getAncestor());
         list.addAll(gaeQuery.getFilterPredicates());
         return list;
     }
 
-    private Query.FilterPredicate createEntityKindFilterPredicate(Query gaeQuery) {
-        return new Query.FilterPredicate(KIND_PROPERTY_KEY, Query.FilterOperator.EQUAL, gaeQuery.getKind());
+    private void addAncestorFilterPredicate(List<Query.FilterPredicate> list, Key ancestor) {
+        if (ancestor != null) {
+            list.add(new Query.FilterPredicate(KEY_PROPERTY_KEY, EQUAL, ancestor));
+        }
+    }
+
+    private void addEntityKindFilterPredicate(List<Query.FilterPredicate> list, String kind) {
+        if (kind != null) {
+            list.add(new Query.FilterPredicate(KIND_PROPERTY_KEY, EQUAL, kind));
+        }
     }
 
 
