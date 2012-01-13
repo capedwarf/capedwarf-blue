@@ -31,15 +31,12 @@ import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InfinispanUtils {
-    private static Logger log = Logger.getLogger(InfinispanUtils.class.getName());
-
-    private static String[] defaultJndiNames = {"java:jboss/infinispan/capedwarf", "java:CacheManager/capedwarf"};
+    private static String[] defaultJndiNames = {"java:jboss/infinispan/container/capedwarf", "java:CacheManager/capedwarf"};
     private static final String DATA = "GridFilesystem_DATA";
     private static final String METADATA = "GridFilesystem_METADATA";
 
