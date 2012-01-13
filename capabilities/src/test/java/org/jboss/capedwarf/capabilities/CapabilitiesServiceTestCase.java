@@ -24,12 +24,17 @@
 
 package org.jboss.capedwarf.capabilities;
 
-import com.google.appengine.api.capabilities.*;
+import com.google.appengine.api.capabilities.CapabilitiesService;
+import com.google.appengine.api.capabilities.CapabilitiesServiceFactory;
+import com.google.appengine.api.capabilities.Capability;
+import com.google.appengine.api.capabilities.CapabilityState;
+import com.google.appengine.api.capabilities.CapabilityStatus;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,8 +55,9 @@ public class CapabilitiesServiceTestCase {
 
     @Deployment
     public static Archive getDeployment() {
-        return ShrinkWrap.create(JavaArchive.class)
-                .addAsManifestResource("jboss/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
+        return ShrinkWrap.create(WebArchive.class)
+                .setWebXML(new StringAsset("<web/>"))
+                .addAsWebInfResource("appengine-web.xml");
     }
 
     @Test
