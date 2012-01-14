@@ -22,22 +22,11 @@
 
 package org.jboss.capedwarf.bytecode;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
-import java.security.ProtectionDomain;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class FactoriesTransformer implements ClassFileTransformer {
-
-    private static Logger log = Logger.getLogger(FactoriesTransformer.class.getName());
-
-    private static Map<String, ClassFileTransformer> transformers = new HashMap<String, ClassFileTransformer>();
+public class FactoriesTransformer extends MultipleTransformer {
 
     // -- Keep lexicographical order --
 
@@ -55,22 +44,5 @@ public class FactoriesTransformer implements ClassFileTransformer {
         register("com.google.appengine.api.xmpp.XMPPServiceFactory", new XMPPServiceFactoryTransformer());
         register("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
         register("com.google.apphosting.api.ApiProxy", new ApiProxyTransformer());
-    }
-
-    private static void register(String fullName, ClassFileTransformer transformer) {
-        transformers.put(fullName, transformer);
-        transformers.put(convertToPath(fullName), transformer);
-    }
-
-    private static String convertToPath(String fullName) {
-        return fullName.replace(".", "/");
-    }
-
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        ClassFileTransformer cft = transformers.get(className);
-        if (cft != null)
-            return cft.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
-
-        return classfileBuffer;
     }
 }
