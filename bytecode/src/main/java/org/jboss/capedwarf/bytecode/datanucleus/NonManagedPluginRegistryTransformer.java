@@ -39,7 +39,7 @@ import java.util.logging.Logger;
  */
 public class NonManagedPluginRegistryTransformer extends JavassistTransformer {
 
-    private static final String VFS3_FIX = "final URL vfs3fix = " + NonManagedPluginRegistryTransformer.class.getName() + ".fixVFS3($0);" +
+    private static final String VFS3_FIX = "final java.net.URL vfs3fix = " + NonManagedPluginRegistryTransformer.class.getName() + ".fixVFS3($0);" +
                                            "if (vfs3fix != null) return vfs3fix;";
 
     protected void transform(CtClass clazz) throws Exception {
