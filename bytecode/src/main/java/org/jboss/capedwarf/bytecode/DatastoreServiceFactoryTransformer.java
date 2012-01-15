@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 
@@ -30,7 +31,12 @@ import javassist.CtMethod;
  */
 public class DatastoreServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
+        // w/o config
         CtMethod method = clazz.getDeclaredMethod("getDatastoreService");
         method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService();");
+        // with config
+        final ClassPool pool = clazz.getClassPool();
+        method = clazz.getDeclaredMethod("getDatastoreService", new CtClass[]{pool.get("com.google.appengine.api.datastore.DatastoreServiceConfig")});
+        method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService();"); // TODO -- handle config
     }
 }
