@@ -24,20 +24,13 @@
 
 package org.jboss.capedwarf.appidentity;
 
-import org.jboss.capedwarf.common.config.AppEngineWebXml;
-import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
-import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
-import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
-import org.jboss.capedwarf.common.config.JBossEnvironment;
+import com.google.apphosting.api.ApiProxy;
+import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
+import org.jboss.capedwarf.common.config.*;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.io.IOUtils;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,11 +99,22 @@ public class GAEFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = new CapedwarfHttpServletRequestWrapper((HttpServletRequest) req);
 
-        initJBossEnvironment(request);
+        ApiProxy.Delegate previous = ApiProxy.getDelegate();
+        JBossDelegate delegate = JBossDelegate.INSTANCE;
+        ApiProxy.setDelegate(delegate);
         try {
-            chain.doFilter(request, response);
+            delegate.addRequest(req);
+
+            initJBossEnvironment(request);
+            try {
+                chain.doFilter(request, response);
+            } finally {
+                clearJBossEnvironment();
+            }
         } finally {
-            clearJBossEnvironment();
+            delegate.removeRequest();
+
+            ApiProxy.setDelegate(previous);
         }
     }
 
