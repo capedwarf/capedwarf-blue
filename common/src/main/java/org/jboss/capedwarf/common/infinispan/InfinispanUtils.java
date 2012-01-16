@@ -40,10 +40,12 @@ public class InfinispanUtils {
     private static final String DATA = "GridFilesystem_DATA";
     private static final String METADATA = "GridFilesystem_METADATA";
 
+    private static volatile int cacheManagerUsers;
+    private static EmbeddedCacheManager cacheManager;
     private static final Map<String, GridFilesystem> gridFilesystems = new HashMap<String, GridFilesystem>();
 
     public static EmbeddedCacheManager getCacheManager() {
-        return JndiLookupUtils.lazyLookup("infinispan.jndi.name", EmbeddedCacheManager.class, defaultJndiNames);
+        return cacheManager;
     }
 
     public static GridFilesystem getGridFilesystem() {
@@ -66,9 +68,20 @@ public class InfinispanUtils {
         return gfs;
     }
 
-    public static void clearApplicationData(String appId) {
+    public static synchronized void initApplicationData(String appId) {
+        if (cacheManager == null) {
+            cacheManager = JndiLookupUtils.lazyLookup("infinispan.jndi.name", EmbeddedCacheManager.class, defaultJndiNames);
+        }
+        cacheManagerUsers++;
+    }
+
+    public static synchronized void clearApplicationData(String appId) {
         synchronized (gridFilesystems) {
             gridFilesystems.remove(appId);
+        }
+        cacheManagerUsers--;
+        if (cacheManagerUsers == 0) {
+            cacheManager = null;
         }
     }
 }
