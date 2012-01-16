@@ -37,9 +37,9 @@ public class MultipleTransformer implements ClassFileTransformer {
 
     protected Logger log = Logger.getLogger(getClass().getName());
 
-    private static Map<String, ClassFileTransformer> transformers = new HashMap<String, ClassFileTransformer>();
+    private Map<String, ClassFileTransformer> transformers = new HashMap<String, ClassFileTransformer>();
 
-    protected static void register(String fullName, ClassFileTransformer transformer) {
+    protected void register(String fullName, ClassFileTransformer transformer) {
         transformers.put(fullName, transformer);
         transformers.put(convertToPath(fullName), transformer);
     }

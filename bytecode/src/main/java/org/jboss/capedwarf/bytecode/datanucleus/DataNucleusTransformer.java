@@ -31,7 +31,7 @@ public class DataNucleusTransformer extends MultipleTransformer {
 
     // -- Keep lexicographical order --
 
-    static {
+    public DataNucleusTransformer() {
         register("org.datanucleus.plugin.NonManagedPluginRegistry", new NonManagedPluginRegistryTransformer());
     }
 }

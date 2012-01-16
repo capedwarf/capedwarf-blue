@@ -96,7 +96,7 @@ public class JndiLookupUtils {
             else
                 result = checkNames(ctx, names);
 
-            log.info("Using JNDI found " + expected.getName() + ": " + result);
+            log.fine("Using JNDI found " + expected.getName() + ": " + result);
             return expected.cast(result);
         } catch (RuntimeException e) {
             throw e;
@@ -109,7 +109,7 @@ public class JndiLookupUtils {
                 try {
                     ctx.close();
                 } catch (NamingException ne) {
-                    log.info("Unable to release initial context: " + ne);
+                    log.warning("Unable to release initial context: " + ne);
                 }
             }
         }
