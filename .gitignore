@@ -16,6 +16,7 @@ memcache/target/
 multitenancy/target/
 oauth/target/
 tasks/target/
+testsuite/target/
 urlfetch/target/
 users/target/
 umpp/target/
