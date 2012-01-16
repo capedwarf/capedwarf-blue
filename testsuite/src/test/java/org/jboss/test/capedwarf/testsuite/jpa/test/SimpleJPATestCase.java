@@ -22,7 +22,7 @@ public class SimpleJPATestCase extends AbstractJPATest {
 
     @Deployment
     public static WebArchive getDeployment() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, "jpa.war");
+        final WebArchive war = ShrinkWrap.create(WebArchive.class);
         war.addPackage(Client.class.getPackage());
         war.setWebXML(new StringAsset("<web/>")).addAsWebInfResource("appengine-web.xml");
         war.addAsWebInfResource("jpa/persistence.xml", "classes/META-INF/persistence.xml");
@@ -56,7 +56,7 @@ public class SimpleJPATestCase extends AbstractJPATest {
                 return (clients.isEmpty()) ? null : clients.get(0);
             }
         };
-        Client c = run(ema2);
+        Client c = run(ema2, false);
         Assert.assertNotNull(c);
         Assert.assertEquals(id, c.getId());
         Assert.assertEquals("alesj", c.getUsername());
@@ -67,7 +67,7 @@ public class SimpleJPATestCase extends AbstractJPATest {
                 return em.find(Client.class, id);
             }
         };
-        c = run(ema3);
+        c = run(ema3, false);
         Assert.assertNotNull(c);
         Assert.assertEquals(id, c.getId());
         Assert.assertEquals("alesj", c.getUsername());
