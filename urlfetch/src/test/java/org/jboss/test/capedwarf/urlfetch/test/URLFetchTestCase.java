@@ -56,12 +56,12 @@ public class URLFetchTestCase {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
         System.out.println("service = " + service);
 
-        URL jbossHome = new URL("http://localhost:8080");
-        HTTPResponse response = service.fetch(jbossHome);
+        URL adminConsole = new URL("http://localhost:9990");
+        HTTPResponse response = service.fetch(adminConsole);
         printResponse(response);
 
-        jbossHome = new URL("http://www.jboss.org");
-        response = service.fetch(jbossHome);
+        URL jbossOrg = new URL("http://www.jboss.org");
+        response = service.fetch(jbossOrg);
         printResponse(response);
     }
 
@@ -70,8 +70,8 @@ public class URLFetchTestCase {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
         System.out.println("service = " + service);
 
-        URL jbossHome = new URL("http://www.jboss.org");
-        Future<HTTPResponse> response = service.fetchAsync(jbossHome);
+        URL jbossOrg = new URL("http://www.jboss.org");
+        Future<HTTPResponse> response = service.fetchAsync(jbossOrg);
         printResponse(response.get(30, TimeUnit.SECONDS));
     }
 
