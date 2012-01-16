@@ -127,8 +127,12 @@ public class JndiLookupUtils {
                 private volatile Object delegate;
 
                 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    if (delegate == null)
-                        delegate = lookup(propertyKey, expected, names);
+                    if (delegate == null) {
+                        synchronized (this) {
+                            if (delegate == null)
+                                delegate = lookup(propertyKey, expected, names);
+                        }
+                    }
 
                     return method.invoke(delegate, args);
                 }
@@ -148,8 +152,12 @@ public class JndiLookupUtils {
                 private volatile Object delegate;
 
                 public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
-                    if (delegate == null)
-                        delegate = lookup(propertyKey, expected, names);
+                    if (delegate == null) {
+                        synchronized (this) {
+                            if (delegate == null)
+                                delegate = lookup(propertyKey, expected, names);
+                        }
+                    }
 
                     return thisMethod.invoke(delegate, args);
                 }

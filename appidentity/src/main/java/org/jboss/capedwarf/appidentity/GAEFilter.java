@@ -26,11 +26,20 @@ package org.jboss.capedwarf.appidentity;
 
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
-import org.jboss.capedwarf.common.config.*;
+import org.jboss.capedwarf.common.config.AppEngineWebXml;
+import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
+import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
+import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
+import org.jboss.capedwarf.common.config.JBossEnvironment;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.io.IOUtils;
 
-import javax.servlet.*;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +72,8 @@ public class GAEFilter implements Filter {
         } catch (Exception e) {
             throw new ServletException("Unable to read configuration files", e);
         }
+
+        InfinispanUtils.initApplicationData(appEngineWebXml.getApplication());
     }
 
     private AppEngineWebXml readAppEngineWebXml() throws IOException {
