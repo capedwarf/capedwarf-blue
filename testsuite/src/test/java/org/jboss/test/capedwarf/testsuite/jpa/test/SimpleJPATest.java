@@ -1,14 +1,11 @@
 package org.jboss.test.capedwarf.testsuite.jpa.test;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.capedwarf.testsuite.jpa.Client;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -17,17 +14,20 @@ import java.util.List;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@RunWith(Arquillian.class)
-public class SimpleJPATestCase extends AbstractJPATest {
+public class SimpleJPATest extends AbstractJPATest {
 
-    @Deployment
-    public static WebArchive getDeployment() {
+    protected static WebArchive getBaseDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class);
         war.addPackage(Client.class.getPackage());
         war.setWebXML(new StringAsset("<web/>")).addAsWebInfResource("appengine-web.xml");
-        war.addAsWebInfResource("jpa/persistence.xml", "classes/META-INF/persistence.xml");
-        TestUtils.addLibraries(war);
         war.addClass(AbstractJPATest.class);
+        war.addClass(SimpleJPATest.class);
+        return war;
+    }
+
+    protected static WebArchive getDefaultDeployment() {
+        final WebArchive war = getBaseDeployment();
+        TestUtils.addPersistenceXml(war, "jpa/default-persistence.xml");
         return war;
     }
 

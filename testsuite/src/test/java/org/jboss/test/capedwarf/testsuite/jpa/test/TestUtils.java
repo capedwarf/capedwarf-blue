@@ -13,7 +13,7 @@ public class TestUtils {
 
     private static MavenDependencyResolver resolver;
 
-    protected static MavenDependencyResolver getResolver() {
+    public static MavenDependencyResolver getResolver() {
         if (resolver == null)
             resolver = DependencyResolvers.use(MavenDependencyResolver.class).loadMetadataFromPom(getPomPath());
         return resolver;
@@ -28,7 +28,7 @@ public class TestUtils {
         return path;
     }
 
-    protected static void addLibraries(WebArchive war) {
+    public static void addLibraries(WebArchive war) {
         // default JPA libs
         war.addAsLibraries(getResolver().artifact("com.google.appengine:appengine-api-1.0-sdk").resolveAsFiles());
         war.addAsLibraries(getResolver().artifact("org.datanucleus:datanucleus-core").resolveAsFiles());
@@ -36,5 +36,9 @@ public class TestUtils {
         war.addAsLibraries(getResolver().artifact("com.google.appengine.orm:datanucleus-appengine").resolveAsFiles());
         war.addAsLibraries(getResolver().artifact("com.google.appengine:jdo2-api").resolveAsFiles());
         war.addAsLibraries(getResolver().artifact("com.google.appengine:geronimo-jta_1.1_spec").resolveAsFiles());
+    }
+
+    public static void addPersistenceXml(WebArchive war, String resource) {
+        war.addAsWebInfResource(resource, "classes/META-INF/persistence.xml");
     }
 }
