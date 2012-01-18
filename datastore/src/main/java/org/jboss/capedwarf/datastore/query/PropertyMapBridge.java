@@ -167,8 +167,10 @@ public class PropertyMapBridge implements FieldBridge {
     }
 
     private static class KeyBridge extends ObjectToStringFieldBridge {
+        private GAEKeyTransformer keyTransformer = new GAEKeyTransformer();
+
         public String objectToString(Object object) {
-            return ((Key) object).toString();
+            return keyTransformer.toString((Key) object);
         }
     }
 

@@ -37,22 +37,28 @@ import java.util.Map;
 public class JBossEnvironment implements ApiProxy.Environment {
 
     private static final ThreadLocal<JBossEnvironment> threadLocalInstance = new ThreadLocal<JBossEnvironment>();
-    private static final String NO_APP_ID = "no-app-id";
 
     private String email;
     private String authDomain;
     private Map<String, Object> attributes = new HashMap<String, Object>();
 
     private CapedwarfConfiguration capedwarfConfiguration;
-    private AppEngineWebXml appEngineWebXml = new AppEngineWebXml(NO_APP_ID, "0");
+    private AppEngineWebXml appEngineWebXml;
     private String baseApplicationUrl;
 
     public String getAppId() {
+        assertInitialized();
         return appEngineWebXml.getApplication();
     }
 
     public String getVersionId() {
+        assertInitialized();
         return appEngineWebXml.getVersion();
+    }
+
+    private void assertInitialized() {
+        if (appEngineWebXml == null)
+            throw new IllegalStateException("Application data has not been initialized. Was this method called AFTER GAEFilter did its job?");
     }
 
     public String getEmail() {

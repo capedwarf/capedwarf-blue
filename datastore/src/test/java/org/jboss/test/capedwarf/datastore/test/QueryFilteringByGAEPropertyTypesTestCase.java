@@ -27,12 +27,17 @@ package org.jboss.test.capedwarf.datastore.test;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Category;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.IMHandle;
+import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.datastore.PhoneNumber;
 import com.google.appengine.api.datastore.PostalAddress;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Rating;
 import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.Text;
@@ -40,6 +45,11 @@ import com.google.appengine.api.users.User;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.List;
+
+import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests if all Google AppEngine types can be stored as properties of Entity and if queries filtered on those
@@ -49,6 +59,22 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTestCase {
+
+    @Test
+    public void testFilterByEntityKey() {
+        Key fooKey = KeyFactory.createKey("foo", 1);
+        Entity fooEntity = new Entity(fooKey);
+        service.put(fooEntity);
+
+        Query query = new Query("foo")
+                .addFilter(Entity.KEY_RESERVED_PROPERTY, EQUAL, fooKey);
+
+        PreparedQuery preparedQuery = service.prepare(query);
+        List<Entity> results = preparedQuery.asList(FetchOptions.Builder.withDefaults());
+
+        assertEquals(1, results.size());
+        assertEquals(fooEntity, results.get(0));
+    }
 
     @Test
     public void testTextProperty() {

@@ -24,6 +24,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.datastore.Entity;
 import javassist.CtClass;
 import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
@@ -70,7 +71,7 @@ public class EntityTransformer extends JavassistTransformer {
 
     private void annotateGetKeyMethod(CtClass clazz) throws NotFoundException {
         ConstPool constPool = getConstPool(clazz);
-        Annotation fieldAnnotation = createFieldAnnotation(QueryConverter.KEY_PROPERTY_KEY, constPool);
+        Annotation fieldAnnotation = createFieldAnnotation(Entity.KEY_RESERVED_PROPERTY, constPool);
         Annotation fieldBridgeAnnotation = createFieldBridgeAnnotation(EntityKeyBridge.class, constPool);
         addAnnotationsToMethod(clazz, "getKey", fieldAnnotation, fieldBridgeAnnotation);
     }

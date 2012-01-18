@@ -1,6 +1,12 @@
 package org.jboss.capedwarf.datastore.query;
 
-import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.QueryResultIterable;
+import com.google.appengine.api.datastore.QueryResultIterator;
+import com.google.appengine.api.datastore.QueryResultList;
 import org.infinispan.query.CacheQuery;
 
 import java.util.Iterator;
@@ -15,9 +21,11 @@ import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaul
  */
 public class PreparedQueryImpl implements PreparedQuery {
 
+    private Query gaeQuery;     // currently here only for debugging purposes
     private CacheQuery cacheQuery;
 
-    public PreparedQueryImpl(CacheQuery cacheQuery) {
+    public PreparedQueryImpl(Query gaeQuery, CacheQuery cacheQuery) {
+        this.gaeQuery = gaeQuery;
         this.cacheQuery = cacheQuery;
     }
 
