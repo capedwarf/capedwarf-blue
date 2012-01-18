@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import org.apache.lucene.document.Document;
 import org.hibernate.search.bridge.FieldBridge;
@@ -34,13 +35,30 @@ public class EntityKeyBridge implements FieldBridge {
 
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         Key key = (Key) value;
+        addKeyField(key, document, luceneOptions);
+        addAncestorFields(key, document, luceneOptions);
+    }
+
+    private void addKeyField(Key key, Document document, LuceneOptions luceneOptions) {
+        addField(document, luceneOptions, key, Entity.KEY_RESERVED_PROPERTY);
+    }
+
+    private void addAncestorFields(Key key, Document document, LuceneOptions luceneOptions) {
         while (key != null) {
-            luceneOptions.addFieldToDocument(
-                    QueryConverter.KEY_PROPERTY_KEY,
-                    PropertyMapBridge.KEY_BRIDGE.objectToString(key),
-                    document);
+            addAncestorField(key, document, luceneOptions);
             key = key.getParent();
         }
+    }
+
+    private void addAncestorField(Key key, Document document, LuceneOptions luceneOptions) {
+        addField(document, luceneOptions, key, QueryConverter.ANCESTOR_PROPERTY_KEY);
+    }
+
+    private void addField(Document document, LuceneOptions luceneOptions, Key key, String fieldName) {
+        luceneOptions.addFieldToDocument(
+                fieldName,
+                PropertyMapBridge.KEY_BRIDGE.objectToString(key),
+                document);
     }
 
 }

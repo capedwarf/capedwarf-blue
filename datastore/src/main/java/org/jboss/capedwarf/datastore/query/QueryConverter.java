@@ -21,7 +21,7 @@ import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 public class QueryConverter {
 
     public static final String KIND_PROPERTY_KEY = "____capedwarf.entity.kind___";
-    public static final String KEY_PROPERTY_KEY = "____capedwarf.entity.key___";
+    public static final String ANCESTOR_PROPERTY_KEY = "____capedwarf.entity.ancestor.key___";
 
     private SearchManager searchManager;
 
@@ -70,7 +70,7 @@ public class QueryConverter {
 
     private void addAncestorFilterPredicate(List<Query.FilterPredicate> list, Key ancestor) {
         if (ancestor != null) {
-            list.add(new Query.FilterPredicate(KEY_PROPERTY_KEY, EQUAL, ancestor));
+            list.add(new Query.FilterPredicate(ANCESTOR_PROPERTY_KEY, EQUAL, ancestor));
         }
     }
 
