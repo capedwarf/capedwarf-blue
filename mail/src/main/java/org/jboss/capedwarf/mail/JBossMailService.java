@@ -62,15 +62,19 @@ public class JBossMailService implements MailService {
     }
 
     private void assertAllRecipientFieldsAreEmpty(Message message) {
-        if (!message.getTo().isEmpty()) {
-            throw new IllegalArgumentException("to should be empty");
+        if (isNullOrEmpty(message.getTo()) == false) {
+            throw new IllegalArgumentException("To should be empty");
         }
-        if (!message.getCc().isEmpty()) {
-            throw new IllegalArgumentException("cc should be empty");
+        if (isNullOrEmpty(message.getCc()) == false) {
+            throw new IllegalArgumentException("Cc should be empty");
         }
-        if (!message.getBcc().isEmpty()) {
-            throw new IllegalArgumentException("bcc should be empty");
+        if (isNullOrEmpty(message.getBcc()) == false) {
+            throw new IllegalArgumentException("Bcc should be empty");
         }
+    }
+
+    private boolean isNullOrEmpty(Collection<String> collection) {
+        return (collection == null || collection.isEmpty());
     }
 
     private Session getSession() {
