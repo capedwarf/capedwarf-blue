@@ -24,13 +24,17 @@ package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -78,4 +82,18 @@ public class SmokeTestCase extends AbstractTest {
         service.delete(keys);
         assertStoreDoesNotContain(keys);
     }
+
+    @Test
+    public void queriesDontReturnDeletedEntities() throws Exception {
+        Entity entity = createTestEntity("KIND");
+        Key key = entity.getKey();
+        service.put(entity);
+
+        service.delete(key);
+
+        List<Entity> entities = service.prepare(new Query("KIND")).asList(FetchOptions.Builder.withDefaults());
+        Assert.assertEquals(0, entities.size());
+    }
+
+
 }
