@@ -51,6 +51,21 @@ import static org.junit.Assert.assertNull;
 public class QueryBasicsTestCase extends QueryTestCase {
 
     @Test
+    public void textQueryWithoutAnyConstraints() throws Exception {
+        Entity person = new Entity(KeyFactory.createKey("Person", 1));
+        service.put(person);
+
+        Entity address = new Entity(KeyFactory.createKey("Address", 1));
+        service.put(address);
+
+        PreparedQuery preparedQuery = service.prepare(new Query());
+        assertEquals("number of results", 2, preparedQuery.countEntities(FetchOptions.Builder.withDefaults()));
+
+        List<Entity> results = preparedQuery.asList(FetchOptions.Builder.withDefaults());
+        assertEquals(asSet(Arrays.asList(person, address)), asSet(results));
+    }
+
+    @Test
     public void queryingByKindOnlyReturnsEntitiesOfRequestedKind() throws Exception {
         Entity person = new Entity(KeyFactory.createKey("Person", 1));
         service.put(person);

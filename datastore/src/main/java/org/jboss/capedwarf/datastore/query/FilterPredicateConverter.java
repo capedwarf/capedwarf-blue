@@ -48,6 +48,9 @@ public class FilterPredicateConverter {
     }
 
     public Query convert(Collection<com.google.appengine.api.datastore.Query.FilterPredicate> filterPredicates) {
+        if (filterPredicates.isEmpty()) {
+            return queryBuilder.all().createQuery();
+        }
         BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
         for (com.google.appengine.api.datastore.Query.FilterPredicate filterPredicate : filterPredicates) {
             bool.must(convert(filterPredicate));
