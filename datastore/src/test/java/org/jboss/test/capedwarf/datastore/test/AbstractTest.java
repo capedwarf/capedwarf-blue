@@ -112,7 +112,11 @@ public class AbstractTest {
     }
 
     protected Entity createTestEntity() {
-        return createTestEntity("KIND", 1);
+        return createTestEntity("KIND");
+    }
+
+    protected Entity createTestEntity(String kind) {
+        return createTestEntity(kind, 1);
     }
 
     protected Entity createTestEntity(String kind, int id) {
