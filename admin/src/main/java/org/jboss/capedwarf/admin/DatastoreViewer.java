@@ -22,24 +22,15 @@
 
 package org.jboss.capedwarf.admin;
 
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.*;
 
 import javax.enterprise.context.RequestScoped;
 import javax.faces.component.html.HtmlPanelGroup;
 import javax.inject.Named;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
- *
+ * @author Marko Luksa
  */
 @Named("datastoreViewer")
 @RequestScoped
@@ -51,7 +42,6 @@ public class DatastoreViewer {
     private static List<Row> rows = new ArrayList<Row>();
 
     private DynamicTable table = new DynamicTable("#{datastoreViewer.rows}");
-
 
     public String getEntityKind() {
         return entityKind;
@@ -115,7 +105,6 @@ public class DatastoreViewer {
 
     public void setDynamicDataTableGroup(HtmlPanelGroup dynamicDataTableGroup) {
     }
-
 
     public class Row {
         private Entity entity;

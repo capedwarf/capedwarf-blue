@@ -24,16 +24,12 @@ package org.jboss.capedwarf.admin;
 
 import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
-import javax.faces.component.html.HtmlColumn;
-import javax.faces.component.html.HtmlDataTable;
-import javax.faces.component.html.HtmlOutputLink;
-import javax.faces.component.html.HtmlOutputText;
-import javax.faces.component.html.HtmlPanelGroup;
+import javax.faces.component.html.*;
 import javax.faces.context.FacesContext;
 import java.util.List;
 
 /**
- *
+ * @author Marko Luksa
  */
 public class DynamicTable extends HtmlPanelGroup {
 
@@ -95,6 +91,5 @@ public class DynamicTable extends HtmlPanelGroup {
         ExpressionFactory elFactory = facesContext.getApplication().getExpressionFactory();
         return elFactory.createValueExpression(facesContext.getELContext(), valueExpression, valueType);
     }
-
 
 }

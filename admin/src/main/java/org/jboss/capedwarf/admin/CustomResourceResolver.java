@@ -26,9 +26,13 @@ import javax.faces.view.facelets.ResourceResolver;
 import java.net.URL;
 
 /**
- *
+ * @author Marko Luksa
+ * @author Ales Justin
  */
 public class CustomResourceResolver extends ResourceResolver {
+
+    private static final String ADMIN_PREFIX = "/_ah/admin";
+    private static final String ADMIN_PACKAGE = "/org/jboss/capedwarf/admin";
 
     private ResourceResolver defaultResourceResolver;
 
@@ -38,11 +42,9 @@ public class CustomResourceResolver extends ResourceResolver {
 
     @Override
     public URL resolveUrl(String resource) {
-        System.out.println("CustomResourceResolver.resolveUrl(" + resource + ")");
-
-        if (resource.startsWith("/_ah/admin")) {
-            resource = resource.substring("/_ah/admin".length());
-            return Thread.currentThread().getContextClassLoader().getResource("/org/jboss/capedwarf/admin" + resource);
+        if (resource.startsWith(ADMIN_PREFIX)) {
+            resource = resource.substring(ADMIN_PREFIX.length());
+            return Thread.currentThread().getContextClassLoader().getResource(ADMIN_PACKAGE + resource);
         } else {
             return defaultResourceResolver.resolveUrl(resource);
         }
