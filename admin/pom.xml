@@ -1,0 +1,136 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <!-- Parent -->
+    <parent>
+        <groupId>org.jboss.capedwarf.blue</groupId>
+        <artifactId>capedwarf-build</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>capedwarf-admin</artifactId>
+    <packaging>jar</packaging>
+    <name>CapeDwarf Admin Console</name>
+    <url>http://www.jboss.org/capedwarf</url>
+    <description>CapeDwarf Admin Console</description>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.jboss.capedwarf.blue</groupId>
+            <artifactId>capedwarf-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.capedwarf.blue</groupId>
+            <artifactId>capedwarf-datastore</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.appengine</groupId>
+            <artifactId>appengine-api-1.0-sdk</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.faces</groupId>
+            <artifactId>jboss-jsf-api_2.1_spec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.faces</groupId>
+            <artifactId>jsf-impl</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>el-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>el-ri</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+        </dependency>
+
+        <!--<dependency>-->
+           <!--<groupId>org.jboss.weld.servlet</groupId>-->
+           <!--<artifactId>weld-servlet</artifactId>-->
+           <!--<exclusions>-->
+               <!--<exclusion>-->
+                   <!--<groupId>xml-apis</groupId>-->
+                   <!--<artifactId>xml-apis</artifactId>-->
+               <!--</exclusion>-->
+               <!--<exclusion>-->
+                   <!--<groupId>org.apache.tomcat</groupId>-->
+                   <!--<artifactId>catalina</artifactId>-->
+               <!--</exclusion>-->
+               <!--<exclusion>-->
+                   <!--<groupId>org.apache.tomcat</groupId>-->
+                   <!--<artifactId>servlet-api</artifactId>-->
+               <!--</exclusion>-->
+               <!--<exclusion>-->
+                   <!--<groupId>org.apache.tomcat</groupId>-->
+                   <!--<artifactId>juli</artifactId>-->
+               <!--</exclusion>-->
+               <!--<exclusion>-->
+                   <!--<groupId>org.apache.tomcat</groupId>-->
+                   <!--<artifactId>annotations-api</artifactId>-->
+               <!--</exclusion>-->
+               <!--<exclusion>-->
+                   <!--<groupId>javax.faces</groupId>-->
+                   <!--<artifactId>jsf-api</artifactId>-->
+               <!--</exclusion>-->
+               <!--<exclusion>-->
+                   <!--<groupId>javax-el</groupId>-->
+                   <!--<artifactId>el-api</artifactId>-->
+               <!--</exclusion>-->
+               <!--<exclusion>-->
+                   <!--<groupId>javassist</groupId>-->
+                   <!--<artifactId>javassist</artifactId>-->
+               <!--</exclusion>-->
+          <!--</exclusions>-->
+        <!--</dependency>-->
+
+
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-container-remote</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.arquillian.protocol</groupId>
+            <artifactId>arquillian-protocol-servlet</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+</project>
