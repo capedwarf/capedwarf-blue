@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+<ui:composition template="template.xhtml">
+    <ui:define name="sidebar"/>
+    <ui:define name="content">
+        <h2>Datastore entity: <h:outputText value="#{datastoreEntity.readableKey}"/></h2>
+
+        <h:form>
+            <h:outputLabel value="Key:"/>
+            <h:outputText value="#{datastoreEntity.key}"/><br/><br/>
+
+
+            <h:dataTable value="#{datastoreEntity.properties}" var="property">
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Property"/>
+                    </f:facet>
+                    <h:outputText value="#{property.key}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="Value"/>
+                    </f:facet>
+                    <h:outputText value="#{property.value}"/>
+                </h:column>
+            </h:dataTable>
+        </h:form>
+
+    </ui:define>
+</ui:composition>
+</html>
