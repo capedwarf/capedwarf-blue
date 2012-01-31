@@ -2,6 +2,7 @@
 *.iml
 *.ipr
 *.iws
+admin/target/
 appidentity/target/
 blobstore/target/
 bytecode/target/
