@@ -42,6 +42,7 @@ public class CapedwarfTransformerMojo {
                 FactoriesTransformer.class.getName(),
                 "(([.]*ApiProxy*)" +
                         "|([.]*ServiceFactory*)" +
+                        "|([.]*QueueFactory*)" +
                         "|([.]*datastore.Entity*)" +
                         "|([.]*datastore.Key*))"};
 
