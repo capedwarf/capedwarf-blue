@@ -26,13 +26,6 @@ package org.jboss.capedwarf.appidentity;
 
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
-import org.jboss.capedwarf.common.config.AppEngineWebXml;
-import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
-import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
-import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
-import org.jboss.capedwarf.common.config.JBossEnvironment;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.common.io.IOUtils;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -42,69 +35,14 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.Principal;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class GAEFilter implements Filter {
 
-    private static Logger log = Logger.getLogger(GAEFilter.class.getName());
-
-    private static final int DEFAULT_HTTP_PORT = 80;
-
-    private static final String APPENGINE_WEB_XML = "/WEB-INF/appengine-web.xml";
-    private static final String CAPEDWARF_WEB_XML = "/WEB-INF/capedwarf-web.xml";
-
-    private FilterConfig filterConfig;
-
-    private AppEngineWebXml appEngineWebXml;
-    private CapedwarfConfiguration capedwarfConfiguration;
-
     public void init(FilterConfig filterConfig) throws ServletException {
-        this.filterConfig = filterConfig;
-
-        try {
-            appEngineWebXml = readAppEngineWebXml();
-            capedwarfConfiguration = readCapedwarfConfig();
-        } catch (Exception e) {
-            throw new ServletException("Unable to read configuration files", e);
-        }
-
-        InfinispanUtils.initApplicationData(appEngineWebXml.getApplication());
-    }
-
-    private AppEngineWebXml readAppEngineWebXml() throws IOException {
-        InputStream stream = getWebResourceAsStream(APPENGINE_WEB_XML);
-        if (stream == null)
-            throw new IOException("No appengine-web.xml found: " + filterConfig);
-
-        try {
-            return AppEngineWebXmlParser.parse(stream);
-        } finally {
-            stream.close();
-        }
-    }
-
-    private CapedwarfConfiguration readCapedwarfConfig() throws IOException {
-        InputStream stream = getWebResourceAsStream(CAPEDWARF_WEB_XML);
-        if (stream == null) {
-            log.warning("No capedwarf-web.xml found.");
-            return new CapedwarfConfiguration();
-        }
-
-        try {
-            return CapedwarfConfigurationParser.parse(stream);
-        } finally {
-            IOUtils.safeClose(stream);
-        }
-    }
-
-
-    private InputStream getWebResourceAsStream(String path) {
-        return filterConfig.getServletContext().getResourceAsStream(path);
     }
 
     public void doFilter(ServletRequest req, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -116,12 +54,7 @@ public class GAEFilter implements Filter {
         try {
             delegate.addRequest(req);
 
-            initJBossEnvironment(request);
-            try {
-                chain.doFilter(request, response);
-            } finally {
-                clearJBossEnvironment();
-            }
+            chain.doFilter(request, response);
         } finally {
             delegate.removeRequest();
 
@@ -129,38 +62,6 @@ public class GAEFilter implements Filter {
         }
     }
 
-    private void initJBossEnvironment(HttpServletRequest request) {
-        JBossEnvironment environment = JBossEnvironment.getThreadLocalInstance();
-        initApplicationData(environment);
-        initRequestData(environment, request);
-        initUserData(environment, request);
-    }
-
-    private void initApplicationData(JBossEnvironment environment) {
-        environment.setAppEngineWebXml(appEngineWebXml);
-        environment.setCapedwarfConfiguration(capedwarfConfiguration);
-    }
-
-    private void initRequestData(JBossEnvironment environment, HttpServletRequest request) {
-        environment.setBaseApplicationUrl(request.getScheme() + "://"
-                + request.getServerName()
-                + (request.getServerPort() == DEFAULT_HTTP_PORT ? "" : (":" + request.getServerPort()))
-                + request.getContextPath());
-    }
-
-    private void initUserData(JBossEnvironment environment, HttpServletRequest request) {
-        Principal principal = request.getUserPrincipal();
-        if (principal != null) {
-            environment.setEmail(principal.getName());
-//            environment.setAuthDomain();
-        }
-    }
-
-    private void clearJBossEnvironment() {
-        JBossEnvironment.clearThreadLocalInstance();
-    }
-
     public void destroy() {
-        InfinispanUtils.clearApplicationData(appEngineWebXml.getApplication());
     }
 }

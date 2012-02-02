@@ -46,6 +46,7 @@
         <version.json>20090211</version.json>
         <version.org.jboss.seam>3.0.0.Final</version.org.jboss.seam>
         <version.org.jboss.logging>3.1.0.CR2</version.org.jboss.logging>
+        <version.org.jboss.modules.jboss-modules>1.1.0.CR6</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.xnio.xnio-api>3.0.0.CR5</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>3.0.0.CR5</version.org.jboss.xnio.xnio-nio>
         <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
@@ -62,6 +63,8 @@
         <version.javax.cache>1.0-dev-2</version.javax.cache>
         <version.javax.mail>1.4</version.javax.mail>
         <version.javax.jpa2>1.0.0.Final</version.javax.jpa2>
+        <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final
+        </version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
         <version.org.datanucleus.core>1.1.5</version.org.datanucleus.core>
         <version.org.datanucleus.jpa>1.1.5</version.org.datanucleus.jpa>
         <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
@@ -457,6 +460,18 @@
                 <version>${version.javax.mail}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.jboss.spec.javax.jms</groupId>
+                <artifactId>jboss-jms-api_1.1_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.modules</groupId>
+                <artifactId>jboss-modules</artifactId>
+                <version>${version.org.jboss.modules.jboss-modules}</version>
+            </dependency>
+
             <!--JBoss Weld / CDI -->
 
             <dependency>
@@ -491,10 +506,10 @@
 
 
             <!--<dependency>-->
-                <!--<groupId>org.jboss.weld.servlet</groupId>-->
-                <!--<artifactId>weld-servlet</artifactId>-->
-                <!--<version>${version.org.jboss.weld.servlet}</version>-->
-             <!--</dependency>-->
+            <!--<groupId>org.jboss.weld.servlet</groupId>-->
+            <!--<artifactId>weld-servlet</artifactId>-->
+            <!--<version>${version.org.jboss.weld.servlet}</version>-->
+            <!--</dependency>-->
 
             <dependency>
                 <groupId>org.jboss.logging</groupId>
