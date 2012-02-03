@@ -24,6 +24,7 @@ package org.jboss.test.capedwarf.tasks.test;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -49,5 +50,23 @@ public class TasksTestCase {
     public void testSmoke() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add();
+    }
+
+    @Test
+    public void testPayload() throws Exception {
+        final Queue queue = QueueFactory.getQueue("default");
+        queue.add(TaskOptions.Builder.withPayload("payload"));
+    }
+
+    @Test
+    public void testHeaders() throws Exception {
+        final Queue queue = QueueFactory.getQueue("default");
+        queue.add(TaskOptions.Builder.withHeader("header_key", "header_value"));
+    }
+
+    @Test
+    public void testParams() throws Exception {
+        final Queue queue = QueueFactory.getQueue("default");
+        queue.add(TaskOptions.Builder.withParam("param_key", "param_value"));
     }
 }

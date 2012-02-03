@@ -31,9 +31,9 @@ import javax.jms.Session;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public interface MessageCreator {
-    Message createMessage(Session session);
+    Message createMessage(Session session) throws Exception;
 
-    void enhanceMessage(Message message);
+    void enhanceMessage(Message message) throws Exception;
 
     String getPath();
 

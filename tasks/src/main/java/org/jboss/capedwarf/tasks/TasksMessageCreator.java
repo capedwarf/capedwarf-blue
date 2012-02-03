@@ -25,9 +25,13 @@ package org.jboss.capedwarf.tasks;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletRequestCreator;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
+import javax.jms.BytesMessage;
 import javax.jms.Message;
 import javax.jms.Session;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Tasks message creator.
@@ -44,16 +48,51 @@ public class TasksMessageCreator implements MessageCreator {
         this.taskOptions = taskOptions;
     }
 
-    public Message createMessage(Session session) {
-        return null;
+    public Message createMessage(Session session) throws Exception {
+        final byte[] payload = (byte[]) ReflectionUtils.invokeInstanceMethod(taskOptions, "getPayload");
+        if (payload != null && payload.length > 0) {
+            final BytesMessage bytesMessage = session.createBytesMessage();
+            bytesMessage.writeBytes(payload);
+
+            enhanceMessage(bytesMessage);
+
+            return bytesMessage;
+        } else {
+            return null;
+        }
     }
 
-    public void enhanceMessage(Message message) {
-        // TODO
+    // TODO -- fix keys for non-Java-identifiers
+    @SuppressWarnings("unchecked")
+    public void enhanceMessage(Message message) throws Exception {
+        final Map<String, List<String>> headers = (Map<String, List<String>>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getHeaders");
+        if (headers != null) {
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                final StringBuilder builder = new StringBuilder();
+                final List<String> list = entry.getValue();
+                if (list.isEmpty() == false) {
+                    builder.append(list.get(0));
+                    for (int i = 1; i < list.size(); i++) {
+                        builder.append(TasksServletRequestCreator.DELIMITER).append(list.get(i));
+                    }
+                }
+                final String key = TasksServletRequestCreator.HEADERS + entry.getKey();
+                message.setStringProperty(key, builder.toString());
+            }
+        }
+        final List<Object> params = (List<Object>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getParams");
+        if (params != null) {
+            for (Object param : params) {
+                // TODO -- cache param invocations
+                final String key = TasksServletRequestCreator.PARAMS + ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedName");
+                final String value = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedValue");
+                message.setStringProperty(key, value);
+            }
+        }
     }
 
     public String getPath() {
-        return "/_ah/admin"; // TODO
+        return taskOptions.getUrl();
     }
 
     public Class<? extends ServletRequestCreator> getServletRequestCreator() {

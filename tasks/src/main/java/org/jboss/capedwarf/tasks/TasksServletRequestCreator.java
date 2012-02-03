@@ -28,6 +28,7 @@ import org.jboss.capedwarf.common.servlet.AbstractHttpServletRequest;
 import javax.jms.Message;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
+import java.util.Enumeration;
 
 /**
  * Tasks servlet request creator.
@@ -35,9 +36,23 @@ import javax.servlet.ServletRequest;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class TasksServletRequestCreator implements ServletRequestCreator {
+
+    static final String DELIMITER = "||";
+    static final String HEADERS = "task_option_headers_";
+    static final String PARAMS = "task_option_params_";
+
     public ServletRequest createServletRequest(ServletContext context, Message message) throws Exception {
         final TasksServletRequest request = new TasksServletRequest(context);
-        // TODO
+        final Enumeration names = message.getPropertyNames();
+        while (names.hasMoreElements()) {
+            final String name = names.nextElement().toString();
+            final String value = message.getStringProperty(name);
+            if (name.startsWith(HEADERS)) {
+                request.addHeaders(name.substring(HEADERS.length()), value.split(DELIMITER));
+            } else if (name.startsWith(PARAMS)) {
+                request.setParameters(name.substring(PARAMS.length()), new String[]{value});
+            }
+        }
         return request;
     }
 

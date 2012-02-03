@@ -56,6 +56,10 @@ public abstract class AbstractServletRequest implements ServletRequest {
         this.context = context;
     }
 
+    public void setParameters(String key, String[] values) {
+        parameters.put(key, values);
+    }
+
     public Object getAttribute(String name) {
         return attributes.get(name);
     }

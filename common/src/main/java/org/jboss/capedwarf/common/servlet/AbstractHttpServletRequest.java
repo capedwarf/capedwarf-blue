@@ -32,6 +32,7 @@ import javax.servlet.http.Part;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -56,11 +57,11 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
         super(context);
     }
 
-    protected void addCookie(Cookie cookie) {
+    public void addCookie(Cookie cookie) {
         cookies.add(cookie);
     }
 
-    protected void addHeader(String name, String value) {
+    public void addHeader(String name, String value) {
         Set<String> set = headers.get(name);
         if (set == null) {
             set = new HashSet<String>();
@@ -69,7 +70,16 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
         set.add(value);
     }
 
-    protected void addPart(String name, Part part) {
+    public void addHeaders(String name, String[] values) {
+        Set<String> set = headers.get(name);
+        if (set == null) {
+            set = new HashSet<String>();
+            headers.put(name, set);
+        }
+        set.addAll(Arrays.asList(values));
+    }
+
+    public void addPart(String name, Part part) {
         parts.put(name, part);
     }
 
