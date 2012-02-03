@@ -43,12 +43,9 @@ import javax.jms.Session;
 public class ServletExecutorProducer {
 
     private static final ServletExecutorProducer instance = new ServletExecutorProducer();
-    private static final String PREFIX = "org.jboss.capedwarf.jms.";
+    private static final String PREFIX = "org_jboss_capedwarf_jms_";
 
     private volatile int counter;
-
-    private final ConnectionFactory factory = JndiLookupUtils.lazyLookup("jms.factory.jndi", ConnectionFactory.class, "java:/ConnectionFactory");
-    private final Queue queue = JndiLookupUtils.lazyLookup("jms.queue.jndi", Queue.class, "java:/queue/capedwarf");
 
     private volatile Connection connection;
     private Session session;
@@ -62,8 +59,10 @@ public class ServletExecutorProducer {
         if (producer == null) {
             synchronized (this) {
                 if (producer == null) {
-                    Connection tmp = factory.createConnection();
+                    final ConnectionFactory factory = JndiLookupUtils.lookup("jms.factory.jndi", ConnectionFactory.class, "java:/ConnectionFactory");
+                    final Connection tmp = factory.createConnection();
                     session = tmp.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                    final Queue queue = JndiLookupUtils.lookup("jms.queue.jndi", Queue.class, "java:/queue/capedwarf");
                     producer = session.createProducer(queue);
                     producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
                     connection = tmp;
