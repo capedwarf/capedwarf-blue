@@ -20,25 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.jms;
+package org.jboss.test.capedwarf.tasks.test;
 
-import javax.jms.Message;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
- * Create ServletRequest.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public interface ServletRequestCreator {
-    /**
-     * Create mock servlet request, for async tasks.
-     *
-     * @param context the servlet context
-     * @param message the message
-     * @return new servlet request
-     * @throws Exception for any error
-     */
-    ServletRequest createServletRequest(ServletContext context, Message message) throws Exception;
+@RunWith(Arquillian.class)
+public class TasksTestCase {
+    @Deployment
+    public static Archive getDeployment() {
+        return ShrinkWrap.create(WebArchive.class)
+                .setWebXML(new StringAsset("<web/>"))
+                .addAsWebInfResource("appengine-web.xml");
+    }
+
+    @Test
+    public void testSmoke() throws Exception {
+        final Queue queue = QueueFactory.getQueue("default");
+        queue.add();
+    }
 }

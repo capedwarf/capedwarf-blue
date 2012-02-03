@@ -20,25 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.jms;
+package org.jboss.capedwarf.tasks;
+
+import com.google.appengine.api.taskqueue.TaskOptions;
+import org.jboss.capedwarf.common.jms.MessageCreator;
+import org.jboss.capedwarf.common.jms.ServletRequestCreator;
 
 import javax.jms.Message;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
+import javax.jms.Session;
 
 /**
- * Create ServletRequest.
+ * Tasks message creator.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public interface ServletRequestCreator {
-    /**
-     * Create mock servlet request, for async tasks.
-     *
-     * @param context the servlet context
-     * @param message the message
-     * @return new servlet request
-     * @throws Exception for any error
-     */
-    ServletRequest createServletRequest(ServletContext context, Message message) throws Exception;
+public class TasksMessageCreator implements MessageCreator {
+
+    private TaskOptions taskOptions;
+
+    public TasksMessageCreator(TaskOptions taskOptions) {
+        if (taskOptions == null)
+            throw new IllegalArgumentException("Null task options");
+        this.taskOptions = taskOptions;
+    }
+
+    public Message createMessage(Session session) {
+        return null;
+    }
+
+    public void enhanceMessage(Message message) {
+        // TODO
+    }
+
+    public String getPath() {
+        return "/_ah/admin"; // TODO
+    }
+
+    public Class<? extends ServletRequestCreator> getServletRequestCreator() {
+        return TasksServletRequestCreator.class;
+    }
 }

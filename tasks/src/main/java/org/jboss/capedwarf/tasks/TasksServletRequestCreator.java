@@ -20,25 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.jms;
+package org.jboss.capedwarf.tasks;
+
+import org.jboss.capedwarf.common.jms.ServletRequestCreator;
+import org.jboss.capedwarf.common.servlet.AbstractHttpServletRequest;
 
 import javax.jms.Message;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 
 /**
- * Create ServletRequest.
+ * Tasks servlet request creator.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public interface ServletRequestCreator {
-    /**
-     * Create mock servlet request, for async tasks.
-     *
-     * @param context the servlet context
-     * @param message the message
-     * @return new servlet request
-     * @throws Exception for any error
-     */
-    ServletRequest createServletRequest(ServletContext context, Message message) throws Exception;
+public class TasksServletRequestCreator implements ServletRequestCreator {
+    public ServletRequest createServletRequest(ServletContext context, Message message) throws Exception {
+        final TasksServletRequest request = new TasksServletRequest(context);
+        // TODO
+        return request;
+    }
+
+    private static class TasksServletRequest extends AbstractHttpServletRequest {
+        private TasksServletRequest(ServletContext context) {
+            super(context);
+        }
+    }
 }

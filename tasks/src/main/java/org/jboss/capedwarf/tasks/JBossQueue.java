@@ -28,8 +28,10 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueConstants;
 import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
+import org.jboss.capedwarf.common.jms.MessageCreator;
+import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +61,10 @@ public class JBossQueue implements Queue {
         this.queueName = queueName;
     }
 
+    protected MessageCreator createMessageCreator(final TaskOptions taskOptions) {
+        return new TasksMessageCreator(taskOptions);
+    }
+
     public String getQueueName() {
         return queueName;
     }
@@ -68,7 +74,7 @@ public class JBossQueue implements Queue {
     }
 
     public TaskHandle add(TaskOptions taskOptions) {
-        return add(Collections.singleton(taskOptions)).get(0);
+        return add(DatastoreServiceFactory.getDatastoreService().getCurrentTransaction(), taskOptions);
     }
 
     public List<TaskHandle> add(Iterable<TaskOptions> taskOptionses) {
@@ -76,11 +82,20 @@ public class JBossQueue implements Queue {
     }
 
     public TaskHandle add(Transaction transaction, TaskOptions taskOptions) {
-        return add(transaction, Collections.singleton(taskOptions)).get(0);
+        try {
+            final MessageCreator mc = createMessageCreator(taskOptions);
+            ServletExecutorProducer.getInstance().sendMessage(mc);
+            return new TaskHandle(taskOptions, getQueueName());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public List<TaskHandle> add(Transaction transaction, Iterable<TaskOptions> taskOptionses) {
-        return null;  // TODO
+        List<TaskHandle> handles = new ArrayList<TaskHandle>();
+        for (TaskOptions to : taskOptionses)
+            handles.add(add(transaction, to));
+        return handles;
     }
 
     public boolean deleteTask(String taskName) {
@@ -89,11 +104,14 @@ public class JBossQueue implements Queue {
     }
 
     public boolean deleteTask(TaskHandle taskHandle) {
-        return deleteTask(Collections.singletonList(taskHandle)).get(0);
+        return false; // TODO
     }
 
     public List<Boolean> deleteTask(List<TaskHandle> taskHandles) {
-        return null;  // TODO
+        List<Boolean> results = new ArrayList<Boolean>();
+        for (TaskHandle th : taskHandles)
+            results.add(deleteTask(th));
+        return results;
     }
 
     public List<TaskHandle> leaseTasks(long lease, TimeUnit unit, long countLimit) {
