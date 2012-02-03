@@ -59,7 +59,7 @@ public class ServletExecutorProducer {
         if (producer == null) {
             synchronized (this) {
                 if (producer == null) {
-                    final ConnectionFactory factory = JndiLookupUtils.lookup("jms.factory.jndi", ConnectionFactory.class, "java:/ConnectionFactory");
+                    final ConnectionFactory factory = JndiLookupUtils.lookup("jms.factory.jndi", ConnectionFactory.class, "java:/JmsXA");
                     final Connection tmp = factory.createConnection();
                     session = tmp.createSession(false, Session.AUTO_ACKNOWLEDGE);
                     final Queue queue = JndiLookupUtils.lookup("jms.queue.jndi", Queue.class, "java:/queue/capedwarf");
