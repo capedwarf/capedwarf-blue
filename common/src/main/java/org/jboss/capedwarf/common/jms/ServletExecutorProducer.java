@@ -86,7 +86,14 @@ public class ServletExecutorProducer {
         }
     }
 
-    public void sendMessage(MessageCreator creator) throws Exception {
+    /**
+     * Send jms message.
+     *
+     * @param creator the message creator
+     * @return msg id
+     * @throws Exception for any error
+     */
+    public String sendMessage(MessageCreator creator) throws Exception {
         final MessageProducer mp = getProducer();
 
         Message message;
@@ -106,6 +113,8 @@ public class ServletExecutorProducer {
         synchronized (this) {
             mp.send(message);
         }
+
+        return message.getJMSMessageID();
     }
 
     private static String getModuleName() {

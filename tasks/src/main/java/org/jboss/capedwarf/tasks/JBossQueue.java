@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class JBossQueue implements Queue {
+    private static final String ID = "ID:";
     private static Map<String, Queue> cache = new HashMap<String, Queue>();
 
     private final String queueName;
@@ -61,12 +62,20 @@ public class JBossQueue implements Queue {
         this.queueName = queueName;
     }
 
-    protected MessageCreator createMessageCreator(final TaskOptions taskOptions) {
+    protected static MessageCreator createMessageCreator(final TaskOptions taskOptions) {
         return new TasksMessageCreator(taskOptions);
     }
 
-    protected Transaction getCurrentTransaction() {
+    protected static Transaction getCurrentTransaction() {
         return DatastoreServiceFactory.getDatastoreService().getCurrentTransaction(null);
+    }
+
+    protected static String toJmsId(final String name) {
+        return ID + name;
+    }
+
+    protected static String toTaskName(final String id) {
+        return (id.startsWith(ID)) ? id.substring(ID.length()) : id;
     }
 
     public String getQueueName() {
@@ -85,11 +94,12 @@ public class JBossQueue implements Queue {
         return add(getCurrentTransaction(), taskOptionses);
     }
 
-    public TaskHandle add(Transaction transaction, TaskOptions taskOptions) {
+    public TaskHandle add(final Transaction transaction, final TaskOptions taskOptions) {
         try {
             final MessageCreator mc = createMessageCreator(taskOptions);
-            ServletExecutorProducer.getInstance().sendMessage(mc);
-            return new TaskHandle(taskOptions, getQueueName());
+            final String id = ServletExecutorProducer.getInstance().sendMessage(mc);
+            final TaskOptions copy = new TaskOptions(taskOptions).taskName(toTaskName(id));
+            return new TaskHandle(copy, getQueueName());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
