@@ -71,7 +71,7 @@
         <version.org.datanucleus.gae>1.0.10</version.org.datanucleus.gae>
         <version.org.datanucleus.jdo>2.3-eb</version.org.datanucleus.jdo>
         <version.org.hibernate.search>4.0.0.Final</version.org.hibernate.search>
-        <version.org.infinispan>5.1.0.CR3</version.org.infinispan>
+        <version.org.infinispan>5.1.1.CR1</version.org.infinispan>
         <version.junit>4.7</version.junit>
         <version.arquillian>1.0.0.CR7</version.arquillian>
         <version.jboss.as7>7.1.0.Final-SNAPSHOT</version.jboss.as7>
