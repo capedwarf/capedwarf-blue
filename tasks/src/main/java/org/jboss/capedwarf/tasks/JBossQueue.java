@@ -65,6 +65,10 @@ public class JBossQueue implements Queue {
         return new TasksMessageCreator(taskOptions);
     }
 
+    protected Transaction getCurrentTransaction() {
+        return DatastoreServiceFactory.getDatastoreService().getCurrentTransaction(null);
+    }
+
     public String getQueueName() {
         return queueName;
     }
@@ -74,11 +78,11 @@ public class JBossQueue implements Queue {
     }
 
     public TaskHandle add(TaskOptions taskOptions) {
-        return add(DatastoreServiceFactory.getDatastoreService().getCurrentTransaction(), taskOptions);
+        return add(getCurrentTransaction(), taskOptions);
     }
 
     public List<TaskHandle> add(Iterable<TaskOptions> taskOptionses) {
-        return add(DatastoreServiceFactory.getDatastoreService().getCurrentTransaction(), taskOptionses);
+        return add(getCurrentTransaction(), taskOptionses);
     }
 
     public TaskHandle add(Transaction transaction, TaskOptions taskOptions) {
