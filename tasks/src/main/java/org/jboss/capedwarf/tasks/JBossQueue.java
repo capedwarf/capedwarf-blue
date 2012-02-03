@@ -32,6 +32,7 @@ import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,21 +96,25 @@ public class JBossQueue implements Queue {
     }
 
     public TaskHandle add(final Transaction transaction, final TaskOptions taskOptions) {
-        try {
-            final MessageCreator mc = createMessageCreator(taskOptions);
-            final String id = ServletExecutorProducer.getInstance().sendMessage(mc);
-            final TaskOptions copy = new TaskOptions(taskOptions).taskName(toTaskName(id));
-            return new TaskHandle(copy, getQueueName());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return add(transaction, Collections.singleton(taskOptions)).get(0);
     }
 
     public List<TaskHandle> add(Transaction transaction, Iterable<TaskOptions> taskOptionses) {
-        List<TaskHandle> handles = new ArrayList<TaskHandle>();
-        for (TaskOptions to : taskOptionses)
-            handles.add(add(transaction, to));
-        return handles;
+        final ServletExecutorProducer producer = new ServletExecutorProducer();
+        try {
+            final List<TaskHandle> handles = new ArrayList<TaskHandle>();
+            for (TaskOptions to : taskOptionses) {
+                final MessageCreator mc = createMessageCreator(to);
+                final String id = producer.sendMessage(mc);
+                final TaskOptions copy = new TaskOptions(to).taskName(toTaskName(id));
+                handles.add(new TaskHandle(copy, getQueueName()));
+            }
+            return handles;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            producer.dispose();
+        }
     }
 
     public boolean deleteTask(String taskName) {

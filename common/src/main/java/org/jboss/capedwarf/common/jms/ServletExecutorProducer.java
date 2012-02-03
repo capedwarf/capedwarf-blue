@@ -29,6 +29,7 @@ import org.jboss.modules.ModuleClassLoader;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -37,52 +38,45 @@ import javax.jms.Session;
 
 /**
  * JMS producer for servlet executor.
+ * This producer is not thread safe!
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ServletExecutorProducer {
 
-    private static final ServletExecutorProducer instance = new ServletExecutorProducer();
     private static final String PREFIX = "org_jboss_capedwarf_jms_";
+    private static ConnectionFactory factory = JndiLookupUtils.lazyLookup("jms.factory.jndi", ConnectionFactory.class, "java:/JmsXA");
 
-    private volatile int counter;
-
-    private volatile Connection connection;
     private Session session;
-    private volatile MessageProducer producer;
+    private MessageProducer producer;
+    private Connection connection;
 
-    public static ServletExecutorProducer getInstance() {
-        return instance;
+    private Session getSession() throws Exception {
+        if (session == null) {
+            connection = factory.createConnection();
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        }
+        return session;
     }
 
     private MessageProducer getProducer() throws Exception {
         if (producer == null) {
-            synchronized (this) {
-                if (producer == null) {
-                    final ConnectionFactory factory = JndiLookupUtils.lookup("jms.factory.jndi", ConnectionFactory.class, "java:/JmsXA");
-                    final Connection tmp = factory.createConnection();
-                    session = tmp.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                    final Queue queue = JndiLookupUtils.lookup("jms.queue.jndi", Queue.class, "java:/queue/capedwarf");
-                    producer = session.createProducer(queue);
-                    producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-                    connection = tmp;
-                }
-            }
+            final Queue queue = JndiLookupUtils.lookup("jms.queue.jndi", Queue.class, "java:/queue/capedwarf");
+            producer = getSession().createProducer(queue);
+            producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
         }
         return producer;
     }
 
-    public void start() {
-        counter++;
-    }
-
-    public void stop() throws Exception {
-        counter--;
-        if (counter == 0) {
-            final Connection tmp = connection;
-            connection = null;
-            if (tmp != null)
+    public void dispose() {
+        final Connection tmp = connection;
+        connection = null;
+        if (tmp != null) {
+            try {
                 tmp.close();
+            } catch (JMSException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -96,13 +90,10 @@ public class ServletExecutorProducer {
     public String sendMessage(MessageCreator creator) throws Exception {
         final MessageProducer mp = getProducer();
 
-        Message message;
-        synchronized (this) {
-            message = creator.createMessage(session);
-            if (message == null) {
-                message = session.createMessage();
-                creator.enhanceMessage(message);
-            }
+        Message message = creator.createMessage(getSession());
+        if (message == null) {
+            message = getSession().createMessage();
+            creator.enhanceMessage(message);
         }
 
         message.setStringProperty(PREFIX + "module", getModuleName());
@@ -110,9 +101,7 @@ public class ServletExecutorProducer {
         message.setStringProperty(PREFIX + "path", creator.getPath());
         message.setStringProperty(PREFIX + "factory", creator.getServletRequestCreator().getName());
 
-        synchronized (this) {
-            mp.send(message);
-        }
+        mp.send(message);
 
         return message.getJMSMessageID();
     }
