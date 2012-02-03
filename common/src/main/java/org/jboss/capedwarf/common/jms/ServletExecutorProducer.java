@@ -96,14 +96,18 @@ public class ServletExecutorProducer {
             creator.enhanceMessage(message);
         }
 
-        message.setStringProperty(PREFIX + "module", getModuleName());
-        message.setStringProperty(PREFIX + "appId", Application.getAppId());
-        message.setStringProperty(PREFIX + "path", creator.getPath());
-        message.setStringProperty(PREFIX + "factory", creator.getServletRequestCreator().getName());
+        setString(message, "module", getModuleName());
+        setString(message, "appId", Application.getAppId());
+        setString(message, "path", creator.getPath());
+        setString(message, "factory", creator.getServletRequestCreator().getName());
 
         mp.send(message);
 
         return message.getJMSMessageID();
+    }
+
+    private static void setString(final Message msg, String key, String value) throws JMSException {
+        msg.setStringProperty(PREFIX + key, value);
     }
 
     private static String getModuleName() {
