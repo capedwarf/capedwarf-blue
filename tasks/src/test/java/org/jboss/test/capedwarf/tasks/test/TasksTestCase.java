@@ -31,7 +31,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,7 +55,6 @@ public class TasksTestCase {
     }
 
     @Test
-    @Ignore
     public void testPayload() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withPayload("payload").url(URL));
@@ -69,7 +67,6 @@ public class TasksTestCase {
     }
 
     @Test
-    @Ignore
     public void testParams() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withParam("param_key", "param_value").url(URL));

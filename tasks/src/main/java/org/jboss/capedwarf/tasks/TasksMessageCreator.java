@@ -66,7 +66,7 @@ public class TasksMessageCreator implements MessageCreator {
     @SuppressWarnings("unchecked")
     public void enhanceMessage(Message message) throws Exception {
         final Map<String, List<String>> headers = (Map<String, List<String>>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getHeaders");
-        if (headers != null) {
+        if (headers != null && headers.size() > 0) {
             final Map<String, String> map = new HashMap<String, String>();
             for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
                 final StringBuilder builder = new StringBuilder();
@@ -83,7 +83,7 @@ public class TasksMessageCreator implements MessageCreator {
             TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
         }
         final List<Object> params = (List<Object>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getParams");
-        if (params != null) {
+        if (params != null && params.size() > 0) {
             final Map<String, String> map = new HashMap<String, String>();
             for (Object param : params) {
                 final String key = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedName");

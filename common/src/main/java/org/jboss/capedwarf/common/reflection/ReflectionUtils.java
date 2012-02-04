@@ -191,7 +191,7 @@ public final class ReflectionUtils {
             Class<?> current = clazz;
             while (current != null) {
                 try {
-                    final Method m = clazz.getDeclaredMethod(methodName, types);
+                    final Method m = current.getDeclaredMethod(methodName, types);
                     m.setAccessible(true);
                     return m;
                 } catch (NoSuchMethodException ignored) {
