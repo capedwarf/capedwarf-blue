@@ -37,6 +37,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Abstract servlet request.
@@ -46,7 +47,7 @@ import java.util.Map;
 public abstract class AbstractServletRequest implements ServletRequest {
 
     private ServletContext context;
-    private Map<String, String[]> parameters = new HashMap<String, String[]>();
+    private Map<String, Set<String>> parameters = new HashMap<String, Set<String>>();
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private String charEncoding = "UTF-8";
 
@@ -56,8 +57,12 @@ public abstract class AbstractServletRequest implements ServletRequest {
         this.context = context;
     }
 
-    public void setParameters(String key, String[] values) {
+    public void setParameters(String key, Set<String> values) {
         parameters.put(key, values);
+    }
+
+    public void addParameters(Map<String, Set<String>> map) {
+        parameters.putAll(map);
     }
 
     public Object getAttribute(String name) {
@@ -89,8 +94,8 @@ public abstract class AbstractServletRequest implements ServletRequest {
     }
 
     public String getParameter(String name) {
-        final String[] strings = parameters.get(name);
-        return strings != null && strings.length > 0 ? strings[0] : null;
+        final Set<String> strings = parameters.get(name);
+        return strings != null && strings.size() > 0 ? strings.iterator().next() : null;
     }
 
     public Enumeration<String> getParameterNames() {
@@ -98,11 +103,16 @@ public abstract class AbstractServletRequest implements ServletRequest {
     }
 
     public String[] getParameterValues(String name) {
-        return parameters.get(name);
+        Set<String> set = parameters.get(name);
+        return (set != null) ? set.toArray(new String[set.size()]) : null;
     }
 
     public Map<String, String[]> getParameterMap() {
-        return Collections.unmodifiableMap(parameters);
+        final Map<String, String[]> map = new HashMap<String, String[]>();
+        for (Map.Entry<String, Set<String>> entry : parameters.entrySet()) {
+            map.put(entry.getKey(), entry.getValue().toArray(new String[entry.getValue().size()]));
+        }
+        return map;
     }
 
     public String getProtocol() {

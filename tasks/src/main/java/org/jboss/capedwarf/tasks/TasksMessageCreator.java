@@ -30,6 +30,7 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import javax.jms.BytesMessage;
 import javax.jms.Message;
 import javax.jms.Session;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,11 +63,11 @@ public class TasksMessageCreator implements MessageCreator {
         }
     }
 
-    // TODO -- fix keys for non-Java-identifiers
     @SuppressWarnings("unchecked")
     public void enhanceMessage(Message message) throws Exception {
         final Map<String, List<String>> headers = (Map<String, List<String>>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getHeaders");
         if (headers != null) {
+            final Map<String, String> map = new HashMap<String, String>();
             for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
                 final StringBuilder builder = new StringBuilder();
                 final List<String> list = entry.getValue();
@@ -76,18 +77,20 @@ public class TasksMessageCreator implements MessageCreator {
                         builder.append(TasksServletRequestCreator.DELIMITER).append(list.get(i));
                     }
                 }
-                final String key = TasksServletRequestCreator.HEADERS + entry.getKey();
-                message.setStringProperty(key, builder.toString());
+                final String key = entry.getKey();
+                map.put(key, builder.toString());
             }
+            TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
         }
         final List<Object> params = (List<Object>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getParams");
         if (params != null) {
+            final Map<String, String> map = new HashMap<String, String>();
             for (Object param : params) {
-                // TODO -- cache param invocations
-                final String key = TasksServletRequestCreator.PARAMS + ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedName");
+                final String key = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedName");
                 final String value = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedValue");
-                message.setStringProperty(key, value);
+                map.put(key, value);
             }
+            TasksServletRequestCreator.put(message, TasksServletRequestCreator.PARAMS, map);
         }
     }
 

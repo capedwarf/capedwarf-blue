@@ -79,6 +79,10 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
         set.addAll(Arrays.asList(values));
     }
 
+    public void addHeaders(Map<String, Set<String>> map) {
+        headers.putAll(map);
+    }
+
     public void addPart(String name, Part part) {
         parts.put(name, part);
     }

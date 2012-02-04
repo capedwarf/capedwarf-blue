@@ -25,10 +25,16 @@ package org.jboss.capedwarf.tasks;
 import org.jboss.capedwarf.common.jms.ServletRequestCreator;
 import org.jboss.capedwarf.common.servlet.AbstractHttpServletRequest;
 
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Tasks servlet request creator.
@@ -37,22 +43,18 @@ import java.util.Enumeration;
  */
 public class TasksServletRequestCreator implements ServletRequestCreator {
 
+    private static final String COPY = "_copy";
+
     static final String DELIMITER = "||";
     static final String HEADERS = "task_option_headers_";
     static final String PARAMS = "task_option_params_";
 
     public ServletRequest createServletRequest(ServletContext context, Message message) throws Exception {
         final TasksServletRequest request = new TasksServletRequest(context);
-        final Enumeration names = message.getPropertyNames();
-        while (names.hasMoreElements()) {
-            final String name = names.nextElement().toString();
-            final String value = message.getStringProperty(name);
-            if (name.startsWith(HEADERS)) {
-                request.addHeaders(name.substring(HEADERS.length()), value.split(DELIMITER));
-            } else if (name.startsWith(PARAMS)) {
-                request.setParameters(name.substring(PARAMS.length()), new String[]{value});
-            }
-        }
+        final Map<String, Set<String>> headers = get(message, HEADERS);
+        request.addHeaders(headers);
+        final Map<String, Set<String>> params = get(message, PARAMS);
+        request.addParameters(params);
         return request;
     }
 
@@ -60,5 +62,31 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
         private TasksServletRequest(ServletContext context) {
             super(context);
         }
+    }
+
+    static void put(final Message msg, final String prefix, final Map<String, String> map) throws JMSException {
+        int offset = 0;
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            put(msg, prefix, entry.getKey(), entry.getValue(), offset++);
+        }
+    }
+
+    private static void put(final Message msg, final String prefix, final String key, final String value, final int offset) throws JMSException {
+        msg.setStringProperty(prefix + offset, key);
+        msg.setStringProperty(prefix + offset + COPY, value);
+    }
+
+    static Map<String, Set<String>> get(final Message msg, final String prefix) throws JMSException {
+        final Map<String, Set<String>> map = new HashMap<String, Set<String>>();
+        final Enumeration names = msg.getPropertyNames();
+        while (names.hasMoreElements()) {
+            final String name = names.nextElement().toString();
+            final String value = msg.getStringProperty(name);
+            if (name.startsWith(prefix) && name.endsWith(COPY) == false) {
+                final String property = msg.getStringProperty(name + COPY);
+                map.put(value, new HashSet<String>(Arrays.asList(property.split(DELIMITER))));
+            }
+        }
+        return map;
     }
 }

@@ -63,6 +63,7 @@ public final class ReflectionUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T newInstance(String className, Class[] types, Object[] args) {
         try {
             Class<?> clazz = Class.forName(className);
@@ -140,6 +141,20 @@ public final class ReflectionUtils {
     }
 
     /**
+     * Cache invocation.
+     *
+     * @param clazz      the class
+     * @param methodName the method name
+     * @param types      the types
+     * @param args       the args
+     * @return cached target invocation
+     */
+    public static TargetInvocation cacheInvocation(Class<?> clazz, String methodName, Class[] types, Object[] args) {
+        final Method m = findMethod(clazz, methodName, types);
+        return new TargetInvocation(m, args);
+    }
+
+    /**
      * Invoke method.
      *
      * @param target     the target
@@ -150,6 +165,23 @@ public final class ReflectionUtils {
      * @return method's return value
      */
     private static Object invokeMethod(Object target, Class<?> clazz, String methodName, Class[] types, Object[] args) {
+        final Method m = findMethod(clazz, methodName, types);
+        try {
+            return m.invoke(target, args);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Find method.
+     *
+     * @param clazz      the class
+     * @param methodName the method name
+     * @param types      the types
+     * @return method's return value
+     */
+    private static Method findMethod(Class<?> clazz, String methodName, Class[] types) {
         if (clazz == null)
             throw new IllegalArgumentException("Null class");
         if (methodName == null)
@@ -159,10 +191,10 @@ public final class ReflectionUtils {
             Class<?> current = clazz;
             while (current != null) {
                 try {
-                    Method m = clazz.getDeclaredMethod(methodName, types);
+                    final Method m = clazz.getDeclaredMethod(methodName, types);
                     m.setAccessible(true);
-                    return m.invoke(target, args);
-                } catch (Exception ignored) {
+                    return m;
+                } catch (NoSuchMethodException ignored) {
                 }
                 current = current.getSuperclass();
             }
