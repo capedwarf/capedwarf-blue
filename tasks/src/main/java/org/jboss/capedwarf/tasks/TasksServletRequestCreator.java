@@ -25,10 +25,13 @@ package org.jboss.capedwarf.tasks;
 import org.jboss.capedwarf.common.jms.ServletRequestCreator;
 import org.jboss.capedwarf.common.servlet.AbstractHttpServletRequest;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -50,7 +53,12 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
     static final String PARAMS = "task_option_params_";
 
     public ServletRequest createServletRequest(ServletContext context, Message message) throws Exception {
-        final TasksServletRequest request = new TasksServletRequest(context);
+        final AbstractHttpServletRequest request;
+        if (message instanceof BytesMessage) {
+            request = new BytesServletRequest(context, (BytesMessage) message);
+        } else {
+            request = new TasksServletRequest(context);
+        }
         final Map<String, Set<String>> headers = get(message, HEADERS);
         request.addHeaders(headers);
         final Map<String, Set<String>> params = get(message, PARAMS);
@@ -61,6 +69,28 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
     private static class TasksServletRequest extends AbstractHttpServletRequest {
         private TasksServletRequest(ServletContext context) {
             super(context);
+        }
+    }
+
+    private static class BytesServletRequest extends AbstractHttpServletRequest {
+        private BytesMessage msg;
+
+        private BytesServletRequest(ServletContext context, BytesMessage msg) {
+            super(context);
+            this.msg = msg;
+        }
+
+        @Override
+        public ServletInputStream getInputStream() throws IOException {
+            return new ServletInputStream() {
+                public int read() throws IOException {
+                    try {
+                        return msg.readByte();
+                    } catch (JMSException e) {
+                        throw new IOException(e);
+                    }
+                }
+            };
         }
     }
 
