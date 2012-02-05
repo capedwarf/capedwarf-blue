@@ -73,7 +73,7 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
     }
 
     private static class BytesServletRequest extends AbstractHttpServletRequest {
-        private BytesMessage msg;
+        private final BytesMessage msg;
 
         private BytesServletRequest(ServletContext context, BytesMessage msg) {
             super(context);
@@ -85,7 +85,9 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
             return new ServletInputStream() {
                 public int read() throws IOException {
                     try {
-                        return msg.readByte();
+                        final byte[] buf = new byte[1];
+                        final int rc = msg.readBytes(buf, 1);
+                        return (rc != -1) ? buf[0] : -1;
                     } catch (JMSException e) {
                         throw new IOException(e);
                     }
