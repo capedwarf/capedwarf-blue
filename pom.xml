@@ -44,6 +44,7 @@
         <version.com.google.gae.labs>1.6.2</version.com.google.gae.labs>
         <version.com.google.guava>10.0.1</version.com.google.guava>
         <version.json>20090211</version.json>
+        <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
         <version.org.jboss.seam>3.0.0.Final</version.org.jboss.seam>
         <version.org.jboss.logging>3.1.0.GA</version.org.jboss.logging>
         <version.org.jboss.modules.jboss-modules>1.1.1.GA</version.org.jboss.modules.jboss-modules>
@@ -381,6 +382,12 @@
                 <artifactId>jboss-servlet-api_3.0_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.servlet.api}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.velocity</groupId>
+                <artifactId>velocity</artifactId>
+                <version>${version.org.apache.velocity}</version>
             </dependency>
 
             <dependency>

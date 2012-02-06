@@ -1,0 +1,5 @@
+Hello world<br>
+
+
+<br><br>
+MyTestBean: $myTestBean.hello

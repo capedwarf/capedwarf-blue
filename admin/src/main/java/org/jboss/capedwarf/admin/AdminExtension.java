@@ -20,11 +20,14 @@ public class AdminExtension implements Extension {
      * @param bm  the bean manager
      */
     public void register(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-        final AnnotatedType<DatastoreEntityViewer> dev = bm.createAnnotatedType(DatastoreEntityViewer.class);
-        bbd.addAnnotatedType(dev);
+        addAnnotatedType(bbd, bm, DatastoreEntityViewer.class);
+        addAnnotatedType(bbd, bm, DatastoreViewer.class);
+        addAnnotatedType(bbd, bm, HttpParamProducer.class);
+    }
 
-        final AnnotatedType<DatastoreViewer> dv = bm.createAnnotatedType(DatastoreViewer.class);
-        bbd.addAnnotatedType(dv);
+    private <E> void addAnnotatedType(BeforeBeanDiscovery bbd, BeanManager bm, Class<E> clazz) {
+        final AnnotatedType<E> dev = bm.createAnnotatedType(clazz);
+        bbd.addAnnotatedType(dev);
     }
 
 }
