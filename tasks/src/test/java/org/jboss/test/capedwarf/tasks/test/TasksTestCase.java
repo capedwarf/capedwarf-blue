@@ -31,6 +31,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.tasks.support.PrintServlet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,12 +40,24 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class TasksTestCase {
-    private static final String URL = "/_ah/admin";
+    private static final String URL = "/_ah/test";
+    private static final String WEB_XML =
+            "<web>" +
+                    "<servlet>" +
+                    "<servlet-name>PrintServlet</servlet-name>" +
+                    "<servlet-class>" + PrintServlet.class.getName() + "</servlet-class>" +
+                    "</servlet>" +
+                    "<servlet-mapping>" +
+                    "<servlet-name>PrintServlet</servlet-name>" +
+                    "<url-pattern>" + URL + "</url-pattern>" +
+                    "</servlet-mapping>" +
+                    "</web>";
 
     @Deployment
     public static Archive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
-                .setWebXML(new StringAsset("<web/>"))
+                .addClass(PrintServlet.class)
+                .setWebXML(new StringAsset(WEB_XML))
                 .addAsWebInfResource("appengine-web.xml");
     }
 
