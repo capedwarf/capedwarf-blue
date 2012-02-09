@@ -24,7 +24,7 @@ package org.jboss.capedwarf.common.jms;
 
 import javax.jms.Message;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Create ServletRequest.
@@ -33,12 +33,12 @@ import javax.servlet.ServletRequest;
  */
 public interface ServletRequestCreator {
     /**
-     * Create mock servlet request, for async tasks.
+     * Create mock http servlet request, for async tasks.
      *
      * @param context the servlet context
      * @param message the message
-     * @return new servlet request
+     * @return new http servlet request
      * @throws Exception for any error
      */
-    ServletRequest createServletRequest(ServletContext context, Message message) throws Exception;
+    HttpServletRequest createServletRequest(ServletContext context, Message message) throws Exception;
 }

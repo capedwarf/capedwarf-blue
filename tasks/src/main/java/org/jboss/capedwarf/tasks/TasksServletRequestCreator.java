@@ -30,7 +30,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -52,7 +52,7 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
     static final String HEADERS = "task_option_headers_";
     static final String PARAMS = "task_option_params_";
 
-    public ServletRequest createServletRequest(ServletContext context, Message message) throws Exception {
+    public HttpServletRequest createServletRequest(ServletContext context, Message message) throws Exception {
         final AbstractHttpServletRequest request;
         if (message instanceof BytesMessage) {
             request = new BytesServletRequest(context, (BytesMessage) message);

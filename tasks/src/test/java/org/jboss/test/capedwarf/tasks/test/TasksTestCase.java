@@ -53,6 +53,11 @@ public class TasksTestCase {
                     " </servlet-mapping>" +
                     "</web>";
 
+    // we wait for JMS to kick-in
+    private static void sleep() throws InterruptedException {
+        Thread.sleep(3000L); // sleep for 3secs
+    }
+
     @Deployment
     public static Archive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
@@ -65,23 +70,27 @@ public class TasksTestCase {
     public void testSmoke() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withUrl(URL));
+        sleep();
     }
 
     @Test
     public void testPayload() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withPayload("payload").url(URL));
+        sleep();
     }
 
     @Test
     public void testHeaders() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withHeader("header_key", "header_value").url(URL));
+        sleep();
     }
 
     @Test
     public void testParams() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withParam("param_key", "param_value").url(URL));
+        sleep();
     }
 }
