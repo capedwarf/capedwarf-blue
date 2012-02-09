@@ -43,14 +43,14 @@ public class TasksTestCase {
     private static final String URL = "/_ah/test";
     private static final String WEB_XML =
             "<web>" +
-                    "<servlet>" +
-                    "<servlet-name>PrintServlet</servlet-name>" +
-                    "<servlet-class>" + PrintServlet.class.getName() + "</servlet-class>" +
-                    "</servlet>" +
-                    "<servlet-mapping>" +
-                    "<servlet-name>PrintServlet</servlet-name>" +
-                    "<url-pattern>" + URL + "</url-pattern>" +
-                    "</servlet-mapping>" +
+                    " <servlet>" +
+                    "  <servlet-name>PrintServlet</servlet-name>" +
+                    "  <servlet-class>" + PrintServlet.class.getName() + "</servlet-class>" +
+                    " </servlet>" +
+                    " <servlet-mapping>" +
+                    "  <servlet-name>PrintServlet</servlet-name>" +
+                    "  <url-pattern>" + URL + "</url-pattern>" +
+                    " </servlet-mapping>" +
                     "</web>";
 
     @Deployment
