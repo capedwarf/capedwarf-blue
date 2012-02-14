@@ -212,6 +212,6 @@ public abstract class AbstractServletRequest implements ServletRequest {
     }
 
     public DispatcherType getDispatcherType() {
-        return DispatcherType.FORWARD;
+        return DispatcherType.REQUEST;
     }
 }
