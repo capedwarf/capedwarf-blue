@@ -31,6 +31,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.tasks.support.PrintListener;
 import org.jboss.test.capedwarf.tasks.support.PrintServlet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +43,10 @@ import org.junit.runner.RunWith;
 public class TasksTestCase {
     private static final String URL = "/_ah/test";
     private static final String WEB_XML =
-            "<web>" +
+                    "<web>" +
+                    " <listener>" +
+                    "  <listener-class>" + PrintListener.class.getName() + "</listener-class>" +
+                    " </listener>" +
                     " <servlet>" +
                     "  <servlet-name>PrintServlet</servlet-name>" +
                     "  <servlet-class>" + PrintServlet.class.getName() + "</servlet-class>" +
@@ -61,7 +65,7 @@ public class TasksTestCase {
     @Deployment
     public static Archive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
-                .addClass(PrintServlet.class)
+                .addClasses(PrintServlet.class, PrintListener.class)
                 .setWebXML(new StringAsset(WEB_XML))
                 .addAsWebInfResource("appengine-web.xml");
     }
