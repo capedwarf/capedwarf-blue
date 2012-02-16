@@ -22,11 +22,21 @@
 
 package org.jboss.test.capedwarf.tasks.support;
 
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.files.AppEngineFile;
+import com.google.appengine.api.files.FileService;
+import com.google.appengine.api.files.FileServiceFactory;
+import com.google.appengine.api.files.FileWriteChannel;
+
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
 /**
@@ -37,5 +47,23 @@ public class PrintServlet extends HttpServlet {
 
     public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
         log.info("Ping - " + req);
+        
+        final DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
+        try {
+            Entity entity = new Entity("Qwert");
+            entity.setProperty("xyz", 123);
+            Key key = ds.put(entity);
+
+            entity = ds.get(key);
+            System.out.println(entity);
+
+            FileService fs = FileServiceFactory.getFileService();
+            AppEngineFile file = fs.createNewBlobFile("qwertfile");
+            FileWriteChannel fwc = fs.openWriteChannel(file, false);
+            fwc.write(ByteBuffer.wrap("qwert".getBytes()));
+            fwc.close();
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 }
