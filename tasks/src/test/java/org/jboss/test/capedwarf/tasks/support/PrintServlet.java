@@ -55,13 +55,16 @@ public class PrintServlet extends HttpServlet {
             Key key = ds.put(entity);
 
             entity = ds.get(key);
-            System.out.println(entity);
+            log.info(entity.toString());
 
             FileService fs = FileServiceFactory.getFileService();
             AppEngineFile file = fs.createNewBlobFile("qwertfile");
             FileWriteChannel fwc = fs.openWriteChannel(file, false);
-            fwc.write(ByteBuffer.wrap("qwert".getBytes()));
-            fwc.close();
+            try {
+                log.info("b_l = " + fwc.write(ByteBuffer.wrap("qwert".getBytes())));
+            } finally {
+                fwc.close();
+            }
         } catch (Exception e) {
             throw new IOException(e);
         }
