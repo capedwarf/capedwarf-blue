@@ -26,8 +26,20 @@ import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.datastore.*;
-import com.google.appengine.api.files.*;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.files.AppEngineFile;
+import com.google.appengine.api.files.FileReadChannel;
+import com.google.appengine.api.files.FileService;
+import com.google.appengine.api.files.FileWriteChannel;
+import com.google.appengine.api.files.FinalizationException;
+import com.google.appengine.api.files.GSFileOptions;
+import com.google.appengine.api.files.RecordReadChannel;
+import com.google.appengine.api.files.RecordWriteChannel;
 import org.infinispan.io.GridFilesystem;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
@@ -198,7 +210,10 @@ public class JBossFileService implements FileService {
     }
 
     public RecordWriteChannel openRecordWriteChannel(AppEngineFile file, boolean lock) throws IOException {
-        return new RecordWriteChannelImpl(openWriteChannel(file, lock));
+        return ReflectionUtils.newInstance(
+                "com.google.appengine.api.files.RecordWriteChannelImpl",
+                new Class[]{FileWriteChannel.class},
+                new Object[]{openWriteChannel(file, lock)});
     }
 
     public RecordReadChannel openRecordReadChannel(AppEngineFile file, boolean lock) throws IOException {
