@@ -22,31 +22,21 @@
 
 package org.jboss.capedwarf.admin;
 
-import javax.faces.view.facelets.ResourceResolver;
-import java.net.URL;
+import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.InjectionPoint;
 
 /**
- * @author Marko Luksa
- * @author Ales Justin
+ *
  */
-public class CustomResourceResolver extends ResourceResolver {
+public class HttpParamProducer {
 
-    private static final String ADMIN_PREFIX = "/_ah/admin";
-    private static final String ADMIN_PACKAGE = "/org/jboss/capedwarf/admin";
+    @Produces
+    @HttpParam
+    String getHttpParameter(InjectionPoint ip) {
+        String name = ip.getAnnotated().getAnnotation(HttpParam.class).value();
+        if ("".equals(name)) name = ip.getMember().getName();
 
-    private ResourceResolver defaultResourceResolver;
-
-    public CustomResourceResolver(ResourceResolver defaultResourceResolver) {
-        this.defaultResourceResolver = defaultResourceResolver;
-    }
-
-    @Override
-    public URL resolveUrl(String resource) {
-        if (resource.startsWith(ADMIN_PREFIX)) {
-            resource = resource.substring(ADMIN_PREFIX.length());
-            return Thread.currentThread().getContextClassLoader().getResource(ADMIN_PACKAGE + resource);
-        } else {
-            return defaultResourceResolver.resolveUrl(resource);
-        }
+        CapedwarfVelocityContext capedwarfVelocityContext = CapedwarfVelocityContext.getInstance();
+        return capedwarfVelocityContext.getRequest().getParameter(name);
     }
 }

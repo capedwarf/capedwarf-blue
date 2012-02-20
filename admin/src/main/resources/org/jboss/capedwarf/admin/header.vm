@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+    <title>Capedwarf admin console</title>
+    <style type="text/css">
+            /* GENERAL */
+            /* GENERAL */
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            color: #000;
+            padding-top: 15px;
+        }
+
+        #container {
+            width: auto;
+            margin: 0 10px;
+        }
+
+        #header {
+            width: 100%;
+            margin: 0 0 25px 0;
+            border-bottom: 1px solid #4a5d75;
+            height: 55px;
+            background-image: url(/_ah/admin/res/capedwarf_logo_200px.gif);
+            background-repeat: no-repeat;
+        }
+
+        #sidebar {
+            float: left;
+            clear: left;
+            width: 170px;
+            border-right: 2px solid #C6CCD4;
+            color: #4a5d75
+        }
+
+        #content {
+            width: auto;
+            float: none;
+            margin: 0 0 0 170px;
+            padding-left: 15px;
+        }
+
+        p {
+            padding: 5px 0;
+        }
+
+        .blue {
+            color: #4a5d75;
+        }
+
+        .green {
+            color: #4a5d75;
+        }
+
+        a {
+            color: #4a5d75;
+        }
+
+            /* NAVIGATION */
+
+        #nav li {
+            list-style-type: none;
+        }
+
+        #nav ul {
+            padding-left: 15px;
+        }
+
+        #nav>ul {
+            padding-left: 5px;
+        }
+
+        #nav>ul>li {
+            color: #000;
+            padding: 3px 0;
+            margin: 0 0 10px 0;
+        }
+
+        #nav ul li ul li {
+            padding: 3px 2px;
+        }
+
+        li.active {
+            background-color: #C6CCD4;
+            font-weight: bold;
+            color: #000;
+        }
+
+            /* TABLES */
+        table tr td, table tr th {
+            border: 1px solid #4a5d75;
+            border-collapse: collapse;
+            padding: 2px;
+            border-left: none;
+            border-right: none;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 15px 0;
+            border: 1px solid #4a5d75;
+        }
+
+        table tr.odd {
+            background-color: #FFF;
+        }
+
+        table tr.even {
+            background-color: #e2e5e9;
+        }
+
+        table th {
+            background-color: #c6ccd4;
+            text-align: left;
+            color: #000;
+        }
+
+            /* HEADINGS */
+
+        h1 {
+            font-size: 18px;
+            font-weight: bold;
+            padding-bottom: 12px;
+        }
+
+        h2 {
+            font-size: 16px;
+            font-weight: bold;
+            padding-bottom: 10px;
+        }
+    </style>
+    <ui:insert name="head"/>
+</head>
+<body>
+
+<div id="container">
+    <div id="header">
+        <div style="padding: 16px 0 0 220px;"><h1>Admin Console</h1></div>
+    </div>
+
+    <div id="sidebar">
+        <div id="nav">
+            <ul>
+                <li id="nav-heading">
+                    <span class="nav-heading-section">Main</span>
+                    <ul>
+                        <li>
+                            <a href="#">Dashboard</a>
+                        </li>
+                        <li>
+                            <a href="#">Instances</a>
+                        </li>
+                        <li>
+                            <a href="#">Logs</a>
+                        </li>
+                        <li>
+                            <a href="#">Versions</a>
+                        </li>
+                        <li>
+                            <a href="#">Backends</a>
+                        </li>
+                        <li>
+                            <a href="#">Cron Jobs</a>
+                        </li>
+                        <li>
+                            <a href="#">Task Queues</a>
+                        </li>
+                        <li>
+                            <a href="#">Quota Details</a>
+                        </li>
+                    </ul>
+                </li>
+                <li id="nav-heading">
+                    <span class="nav-heading-section">Data</span>
+                    <ul>
+                        <li>
+                            <a href="#">Datastore Indexes</a>
+                        </li>
+                        <li class="active">
+                            <a href="datastore.vm">Datastore Viewer</a>
+                        </li>
+                        <li>
+                            <a href="#">Datastore Statistics</a>
+                        </li>
+                        <li>
+                            <a href="#">Blob Viewer</a>
+                        </li>
+                        <li>
+                            <a href="#">Prospective Search</a>
+                        </li>
+                        <li>
+                            <a href="#">Datastore Admin</a>
+                        </li>
+                    </ul>
+                </li>
+                <li id="nav-heading">
+                    <span class="nav-heading-section">Administration</span>
+                    <ul>
+                        <li>
+                            <a href="#">Application Settings</a>
+                        </li>
+                        <li>
+                            <a href="#">Permissions</a>
+                        </li>
+                        <li>
+                            <a href="#">Blacklist</a>
+                        </li>
+                        <li>
+                            <a href="#">Admin Logs</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="content">
