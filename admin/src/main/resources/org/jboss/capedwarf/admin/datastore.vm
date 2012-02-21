@@ -1,22 +1,42 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+#include("/org/jboss/capedwarf/admin/header.vm")
 
 <h2>Datastore viewer</h2>
 <form action="datastore.vm">
     <label for="entityKindSelect">Entity kind:</label>
     <select id="entityKindSelect" name="selectedEntityKind">
+        <option value=""></option>
         #foreach($kind in $datastoreViewer.entityKinds)
-            <option value="$kind" #if($kind.equals($datastoreViewer.selectedEntityKind)) SELECTED #end>$kind</option>
+            <option value="$kind" #if($kind.equals($datastoreViewer.selectedEntityKind)) selected="selected" #end>$kind</option>
         #end
     </select>
     <input type="submit" value="List Entities"/>
 </form>
 
-<br><br>
-Selected: $datastoreViewer.selectedEntityKind
+<br/><br/>
 
+#if($datastoreViewer.selectedEntityKind)
+    <table width="100%">
+        <tr>
+            <th>Key</th>
+            <th>Write ops</th>
+            <th>ID/Name</th>
+            #foreach ($property in $datastoreViewer.properties)
+                <th>$property</th>
+            #end
+        </tr>
 
+        #foreach ($row in $datastoreViewer.rows)
+            <tr>
+                <td><a href="datastoreEntity.vm?key=$row.key">$row.key</a></td>
+                <td>$row.writeOps</td>
+                <td>$row.idName</td>
 
-###if($entityKind == null)
-###end
+                #foreach ($cell in $row.cells)
+                    <td>$cell</td>
+                #end
+            </tr>
+        #end
+    </table>
+#end
 
+#include("/org/jboss/capedwarf/admin/footer.vm")

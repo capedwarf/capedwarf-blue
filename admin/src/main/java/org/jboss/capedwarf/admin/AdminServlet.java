@@ -26,17 +26,17 @@ import org.apache.velocity.Template;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.jboss.capedwarf.common.io.IOUtils;
 
-import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.Properties;
 
@@ -69,10 +69,28 @@ public class AdminServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            serveVelocityPage(req, resp);
+            if (isVelocityPageRequest(req)) {
+                serveVelocityPage(req, resp);
+            } else {
+                serveResource(req, resp);
+            }
         } catch (Exception e) {
             throw new ServletException(e);
         }
+    }
+
+    private void serveResource(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        InputStream in = getClass().getResourceAsStream("/org/jboss/capedwarf/admin" + req.getPathInfo());
+        try {
+            IOUtils.copyStream(in, resp.getOutputStream());
+        } finally {
+            in.close();
+        }
+    }
+
+    private boolean isVelocityPageRequest(HttpServletRequest req) {
+        String pathInfo = req.getPathInfo();
+        return pathInfo == null || pathInfo.isEmpty() || pathInfo.endsWith(".vm");
     }
 
     private void serveVelocityPage(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -87,8 +105,13 @@ public class AdminServlet extends HttpServlet {
     }
 
     private String getTemplatePath(HttpServletRequest req) {
-        System.out.println("req.getPathInfo() = " + req.getPathInfo());
-        return "/org/jboss/capedwarf/admin" + req.getPathInfo();
+        String pathInfo = req.getPathInfo();
+        if (pathInfo == null) {
+            pathInfo = "/index.vm";
+        } else if (pathInfo.endsWith("/")) {
+            pathInfo += "index.vm";
+        }
+        return "/org/jboss/capedwarf/admin" + pathInfo;
     }
 
 }
