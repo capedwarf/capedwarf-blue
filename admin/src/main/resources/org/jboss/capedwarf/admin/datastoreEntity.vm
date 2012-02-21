@@ -1,0 +1,24 @@
+#include("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Datastore entity: ${datastoreEntity.readableKey}</h2>
+
+Key: ${datastoreEntity.key}
+
+<table>
+    <thead>
+    <tr>
+        <th>Property</th>
+        <th>Value</th>
+    </tr>
+    </thead>
+    <tbody>
+        #foreach($property in $datastoreEntity.properties)
+        <tr>
+            <td>$property.key</td>
+            <td>$property.value</td>
+        </tr>
+        #end
+    </tbody>
+</table>
+
+#include("/org/jboss/capedwarf/admin/footer.vm")

@@ -24,6 +24,7 @@ package org.jboss.capedwarf.admin;
 
 import com.google.appengine.api.datastore.*;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -64,15 +65,15 @@ public class DatastoreViewer {
         return DatastoreServiceFactory.getDatastoreService();
     }
 
-    public String update() {
-        loadEntities();
-        return "ok";
-    }
-
     public List<Row> getRows() {
         return rows;
     }
 
+    public static List<String> getProperties() {
+        return properties;
+    }
+
+    @PostConstruct
     private void loadEntities() {
         rows.clear();
         SortedSet<String> propertyNameSet = new TreeSet<String>();
@@ -84,14 +85,6 @@ public class DatastoreViewer {
         properties.clear();
         properties.addAll(propertyNameSet);
     }
-
-//    public HtmlPanelGroup getDynamicDataTableGroup() {
-//        populateDataTable();
-//        return table;
-//    }
-
-//    public void setDynamicDataTableGroup(HtmlPanelGroup dynamicDataTableGroup) {
-//    }
 
     public class Row {
         private Entity entity;
