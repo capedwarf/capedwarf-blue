@@ -24,16 +24,21 @@ package org.jboss.capedwarf.datastore;
 
 import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.DatastoreAttributes;
+import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 /**
  * JBoss async DatastoreService impl.
@@ -41,75 +46,165 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class JBossAsyncDatastoreService extends AbstractDatastoreService implements AsyncDatastoreService {
+
+    private final DatastoreService datastoreService;
+
+    public JBossAsyncDatastoreService() {
+        datastoreService = new JBossDatastoreService();
+    }
+
+    protected <T> Future<T> wrap(final Callable<T> callable) {
+        final FutureTask<T> task = new FutureTask<T>(callable);
+        final Executor executor = ExecutorFactory.getInstance();
+        executor.execute(task);
+        return task;        
+    }
+    
     public Future<Transaction> beginTransaction() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return wrap(new Callable<Transaction>() {
+            public Transaction call() throws Exception {
+                return datastoreService.beginTransaction();
+            }
+        });
     }
 
-    public Future<Transaction> beginTransaction(TransactionOptions transactionOptions) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Transaction> beginTransaction(final TransactionOptions transactionOptions) {
+        return wrap(new Callable<Transaction>() {
+            public Transaction call() throws Exception {
+                return datastoreService.beginTransaction(transactionOptions);
+            }
+        });
     }
 
-    public Future<Entity> get(Key key) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Entity> get(final Key key) {
+        return wrap(new Callable<Entity>() {
+            public Entity call() throws Exception {
+                return datastoreService.get(key);
+            }
+        });
     }
 
-    public Future<Entity> get(Transaction transaction, Key key) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Entity> get(final Transaction transaction, final Key key) {
+        return wrap(new Callable<Entity>() {
+            public Entity call() throws Exception {
+                return datastoreService.get(transaction, key);
+            }
+        });
     }
 
-    public Future<Map<Key, Entity>> get(Iterable<Key> keyIterable) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Map<Key, Entity>> get(final Iterable<Key> keyIterable) {
+        return wrap(new Callable<Map<Key, Entity>>() {
+            public Map<Key, Entity> call() throws Exception {
+                return datastoreService.get(keyIterable);
+            }
+        });
     }
 
-    public Future<Map<Key, Entity>> get(Transaction transaction, Iterable<Key> keyIterable) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Map<Key, Entity>> get(final Transaction transaction, final Iterable<Key> keyIterable) {
+        return wrap(new Callable<Map<Key, Entity>>() {
+            public Map<Key, Entity> call() throws Exception {
+                return datastoreService.get(transaction, keyIterable);
+            }
+        });
     }
 
-    public Future<Key> put(Entity entity) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Key> put(final Entity entity) {
+        return wrap(new Callable<Key>() {
+            public Key call() throws Exception {
+                return datastoreService.put(entity);
+            }
+        });
     }
 
-    public Future<Key> put(Transaction transaction, Entity entity) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Key> put(final Transaction transaction, final Entity entity) {
+        return wrap(new Callable<Key>() {
+            public Key call() throws Exception {
+                return datastoreService.put(transaction, entity);
+            }
+        });
     }
 
-    public Future<List<Key>> put(Iterable<Entity> entityIterable) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<List<Key>> put(final Iterable<Entity> entityIterable) {
+        return wrap(new Callable<List<Key>>() {
+            public List<Key> call() throws Exception {
+                return datastoreService.put(entityIterable);
+            }
+        });
     }
 
-    public Future<List<Key>> put(Transaction transaction, Iterable<Entity> entityIterable) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<List<Key>> put(final Transaction transaction, final Iterable<Entity> entityIterable) {
+        return wrap(new Callable<List<Key>>() {
+            public List<Key> call() throws Exception {
+                return datastoreService.put(transaction, entityIterable);
+            }
+        });
     }
 
-    public Future<Void> delete(Key... keys) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Void> delete(final Key... keys) {
+        return wrap(new Callable<Void>() {
+            public Void call() throws Exception {
+                datastoreService.delete(keys);
+                return null;
+            }
+        });
     }
 
-    public Future<Void> delete(Transaction transaction, Key... keys) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Void> delete(final Transaction transaction, final Key... keys) {
+        return wrap(new Callable<Void>() {
+            public Void call() throws Exception {
+                datastoreService.delete(transaction, keys);
+                return null;
+            }
+        });
     }
 
-    public Future<Void> delete(Iterable<Key> keyIterable) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Void> delete(final Iterable<Key> keyIterable) {
+        return wrap(new Callable<Void>() {
+            public Void call() throws Exception {
+                datastoreService.delete(keyIterable);
+                return null;
+            }
+        });
     }
 
-    public Future<Void> delete(Transaction transaction, Iterable<Key> keyIterable) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Void> delete(final Transaction transaction, final Iterable<Key> keyIterable) {
+        return wrap(new Callable<Void>() {
+            public Void call() throws Exception {
+                datastoreService.delete(transaction, keyIterable);
+                return null;
+            }
+        });
     }
 
-    public Future<KeyRange> allocateIds(String s, long l) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<KeyRange> allocateIds(final String s, final long l) {
+        return wrap(new Callable<KeyRange>() {
+            public KeyRange call() throws Exception {
+                return datastoreService.allocateIds(s, l);
+            }
+        });
     }
 
-    public Future<KeyRange> allocateIds(Key key, String s, long l) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<KeyRange> allocateIds(final Key key, final String s, final long l) {
+        return wrap(new Callable<KeyRange>() {
+            public KeyRange call() throws Exception {
+                return datastoreService.allocateIds(key, s, l);
+            }
+        });
     }
 
     public Future<DatastoreAttributes> getDatastoreAttributes() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return wrap(new Callable<DatastoreAttributes>() {
+            public DatastoreAttributes call() throws Exception {
+                return datastoreService.getDatastoreAttributes();
+            }
+        });
     }
 
     public Future<Map<Index, Index.IndexState>> getIndexes() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return wrap(new Callable<Map<Index, Index.IndexState>>() {
+            public Map<Index, Index.IndexState> call() throws Exception {
+                return datastoreService.getIndexes();
+            }
+        });
     }
 }

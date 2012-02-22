@@ -34,9 +34,14 @@ public class DatastoreServiceFactoryTransformer extends JavassistTransformer {
         // w/o config
         CtMethod method = clazz.getDeclaredMethod("getDatastoreService");
         method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService();");
+        method = clazz.getDeclaredMethod("getAsyncDatastoreService");
+        method.setBody("return new org.jboss.capedwarf.datastore.JBossAsyncDatastoreService();");
         // with config
         final ClassPool pool = clazz.getClassPool();
-        method = clazz.getDeclaredMethod("getDatastoreService", new CtClass[]{pool.get("com.google.appengine.api.datastore.DatastoreServiceConfig")});
+        final CtClass[] params = {pool.get("com.google.appengine.api.datastore.DatastoreServiceConfig")};
+        method = clazz.getDeclaredMethod("getDatastoreService", params);
         method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService();"); // TODO -- handle config
+        method = clazz.getDeclaredMethod("getAsyncDatastoreService", params);
+        method.setBody("return new org.jboss.capedwarf.datastore.JBossAsyncDatastoreService();"); // TODO -- handle config
     }
 }
