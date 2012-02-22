@@ -30,6 +30,8 @@ import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.common.reflection.TargetInvocation;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,8 +47,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class JBossQueue implements Queue {
     private static final String ID = "ID:";
-    private static Map<String, Queue> cache = new HashMap<String, Queue>();
-
+    private static final Map<String, Queue> cache = new HashMap<String, Queue>();
+    private static final TargetInvocation<TaskOptions.Method> getMethod = ReflectionUtils.cacheInvocation(TaskOptions.class, "getMethod");
+    
     private final String queueName;
 
     public static synchronized Queue getQueue(String queueName) {
@@ -104,6 +107,10 @@ public class JBossQueue implements Queue {
         try {
             final List<TaskHandle> handles = new ArrayList<TaskHandle>();
             for (TaskOptions to : taskOptionses) {
+                final TaskOptions.Method m = getMethod.invoke(to);
+                if (m == TaskOptions.Method.PULL)
+                    throw new IllegalArgumentException("PULL method is not yet supported: " + to);
+
                 final MessageCreator mc = createMessageCreator(to);
                 final String id = producer.sendMessage(mc);
                 final TaskOptions copy = new TaskOptions(to).taskName(toTaskName(id));

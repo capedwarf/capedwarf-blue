@@ -27,9 +27,10 @@ import java.lang.reflect.Method;
 /**
  * Cache target invocation.
  *
+ * @param <T> exact return type
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class TargetInvocation {
+public class TargetInvocation<T> {
     private final Method method;
     private Object[] args;
 
@@ -38,15 +39,17 @@ public class TargetInvocation {
         this.args = args;
     }
 
-    public void resetArgs(Object[] args) {
+    public TargetInvocation resetArgs(Object[] args) {
         this.args = args;
+        return this;
     }
 
-    public Object invoke(final Object target) throws Exception {
+    @SuppressWarnings("unchecked")
+    public T invoke(final Object target) throws Exception {
         final Class<?> clazz = method.getDeclaringClass();
         if (clazz.isInstance(target) == false)
             throw new IllegalArgumentException("Target " + target + " is not assignable to " + clazz);
 
-        return method.invoke(target, args);
+        return (T)method.invoke(target, args);
     }
 }
