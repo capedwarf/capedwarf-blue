@@ -35,6 +35,8 @@ public class CapedwarfConfiguration {
 
     private Set<String> admins = new HashSet<String>();
 
+    private XmppConfiguration xmppConfiguration = new XmppConfiguration();
+
     void addAdmin(String email) {
         admins.add(email.toLowerCase());
     }
@@ -47,4 +49,7 @@ public class CapedwarfConfiguration {
         return admins.contains(email.toLowerCase());
     }
 
+    public XmppConfiguration getXmppConfiguration() {
+        return xmppConfiguration;
+    }
 }
