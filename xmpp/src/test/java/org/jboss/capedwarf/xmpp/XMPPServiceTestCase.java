@@ -23,63 +23,50 @@
 package org.jboss.capedwarf.xmpp;
 
 import com.google.appengine.api.xmpp.*;
-import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.packet.Message;
-import org.junit.Ignore;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@RunWith(Arquillian.class)
 public class XMPPServiceTestCase {
 
-    @Test
-    public void test1() throws Exception {
-
-        ConnectionConfiguration config = new ConnectionConfiguration("talk.l.google.com", 5222, "Work");
-        XMPPConnection connection = new XMPPConnection(config);
-
-        connection.connect();
-        connection.login("capedwarftest@gmail.com", "jbossownsyou");
-
-        PresenceConverter presenceConverter = new PresenceConverter();
-        connection.sendPacket(presenceConverter.convertPresence(PresenceType.AVAILABLE, PresenceShow.NONE, "status"));
-
-
-        Message packet = new Message("marko.luksa@gmail.com", Message.Type.chat);
-        packet.setBody("Hello loj");
-        connection.sendPacket(packet);
-
-        Thread.sleep(5000);
-        connection.sendPacket(presenceConverter.convertPresence(PresenceType.AVAILABLE, PresenceShow.AWAY, "I'm now away"));
-
-        Thread.sleep(5000);
-        connection.sendPacket(presenceConverter.convertPresence(PresenceType.UNAVAILABLE, PresenceShow.NONE, "bye bye"));
-
+    @Deployment
+    public static Archive getDeployment() {
+        return ShrinkWrap.create(WebArchive.class)
+                .setWebXML(new StringAsset("<web/>"))
+                .addAsWebInfResource("appengine-web.xml")
+                .addAsWebInfResource("capedwarf-web.xml");
     }
 
-    @Ignore
     @Test
-    public void test2() throws Exception {
-
-        ConnectionConfiguration config = new ConnectionConfiguration("localhost", 5222, "Work");
-        XMPPConnection connection = new XMPPConnection(config);
-
-        connection.connect();
-        connection.login("capedwarf-test", "capedwarf-test");
-
-        PresenceConverter presenceConverter = new PresenceConverter();
-        connection.sendPacket(presenceConverter.convertPresence(PresenceType.AVAILABLE, PresenceShow.NONE, "status"));
-
-        Thread.sleep(15000);
-
-    }
-
-    @Ignore
-    @Test
-    public void test() {
+    public void testSendMessage() {
         XMPPService service = XMPPServiceFactory.getXMPPService();
-        service.sendPresence(new JID("marko.luksa@gmail.com"), PresenceType.AVAILABLE, PresenceShow.NONE, "status");
+        com.google.appengine.api.xmpp.Message message = new MessageBuilder()
+                .withRecipientJids(new JID("marko.luksa@gmail.com"))
+//                .withRecipientJids(new JID("ales.justin@gmail.com"))
+                .withBody("Hello from GAE XMPP")
+                .withMessageType(MessageType.CHAT)
+                .build();
+
+        service.sendMessage(message);
+//        service.sendPresence(new JID("marko.luksa@gmail.com"), PresenceType.AVAILABLE, PresenceShow.NONE, "status");
+
+
     }
+
+    @Test
+    public void testInvitation() {
+        XMPPService service = XMPPServiceFactory.getXMPPService();
+        service.sendInvitation(new JID("marko.luksa@gmail.com"));
+//        service.sendInvitation(new JID("ales.justin@gmail.com"));
+    }
+
 }

@@ -57,6 +57,17 @@ public class CapedwarfConfigurationParser {
         for (Element adminElem : XmlUtils.getChildren(documentElement, "admin")) {
             config.addAdmin(XmlUtils.getBody(adminElem));
         }
+
+
+        XmppConfiguration xmppConfig = config.getXmppConfiguration();
+        Element xmppElem = XmlUtils.getChildElement(documentElement, "xmpp");
+        if (xmppElem != null) {
+            xmppConfig.setHost(XmlUtils.getChildElementBody(xmppElem, "host"));
+            xmppConfig.setPort(Integer.parseInt(XmlUtils.getChildElementBody(xmppElem, "port")));
+            xmppConfig.setUsername(XmlUtils.getChildElementBody(xmppElem, "username"));
+            xmppConfig.setPassword(XmlUtils.getChildElementBody(xmppElem, "password"));
+        }
+
         return config;
     }
 
