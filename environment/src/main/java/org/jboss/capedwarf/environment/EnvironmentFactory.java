@@ -61,7 +61,7 @@ public final class EnvironmentFactory {
         for (Environment env : envs)
             return env;
     
-        Logger.getLogger(EnvironmentFactory.class.getName()).warning("No Enviroment service present, using NoopEnv!");
+        Logger.getLogger(EnvironmentFactory.class.getName()).warning("No Environment service present, using NoopEnv!");
         return new NoopEnv();
     }
 
