@@ -27,8 +27,7 @@ package org.jboss.capedwarf.capabilities;
 import com.google.appengine.api.capabilities.CapabilitiesService;
 import com.google.appengine.api.capabilities.Capability;
 import com.google.appengine.api.capabilities.CapabilityState;
-import com.google.appengine.api.capabilities.CapabilityStatus;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.environment.EnvironmentFactory;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -36,9 +35,6 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 public class JBossCapabilitiesService implements CapabilitiesService {
 
     public CapabilityState getStatus(Capability capability) {
-        return ReflectionUtils.newInstance(
-                CapabilityState.class,
-                new Class[]{Capability.class, CapabilityStatus.class, long.class},
-                new Object[]{capability, CapabilityStatus.ENABLED, -1});
+        return EnvironmentFactory.getEnvironment().getState(capability);
     }
 }

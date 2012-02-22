@@ -24,6 +24,7 @@
         <module>capabilities</module>
         <module>channel</module>
         <module>datastore</module>
+        <module>environment</module>
         <module>files</module>
         <module>images</module>
         <module>mail</module>
@@ -254,6 +255,12 @@
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-datastore</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-environment</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

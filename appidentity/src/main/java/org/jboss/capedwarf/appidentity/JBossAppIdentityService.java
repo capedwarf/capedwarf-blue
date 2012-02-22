@@ -27,6 +27,8 @@ import com.google.appengine.api.appidentity.PublicCertificate;
 import com.google.appengine.api.memcache.Expiration;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.environment.EnvironmentFactory;
 
 import java.util.Collection;
 import java.util.Date;
@@ -49,7 +51,9 @@ public class JBossAppIdentityService implements AppIdentityService {
     }
 
     public String getServiceAccountName() {
-        return null; // TODO
+        final String appId = Application.getAppId();
+        final String domain = EnvironmentFactory.getEnvironment().getDomain();
+        return appId + "@" + domain;
     }
 
     public GetAccessTokenResult getAccessTokenUncached(final Iterable<String> scopes) {
