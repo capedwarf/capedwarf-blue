@@ -97,6 +97,10 @@ public class JBossEnvironment implements ApiProxy.Environment {
         this.capedwarfConfiguration = capedwarfConfiguration;
     }
 
+    public CapedwarfConfiguration getCapedwarfConfiguration() {
+        return capedwarfConfiguration;
+    }
+
     public void setAppEngineWebXml(AppEngineWebXml appEngineWebXml) {
         this.appEngineWebXml = appEngineWebXml;
     }
