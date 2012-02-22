@@ -22,10 +22,23 @@
 
 package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
-import java.util.*;
+import com.google.appengine.api.datastore.DatastoreAttributes;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.Index;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyRange;
+import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.datastore.TransactionOptions;
 
 /**
  * JBoss DatastoreService impl.
@@ -64,6 +77,8 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         if (key.isComplete() == false) {
             long id = KeyGenerator.generateKeyId(key);
             ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
+            //String appId =  ; //TODO get app specific string (app name + version)
+            //ReflectionUtils.setInstanceProperty(key, "appId", appId);
         }
         store.put(key, entity);
         return key;

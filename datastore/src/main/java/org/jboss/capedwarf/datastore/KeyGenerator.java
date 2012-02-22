@@ -22,23 +22,32 @@
 
 package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.Key;
+import java.util.Random;
 
-import java.util.concurrent.atomic.AtomicLong;
+import com.google.appengine.api.datastore.Key;
 
 /**
  * Entity key id generator.
- * <p/>
- * TODO -- proper id generator!
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 class KeyGenerator {
 
-    private static final AtomicLong gen = new AtomicLong(1);
+    private static Random rnd;
 
     static long generateKeyId(Key key) {
-        return gen.getAndIncrement();
+        return System.currentTimeMillis() * 10000 + getRnd().nextInt(10000);
     }
 
+    public static Random getRnd() {
+        if (rnd == null) {
+            synchronized(KeyGenerator.class) {
+                if (rnd == null) {
+                    rnd = new Random();
+                }
+            }
+        }
+        return rnd;
+    }
 }
