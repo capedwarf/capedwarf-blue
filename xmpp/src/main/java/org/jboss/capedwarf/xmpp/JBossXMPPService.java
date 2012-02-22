@@ -23,9 +23,8 @@
 package org.jboss.capedwarf.xmpp;
 
 import com.google.appengine.api.xmpp.*;
-import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
-import org.jivesoftware.smack.XMPPException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -35,19 +34,11 @@ import java.io.IOException;
  */
 public class JBossXMPPService implements XMPPService {
 
-    private XMPPConnection connection;
     private PresenceConverter presenceConverter = new PresenceConverter();
     private MessageConverter messageConverter = new MessageConverter();
 
-    private void connect() throws XMPPException {
-        String userName = "user";
-        String password = "pass";
-
-        ConnectionConfiguration config = new ConnectionConfiguration("im.server.here", 5222);
-        connection = new XMPPConnection(config);
-
-        connection.connect();
-        connection.login(userName, password);
+    private XMPPConnection getConnection() {
+        return XMPPConnectionManager.getInstance().getConnection();
     }
 
     public Presence getPresence(JID jid) {
@@ -55,7 +46,7 @@ public class JBossXMPPService implements XMPPService {
     }
 
     public Presence getPresence(JID jid, JID fromJid) {
-        return presenceConverter.convert(connection.getRoster().getPresence(jid.getId()));
+        return presenceConverter.convert(getConnection().getRoster().getPresence(jid.getId()));
     }
 
     public void sendPresence(JID jid, PresenceType presenceType, PresenceShow presenceShow, String status) {
@@ -63,7 +54,7 @@ public class JBossXMPPService implements XMPPService {
     }
 
     public void sendPresence(JID jid, PresenceType presenceType, PresenceShow presenceShow, String status, JID fromJid) {
-        connection.sendPacket(presenceConverter.convertPresence(presenceType, presenceShow, status));
+        getConnection().sendPacket(presenceConverter.convertPresence(presenceType, presenceShow, status));
     }
 
     public void sendInvitation(JID jid) {
@@ -71,22 +62,32 @@ public class JBossXMPPService implements XMPPService {
     }
 
     public void sendInvitation(JID jid, JID fromJid) {
+        try {
+            Roster roster = getConnection().getRoster();
+            roster.createEntry(jid.getId(), jid.getId(), null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public SendResponse sendMessage(Message message) {
-        connection.sendPacket(messageConverter.convert(message));
+        getConnection().sendPacket(messageConverter.convert(message));
         return new SendResponse();
     }
 
     public Message parseMessage(HttpServletRequest request) throws IOException {
-        return new HttpServletRequestMessageParser(request).parseMessage();
+        return getParser(request).parseMessage();
     }
 
     public Presence parsePresence(HttpServletRequest request) throws IOException {
-        return new HttpServletRequestMessageParser(request).parsePresence();
+        return getParser(request).parsePresence();
     }
 
     public Subscription parseSubscription(HttpServletRequest request) throws IOException {
-        return new HttpServletRequestMessageParser(request).parseSubscription();
+        return getParser(request).parseSubscription();
+    }
+
+    private HttpServletRequestMessageParser getParser(HttpServletRequest request) {
+        return new HttpServletRequestMessageParser(request);
     }
 }

@@ -31,6 +31,7 @@ public class FactoriesTransformer extends MultipleTransformer {
     // -- Keep lexicographical order --
 
     public FactoriesTransformer() {
+        register("com.google.appengine.api.appidentity.AppIdentityServiceFactory", new AppIdentityServiceFactoryTransformer());
         register("com.google.appengine.api.blobstore.BlobstoreServiceFactory", new BlobstoreServiceFactoryTransformer());
         register("com.google.appengine.api.capabilities.CapabilitiesServiceFactory", new CapabilitiesServiceFactoryTransformer());
         register("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreServiceFactoryTransformer());

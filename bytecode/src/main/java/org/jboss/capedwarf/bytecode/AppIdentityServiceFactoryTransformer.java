@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,26 +22,15 @@
 
 package org.jboss.capedwarf.bytecode;
 
-import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class DatastoreServiceFactoryTransformer extends JavassistTransformer {
+public class AppIdentityServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
-        // w/o config
-        CtMethod method = clazz.getDeclaredMethod("getDatastoreService");
-        method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService();");
-        method = clazz.getDeclaredMethod("getAsyncDatastoreService");
-        method.setBody("return new org.jboss.capedwarf.datastore.JBossAsyncDatastoreService();");
-        // with config
-        final ClassPool pool = clazz.getClassPool();
-        final CtClass[] params = {pool.get("com.google.appengine.api.datastore.DatastoreServiceConfig")};
-        method = clazz.getDeclaredMethod("getDatastoreService", params);
-        method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService();"); // TODO -- handle config
-        method = clazz.getDeclaredMethod("getAsyncDatastoreService", params);
-        method.setBody("return new org.jboss.capedwarf.datastore.JBossAsyncDatastoreService();"); // TODO -- handle config
+        CtMethod method = clazz.getDeclaredMethod("getAppIdentityService");
+        method.setBody("return new org.jboss.capedwarf.appidentity.JBossAppIdentityService();");
     }
 }

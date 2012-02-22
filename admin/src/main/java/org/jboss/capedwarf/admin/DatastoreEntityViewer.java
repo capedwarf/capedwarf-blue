@@ -28,6 +28,7 @@ import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.KeyFactory;
 
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,10 +42,11 @@ import java.util.Map;
 @RequestScoped
 public class DatastoreEntityViewer {
 
+    @Inject @HttpParam
+    private String key;
+
     public String getKey() {
-//        ServletRequest request = (ServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-//        return request.getParameter("key");
-        return null;
+        return key;
     }
 
     public String getReadableKey() {

@@ -33,7 +33,8 @@ public class MessageConverter {
 
     public Message convert(com.google.appengine.api.xmpp.Message gaeMessage) {
         Message smackMessage = new Message();
-        smackMessage.setFrom(gaeMessage.getFromJid().getId());
+        if (gaeMessage.getFromJid() != null)
+            smackMessage.setFrom(gaeMessage.getFromJid().getId());
         smackMessage.setType(convertType(gaeMessage.getMessageType()));
         smackMessage.setTo(gaeMessage.getRecipientJids()[0].getId());   // TODO
         smackMessage.setBody(gaeMessage.getBody());

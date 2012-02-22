@@ -24,6 +24,7 @@
         <module>capabilities</module>
         <module>channel</module>
         <module>datastore</module>
+        <module>environment</module>
         <module>files</module>
         <module>images</module>
         <module>mail</module>
@@ -51,6 +52,7 @@
         <version.org.jboss.xnio.xnio-api>3.0.3.GA</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>3.0.3.GA</version.org.jboss.xnio.xnio-nio>
         <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
+        <version.org.jivesoftware.smack>3.1.0</version.org.jivesoftware.smack>
         <version.org.picketlink>2.0.1.Final</version.org.picketlink>
         <version.org.picketlink.consolidated.social>2.0.0.Beta1</version.org.picketlink.consolidated.social>
         <version.javassist>3.15.0-GA</version.javassist>
@@ -259,6 +261,12 @@
 
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-environment</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-files</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -375,6 +383,12 @@
                 <groupId>org.json</groupId>
                 <artifactId>json</artifactId>
                 <version>${version.json}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jivesoftware</groupId>
+                <artifactId>smack</artifactId>
+                <version>${version.org.jivesoftware.smack}</version>
             </dependency>
 
             <dependency>

@@ -34,6 +34,9 @@ import java.lang.reflect.Method;
  */
 public final class ReflectionUtils {
 
+    private static final Class[] EMPTY_CLASSES = new Class[0];
+    private static final Object[] EMPTY_ARGS = new Object[0];
+
     /**
      * Create new instance.
      *
@@ -41,7 +44,7 @@ public final class ReflectionUtils {
      * @return new instance
      */
     public static <T> T newInstance(Class<T> clazz) {
-        return newInstance(clazz, new Class[]{}, new Object[]{});
+        return newInstance(clazz, EMPTY_CLASSES, EMPTY_ARGS);
     }
 
     /**
@@ -83,7 +86,7 @@ public final class ReflectionUtils {
      * @return value returned by invoked method
      */
     public static Object invokeInstanceMethod(Object target, String methodName) {
-        return invokeInstanceMethod(target, methodName, new Class[0], new Object[0]);
+        return invokeInstanceMethod(target, methodName, EMPTY_CLASSES, EMPTY_ARGS);
     }
 
     /**
@@ -147,13 +150,24 @@ public final class ReflectionUtils {
      *
      * @param clazz      the class
      * @param methodName the method name
+     * @return cached target invocation
+     */
+    public static <T> TargetInvocation<T> cacheInvocation(Class<?> clazz, String methodName) {
+        return cacheInvocation(clazz, methodName, EMPTY_CLASSES, EMPTY_ARGS);
+    }
+
+    /**
+     * Cache invocation.
+     *
+     * @param clazz      the class
+     * @param methodName the method name
      * @param types      the types
      * @param args       the args
      * @return cached target invocation
      */
-    public static TargetInvocation cacheInvocation(Class<?> clazz, String methodName, Class[] types, Object[] args) {
+    public static <T> TargetInvocation<T> cacheInvocation(Class<?> clazz, String methodName, Class[] types, Object[] args) {
         final Method m = findMethod(clazz, methodName, types);
-        return new TargetInvocation(m, args);
+        return new TargetInvocation<T>(m, args);
     }
 
     /**

@@ -20,36 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.reflection;
+package org.jboss.capedwarf.environment;
 
-import java.lang.reflect.Method;
+import com.google.appengine.api.capabilities.Capability;
+import com.google.appengine.api.capabilities.CapabilityState;
 
 /**
- * Cache target invocation.
+ * Environment info.
  *
- * @param <T> exact return type
+ * e.g. on OpenShift cloud, etc
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class TargetInvocation<T> {
-    private final Method method;
-    private Object[] args;
+public interface Environment {
+    /**
+     * Get domain name.
+     *
+     * @return domain name
+     */
+    String getDomain();
 
-    TargetInvocation(Method method, Object[] args) {
-        this.method = method;
-        this.args = args;
-    }
-
-    public TargetInvocation resetArgs(Object[] args) {
-        this.args = args;
-        return this;
-    }
-
-    @SuppressWarnings("unchecked")
-    public T invoke(final Object target) throws Exception {
-        final Class<?> clazz = method.getDeclaringClass();
-        if (clazz.isInstance(target) == false)
-            throw new IllegalArgumentException("Target " + target + " is not assignable to " + clazz);
-
-        return (T)method.invoke(target, args);
-    }
+    /**
+     * Get capability state.
+     *
+     * @param capability the capability in question
+     * @return capability's state
+     */
+    CapabilityState getState(Capability capability);
 }
