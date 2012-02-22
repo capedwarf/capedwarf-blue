@@ -30,10 +30,12 @@ import com.google.appengine.api.capabilities.CapabilityState;
 import org.jboss.capedwarf.environment.EnvironmentFactory;
 
 /**
+ * Capabilities service.
+ *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class JBossCapabilitiesService implements CapabilitiesService {
-
     public CapabilityState getStatus(Capability capability) {
         return EnvironmentFactory.getEnvironment().getState(capability);
     }

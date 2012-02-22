@@ -34,11 +34,20 @@ import java.util.logging.Logger;
  * Env factory.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public final class EnvironmentFactory {
 
     private static Environment environment;
 
+    /**
+     * Get environment.
+     *
+     * We use ServiceLoader pattern.
+     * Proper env impls should be used for diff envs.
+     *
+     * @return the environment
+     */
     public synchronized static Environment getEnvironment() {
         if (environment == null)
             environment = findEnvironment();
