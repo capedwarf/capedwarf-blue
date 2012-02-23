@@ -25,9 +25,7 @@ package org.jboss.test.capedwarf.datastore.test;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Transaction;
-import org.infinispan.AdvancedCache;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,10 +58,6 @@ public class TransactionsTestCase extends AbstractTest {
     @Test
     public void testRollback() throws Exception {
         Entity entity = createTestEntity("ROLLBACK", 1);
-
-        AdvancedCache cache = InfinispanUtils.getCacheManager().getCache("default").getAdvancedCache();
-        System.err.println("TM = " + cache.getTransactionManager());
-
         Transaction tx = service.beginTransaction();
         service.put(tx, entity);
         tx.rollback();
