@@ -22,7 +22,7 @@ public class AbstractJPATest {
         return run(action, true);
     }
 
-    protected <T> T run(EMAction<T> action, boolean useTx) throws Throwable {
+    protected <T> T run(EMAction<T> action, final boolean useTx) throws Throwable {
         final EntityManager em = getEMF().createEntityManager();
         try {
             EntityTransaction tx = null;
@@ -33,17 +33,19 @@ public class AbstractJPATest {
                 if (useTx)
                     tx.begin();
 
-                T result = action.go(em);
-
-                if (useTx)
-                    tx.commit();
-
-                return result;
+                return action.go(em);
             } catch (Throwable t) {
                 if (useTx)
-                    tx.rollback();
+                    tx.setRollbackOnly();
 
                 throw t;
+            } finally {
+                if (useTx) {
+                    if (tx.getRollbackOnly())
+                        tx.rollback();
+                    else
+                        tx.commit();
+                }
             }
         } finally {
             em.close();
