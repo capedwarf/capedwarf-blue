@@ -24,7 +24,7 @@ package org.jboss.capedwarf.datastore;
 
 import com.google.appengine.api.datastore.Key;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Random;
 
 /**
  * Entity key id generator.
@@ -35,10 +35,13 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 class KeyGenerator {
 
-    private static final AtomicLong gen = new AtomicLong(1);
+    private static final Random gen = new Random();
 
-    static long generateKeyId(Key key) {
-        return gen.getAndIncrement();
+    synchronized static long generateKeyId(Key key) {
+        long x = 0;
+        while (x == 0)
+            x = Math.abs(gen.nextLong());
+        return x;
     }
 
 }

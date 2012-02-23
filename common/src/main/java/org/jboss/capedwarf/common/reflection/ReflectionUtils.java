@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.common.reflection;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 /**
@@ -169,6 +170,76 @@ public final class ReflectionUtils {
     }
 
     /**
+     * Get field value.
+     *
+     * @param target the target
+     * @param fieldName the field name
+     * @return field's value
+     */
+    public static Object getFieldValue(Object target, String fieldName) {
+        if (target == null)
+            throw new IllegalArgumentException("Null target");
+
+        final Field field = findField(target.getClass(), fieldName);
+        try {
+            return field.get(target);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    /**
+     * Get static field value.
+     *
+     * @param clazz the class
+     * @param fieldName the field name
+     * @return field's value
+     */
+    public static Object getFieldValue(Class<?> clazz, String fieldName) {
+        final Field field = findField(clazz, fieldName);
+        try {
+            return field.get(null);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Set field value.
+     * 
+     * @param target the target
+     * @param fieldName the field name
+     * @param value the value
+     */
+    public static void setFieldValue(Object target, String fieldName, Object value) {
+        if (target == null)
+            throw new IllegalArgumentException("Null target");
+
+        final Field field = findField(target.getClass(), fieldName);
+        try {
+            field.set(target, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Set static field value.
+     * 
+     * @param clazz the class
+     * @param fieldName the field name
+     * @param value the value
+     */
+    public static void setFieldValue(Class<?> clazz, String fieldName, Object value) {
+        final Field field = findField(clazz, fieldName);
+        try {
+            field.set(null, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * Invoke method.
      *
      * @param target     the target
@@ -215,6 +286,36 @@ public final class ReflectionUtils {
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
-        throw new IllegalStateException("Couldn't invoke method: " + clazz.getName() + " / " + methodName);
+        throw new IllegalStateException("Couldn't find method: " + clazz.getName() + " / " + methodName);
+    }
+
+    /**
+     * Find field.
+     *
+     * @param clazz the class
+     * @param fieldName the field name
+     * @return field instance
+     */
+    private static Field findField(Class<?> clazz, String fieldName) {
+        if (clazz == null)
+            throw new IllegalArgumentException("Null class");
+        if (fieldName == null)
+            throw new IllegalArgumentException("Null field name");
+
+        try {
+            Class<?> current = clazz;
+            while (current != null) {
+                try {
+                    final Field f = current.getDeclaredField(fieldName);
+                    f.setAccessible(true);
+                    return f;
+                } catch (NoSuchFieldException ignored) {
+                }
+                current = current.getSuperclass();
+            }
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+        throw new IllegalStateException("Couldn't find field: " + clazz.getName() + " / " + fieldName);
     }
 }
