@@ -23,24 +23,41 @@
 package org.jboss.capedwarf.common.infinispan;
 
 import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
 
-import java.io.Serializable;
-import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
- * Base Tx task.
+ * Wrapper Tx callable.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class BaseTxTask<K, V, R> extends BaseTxCallable<K, V, R> implements DistributedCallable<K, V, R>, Serializable {
-    private transient Cache<K, V> cache;
+public class WrapperTxCallable<K, V, R> extends BaseTxCallable<K, V, R> {
+    private Cache<K, V> cache;
+    private Callable<R> callable;
+
+    public WrapperTxCallable(Cache<K, V> cache, Callable<R> callable) {
+        if (cache == null)
+            throw new IllegalArgumentException("Null cache");
+        if (callable == null)
+            throw new IllegalArgumentException("Null callable");
+
+        this.cache = cache;
+        this.callable = callable;
+    }
+
+    public R call() {
+        try {
+            return super.call();
+        } catch (Exception e) {
+            throw toRuntimeException(e);
+        }
+    }
 
     protected Cache<K, V> getCache() {
         return cache;
     }
 
-    public void setEnvironment(Cache<K, V> cache, Set<K> inputKeys) {
-        this.cache = cache;
+    protected R callInTx() throws Exception {
+        return callable.call();
     }
 }

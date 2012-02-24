@@ -22,56 +22,45 @@
  *
  */
 
-package org.jboss.capedwarf.images;
+package org.jboss.test.capedwarf.images;
 
 import com.google.appengine.api.blobstore.BlobKey;
+import org.jboss.capedwarf.images.ImageServlet;
+import org.junit.Test;
 
-import java.util.StringTokenizer;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class ImageRequest {
+public class ImageServletTestCase {
 
-    public static final String SIZE_TOKEN = "=s";
-    public static final String CROP_TOKEN = "-c";
+    private static final String BLOB_KEY_STRING = "key123";
+    private static final BlobKey BLOB_KEY = new BlobKey(BLOB_KEY_STRING);
 
-    private BlobKey blobKey;
-    private Integer imageSize;
-    private boolean crop;
-
-    public ImageRequest(String pathInfo) {
-        StringTokenizer tokenizer = new StringTokenizer(pathInfo, "/");
-        blobKey = new BlobKey(tokenizer.nextToken());
-        if (tokenizer.hasMoreTokens()) {
-            parseSizeAndCrop(tokenizer.nextToken());
-        }
+    @Test
+    public void servingUrlContainsBlobKey() throws Exception {
+        String url = ImageServlet.getServingUrl(BLOB_KEY);
+        assertTrue(url.contains(BLOB_KEY_STRING));
     }
 
-    private void parseSizeAndCrop(String str) {
-        if (str.startsWith(SIZE_TOKEN)) {
-            if (str.endsWith(CROP_TOKEN)) {
-                crop = true;
-                str = str.substring(0, str.length() - CROP_TOKEN.length());
-            }
+    @Test
+    public void servingUrlWithImageSize() throws Exception {
+        String baseUrl = ImageServlet.getServingUrl(BLOB_KEY);
 
-            imageSize = Integer.parseInt(str.substring(SIZE_TOKEN.length()));
-        }
+        String actualUrl = ImageServlet.getServingUrl(BLOB_KEY, 32, false);
+        String expectedUrl = baseUrl + "=s32";
+        assertEquals(expectedUrl, actualUrl);
     }
 
-    public BlobKey getBlobKey() {
-        return blobKey;
+    @Test
+    public void servingUrlWithImageSizeAndCrop() throws Exception {
+        String baseUrl = ImageServlet.getServingUrl(BLOB_KEY);
+
+        String actualUrl = ImageServlet.getServingUrl(BLOB_KEY, 32, true);
+        String expectedUrl = baseUrl + "=s32-c";
+        assertEquals(expectedUrl, actualUrl);
     }
 
-    public boolean isTransformationRequested() {
-        return imageSize != null;
-    }
-
-    public int getImageSize() {
-        return imageSize;
-    }
-
-    public boolean isCrop() {
-        return crop;
-    }
 }
