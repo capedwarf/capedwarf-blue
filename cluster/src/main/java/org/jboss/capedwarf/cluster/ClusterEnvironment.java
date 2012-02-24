@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore;
+package org.jboss.capedwarf.cluster;
 
 import com.google.appengine.api.datastore.Key;
-import org.jboss.capedwarf.environment.EnvironmentFactory;
+import org.jboss.capedwarf.common.infinispan.CacheName;
+import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.environment.AbstractEnvironment;
+import org.jboss.capedwarf.environment.Environment;
+import org.kohsuke.MetaInfServices;
 
 /**
- * Entity key id generator.
- *
+ * Cluster env.
+ * 
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class KeyGenerator {
-
-    static long generateKeyId(Key key) {
-        return EnvironmentFactory.getEnvironment().getUniqueId(key);
+@MetaInfServices(Environment.class)
+public class ClusterEnvironment extends AbstractEnvironment {
+    public String getDomain() {
+        return "cluster-mode"; // TODO - per node?
     }
 
+    public Long getUniqueId(Key key) {
+        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(key), key.getKind());
+    }
 }

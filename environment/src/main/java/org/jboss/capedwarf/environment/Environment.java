@@ -24,6 +24,7 @@ package org.jboss.capedwarf.environment;
 
 import com.google.appengine.api.capabilities.Capability;
 import com.google.appengine.api.capabilities.CapabilityState;
+import com.google.appengine.api.datastore.Key;
 
 /**
  * Environment info.
@@ -47,4 +48,12 @@ public interface Environment {
      * @return capability's state
      */
     CapabilityState getState(Capability capability);
+
+    /**
+     * Get unique id for key param.
+     *
+     * @param key the key
+     * @return unique id
+     */
+    Long getUniqueId(Key key);
 }

@@ -22,12 +22,10 @@
 
 package org.jboss.capedwarf.environment;
 
-import com.google.appengine.api.capabilities.Capability;
-import com.google.appengine.api.capabilities.CapabilityState;
-import com.google.appengine.api.capabilities.CapabilityStatus;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import com.google.appengine.api.datastore.Key;
 
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 /**
@@ -65,16 +63,15 @@ public final class EnvironmentFactory {
         return new NoopEnv();
     }
 
-    private static class NoopEnv implements Environment {
+    private static class NoopEnv extends AbstractEnvironment {
+        private AtomicLong counter = new AtomicLong();
+
         public String getDomain() {
             return "dummy";
         }
 
-        public CapabilityState getState(Capability capability) {
-            return ReflectionUtils.newInstance(
-                    CapabilityState.class,
-                    new Class[]{Capability.class, CapabilityStatus.class, long.class},
-                    new Object[]{capability, CapabilityStatus.ENABLED, -1});
+        public Long getUniqueId(Key key) {
+            return counter.incrementAndGet();
         }
     }
 }

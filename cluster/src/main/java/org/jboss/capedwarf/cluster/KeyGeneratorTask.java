@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore;
+package org.jboss.capedwarf.cluster;
 
 import com.google.appengine.api.datastore.Key;
 import org.infinispan.AdvancedCache;

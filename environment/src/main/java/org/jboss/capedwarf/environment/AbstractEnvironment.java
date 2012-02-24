@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,20 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore;
+package org.jboss.capedwarf.environment;
 
-import com.google.appengine.api.datastore.Key;
-import org.jboss.capedwarf.environment.EnvironmentFactory;
+import com.google.appengine.api.capabilities.Capability;
+import com.google.appengine.api.capabilities.CapabilityState;
+import com.google.appengine.api.capabilities.CapabilityStatus;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
- * Entity key id generator.
+ * Abstract environment -- default impls.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class KeyGenerator {
-
-    static long generateKeyId(Key key) {
-        return EnvironmentFactory.getEnvironment().getUniqueId(key);
+public abstract class AbstractEnvironment implements Environment {
+    public CapabilityState getState(Capability capability) {
+        return ReflectionUtils.newInstance(
+                CapabilityState.class,
+                new Class[]{Capability.class, CapabilityStatus.class, long.class},
+                new Object[]{capability, CapabilityStatus.ENABLED, -1});
     }
-
 }
