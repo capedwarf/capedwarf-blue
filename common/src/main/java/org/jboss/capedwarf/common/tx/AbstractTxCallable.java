@@ -33,6 +33,13 @@ import java.util.concurrent.Callable;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractTxCallable<R> implements Callable<R> {
+    private boolean newTx; // not thread safe
+
+    public Callable<R> setNewTx(boolean newTx) {
+        this.newTx = newTx;
+        return this;
+    }
+
     protected abstract R callInTx() throws Exception;
 
     protected abstract TransactionManager getTransactionManager();
@@ -42,23 +49,28 @@ public abstract class AbstractTxCallable<R> implements Callable<R> {
         if (tm == null)
             throw new IllegalArgumentException("Null transaction manager!");
 
+        final boolean useNewTx = newTx;
         boolean error = false;
-        final Transaction previous = tm.suspend();
+        final Transaction previous = (useNewTx) ? tm.suspend() : tm.getTransaction();
         try {
-            tm.begin();
+            if (useNewTx || previous == null) {
+                tm.begin();
+            }
             try {
                 return callInTx();
             } catch (Throwable t) {
                 error = true;
                 throw toRuntimeException(t);
             } finally {
-                if (error || tm.getStatus() == Status.STATUS_MARKED_ROLLBACK)
-                    tm.rollback();
-                else
-                    tm.commit();
+                if (useNewTx || previous == null) {
+                    if (error || tm.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+                        tm.rollback();
+                    else
+                        tm.commit();
+                }
             }
         } finally {
-            if (previous != null)
+            if (useNewTx && previous != null)
                 tm.resume(previous);
         }
     }
