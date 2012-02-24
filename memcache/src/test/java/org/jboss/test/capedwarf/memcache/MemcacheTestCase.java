@@ -35,7 +35,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -224,12 +223,13 @@ public class MemcacheTestCase {
     }
 
     @Test
-    @Ignore("CCE + TM == null?")
     public void testIncrement() {
         long x = service.increment("increment-key", 5, 0L);
         assertEquals(0L, x);
         x = service.increment("increment-key", 15);
-        assertEquals(20L, x);
+        assertEquals(15L, x);
+        x = service.increment("increment-key", 6);
+        assertEquals(21L, x);
     }
 
     private void sleep(int millis) {

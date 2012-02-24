@@ -34,6 +34,7 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.infinispan.WrapperTxCallable;
 
@@ -75,7 +76,7 @@ public class InfinispanMemcacheService implements MemcacheService {
     }
 
     private String getCacheName() {
-        return "memcache"; // TODO
+        return CacheName.MEMCACHE.getName();
     }
 
     public <T> Map<T, IdentifiableValue> getIdentifiables(Collection<T> ts) {
