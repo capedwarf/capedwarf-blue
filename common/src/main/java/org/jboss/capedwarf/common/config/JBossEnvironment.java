@@ -37,6 +37,7 @@ import java.util.Map;
 public class JBossEnvironment implements ApiProxy.Environment {
 
     private static final ThreadLocal<JBossEnvironment> threadLocalInstance = new ThreadLocal<JBossEnvironment>();
+    public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
 
     private String email;
     private String authDomain;
@@ -110,6 +111,7 @@ public class JBossEnvironment implements ApiProxy.Environment {
     }
 
     public void setBaseApplicationUrl(String baseApplicationUrl) {
+        attributes.put(DEFAULT_VERSION_HOSTNAME, baseApplicationUrl);
         this.baseApplicationUrl = baseApplicationUrl;
     }
 
