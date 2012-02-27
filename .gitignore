@@ -8,6 +8,7 @@ blobstore/target/
 bytecode/target/
 capabilities/target/
 channel/target/
+cluster-tests/target/
 common/target/
 datastore/target/
 files/target/

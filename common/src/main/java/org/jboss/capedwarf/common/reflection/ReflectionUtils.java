@@ -188,7 +188,7 @@ public final class ReflectionUtils {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Get static field value.
      *
@@ -207,7 +207,7 @@ public final class ReflectionUtils {
 
     /**
      * Set field value.
-     * 
+     *
      * @param target the target
      * @param fieldName the field name
      * @param value the value
@@ -226,7 +226,7 @@ public final class ReflectionUtils {
 
     /**
      * Set static field value.
-     * 
+     *
      * @param clazz the class
      * @param fieldName the field name
      * @param value the value
@@ -342,9 +342,6 @@ public final class ReflectionUtils {
                 field.setAccessible(true);
             }
             field.set(object, value);
-            if (!accesible) {
-                field.setAccessible(accesible);
-            }
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
