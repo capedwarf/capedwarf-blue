@@ -109,4 +109,11 @@ public class JBossEnvironmentTestCase {
         assertTrue(env.isAdmin());
     }
 
+    @Test
+    public void attributesContainDefaultVersionHostname() throws Exception {
+        String BASE_URL = "http://myapp.capedwarf.com";
+        env.setBaseApplicationUrl(BASE_URL);
+        assertEquals(BASE_URL, env.getAttributes().get("com.google.appengine.runtime.default_version_hostname"));
+    }
+
 }
