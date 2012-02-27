@@ -20,27 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.infinispan;
+package org.jboss.capedwarf.cluster;
 
-import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
-
-import java.io.Serializable;
-import java.util.Set;
+import com.google.appengine.api.datastore.Key;
+import org.jboss.capedwarf.common.infinispan.CacheName;
+import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.environment.AbstractEnvironment;
+import org.jboss.capedwarf.environment.Environment;
+import org.kohsuke.MetaInfServices;
 
 /**
- * Base Tx task.
- *
+ * Cluster env.
+ * 
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class BaseTxTask<K, V, R> extends BaseTxCallable<K, V, R> implements DistributedCallable<K, V, R>, Serializable {
-    private transient Cache<K, V> cache;
-
-    protected Cache<K, V> getCache() {
-        return cache;
+@MetaInfServices(Environment.class)
+public class ClusterEnvironment extends AbstractEnvironment {
+    public String getDomain() {
+        return "cluster-mode"; // TODO - per node?
     }
 
-    public void setEnvironment(Cache<K, V> cache, Set<K> inputKeys) {
-        this.cache = cache;
+    public Long getUniqueId(Key key) {
+        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(key), key.getKind());
     }
 }

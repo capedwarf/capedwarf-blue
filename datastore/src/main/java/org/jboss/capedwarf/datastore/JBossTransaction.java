@@ -25,8 +25,8 @@ package org.jboss.capedwarf.datastore;
 import com.google.appengine.api.datastore.DatastoreFailureException;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.common.tx.TxUtils;
 
 import javax.transaction.Status;
 import javax.transaction.SystemException;
@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 public class JBossTransaction implements Transaction {
     private static final Logger log = Logger.getLogger(JBossTransaction.class.getName());
 
-    private final static TransactionManager tm = JndiLookupUtils.lookup("tm.jndi.name", TransactionManager.class, "java:jboss/TransactionManager");
+    private final static TransactionManager tm = TxUtils.getTransactionManager();
     private final static ThreadLocal<Stack<JBossTransaction>> current = new ThreadLocal<Stack<JBossTransaction>>();
 
     private javax.transaction.Transaction transaction;

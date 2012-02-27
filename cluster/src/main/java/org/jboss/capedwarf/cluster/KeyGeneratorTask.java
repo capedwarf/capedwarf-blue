@@ -20,27 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.infinispan;
+package org.jboss.capedwarf.cluster;
 
-import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
-
-import java.io.Serializable;
-import java.util.Set;
+import com.google.appengine.api.datastore.Key;
+import org.infinispan.AdvancedCache;
+import org.jboss.capedwarf.common.infinispan.BaseTxTask;
 
 /**
- * Base Tx task.
+ * Entity key id generator taks.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class BaseTxTask<K, V, R> extends BaseTxCallable<K, V, R> implements DistributedCallable<K, V, R>, Serializable {
-    private transient Cache<K, V> cache;
+public class KeyGeneratorTask extends BaseTxTask<String, Long, Long> {
+    private Key key;
 
-    protected Cache<K, V> getCache() {
-        return cache;
+    public KeyGeneratorTask(Key key) {
+        this.key = key;
     }
 
-    public void setEnvironment(Cache<K, V> cache, Set<K> inputKeys) {
-        this.cache = cache;
+    protected Long callInTx() throws Exception {
+        final AdvancedCache<String, Long> ac = getCache().getAdvancedCache();
+        final String cacheKey = key.getKind();
+        
+        if (ac.lock(cacheKey) == false)
+            throw new IllegalArgumentException("Cannot get a lock on id generator for " + cacheKey);
+
+        Long id = ac.get(cacheKey);
+        if (id == null)
+            id = 1L;
+
+        ac.put(cacheKey, id + 1);
+
+        return id;
     }
 }

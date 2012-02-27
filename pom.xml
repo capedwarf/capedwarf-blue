@@ -23,6 +23,7 @@
         <module>blobstore</module>
         <module>capabilities</module>
         <module>channel</module>
+        <module>cluster</module>
         <module>datastore</module>
         <module>environment</module>
         <module>files</module>
@@ -31,6 +32,7 @@
         <module>memcache</module>
         <module>multitenancy</module>
         <module>oauth</module>
+        <module>openshift</module>
         <module>tasks</module>
         <module>testsuite</module>
         <module>urlfetch</module>

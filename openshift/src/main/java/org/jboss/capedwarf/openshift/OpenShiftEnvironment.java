@@ -20,27 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.infinispan;
+package org.jboss.capedwarf.openshift;
 
-import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
-
-import java.io.Serializable;
-import java.util.Set;
+import com.google.appengine.api.capabilities.Capability;
+import com.google.appengine.api.capabilities.CapabilityState;
+import com.google.appengine.api.datastore.Key;
+import org.jboss.capedwarf.environment.Environment;
+import org.kohsuke.MetaInfServices;
 
 /**
- * Base Tx task.
+ * OpenShift environment.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class BaseTxTask<K, V, R> extends BaseTxCallable<K, V, R> implements DistributedCallable<K, V, R>, Serializable {
-    private transient Cache<K, V> cache;
-
-    protected Cache<K, V> getCache() {
-        return cache;
+@MetaInfServices
+public class OpenShiftEnvironment implements Environment {
+    public String getDomain() {
+        return null; // TODO
     }
 
-    public void setEnvironment(Cache<K, V> cache, Set<K> inputKeys) {
-        this.cache = cache;
+    public CapabilityState getState(Capability capability) {
+        return null; // TODO
+    }
+
+    public Long getUniqueId(Key key) {
+        return null; // TODO
     }
 }

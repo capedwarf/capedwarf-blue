@@ -23,8 +23,7 @@
 package org.jboss.capedwarf.datastore;
 
 import com.google.appengine.api.datastore.Key;
-import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.environment.EnvironmentFactory;
 
 /**
  * Entity key id generator.
@@ -34,7 +33,7 @@ import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 class KeyGenerator {
 
     static long generateKeyId(Key key) {
-        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(key), key.getKind());
+        return EnvironmentFactory.getEnvironment().getUniqueId(key);
     }
 
 }

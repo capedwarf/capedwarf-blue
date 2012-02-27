@@ -20,27 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.infinispan;
+package org.jboss.capedwarf.common.tx;
 
-import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
+import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
-import java.io.Serializable;
-import java.util.Set;
+import javax.transaction.TransactionManager;
 
 /**
- * Base Tx task.
+ * Tx utils.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class BaseTxTask<K, V, R> extends BaseTxCallable<K, V, R> implements DistributedCallable<K, V, R>, Serializable {
-    private transient Cache<K, V> cache;
-
-    protected Cache<K, V> getCache() {
-        return cache;
+public final class TxUtils {
+    private TxUtils() {
     }
 
-    public void setEnvironment(Cache<K, V> cache, Set<K> inputKeys) {
-        this.cache = cache;
+    /**
+     * Get transaction manager.
+     *
+     * @return the transaction mananger
+     */
+    public static TransactionManager getTransactionManager() {
+        return JndiLookupUtils.lookup("tm.jndi.name", TransactionManager.class, "java:jboss/TransactionManager");
     }
 }

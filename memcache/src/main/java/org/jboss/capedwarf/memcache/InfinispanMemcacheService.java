@@ -25,23 +25,36 @@
 package org.jboss.capedwarf.memcache;
 
 import com.google.appengine.api.NamespaceManager;
-import com.google.appengine.api.memcache.*;
+import com.google.appengine.api.memcache.ErrorHandler;
+import com.google.appengine.api.memcache.Expiration;
+import com.google.appengine.api.memcache.InvalidValueException;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.Stats;
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.infinispan.WrapperTxCallable;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InfinispanMemcacheService implements MemcacheService {
 
-    protected final Logger log = Logger.getLogger(getClass().getName());
+    protected static final Logger log = Logger.getLogger(InfinispanMemcacheService.class.getName());
     private static final SetPolicy DEFAULT_SET_POLICY = SetPolicy.SET_ALWAYS;
 
     protected final Cache<NamespacedKey, Object> cache;
@@ -63,7 +76,7 @@ public class InfinispanMemcacheService implements MemcacheService {
     }
 
     private String getCacheName() {
-        return "memcache"; // TODO
+        return CacheName.MEMCACHE.getName();
     }
 
     public <T> Map<T, IdentifiableValue> getIdentifiables(Collection<T> ts) {
@@ -185,15 +198,19 @@ public class InfinispanMemcacheService implements MemcacheService {
     }
 
     public boolean delete(Object key) {
-        Object removedObject = cache.remove(namespacedKey(key));
-        return removedObject != null;
+        return delete(key, 0L);
     }
 
     public boolean delete(Object key, long millisNoReAdd) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        Object removedObject = cache.remove(namespacedKey(key));
+        return removedObject != null; // TODO -- use millisNoReAdd
     }
 
     public <T> Set<T> deleteAll(Collection<T> keys) {
+        return deleteAll(keys, 0L);
+    }
+
+    public <T> Set<T> deleteAll(Collection<T> keys, long millisNoReAdd) {
         Set<T> deletedKeys = new HashSet<T>();
         for (T key : keys) {
             Object previousValue = cache.remove(namespacedKey(key));
@@ -201,19 +218,25 @@ public class InfinispanMemcacheService implements MemcacheService {
                 deletedKeys.add(key);
             }
         }
-        return deletedKeys;
+        return deletedKeys; // TODO -- use millisNoReAdd
     }
 
-    public <T> Set<T> deleteAll(Collection<T> keys, long millisNoReAdd) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    protected void lock(Object key) {
+        final AdvancedCache<NamespacedKey, Object> ac = cache.getAdvancedCache();
+        if (ac.lock(namespacedKey(key)) == false)
+            throw new IllegalArgumentException("Cannot lock key: " + key);
+    }
+        
+    protected long castToLong(Object value) {
+        if (value instanceof Long) {
+            return (Long) value;
+        } else {
+            throw new InvalidValueException("Cannot increment. Value was " + value);
+        }
     }
 
-    public Long increment(Object key, long delta) {
-        return increment(key, delta, null);
-    }
-
-
-    public Long increment(Object key, long delta, Long initialValue) {
+    private Long incrementInternal(final Object key, final long delta, final Long initialValue) {
+        lock(key);
         Object value = get(key);
         if (value == null) {
             if (initialValue == null) {
@@ -226,43 +249,58 @@ public class InfinispanMemcacheService implements MemcacheService {
             long newValue = castToLong(value) + delta;
             put(key, newValue);
             return newValue;
-        }
+        }        
     }
 
-    private long castToLong(Object value) {
-        if (value instanceof Long) {
-            return (Long) value;
-        } else {
-            throw new InvalidValueException("Cannot increment. Value was " + value);
-        }
+    public Long increment(Object key, long delta) {
+        return increment(key, delta, null);
+    }
+
+    public Long increment(final Object key, final long delta, final Long initialValue) {
+        final Callable<Long> callable = new Callable<Long>() {
+            public Long call() throws Exception {
+                return incrementInternal(key, delta, initialValue);
+            }
+        };
+        return new WrapperTxCallable<NamespacedKey, Object, Long>(cache, callable).call();
     }
 
     public <T> Map<T, Long> incrementAll(Collection<T> keys, long delta) {
         return incrementAll(keys, delta, null);
     }
 
-    public <T> Map<T, Long> incrementAll(Collection<T> keys, long delta, Long initialValue) {
-        Map<T, Long> map = new HashMap<T, Long>();
-        for (T key : keys) {
-            Long newValue = increment(key, delta, initialValue);
-            map.put(key, newValue);
-        }
-        return map;
+    public <T> Map<T, Long> incrementAll(final Collection<T> keys, final long delta, final Long initialValue) {
+        final Callable<Map<T, Long>> callable = new Callable<Map<T, Long>>() {
+            public Map<T, Long> call() throws Exception {
+                Map<T, Long> map = new HashMap<T, Long>();
+                for (T key : keys) {
+                    Long newValue = incrementInternal(key, delta, initialValue);
+                    map.put(key, newValue);
+                }
+                return map;
+            }
+        };
+        return new WrapperTxCallable<NamespacedKey, Object, Map<T, Long>>(cache, callable).call();
     }
 
     public <T> Map<T, Long> incrementAll(Map<T, Long> offsets) {
         return incrementAll(offsets, null);
     }
 
-    public <T> Map<T, Long> incrementAll(Map<T, Long> offsets, Long initialValue) {
-        Map<T, Long> map = new HashMap<T, Long>();
-        for (Map.Entry<T, Long> entry : offsets.entrySet()) {
-            T key = entry.getKey();
-            Long delta = entry.getValue();
-            Long newValue = increment(key, delta, initialValue);
-            map.put(key, newValue);
-        }
-        return map;
+    public <T> Map<T, Long> incrementAll(final Map<T, Long> offsets, final Long initialValue) {
+        final Callable<Map<T, Long>> callable = new Callable<Map<T, Long>>() {
+            public Map<T, Long> call() throws Exception {
+                Map<T, Long> map = new HashMap<T, Long>();
+                for (Map.Entry<T, Long> entry : offsets.entrySet()) {
+                    T key = entry.getKey();
+                    Long delta = entry.getValue();
+                    Long newValue = incrementInternal(key, delta, initialValue);
+                    map.put(key, newValue);
+                }
+                return map;
+            }
+        };
+        return new WrapperTxCallable<NamespacedKey, Object, Map<T, Long>>(cache, callable).call();
     }
 
     public void clearAll() {

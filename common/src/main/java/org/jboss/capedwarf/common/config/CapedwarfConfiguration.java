@@ -37,7 +37,8 @@ public class CapedwarfConfiguration {
 
     private XmppConfiguration xmppConfiguration = new XmppConfiguration();
 
-    void addAdmin(String email) {
+    // TODO -- make it not public again?
+    public void addAdmin(String email) {
         admins.add(email.toLowerCase());
     }
 

@@ -20,27 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.infinispan;
+package org.jboss.capedwarf.environment;
 
-import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
-
-import java.io.Serializable;
-import java.util.Set;
+import com.google.appengine.api.capabilities.Capability;
+import com.google.appengine.api.capabilities.CapabilityState;
+import com.google.appengine.api.capabilities.CapabilityStatus;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
- * Base Tx task.
+ * Abstract environment -- default impls.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class BaseTxTask<K, V, R> extends BaseTxCallable<K, V, R> implements DistributedCallable<K, V, R>, Serializable {
-    private transient Cache<K, V> cache;
-
-    protected Cache<K, V> getCache() {
-        return cache;
-    }
-
-    public void setEnvironment(Cache<K, V> cache, Set<K> inputKeys) {
-        this.cache = cache;
+public abstract class AbstractEnvironment implements Environment {
+    public CapabilityState getState(Capability capability) {
+        return ReflectionUtils.newInstance(
+                CapabilityState.class,
+                new Class[]{Capability.class, CapabilityStatus.class, long.class},
+                new Object[]{capability, CapabilityStatus.ENABLED, -1});
     }
 }

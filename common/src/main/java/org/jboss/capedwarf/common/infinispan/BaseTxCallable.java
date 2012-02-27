@@ -22,25 +22,27 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
+import org.jboss.capedwarf.common.tx.AbstractTxCallable;
+import org.jboss.capedwarf.common.tx.TxUtils;
 
-import java.io.Serializable;
-import java.util.Set;
+import javax.transaction.TransactionManager;
 
 /**
  * Base Tx task.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class BaseTxTask<K, V, R> extends BaseTxCallable<K, V, R> implements DistributedCallable<K, V, R>, Serializable {
-    private transient Cache<K, V> cache;
+public abstract class BaseTxCallable<K, V, R> extends AbstractTxCallable<R> {
 
-    protected Cache<K, V> getCache() {
-        return cache;
-    }
+    protected abstract Cache<K, V> getCache();
 
-    public void setEnvironment(Cache<K, V> cache, Set<K> inputKeys) {
-        this.cache = cache;
+    protected TransactionManager getTransactionManager() {
+        final AdvancedCache<K, V> ac = getCache().getAdvancedCache();
+        TransactionManager tm = ac.getTransactionManager(); // TODO -- why null TM?
+        if (tm == null)
+            tm = TxUtils.getTransactionManager();
+        return tm;
     }
 }
