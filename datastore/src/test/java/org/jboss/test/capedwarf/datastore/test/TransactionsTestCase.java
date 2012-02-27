@@ -27,7 +27,6 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,7 +55,6 @@ public class TransactionsTestCase extends AbstractTest {
         }
     }
 
-    @Ignore("Always fails. Incorrect TransactionManager?")
     @Test
     public void testRollback() throws Exception {
         Entity entity = createTestEntity("ROLLBACK", 1);
@@ -74,7 +72,6 @@ public class TransactionsTestCase extends AbstractTest {
         Assert.assertTrue(key.isComplete());
     }
 
-    @Ignore("Always fails. Incorrect TransactionManager?")
     @Test
     public void testNested() throws Exception {
         assertTxs();

@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Built-By: matej
+Build-Jdk: 1.7.0_02
+Specification-Title: CapeDwarf Cluster Tests
+Specification-Version: 1.0.0-SNAPSHOT
+Specification-Vendor: JBoss, a division of Red Hat, Inc.
+Implementation-Title: CapeDwarf Cluster Tests
+Implementation-Version: 1.0.0-SNAPSHOT
+Implementation-Vendor-Id: org.jboss.capedwarf.blue
+Implementation-Vendor: JBoss, a division of Red Hat, Inc.
+Created-By: Maven Integration for Eclipse
+Implementation-URL: http://www.jboss.org/capedwarf
+

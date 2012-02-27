@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,18 +23,34 @@
 package org.jboss.capedwarf.datastore;
 
 import com.google.appengine.api.datastore.Key;
-import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.infinispan.AdvancedCache;
+import org.jboss.capedwarf.common.infinispan.BaseTxTask;
 
 /**
- * Entity key id generator.
+ * Entity key id generator taks.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class KeyGenerator {
+public class KeyGeneratorTask extends BaseTxTask<String, Long, Long> {
+    private Key key;
 
-    static long generateKeyId(Key key) {
-        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(key), key.getKind());
+    public KeyGeneratorTask(Key key) {
+        this.key = key;
     }
 
+    protected Long callInTx() throws Exception {
+        final AdvancedCache<String, Long> ac = getCache().getAdvancedCache();
+        final String cacheKey = key.getKind();
+        
+        if (ac.lock(cacheKey) == false)
+            throw new IllegalArgumentException("Cannot get a lock on id generator for " + cacheKey);
+
+        Long id = ac.get(cacheKey);
+        if (id == null)
+            id = 1L;
+
+        ac.put(cacheKey, id + 1);
+
+        return id;
+    }
 }

@@ -24,6 +24,8 @@ package org.jboss.capedwarf.common.infinispan;
 
 import com.google.apphosting.api.ApiProxy;
 import org.infinispan.Cache;
+import org.infinispan.distexec.DefaultExecutorService;
+import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -31,6 +33,8 @@ import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -48,6 +52,20 @@ public class InfinispanUtils {
         return cacheManager;
     }
 
+    public static <R> R submit(final CacheName cacheName, final Callable<R> task, Object... keys) {
+        if (cacheManager == null)
+            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+        
+        final Cache cache = cacheManager.getCache(cacheName.getName());
+        try {
+            final DistributedExecutorService des = new DefaultExecutorService(cache);
+            final Future<R> result = des.submit(task, keys);
+            return result.get();
+        } catch (Exception e) {
+            throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
+        }        
+    }
+    
     public static GridFilesystem getGridFilesystem() {
         String appId = ApiProxy.getCurrentEnvironment().getAppId();
         GridFilesystem gfs = gridFilesystems.get(appId);
