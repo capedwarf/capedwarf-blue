@@ -44,8 +44,8 @@ import java.util.logging.Logger;
 public class JBossXMPPService implements XMPPService {
     private static final Logger log = Logger.getLogger(JBossXMPPService.class.getName());
 
-    private PresenceConverter presenceConverter = new PresenceConverter();
-    private MessageConverter messageConverter = new MessageConverter();
+    private static final PresenceConverter presenceConverter = new PresenceConverter();
+    private static final MessageConverter messageConverter = new MessageConverter();
 
     public Presence getPresence(JID jid) {
         return getPresence(jid, null);
