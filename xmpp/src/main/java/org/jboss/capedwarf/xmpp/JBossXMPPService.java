@@ -128,11 +128,12 @@ public class JBossXMPPService implements XMPPService {
     }
 
     private static <T> T execute(ConnectionAction<T> action) {
-        final XMPPConnection connection = XMPPConnectionManager.getInstance().createConnection();
+        final XMPPConnectionManager manager = XMPPConnectionManager.getInstance();
+        final XMPPConnection connection = manager.createConnection();
         try {
             return action.execute(connection);
         } finally {
-            connection.disconnect();
+            manager.destroyConnection(connection);
         }
     }
 

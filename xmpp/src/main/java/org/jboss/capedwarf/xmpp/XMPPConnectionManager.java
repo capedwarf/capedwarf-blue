@@ -55,4 +55,10 @@ public class XMPPConnectionManager {
             throw new RuntimeException(e);
         }
     }
+
+    public void destroyConnection(XMPPConnection connection) {
+        if (connection != null) {
+            connection.disconnect();
+        }
+    }
 }
