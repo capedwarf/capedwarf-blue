@@ -47,50 +47,68 @@ public class JBossXMPPService implements XMPPService {
     private PresenceConverter presenceConverter = new PresenceConverter();
     private MessageConverter messageConverter = new MessageConverter();
 
-    private XMPPConnection getConnection() {
-        return XMPPConnectionManager.getInstance().createConnection();
-    }
-
     public Presence getPresence(JID jid) {
         return getPresence(jid, null);
     }
 
-    public Presence getPresence(JID jid, JID fromJid) {
-        return presenceConverter.convert(getConnection().getRoster().getPresence(jid.getId()));
+    public Presence getPresence(final JID jid, JID fromJid) {
+        final ConnectionAction<org.jivesoftware.smack.packet.Presence> action = new ConnectionAction<org.jivesoftware.smack.packet.Presence>() {
+            public org.jivesoftware.smack.packet.Presence execute(XMPPConnection connection) {
+                return connection.getRoster().getPresence(jid.getId());
+            }
+        };
+        return presenceConverter.convert(execute(action));
     }
 
     public void sendPresence(JID jid, PresenceType presenceType, PresenceShow presenceShow, String status) {
         sendPresence(jid, presenceType, presenceShow, status, null);
     }
 
-    public void sendPresence(JID jid, PresenceType presenceType, PresenceShow presenceShow, String status, JID fromJid) {
-        getConnection().sendPacket(presenceConverter.convertPresence(presenceType, presenceShow, status));
+    public void sendPresence(JID jid, final PresenceType presenceType, final PresenceShow presenceShow, final String status, JID fromJid) {
+        final ConnectionAction<Void> action = new ConnectionAction<Void>() {
+            public Void execute(XMPPConnection connection) {
+                connection.sendPacket(presenceConverter.convertPresence(presenceType, presenceShow, status));
+                return null;
+            }
+        };
+        execute(action);
     }
 
     public void sendInvitation(JID jid) {
         sendInvitation(jid, null);
     }
 
-    public void sendInvitation(JID jid, JID fromJid) {
-        try {
-            Roster roster = getConnection().getRoster();
-            if (roster != null) {
-                roster.createEntry(jid.getId(), jid.getId(), null);
-            } else {
-                log.warning("XMPP roster is null, cannot send invitation.");
+    public void sendInvitation(final JID jid, JID fromJid) {
+        final ConnectionAction<Void> action = new ConnectionAction<Void>() {
+            public Void execute(XMPPConnection connection) {
+                try {
+                    Roster roster = connection.getRoster();
+                    if (roster != null) {
+                        roster.createEntry(jid.getId(), jid.getId(), null);
+                    } else {
+                        log.warning("XMPP roster is null, cannot send invitation.");
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        };
+        execute(action);
     }
 
-    public SendResponse sendMessage(Message message) {
-        getConnection().sendPacket(messageConverter.convert(message));
-        final SendResponse response = new SendResponse();
-        for (JID rjid : message.getRecipientJids()) {
-            response.addStatus(rjid, SendResponse.Status.SUCCESS);
-        }
-        return response;
+    public SendResponse sendMessage(final Message message) {
+        final ConnectionAction<SendResponse> action = new ConnectionAction<SendResponse>() {
+            public SendResponse execute(XMPPConnection connection) {
+                connection.sendPacket(messageConverter.convert(message));
+                final SendResponse response = new SendResponse();
+                for (JID rjid : message.getRecipientJids()) {
+                    response.addStatus(rjid, SendResponse.Status.SUCCESS);
+                }
+                return response;
+            }
+        };
+        return execute(action);
     }
 
     public Message parseMessage(HttpServletRequest request) throws IOException {
@@ -107,5 +125,18 @@ public class JBossXMPPService implements XMPPService {
 
     private HttpServletRequestMessageParser getParser(HttpServletRequest request) {
         return new HttpServletRequestMessageParser(request);
+    }
+
+    private static <T> T execute(ConnectionAction<T> action) {
+        final XMPPConnection connection = XMPPConnectionManager.getInstance().createConnection();
+        try {
+            return action.execute(connection);
+        } finally {
+            connection.disconnect();
+        }
+    }
+
+    private static interface ConnectionAction<T> {
+        T execute(XMPPConnection connection);
     }
 }
