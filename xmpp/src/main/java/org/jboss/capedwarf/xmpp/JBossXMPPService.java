@@ -22,23 +22,33 @@
 
 package org.jboss.capedwarf.xmpp;
 
-import com.google.appengine.api.xmpp.*;
+import com.google.appengine.api.xmpp.JID;
+import com.google.appengine.api.xmpp.Message;
+import com.google.appengine.api.xmpp.Presence;
+import com.google.appengine.api.xmpp.PresenceShow;
+import com.google.appengine.api.xmpp.PresenceType;
+import com.google.appengine.api.xmpp.SendResponse;
+import com.google.appengine.api.xmpp.Subscription;
+import com.google.appengine.api.xmpp.XMPPService;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class JBossXMPPService implements XMPPService {
+    private static final Logger log = Logger.getLogger(JBossXMPPService.class.getName());
 
     private PresenceConverter presenceConverter = new PresenceConverter();
     private MessageConverter messageConverter = new MessageConverter();
 
     private XMPPConnection getConnection() {
-        return XMPPConnectionManager.getInstance().getConnection();
+        return XMPPConnectionManager.getInstance().createConnection();
     }
 
     public Presence getPresence(JID jid) {
@@ -64,7 +74,11 @@ public class JBossXMPPService implements XMPPService {
     public void sendInvitation(JID jid, JID fromJid) {
         try {
             Roster roster = getConnection().getRoster();
-            roster.createEntry(jid.getId(), jid.getId(), null);
+            if (roster != null) {
+                roster.createEntry(jid.getId(), jid.getId(), null);
+            } else {
+                log.warning("XMPP roster is null, cannot send invitation.");
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -72,7 +86,11 @@ public class JBossXMPPService implements XMPPService {
 
     public SendResponse sendMessage(Message message) {
         getConnection().sendPacket(messageConverter.convert(message));
-        return new SendResponse();
+        final SendResponse response = new SendResponse();
+        for (JID rjid : message.getRecipientJids()) {
+            response.addStatus(rjid, SendResponse.Status.SUCCESS);
+        }
+        return response;
     }
 
     public Message parseMessage(HttpServletRequest request) throws IOException {

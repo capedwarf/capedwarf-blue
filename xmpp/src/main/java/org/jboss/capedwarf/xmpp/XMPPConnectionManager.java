@@ -31,36 +31,28 @@ import org.jivesoftware.smack.XMPPException;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class XMPPConnectionManager {
-
-    public static final XMPPConnectionManager instance = new XMPPConnectionManager();
-
-    private XMPPConnection connection;
+    private static final XMPPConnectionManager instance = new XMPPConnectionManager();
 
     public static XMPPConnectionManager getInstance() {
         return instance;
     }
 
-    public XMPPConnection getConnection() {
-        if (connection == null) {
-            try {
-                XmppConfiguration xmppConfig = JBossEnvironment.getThreadLocalInstance().getCapedwarfConfiguration().getXmppConfiguration();
+    public XMPPConnection createConnection() {
+        try {
+            XmppConfiguration xmppConfig = JBossEnvironment.getThreadLocalInstance().getCapedwarfConfiguration().getXmppConfiguration();
 
-                ConnectionConfiguration config = new ConnectionConfiguration(xmppConfig.getHost(), xmppConfig.getPort());
-                connection = new XMPPConnection(config);
-                connection.connect();
-                connection.login(xmppConfig.getUsername(), xmppConfig.getPassword());
-                connection.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
-            } catch (XMPPException e) {
-                throw new RuntimeException(e);
-            }
+            ConnectionConfiguration config = new ConnectionConfiguration(xmppConfig.getHost(), xmppConfig.getPort());
+            XMPPConnection connection = new XMPPConnection(config);
+            connection.connect();
+            connection.login(xmppConfig.getUsername(), xmppConfig.getPassword());
+            connection.getRoster().setSubscriptionMode(Roster.SubscriptionMode.accept_all);
+
+            return connection;
+        } catch (XMPPException e) {
+            throw new RuntimeException(e);
         }
-        return connection;
-    }
-
-    public void closeConnection() {
-        connection.disconnect();
-        connection = null;
     }
 }
