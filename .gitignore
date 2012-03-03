@@ -8,14 +8,17 @@ blobstore/target/
 bytecode/target/
 capabilities/target/
 channel/target/
+cluster/target/
 common/target/
 datastore/target/
+environment/target/
 files/target/
 images/target/
 mail/target/
 memcache/target/
 multitenancy/target/
 oauth/target/
+openshift/target/
 tasks/target/
 testsuite/target/
 urlfetch/target/
