@@ -8,7 +8,7 @@
 
         <container qualifier="container-1" >
             <configuration>
-                <property name="jbossHome">d:\\java\\runtimes\\jboss-as-7.1.1.Final-SNAPSHOT-CD-A\\</property>
+                <property name="jbossHome">/opt/jboss/jboss-as-7.1.1.Final-SNAPSHOT-CD-A</property>
                 <property name="serverConfig">standalone-full-ha.xml</property>
                 <property name="managementAddress">127.0.0.1</property>
                 <property name="managementPort">9999</property>
@@ -22,7 +22,7 @@
          -->
         <container qualifier="container-2">
             <configuration>
-                <property name="jbossHome">d:\\java\\runtimes\\jboss-as-7.1.1.Final-SNAPSHOT-CD-B\\</property>
+                <property name="jbossHome">/opt/jboss/jboss-as-7.1.1.Final-SNAPSHOT-CD-B</property>
                 <property name="serverConfig">standalone-full-ha.xml</property>
                 <property name="managementAddress">127.0.0.1</property>
                 <property name="managementPort">10099</property>

@@ -27,16 +27,39 @@ import com.google.appengine.api.datastore.Query;
 public class DatastoreTest extends AbstractClusteredTest {
 
     @InSequence(30)
-    @Test @OperateOnDeployment("dep1")
+    @Test
+    @OperateOnDeployment("dep1")
     public void putStoresEntityOnDepA() throws Exception {
+        System.out.println(">>> putStoresEntityOnDepA");
         Entity entity = createTestEntity("KIND", 1);
         getService().put(entity);
         assertStoreContains(entity);
     }
 
+    @InSequence(31)
+    @Test
+    @OperateOnDeployment("dep2")
+    public void putStoresEntityOnDepB() throws Exception {
+        System.out.println(">>> putStoresEntityOnDepB");
+        Entity entity = createTestEntity("KIND", 2);
+        getService().put(entity);
+        assertStoreContains(entity);
+
+        // wait to sync (index is in async mode)
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
     @InSequence(40)
-    @Test @OperateOnDeployment("dep1")
+    @Test
+    @OperateOnDeployment("dep1")
     public void getEntityOnDepA() throws Exception {
+        System.out.println(">>> getEntityOnDepA");
         Key key = KeyFactory.createKey("KIND", 1);
         Entity lookup = getService().get(key);
 
@@ -47,15 +70,19 @@ public class DatastoreTest extends AbstractClusteredTest {
     }
 
     @InSequence(50)
-    @Test @OperateOnDeployment("dep2")
+    @Test
+    @OperateOnDeployment("dep2")
     public void getEntityOnDepB() throws Exception {
+        System.out.println(">>> getEntityOnDepB()");
         Entity entity = createTestEntity("KIND", 1);
         assertStoreContains(entity);
     }
 
-    @InSequence(50)
-    @Test @OperateOnDeployment("dep1")
+    @InSequence(55)
+    @Test
+    @OperateOnDeployment("dep1")
     public void indexGenInsertOnA() {
+        System.out.println(">>> indexGenInsertOnA");
         Entity entity = new Entity("indexGen");
         entity.setProperty("text", "A");
         getService().put(entity);
@@ -69,18 +96,41 @@ public class DatastoreTest extends AbstractClusteredTest {
     }
 
     @InSequence(60)
-    @Test @OperateOnDeployment("dep2")
+    @Test
+    @OperateOnDeployment("dep2")
     public void indexGenInsertOnB() {
+        // wait to sync (index is in async mode)
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        System.out.println(">>> indexGenInsertOnB");
         Entity entity = new Entity("indexGen");
         entity.setProperty("text", "B");
         getService().put(entity);
+
+        // wait to sync (index is in async mode)
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        int count = getService().prepare(new Query("indexGen")).countEntities(Builder.withDefaults());
+        Assert.assertEquals(3, count);
     }
 
     @InSequence(70)
-    @Test @OperateOnDeployment("dep1")
+    @Test
+    @OperateOnDeployment("dep1")
     public void indexGenTestOverrideA() {
+        System.out.println(">>> indexGenTestOverrideA");
 
-        //wait to sync (index is in async mode)
+        // wait to sync (index is in async mode)
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
@@ -98,42 +148,41 @@ public class DatastoreTest extends AbstractClusteredTest {
         for (Entity entity : list) {
             cached.add((String) entity.getProperty("text"));
         }
-        Assert.assertTrue(list.contains("A"));
-        Assert.assertTrue(list.contains("A1"));
-        Assert.assertTrue(list.contains("B"));
+        Assert.assertTrue(cached.contains("A"));
+        Assert.assertTrue(cached.contains("A1"));
+        Assert.assertTrue(cached.contains("B"));
     }
 
     @InSequence(80)
-    @Test @OperateOnDeployment("dep2")
+    @Test
+    @OperateOnDeployment("dep2")
     public void indexGenTestOverrideB() {
+        System.out.println(">>> indexGenTestOverrideB");
         List<Entity> list = getService().prepare(new Query("indexGen")).asList(Builder.withDefaults());
         Assert.assertEquals(3, list.size());
     }
 
-
-
     @InSequence(1000)
-    @Test @OperateOnDeployment("dep1")
+    @Test
+    @OperateOnDeployment("dep1")
     public void tearDownDepA() throws Exception {
         tearDown();
     }
 
     @InSequence(1010)
-    @Test @OperateOnDeployment("dep2")
+    @Test
+    @OperateOnDeployment("dep2")
     public void tearDownDepB() throws Exception {
         tearDown();
     }
-
 
     private DatastoreService getService() {
         return DatastoreServiceFactory.getDatastoreService();
     }
 
-
     private void tearDown() {
         ((JBossDatastoreService) getService()).clearCache();
     }
-
 
     private Entity createTestEntity(String kind, int id) {
         Key key = KeyFactory.createKey(kind, id);
