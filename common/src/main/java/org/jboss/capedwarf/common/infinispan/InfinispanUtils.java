@@ -40,6 +40,7 @@ import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.remoting.transport.Address;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jgroups.JChannel;
@@ -138,7 +139,7 @@ public class InfinispanUtils {
 
         return getCache(config, appId, callback);
     }
-    
+
     public static <K, V> Cache<K, V> getCache(CacheName config, ConfigurationCallback callback) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
@@ -154,7 +155,7 @@ public class InfinispanUtils {
     public static <R> R submit(final CacheName config, final Callable<R> task, Object... keys) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
-        
+
         final Cache cache = getCache(config);
         try {
             final DistributedExecutorService des = new DefaultExecutorService(cache);
@@ -162,9 +163,9 @@ public class InfinispanUtils {
             return result.get();
         } catch (Exception e) {
             throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
-        }        
+        }
     }
-    
+
     public static GridFilesystem getGridFilesystem() {
         final String appId = Application.getAppId();
         GridFilesystem gfs = gridFilesystems.get(appId);
@@ -198,5 +199,9 @@ public class InfinispanUtils {
         if (cacheManagerUsers == 0) {
             cacheManager = null;
         }
+    }
+
+    public static Address getLocalNode() {
+        return InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache().getRpcManager().getAddress();
     }
 }
