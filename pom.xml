@@ -24,6 +24,7 @@
         <module>capabilities</module>
         <module>channel</module>
         <module>cluster</module>
+        <module>cluster-tests</module>
         <module>datastore</module>
         <module>environment</module>
         <module>files</module>
@@ -117,7 +118,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.4.3</version>
+                <version>2.10</version>
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <includes>

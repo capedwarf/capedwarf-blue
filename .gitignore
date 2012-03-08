@@ -9,6 +9,7 @@ bytecode/target/
 capabilities/target/
 channel/target/
 cluster/target/
+cluster-tests/target/
 common/target/
 datastore/target/
 environment/target/
