@@ -136,6 +136,38 @@
             font-weight: bold;
             padding-bottom: 10px;
         }
+
+        .ae-log-severity {
+            display: block;
+            height: 1.2em;
+            width: 1.2em;
+            line-height: 1.2;
+            text-align: center;
+            text-transform: capitalize;
+            font-weight: bold;
+            border-radius: 2px;
+        }
+
+        .ae-log-severity-D {
+            background-color: #09F;
+        }
+
+        .ae-log-severity-I {
+            background-color: #3C0;
+        }
+
+        .ae-log-severity-W {
+            background-color: #FD0;
+        }
+
+        .ae-log-severity-E {
+            background-color: #F90;
+        }
+
+        .ae-log-severity-F {
+            background-color: #F22;
+        }
+
     </style>
 </head>
 <body>
@@ -158,7 +190,7 @@
                             <a href="#">Instances</a>
                         </li>
                         <li>
-                            <a href="#">Logs</a>
+                            <a href="logs.vm">Logs</a>
                         </li>
                         <li>
                             <a href="#">Versions</a>

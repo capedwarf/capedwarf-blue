@@ -1,0 +1,54 @@
+#include("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Logs</h2>
+<form action="logs.vm">
+    Show:
+    <input type="radio" name="show" value="all" id="showAll" #if($logViewer.showAll) checked="checked" #end />
+    <label for="showAll">All requests</label>
+
+    <input type="radio" name="show" value="withMinimumSeverity" #if(!$logViewer.showAll) checked="checked" #end id="showWithMinimumSeverity"/>
+    <label for="showWithMinimumSeverity">Logs with minimum severity:</label>
+
+    <select id="severitySelect" name="severity">
+        #foreach($severity in $logViewer.severities)
+            <option value="$severity" #if($severity.equals($logViewer.severity)) selected="selected" #end>$severity</option>
+        #end
+    </select>
+    <input type="submit" value="Search"/>
+</form>
+
+<br/><br/>
+
+<table width="100%">
+    #foreach ($requestLog in $logViewer.requestLogs)
+        <tr>
+            <td colspan="3">
+                $timeFormatter.format($requestLog.endTimeUsec)
+                <strong>$requestLog.resource</strong>
+                $requestLog.status
+                ${requestLog.pendingTimeUsec}ms
+                $sizeFormatter.format($requestLog.responseSize)
+                $requestLog.userAgent
+            </td>
+        </tr>
+        #foreach ($appLogLine in $requestLog.appLogLines)
+            <tr>
+                <td><span class="ae-log-severity ae-log-severity-$appLogLine.logLevel.name().charAt(0)">$appLogLine.logLevel.name().charAt(0)</span></td>
+                <td>$timeFormatter.format($appLogLine.timeUsec)</td>
+                <td>$appLogLine.logMessage</td>
+            </tr>
+        #end
+    #end
+</table>
+
+<div class="ae-log-legend">
+    <strong>Legend:</strong>
+    #foreach($severity in $logViewer.severities)
+        <span>
+            <span class="ae-log-severity ae-log-severity-$severity.charAt(0)">$severity.charAt(0)</span>
+            $severity
+        </span>
+    #end
+</div>
+
+#include("/org/jboss/capedwarf/admin/footer.vm")

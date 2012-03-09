@@ -23,6 +23,9 @@ public class AdminExtension implements Extension {
         addAnnotatedType(bbd, bm, DatastoreEntityViewer.class);
         addAnnotatedType(bbd, bm, DatastoreViewer.class);
         addAnnotatedType(bbd, bm, HttpParamProducer.class);
+        addAnnotatedType(bbd, bm, LogViewer.class);
+        addAnnotatedType(bbd, bm, TimeFormatter.class);
+        addAnnotatedType(bbd, bm, SizeFormatter.class);
     }
 
     private <E> void addAnnotatedType(BeforeBeanDiscovery bbd, BeanManager bm, Class<E> clazz) {
