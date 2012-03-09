@@ -39,6 +39,7 @@ public class FactoriesTransformer extends MultipleTransformer {
         register("com.google.appengine.api.datastore.Key", new KeyTransformer());
         register("com.google.appengine.api.files.FileServiceFactory", new FileServiceFactoryTransformer());
         register("com.google.appengine.api.images.ImagesServiceFactory", new ImagesServiceFactoryTransformer());
+        register("com.google.appengine.api.log.LogServiceFactory", new LogServiceFactoryTransformer());
         register("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
         register("com.google.appengine.api.memcache.MemcacheServiceFactory", new MemcacheServiceFactoryTransformer());
         register("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());

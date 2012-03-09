@@ -20,23 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.logging;
+package org.jboss.capedwarf.admin;
 
-import java.util.logging.LogRecord;
+import javax.inject.Named;
+import java.util.Date;
 
 /**
- * Logger.
- *
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class Logger {
-    public static void publish(LogRecord record) {
-        // TODO
-    }
+@Named
+public class SizeFormatter {
 
-    public static void flush() {
-    }
-
-    public static void close() throws SecurityException {
+    public String format(long bytes) {
+        return (bytes / 1000) + "kb";
     }
 }
