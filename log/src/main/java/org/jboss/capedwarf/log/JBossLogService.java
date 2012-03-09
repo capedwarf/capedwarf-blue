@@ -22,6 +22,17 @@
 
 package org.jboss.capedwarf.log;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -34,20 +45,10 @@ import com.google.appengine.api.log.RequestLogs;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfLogService implements LogService {
+public class JBossLogService implements LogService {
 
     private static final String LOG_REQUEST_ENTITY_KIND = "__org.jboss.capedwarf.LogRequest__";
     private static final String LOG_REQUEST_START_TIME_MILLIS = "startTimeMillis";
@@ -64,7 +65,6 @@ public class CapedwarfLogService implements LogService {
     private static final String LOG_LINE_THROWN = "thrown";
 
     private static final String LOG_REQUEST_ENTITY_REQUEST_ATTRIBUTE = "__org.jboss.capedwarf.LogRequest__";
-
 
     public Iterable<RequestLogs> fetch(LogQuery logQuery) {
         List<RequestLogs> list = new ArrayList<RequestLogs>();
@@ -168,6 +168,8 @@ public class CapedwarfLogService implements LogService {
     }
 
     public void log(LogRecord record) {
+        // TODO -- filter per logging.properties
+
         JBossDelegate jBossDelegate = (JBossDelegate) ApiProxy.getDelegate();
         ServletRequest request = jBossDelegate.getServletRequest();
 

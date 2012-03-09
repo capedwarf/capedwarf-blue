@@ -22,9 +22,9 @@
 
 package org.jboss.capedwarf.log;
 
-import com.google.appengine.api.log.LogServiceFactory;
-
 import java.util.logging.LogRecord;
+
+import com.google.appengine.api.log.LogServiceFactory;
 
 /**
  * Logger.
@@ -34,7 +34,7 @@ import java.util.logging.LogRecord;
  */
 public class Logger {
     public static void publish(LogRecord record) {
-        ((CapedwarfLogService)LogServiceFactory.getLogService()).log(record);
+        ((JBossLogService)LogServiceFactory.getLogService()).log(record);
     }
 
     public static void flush() {

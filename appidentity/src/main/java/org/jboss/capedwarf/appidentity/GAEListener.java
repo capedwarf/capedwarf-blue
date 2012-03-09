@@ -22,15 +22,10 @@
 
 package org.jboss.capedwarf.appidentity;
 
-import com.google.appengine.api.log.LogServiceFactory;
-import org.jboss.capedwarf.common.config.AppEngineWebXml;
-import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
-import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
-import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
-import org.jboss.capedwarf.common.config.JBossEnvironment;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.common.io.IOUtils;
-import org.jboss.capedwarf.log.CapedwarfLogService;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.Principal;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -39,10 +34,16 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.Principal;
-import java.util.logging.Logger;
+
+import com.google.appengine.api.log.LogServiceFactory;
+import org.jboss.capedwarf.common.config.AppEngineWebXml;
+import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
+import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
+import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
+import org.jboss.capedwarf.common.config.JBossEnvironment;
+import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.io.IOUtils;
+import org.jboss.capedwarf.log.JBossLogService;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -97,8 +98,8 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
         clearJBossEnvironment();
     }
 
-    private CapedwarfLogService getLogService() {
-        return ((CapedwarfLogService) LogServiceFactory.getLogService());
+    private JBossLogService getLogService() {
+        return ((JBossLogService) LogServiceFactory.getLogService());
     }
 
     private AppEngineWebXml readAppEngineWebXml() throws IOException {
