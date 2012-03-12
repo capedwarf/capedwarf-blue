@@ -41,6 +41,7 @@ import java.util.List;
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Datastore querying basic tests.
@@ -59,10 +60,10 @@ public class QueryBasicsTestCase extends QueryTestCase {
         service.put(address);
 
         PreparedQuery preparedQuery = service.prepare(new Query());
-        assertEquals("number of results", 2, preparedQuery.countEntities(FetchOptions.Builder.withDefaults()));
+        assertTrue(preparedQuery.countEntities(FetchOptions.Builder.withDefaults()) >= 2);
 
         List<Entity> results = preparedQuery.asList(FetchOptions.Builder.withDefaults());
-        assertEquals(asSet(Arrays.asList(person, address)), asSet(results));
+        assertTrue(results.containsAll(Arrays.asList(person, address)));
     }
 
     @Test
