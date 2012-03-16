@@ -25,9 +25,11 @@
 package org.jboss.capedwarf.datastore.query;
 
 import com.google.appengine.api.datastore.Cursor;
+import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.QueryResultIterator;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -53,6 +55,10 @@ class QueryResultIteratorImpl<E> implements QueryResultIterator<E> {
     }
 
     public Cursor getCursor() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  // TODO
+    }
+
+    public List<Index> getIndexList() {
+        return null;  // TODO -- null is OK, as we don't know; as per spec
     }
 }

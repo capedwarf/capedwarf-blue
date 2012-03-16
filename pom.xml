@@ -24,10 +24,12 @@
         <module>capabilities</module>
         <module>channel</module>
         <module>cluster</module>
+        <module>cluster-tests</module>
         <module>datastore</module>
         <module>environment</module>
         <module>files</module>
         <module>images</module>
+        <module>log</module>
         <module>mail</module>
         <module>memcache</module>
         <module>multitenancy</module>
@@ -42,10 +44,10 @@
 
     <properties>
         <version.cdi.api>1.0-SP4</version.cdi.api>
-        <version.com.google.gae>1.6.2</version.com.google.gae>
-        <version.com.google.gae.api>1.6.2</version.com.google.gae.api>
-        <version.com.google.gae.labs>1.6.2</version.com.google.gae.labs>
-        <version.com.google.guava>10.0.1</version.com.google.guava>
+        <version.com.google.gae>1.6.3</version.com.google.gae>
+        <version.com.google.gae.api>1.6.3</version.com.google.gae.api>
+        <version.com.google.gae.labs>1.6.3</version.com.google.gae.labs>
+        <version.com.google.guava>11.0.2</version.com.google.guava>
         <version.json>20090211</version.json>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
         <version.org.jboss.seam>3.0.0.Final</version.org.jboss.seam>
@@ -55,7 +57,7 @@
         <version.org.jboss.xnio.xnio-nio>3.0.3.GA</version.org.jboss.xnio.xnio-nio>
         <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
         <version.org.jivesoftware.smack>3.1.0</version.org.jivesoftware.smack>
-        <version.org.picketlink>2.0.1.final</version.org.picketlink>
+        <version.org.picketlink>2.0.2.Final</version.org.picketlink>
         <version.org.picketlink.consolidated.social>2.0.0.Beta1</version.org.picketlink.consolidated.social>
         <version.javassist>3.15.0-GA</version.javassist>
         <version.slf4j>1.6.1</version.slf4j>
@@ -75,7 +77,7 @@
         <version.org.datanucleus.gae>1.0.10</version.org.datanucleus.gae>
         <version.org.datanucleus.jdo>2.3-eb</version.org.datanucleus.jdo>
         <version.org.hibernate.search>4.1.0.Beta1</version.org.hibernate.search>
-        <version.org.infinispan>5.1.1.FINAL</version.org.infinispan>
+        <version.org.infinispan>5.1.2.FINAL</version.org.infinispan>
         <version.junit>4.7</version.junit>
         <version.arquillian>1.0.0.CR7</version.arquillian>
         <version.jboss.as7>7.1.0.Final</version.jboss.as7>
@@ -117,7 +119,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.4.3</version>
+                <version>2.10</version>
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <includes>
@@ -276,6 +278,12 @@
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-images</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-log</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

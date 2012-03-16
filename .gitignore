@@ -15,6 +15,7 @@ datastore/target/
 environment/target/
 files/target/
 images/target/
+log/target/
 mail/target/
 memcache/target/
 multitenancy/target/
