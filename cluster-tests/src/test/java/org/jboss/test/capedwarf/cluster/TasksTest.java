@@ -67,18 +67,12 @@ public class TasksTest {
 
     @Deployment (name = "dep1") @TargetsContainer("container-1")
     public static WebArchive getDeploymentA() {
-        return ShrinkWrap.create(WebArchive.class)
-                .addClasses(PrintServlet.class, PrintListener.class)
-                .setWebXML(new StringAsset(WEB_XML))
-                .addAsWebInfResource("appengine-web.xml");
+        return getDeployment();
     }
 
     @Deployment(name = "dep2") @TargetsContainer("container-2")
     public static WebArchive getDeploymentB() {
-        return ShrinkWrap.create(WebArchive.class)
-                .addClasses(PrintServlet.class, PrintListener.class)
-                .setWebXML(new StringAsset(WEB_XML))
-                .addAsWebInfResource("appengine-web.xml");
+        return getDeployment();
     }
 
     protected static WebArchive getDeployment() {
