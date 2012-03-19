@@ -44,15 +44,7 @@ public class DatastoreTest extends AbstractClusteredTest {
         Entity entity = createTestEntity("KIND", 2);
         getService().put(entity);
         assertStoreContains(entity);
-
-        // wait to sync (index is in async mode)
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
+        waitForSync();
     }
 
     @InSequence(40)
@@ -98,27 +90,15 @@ public class DatastoreTest extends AbstractClusteredTest {
     @InSequence(60)
     @Test
     @OperateOnDeployment("dep2")
-    public void indexGenInsertOnB() {
-        // wait to sync (index is in async mode)
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    public void indexGenInsertOnB() throws Exception {
+        waitForSync();
 
         System.out.println(">>> indexGenInsertOnB");
         Entity entity = new Entity("indexGen");
         entity.setProperty("text", "B");
         getService().put(entity);
 
-        // wait to sync (index is in async mode)
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        waitForSync();
 
         int count = getService().prepare(new Query("indexGen")).countEntities(Builder.withDefaults());
         Assert.assertEquals(3, count);
@@ -127,16 +107,10 @@ public class DatastoreTest extends AbstractClusteredTest {
     @InSequence(70)
     @Test
     @OperateOnDeployment("dep1")
-    public void indexGenTestOverrideA() {
+    public void indexGenTestOverrideA() throws Exception {
         System.out.println(">>> indexGenTestOverrideA");
 
-        // wait to sync (index is in async mode)
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        waitForSync();
 
         int count = getService().prepare(new Query("indexGen")).countEntities(Builder.withDefaults());
         Assert.assertEquals(3, count);
@@ -195,6 +169,10 @@ public class DatastoreTest extends AbstractClusteredTest {
         Entity lookup = getService().get(entity.getKey());
         Assert.assertNotNull(lookup);
         Assert.assertEquals(entity, lookup);
+    }
+
+    private void waitForSync() throws InterruptedException {
+        Thread.sleep(3000L);
     }
 
 }
