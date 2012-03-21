@@ -37,8 +37,10 @@ public class ChannelConnectionManager {
 
     private Map<String, ChannelConnection> connections = new HashMap<String, ChannelConnection>();
 
+    public static final ChannelConnectionManager instance = new ChannelConnectionManager(); // TODO: make this as it should be
+
     public static ChannelConnectionManager getInstance() {
-        return null;    // TODO
+        return instance;
     }
 
     public ChannelConnection getChannelConnection(String channelToken) {

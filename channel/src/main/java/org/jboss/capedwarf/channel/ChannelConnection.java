@@ -36,7 +36,11 @@ public class ChannelConnection {
     private BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
 
     public void send(String message) {
-        queue.put(message);
+        try {
+            queue.put(message);
+        } catch (InterruptedException e) {
+            // ignored
+        }
     }
 
     public String getPendingMessage(long timeoutMillis) throws InterruptedException {

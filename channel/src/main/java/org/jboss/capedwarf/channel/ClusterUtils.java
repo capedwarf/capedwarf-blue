@@ -36,20 +36,27 @@ import java.util.concurrent.Callable;
  *
  */
 public class ClusterUtils {
-    public static void submitToNode(String nodeAddress, Callable<Void> task) {
-        AdvancedCache cache = InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache();
-        RpcManager rpc = cache.getRpcManager();
-        rpc.invokeRemotely(
-                Collections.singleton(getAddress(rpc, nodeAddress)),
-                new DistributedExecuteCommand<Void>(Collections.emptyList(), task),
-                false);
-    }
-
-    private static Address getAddress(RpcManager rpc, String nodeAddress) {
-        for (Address address : rpc.getTransport().getMembers()) {
-            address.
+    public static void submitToNode(Address nodeAddress, Callable<Void> task) {
+        try {
+            task.call();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
-        return null;  //To change body of created methods use File | Settings | File Templates.
+        // TODO invoke task on correct node.
+//        AdvancedCache cache = InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache();
+//        RpcManager rpc = cache.getRpcManager();
+//        rpc.invokeRemotely(
+//                Collections.singleton(nodeAddress),
+//                new DistributedExecuteCommand<Void>(Collections.emptyList(), task),
+//                false);
     }
+
+//    private static Address getAddress(RpcManager rpc, String nodeAddress) {
+//        for (Address address : rpc.getTransport().getMembers()) {
+//            address.
+//        }
+//
+//        return null;  //To change body of created methods use File | Settings | File Templates.
+//    }
 }

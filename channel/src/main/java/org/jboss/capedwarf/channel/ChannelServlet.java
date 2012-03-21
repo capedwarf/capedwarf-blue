@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.channel;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,7 +33,12 @@ import java.io.PrintWriter;
 /**
  *
  */
+@WebServlet(urlPatterns = ChannelServlet.SERVLET_URI + "/*")
 public class ChannelServlet extends HttpServlet {
+
+    public static final String SERVLET_URI = "/_ah/channel";
+
+    public static final int MAX_CONNECTION_DURATION = 30000;
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -42,13 +48,22 @@ public class ChannelServlet extends HttpServlet {
         resp.setHeader("Transfer-Encoding", "chunked");
         PrintWriter writer = resp.getWriter();
 
-        long timeoutMillis;
+        long startTime = System.currentTimeMillis();
         while (true) {
-            timeoutMillis = 30000; // TODO: should decrease with every call of getPendingMessage
-            String message = connection.getPendingMessage(timeoutMillis);
-            writer.println(message);
-            writer.flush();
+            long timeActive = System.currentTimeMillis() - startTime;
+            long timeLeft = MAX_CONNECTION_DURATION - timeActive;
+            if (timeLeft < 0) {
+                break;
+            }
+            try {
+                String message = connection.getPendingMessage(timeLeft);
+                if (message != null) {
+                    writer.println(message);
+                    writer.flush();
+                }
+            } catch (InterruptedException e) {
+                // ignored
+            }
         }
-
     }
 }
