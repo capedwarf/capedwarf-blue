@@ -1,13 +1,8 @@
 package org.jboss.test.capedwarf.cluster;
 
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.FetchOptions.Builder;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.Query;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -16,8 +11,14 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.FetchOptions.Builder;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
@@ -43,15 +44,7 @@ public class DatastoreTestCase extends AbstractClusteredTest {
         Entity entity = createTestEntity("KIND", 2);
         getService().put(entity);
         assertStoreContains(entity);
-
-        // wait to sync (index is in async mode)
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
+        waitForSync();
     }
 
     @InSequence(40)
@@ -97,27 +90,15 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @InSequence(60)
     @Test
     @OperateOnDeployment("dep2")
-    public void indexGenInsertOnB() {
-        // wait to sync (index is in async mode)
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+    public void indexGenInsertOnB() throws Exception {
+        waitForSync();
 
         System.out.println(">>> indexGenInsertOnB");
         Entity entity = new Entity("indexGen");
         entity.setProperty("text", "B");
         getService().put(entity);
 
-        // wait to sync (index is in async mode)
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        waitForSync();
 
         int count = getService().prepare(new Query("indexGen")).countEntities(Builder.withDefaults());
         Assert.assertEquals(3, count);
@@ -126,16 +107,10 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @InSequence(70)
     @Test
     @OperateOnDeployment("dep1")
-    public void indexGenTestOverrideA() {
+    public void indexGenTestOverrideA() throws Exception {
         System.out.println(">>> indexGenTestOverrideA");
 
-        // wait to sync (index is in async mode)
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        waitForSync();
 
         int count = getService().prepare(new Query("indexGen")).countEntities(Builder.withDefaults());
         Assert.assertEquals(3, count);
@@ -194,6 +169,10 @@ public class DatastoreTestCase extends AbstractClusteredTest {
         Entity lookup = getService().get(entity.getKey());
         Assert.assertNotNull(lookup);
         Assert.assertEquals(entity, lookup);
+    }
+
+    private void waitForSync() throws InterruptedException {
+        Thread.sleep(3000L);
     }
 
 }

@@ -21,7 +21,7 @@ import com.google.appengine.api.taskqueue.TaskOptions;
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 @RunWith(Arquillian.class)
-public class TasksTest {
+public class TasksTestCase {
 
     private static final String URL = "/_ah/test";
     private static final String WEB_XML =
@@ -59,6 +59,15 @@ public class TasksTest {
         sleep();
     }
 
+
+    @InSequence(10)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void testOnDepA() throws Exception {
+        final Queue queue = QueueFactory.getQueue("default");
+        queue.add(TaskOptions.Builder.withUrl(URL));
+        sleep();
+    }
 
     // we wait for JMS to kick-in
     private static void sleep() throws InterruptedException {
