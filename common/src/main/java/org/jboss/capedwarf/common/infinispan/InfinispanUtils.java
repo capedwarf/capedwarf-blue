@@ -22,19 +22,20 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
 import com.google.apphosting.api.ApiProxy;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -52,6 +53,15 @@ public class InfinispanUtils {
         return cacheManager;
     }
 
+    public static <K, V> Cache<K, V> getCache(String config, String cacheName) {
+        if (cacheManager == null)
+            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+
+        final Configuration configuration = cacheManager.getCacheConfiguration(config);
+        cacheManager.defineConfiguration(cacheName, configuration);
+        return cacheManager.getCache(cacheName);
+    }
+    
     public static <R> R submit(final CacheName cacheName, final Callable<R> task, Object... keys) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
