@@ -22,7 +22,9 @@
 
 package org.jboss.capedwarf.tasks;
 
+import java.lang.reflect.Field;
 import java.util.Iterator;
+import java.util.Map;
 
 import com.google.appengine.api.taskqueue.Queue;
 import org.infinispan.container.DefaultDataContainer;
@@ -36,16 +38,38 @@ import org.infinispan.eviction.EvictionThreadPolicy;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class PurgeDataContainer extends DefaultDataContainer {
+    private static final Field entries;
+    
+    static {
+        try {
+            entries = DefaultDataContainer.class.getDeclaredField("entries");
+            entries.setAccessible(true);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);           
+        }
+    }
+
+    private Map map;
     private Queue queue;
 
     PurgeDataContainer(Queue queue) {
         super(32, -1, EvictionStrategy.LIRS, EvictionThreadPolicy.DEFAULT);
+        this.map = map();
         this.queue = queue;
     }
 
+    private Map map() {
+        try {
+            return (Map) entries.get(this);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     public void purgeExpired() {
         long currentTimeMillis = System.currentTimeMillis();
-        for (Iterator<InternalCacheEntry> purgeCandidates = iterator(); purgeCandidates.hasNext();) {
+        for (Iterator<InternalCacheEntry> purgeCandidates = map.values().iterator(); purgeCandidates.hasNext();) {
             InternalCacheEntry e = purgeCandidates.next();
             if (e.isExpired(currentTimeMillis)) {
                 purgeCandidates.remove();
