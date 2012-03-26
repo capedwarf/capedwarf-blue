@@ -60,6 +60,7 @@ import org.jboss.capedwarf.common.reflection.TargetInvocation;
 public class JBossQueue implements Queue {
     private static final String ID = "ID:";
     private static final String LEASE = "LEASE_";
+    private static final Sort SORT = new Sort(new SortField("eta", SortField.LONG));
     private static final Map<String, Queue> cache = new HashMap<String, Queue>();
     private static final TargetInvocation<TaskOptions.Method> getMethod = ReflectionUtils.cacheInvocation(TaskOptions.class, "getMethod");
     private static final TargetInvocation<String> getTaskName = ReflectionUtils.cacheInvocation(TaskOptions.class, "getTaskName");
@@ -195,7 +196,7 @@ public class JBossQueue implements Queue {
         }
         final CacheQuery query = searchManager.getQuery(lq, TaskOptionsEntity.class)
                 .maxResults((int) countLimit)
-                .sort(new Sort(new SortField("eta", SortField.LONG)));
+                .sort(SORT);
 
         List<TaskHandle> handles = new ArrayList<TaskHandle>();
         for (Object obj : query) {
