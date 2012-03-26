@@ -66,15 +66,14 @@ public class InfinispanUtils {
     }
 
     @SuppressWarnings("deprecation")
-    public static <K, V> Cache<K, V> getCache(String config, String cacheName, Configuration override) {
+    public static <K, V> Cache<K, V> getCache(String config, String cacheName, Configuration temp) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
         Configuration configuration = cacheManager.getCacheConfiguration(config);
-        if (override != null) {
-            org.infinispan.config.Configuration clone = LegacyConfigurationAdaptor.adapt(configuration).clone();
-            clone.applyOverrides(LegacyConfigurationAdaptor.adapt(override));
-            configuration = LegacyConfigurationAdaptor.adapt(clone);
+        if (temp != null) {
+            LegacyConfigurationAdaptor.adapt(temp).applyOverrides(LegacyConfigurationAdaptor.adapt(configuration).clone());
+            configuration = temp;
         }
         cacheManager.defineConfiguration(cacheName, configuration);
         return cacheManager.getCache(cacheName);

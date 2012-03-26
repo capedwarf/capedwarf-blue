@@ -47,6 +47,7 @@ import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class JBossLogService implements LogService {
 
@@ -214,11 +215,14 @@ public class JBossLogService implements LogService {
 
     public void requestFinished(ServletRequest servletRequest) {
         Entity entity = getRequestEntity(servletRequest);
-        entity.setProperty(LOG_REQUEST_END_TIME_MILLIS, System.currentTimeMillis());
-
-//            HttpServletResponse response;
-        // TODO entity.setProperty("responseStatusCode", response.getStatus());
-        // TODO entity.setProperty("responseLength", );
+        // check if all went well
+        if (entity != null) {
+            entity.setProperty(LOG_REQUEST_END_TIME_MILLIS, System.currentTimeMillis());
+    
+    //            HttpServletResponse response;
+            // TODO entity.setProperty("responseStatusCode", response.getStatus());
+            // TODO entity.setProperty("responseLength", );
+        }
     }
 
     private Entity getRequestEntity(ServletRequest request) {

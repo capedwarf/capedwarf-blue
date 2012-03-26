@@ -22,10 +22,23 @@
 
 package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.*;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import java.util.*;
+import com.google.appengine.api.datastore.DatastoreAttributes;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.Index;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyRange;
+import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.datastore.TransactionOptions;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
  * JBoss DatastoreService impl.
@@ -60,47 +73,77 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public Key put(Entity entity) {
-        Key key = entity.getKey();
-        if (key.isComplete() == false) {
-            long id = KeyGenerator.generateKeyId(key);
-            ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
-        }
-        store.put(key, entity);
-        return key;
+        return put(getCurrentTransaction(null), entity);
     }
 
     public Key put(Transaction transaction, Entity entity) {
-        return put(entity);
+        return put(transaction, Collections.singleton(entity)).get(0);
     }
 
     public List<Key> put(Iterable<Entity> entityIterable) {
-        List<Key> list = new ArrayList<Key>();
-        for (Entity e : entityIterable) {
-            Key key = put(e);
-            list.add(key);
-        }
-        return list;
+        return put(getCurrentTransaction(null), entityIterable);
     }
 
-    public List<Key> put(Transaction transaction, Iterable<Entity> entityIterable) {
-        return put(entityIterable);
+    public List<Key> put(Transaction tx, Iterable<Entity> entityIterable) {
+        boolean newTx = (tx == null);
+        if (newTx)
+            tx = beginTransaction();
+        
+        try {
+            List<Key> list = new ArrayList<Key>();
+            for (Entity entity : entityIterable) {
+                Key key = entity.getKey();
+                if (key.isComplete() == false) {
+                    long id = KeyGenerator.generateKeyId(key);
+                    ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
+                }
+                store.put(key, entity);
+                list.add(key);
+            }
+            
+            if (newTx) {
+                newTx = false;
+                tx.commit();
+            }
+            
+            return list;
+        } catch (Throwable t) {
+            if (newTx)
+                tx.rollback();
+            throw new RuntimeException(t);
+        }
     }
 
     public void delete(Key... keys) {
-        delete(Arrays.asList(keys));
+        delete(getCurrentTransaction(null), keys);
     }
 
     public void delete(Transaction transaction, Key... keys) {
-        delete(keys);
+        delete(transaction, Arrays.asList(keys));
     }
 
     public void delete(Iterable<Key> keyIterable) {
-        for (Key key : keyIterable)
-            store.remove(key);
+        delete(getCurrentTransaction(null), keyIterable);
     }
 
-    public void delete(Transaction transaction, Iterable<Key> keyIterable) {
-        delete(keyIterable);
+    public void delete(Transaction tx, Iterable<Key> keyIterable) {
+        boolean newTx = (tx == null);
+        if (newTx)
+            tx = beginTransaction();
+
+        try {
+            for (Key key : keyIterable)
+                store.remove(key);
+            
+            if (newTx) {
+                newTx = false;
+                tx.commit();
+            }
+        } catch (Throwable t) {
+            if (newTx)
+                tx.rollback();
+            throw new RuntimeException(t);                        
+        }
     }
 
     public Transaction beginTransaction() {
@@ -112,19 +155,19 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public Map<Index, Index.IndexState> getIndexes() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  // TODO
     }
 
     public KeyRange allocateIds(String kind, long num) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  // TODO
     }
 
     public KeyRange allocateIds(Key parent, String kind, long num) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  // TODO
     }
 
     public KeyRangeState allocateIdRange(KeyRange keyRange) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  // TODO
     }
 
     public DatastoreAttributes getDatastoreAttributes() {
