@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
 import com.google.apphosting.api.ApiProxy;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.LegacyConfigurationAdaptor;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.io.GridFile;
@@ -54,10 +55,20 @@ public class InfinispanUtils {
     }
 
     public static <K, V> Cache<K, V> getCache(String config, String cacheName) {
+        return getCache(config, cacheName, null);
+    }
+
+    @SuppressWarnings("deprecation")
+    public static <K, V> Cache<K, V> getCache(String config, String cacheName, Configuration override) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
-        final Configuration configuration = cacheManager.getCacheConfiguration(config);
+        Configuration configuration = cacheManager.getCacheConfiguration(config);
+        if (override != null) {
+            org.infinispan.config.Configuration clone = LegacyConfigurationAdaptor.adapt(configuration).clone();
+            clone.applyOverrides(LegacyConfigurationAdaptor.adapt(override));
+            configuration = LegacyConfigurationAdaptor.adapt(clone);
+        }
         cacheManager.defineConfiguration(cacheName, configuration);
         return cacheManager.getCache(cacheName);
     }

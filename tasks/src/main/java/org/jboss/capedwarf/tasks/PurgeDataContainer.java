@@ -22,31 +22,39 @@
 
 package org.jboss.capedwarf.tasks;
 
-import java.io.Serializable;
+import java.util.Iterator;
 
-import com.google.appengine.api.taskqueue.TaskOptions;
+import com.google.appengine.api.taskqueue.Queue;
+import org.infinispan.container.DefaultDataContainer;
+import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.eviction.EvictionStrategy;
+import org.infinispan.eviction.EvictionThreadPolicy;
 
 /**
+ * Custom purge.
+ * 
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class TaskLeaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
-    static final String LEASE = "LEASE_";
+class PurgeDataContainer extends DefaultDataContainer {
+    private Queue queue;
 
-    private TaskOptions options;
-
-    public TaskLeaseEntity() {
+    PurgeDataContainer(Queue queue) {
+        super(32, -1, EvictionStrategy.LIRS, EvictionThreadPolicy.DEFAULT);
+        this.queue = queue;
     }
 
-    public TaskLeaseEntity(TaskOptions options) {
-        this.options = options;
-    }
-
-    public TaskOptions getOptions() {
-        return options;
-    }
-
-    public void setOptions(TaskOptions options) {
-        this.options = options;
+    public void purgeExpired() {
+        long currentTimeMillis = System.currentTimeMillis();
+        for (Iterator<InternalCacheEntry> purgeCandidates = iterator(); purgeCandidates.hasNext();) {
+            InternalCacheEntry e = purgeCandidates.next();
+            if (e.isExpired(currentTimeMillis)) {
+                purgeCandidates.remove();
+                Object value = e.getValue();
+                if (value instanceof TaskLeaseEntity) {
+                    TaskLeaseEntity tle = (TaskLeaseEntity) value;
+                    queue.add(tle.getOptions());
+                }
+            }
+        }
     }
 }

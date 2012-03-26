@@ -42,6 +42,7 @@ import org.apache.lucene.search.SortField;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
@@ -59,7 +60,6 @@ import org.jboss.capedwarf.common.reflection.TargetInvocation;
  */
 public class JBossQueue implements Queue {
     private static final String ID = "ID:";
-    private static final String LEASE = "LEASE_";
     private static final Sort SORT = new Sort(new SortField("eta", SortField.LONG));
     private static final Map<String, Queue> cache = new HashMap<String, Queue>();
     private static final TargetInvocation<TaskOptions.Method> getMethod = ReflectionUtils.cacheInvocation(TaskOptions.class, "getMethod");
@@ -88,7 +88,9 @@ public class JBossQueue implements Queue {
     }
 
     private Cache<String, Object> getCache() {
-        return InfinispanUtils.getCache("tasks", queueName); // TODO -- per app
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.dataContainer().dataContainer(new PurgeDataContainer(this));
+        return InfinispanUtils.getCache("tasks", queueName, builder.build()); // TODO -- per app
     }
 
     protected static MessageCreator createMessageCreator(final TaskOptions taskOptions) {
@@ -163,7 +165,7 @@ public class JBossQueue implements Queue {
 
     public boolean deleteTask(String taskName) {
         validateTaskName(taskName);
-        return (tasks.remove(LEASE + taskName) != null) || (tasks.remove(taskName) != null);
+        return (tasks.remove(TaskLeaseEntity.LEASE + taskName) != null) || (tasks.remove(taskName) != null);
     }
 
     public boolean deleteTask(TaskHandle taskHandle) {
@@ -203,7 +205,7 @@ public class JBossQueue implements Queue {
             TaskOptionsEntity toe = (TaskOptionsEntity) obj;
             final String name = toe.getName();
             tasks.remove(name);
-            tasks.put(LEASE + name, new TaskLeaseEntity(toe.getOptions()), lease, unit);
+            tasks.put(TaskLeaseEntity.LEASE + name, new TaskLeaseEntity(toe.getOptions()), lease, unit);
             handles.add(new TaskHandle(toe.getOptions(), queueName));
         }
         return handles;
@@ -215,13 +217,13 @@ public class JBossQueue implements Queue {
 
     public TaskHandle modifyTaskLease(TaskHandle taskHandle, long lease, TimeUnit unit) {
         final String name = taskHandle.getName();
-        TaskLeaseEntity tle = (TaskLeaseEntity) tasks.get(LEASE + name);
+        TaskLeaseEntity tle = (TaskLeaseEntity) tasks.get(TaskLeaseEntity.LEASE + name);
         if (tle != null) {
             if (lease == 0) {
-                tasks.remove(LEASE + name);
+                tasks.remove(TaskLeaseEntity.LEASE + name);
                 return add(tle.getOptions());
             } else {
-                tasks.replace(LEASE + name, tle, lease, unit);
+                tasks.replace(TaskLeaseEntity.LEASE + name, tle, lease, unit);
                 taskHandle = new TaskHandle(tle.getOptions().etaMillis(unit.toMillis(lease)), queueName);
             }
         }
