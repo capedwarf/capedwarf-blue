@@ -54,6 +54,13 @@ public class InfinispanUtils {
         return cacheManager;
     }
 
+    public static Configuration getConfiguration(String cacheName) {
+        if (cacheManager == null)
+            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+
+        return cacheManager.getCacheConfiguration(cacheName);
+    }
+
     public static <K, V> Cache<K, V> getCache(String config, String cacheName) {
         return getCache(config, cacheName, null);
     }

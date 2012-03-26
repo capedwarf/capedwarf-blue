@@ -22,8 +22,12 @@
 
 package org.jboss.test.capedwarf.tasks.test;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -33,6 +37,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.tasks.support.PrintListener;
 import org.jboss.test.capedwarf.tasks.support.PrintServlet;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -96,5 +101,27 @@ public class TasksTestCase {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withParam("param_key", "param_value").url(URL));
         sleep();
+    }
+
+    @Test
+    public void testPull() throws Exception {
+        final Queue queue = QueueFactory.getQueue("default");
+        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).param("foo", "bar").payload("foobar"));
+        sleep();
+        List<TaskHandle> handles = queue.leaseTasks(30, TimeUnit.MINUTES, 100);
+        Assert.assertFalse(handles.isEmpty());
+        TaskHandle lh = handles.get(0);
+        Assert.assertEquals(th.getName(), lh.getName());
+    }
+
+    @Test
+    public void testPullWithTag() throws Exception {
+        final Queue queue = QueueFactory.getQueue("default");
+        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo").payload("foobar"));
+        sleep();
+        List<TaskHandle> handles = queue.leaseTasksByTag(30, TimeUnit.MINUTES, 100, "barfoo");
+        Assert.assertFalse(handles.isEmpty());
+        TaskHandle lh = handles.get(0);
+        Assert.assertEquals(th.getName(), lh.getName());
     }
 }

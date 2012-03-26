@@ -52,8 +52,8 @@ class PurgeDataContainer extends DefaultDataContainer {
     private Map map;
     private Queue queue;
 
-    PurgeDataContainer(Queue queue) {
-        super(32, -1, EvictionStrategy.LIRS, EvictionThreadPolicy.DEFAULT);
+    PurgeDataContainer(int concurrencyLevel, int maxEntries, EvictionStrategy strategy, EvictionThreadPolicy policy, Queue queue) {
+        super(concurrencyLevel, maxEntries, strategy, policy);
         this.map = map();
         this.queue = queue;
     }

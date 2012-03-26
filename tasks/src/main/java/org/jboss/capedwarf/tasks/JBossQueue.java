@@ -42,7 +42,10 @@ import org.apache.lucene.search.SortField;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.EvictionConfiguration;
+import org.infinispan.container.DataContainer;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
@@ -89,7 +92,15 @@ public class JBossQueue implements Queue {
 
     private Cache<String, Object> getCache() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.dataContainer().dataContainer(new PurgeDataContainer(this));
+        Configuration c = InfinispanUtils.getConfiguration("tasks");
+        EvictionConfiguration e = c.eviction();
+        DataContainer container = new PurgeDataContainer(
+                c.locking().concurrencyLevel(),
+                e.maxEntries(),
+                e.strategy(),
+                e.threadPolicy(),
+                this);
+        builder.dataContainer().dataContainer(container);
         return InfinispanUtils.getCache("tasks", queueName, builder.build()); // TODO -- per app
     }
 
