@@ -50,7 +50,7 @@ public class InfinispanUtils {
     private static EmbeddedCacheManager cacheManager;
     private static final Map<String, GridFilesystem> gridFilesystems = new HashMap<String, GridFilesystem>();
 
-    public static EmbeddedCacheManager getCacheManager() {
+    protected static EmbeddedCacheManager getCacheManager() {
         return cacheManager;
     }
 
@@ -72,8 +72,7 @@ public class InfinispanUtils {
         final ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.read(existing);
 
-        cacheManager.defineConfiguration(cacheName, builder.build());
-        return cacheManager.getCache(cacheName, true);
+        return getCache(cacheName, builder.build());
     }
     
     public static <K, V> Cache<K, V> getCache(String cacheName, Configuration configuration) {
@@ -81,7 +80,10 @@ public class InfinispanUtils {
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
         cacheManager.defineConfiguration(cacheName, configuration);
-        return cacheManager.getCache(cacheName, true);
+
+        Cache<K, V> cache = cacheManager.getCache(cacheName, true);
+        cache.start(); // re-start?
+        return cache;
     }
 
     public static <R> R submit(final CacheName cacheName, final Callable<R> task, Object... keys) {
