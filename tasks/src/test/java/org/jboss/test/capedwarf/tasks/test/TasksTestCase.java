@@ -106,22 +106,22 @@ public class TasksTestCase {
     @Test
     public void testPull() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
-        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).param("foo", "bar").payload("foobar"));
-        sleep();
+        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).param("foo", "bar").payload("foobar").etaMillis(15000));
         List<TaskHandle> handles = queue.leaseTasks(30, TimeUnit.MINUTES, 100);
         Assert.assertFalse(handles.isEmpty());
         TaskHandle lh = handles.get(0);
         Assert.assertEquals(th.getName(), lh.getName());
+        sleep();
     }
 
     @Test
     public void testPullWithTag() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
-        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo").payload("foobar"));
-        sleep();
+        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo").payload("foobar").etaMillis(15000));
         List<TaskHandle> handles = queue.leaseTasksByTag(30, TimeUnit.MINUTES, 100, "barfoo");
         Assert.assertFalse(handles.isEmpty());
         TaskHandle lh = handles.get(0);
         Assert.assertEquals(th.getName(), lh.getName());
+        sleep();
     }
 }

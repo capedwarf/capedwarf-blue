@@ -91,8 +91,10 @@ public class JBossQueue implements Queue {
     }
 
     private Cache<String, Object> getCache() {
-        ConfigurationBuilder builder = new ConfigurationBuilder();
         Configuration c = InfinispanUtils.getConfiguration("tasks");
+        if (c == null)
+            throw new IllegalArgumentException("No such tasks cache config!");
+
         EvictionConfiguration e = c.eviction();
         DataContainer container = new PurgeDataContainer(
                 c.locking().concurrencyLevel(),
@@ -100,8 +102,12 @@ public class JBossQueue implements Queue {
                 e.strategy(),
                 e.threadPolicy(),
                 this);
+
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.read(c);
         builder.dataContainer().dataContainer(container);
-        return InfinispanUtils.getCache("tasks", queueName, builder.build()); // TODO -- per app
+
+        return InfinispanUtils.getCache(queueName + "_" + Application.getAppId(), builder.build());
     }
 
     protected static MessageCreator createMessageCreator(final TaskOptions taskOptions) {

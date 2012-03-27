@@ -30,7 +30,7 @@ import java.util.concurrent.Future;
 import com.google.apphosting.api.ApiProxy;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.LegacyConfigurationAdaptor;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.io.GridFile;
@@ -62,23 +62,28 @@ public class InfinispanUtils {
     }
 
     public static <K, V> Cache<K, V> getCache(String config, String cacheName) {
-        return getCache(config, cacheName, null);
-    }
-
-    @SuppressWarnings("deprecation")
-    public static <K, V> Cache<K, V> getCache(String config, String cacheName, Configuration temp) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
-        Configuration configuration = cacheManager.getCacheConfiguration(config);
-        if (temp != null) {
-            LegacyConfigurationAdaptor.adapt(temp).applyOverrides(LegacyConfigurationAdaptor.adapt(configuration).clone());
-            configuration = temp;
-        }
-        cacheManager.defineConfiguration(cacheName, configuration);
+        final Configuration existing = cacheManager.getCacheConfiguration(config);
+        if (existing == null)
+            throw new IllegalArgumentException("No such config: " + config);
+
+        final ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.read(existing);
+
+        cacheManager.defineConfiguration(cacheName, builder.build());
         return cacheManager.getCache(cacheName);
     }
     
+    public static <K, V> Cache<K, V> getCache(String cacheName, Configuration configuration) {
+        if (cacheManager == null)
+            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+
+        cacheManager.defineConfiguration(cacheName, configuration);
+        return cacheManager.getCache(cacheName);
+    }
+
     public static <R> R submit(final CacheName cacheName, final Callable<R> task, Object... keys) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
