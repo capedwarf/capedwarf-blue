@@ -73,7 +73,7 @@ public class InfinispanUtils {
         builder.read(existing);
 
         cacheManager.defineConfiguration(cacheName, builder.build());
-        return cacheManager.getCache(cacheName);
+        return cacheManager.getCache(cacheName, true);
     }
     
     public static <K, V> Cache<K, V> getCache(String cacheName, Configuration configuration) {
@@ -81,7 +81,7 @@ public class InfinispanUtils {
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
         cacheManager.defineConfiguration(cacheName, configuration);
-        return cacheManager.getCache(cacheName);
+        return cacheManager.getCache(cacheName, true);
     }
 
     public static <R> R submit(final CacheName cacheName, final Callable<R> task, Object... keys) {
