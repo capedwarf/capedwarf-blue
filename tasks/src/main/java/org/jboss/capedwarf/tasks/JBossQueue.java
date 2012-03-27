@@ -24,9 +24,7 @@ package org.jboss.capedwarf.tasks;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -64,7 +62,6 @@ import org.jboss.capedwarf.common.reflection.TargetInvocation;
 public class JBossQueue implements Queue {
     private static final String ID = "ID:";
     private static final Sort SORT = new Sort(new SortField("eta", SortField.LONG));
-    private static final Map<String, Queue> cache = new HashMap<String, Queue>();
     private static final TargetInvocation<TaskOptions.Method> getMethod = ReflectionUtils.cacheInvocation(TaskOptions.class, "getMethod");
     private static final TargetInvocation<String> getTaskName = ReflectionUtils.cacheInvocation(TaskOptions.class, "getTaskName");
     private static final TargetInvocation<Long> getEtaMillis = ReflectionUtils.cacheInvocation(TaskOptions.class, "getEtaMillis");
@@ -73,13 +70,8 @@ public class JBossQueue implements Queue {
     private final Cache<String, Object> tasks;
     private final SearchManager searchManager;
 
-    public static synchronized Queue getQueue(String queueName) {
-        Queue queue = cache.get(queueName);
-        if (queue == null) {
-            queue = new JBossQueue(queueName);
-            cache.put(queueName, queue);
-        }
-        return queue;
+    public static Queue getQueue(String queueName) {
+        return new JBossQueue(queueName); // do not cache
     }
 
     private JBossQueue(String queueName) {
@@ -108,6 +100,10 @@ public class JBossQueue implements Queue {
         builder.dataContainer().dataContainer(container);
 
         return InfinispanUtils.getCache(queueName + "_" + Application.getAppId(), builder.build());
+    }
+
+    private Cache<String, Object> getTasks() {
+        return tasks;
     }
 
     protected static MessageCreator createMessageCreator(final TaskOptions taskOptions) {
@@ -161,7 +157,7 @@ public class JBossQueue implements Queue {
                         copy.taskName(taskName);
                     }
                     Long lifespan = getEtaMillis.invoke(copy);
-                    tasks.put(taskName, new TaskOptionsEntity(taskName, copy.getTag(), lifespan, copy), lifespan, TimeUnit.MILLISECONDS);
+                    getTasks().put(taskName, new TaskOptionsEntity(taskName, copy.getTag(), lifespan, copy), lifespan, TimeUnit.MILLISECONDS);
                 } else if (m == TaskOptions.Method.POST) {
                     final MessageCreator mc = createMessageCreator(to);
                     final String id = producer.sendMessage(mc);
@@ -182,7 +178,8 @@ public class JBossQueue implements Queue {
 
     public boolean deleteTask(String taskName) {
         validateTaskName(taskName);
-        return (tasks.remove(TaskLeaseEntity.LEASE + taskName) != null) || (tasks.remove(taskName) != null);
+        final Cache<String, Object> cache = getTasks();
+        return (cache.remove(TaskLeaseEntity.LEASE + taskName) != null) || (cache.remove(taskName) != null);
     }
 
     public boolean deleteTask(TaskHandle taskHandle) {
@@ -221,26 +218,28 @@ public class JBossQueue implements Queue {
         for (Object obj : query) {
             TaskOptionsEntity toe = (TaskOptionsEntity) obj;
             final String name = toe.getName();
-            tasks.remove(name);
-            tasks.put(TaskLeaseEntity.LEASE + name, new TaskLeaseEntity(toe.getOptions()), lease, unit);
+            final Cache<String, Object> cache = getTasks();
+            cache.remove(name);
+            cache.put(TaskLeaseEntity.LEASE + name, new TaskLeaseEntity(toe.getOptions()), lease, unit);
             handles.add(new TaskHandle(toe.getOptions(), queueName));
         }
         return handles;
     }
 
     public void purge() {
-        tasks.clear();
+        getTasks().clear();
     }
 
     public TaskHandle modifyTaskLease(TaskHandle taskHandle, long lease, TimeUnit unit) {
         final String name = taskHandle.getName();
-        TaskLeaseEntity tle = (TaskLeaseEntity) tasks.get(TaskLeaseEntity.LEASE + name);
+        final Cache<String, Object> cache = getTasks();
+        TaskLeaseEntity tle = (TaskLeaseEntity) cache.get(TaskLeaseEntity.LEASE + name);
         if (tle != null) {
             if (lease == 0) {
-                tasks.remove(TaskLeaseEntity.LEASE + name);
+                cache.remove(TaskLeaseEntity.LEASE + name);
                 return add(tle.getOptions());
             } else {
-                tasks.replace(TaskLeaseEntity.LEASE + name, tle, lease, unit);
+                cache.replace(TaskLeaseEntity.LEASE + name, tle, lease, unit);
                 taskHandle = new TaskHandle(tle.getOptions().etaMillis(unit.toMillis(lease)), queueName);
             }
         }
