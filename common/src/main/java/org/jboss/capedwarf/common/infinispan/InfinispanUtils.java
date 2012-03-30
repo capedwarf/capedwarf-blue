@@ -54,14 +54,18 @@ public class InfinispanUtils {
         return cacheManager;
     }
 
-    public static Configuration getConfiguration(String cacheName) {
+    protected static String toCacheName(String config, String appId) {
+        return config + "_" + appId;
+    }
+    
+    public static Configuration getConfiguration(String config) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
-        return cacheManager.getCacheConfiguration(cacheName);
+        return cacheManager.getCacheConfiguration(config);
     }
 
-    public static <K, V> Cache<K, V> getCache(String config, String cacheName) {
+    public static <K, V> Cache<K, V> getCache(String config, String appId) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
@@ -72,13 +76,15 @@ public class InfinispanUtils {
         final ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.read(existing);
 
-        return getCache(cacheName, builder.build());
+        return getCache(config, appId, builder.build());
     }
     
-    public static <K, V> Cache<K, V> getCache(String cacheName, Configuration configuration) {
+    public static <K, V> Cache<K, V> getCache(String config, String appId, Configuration configuration) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
+        String cacheName = toCacheName(config, appId);
+        
         cacheManager.defineConfiguration(cacheName, configuration);
 
         Cache<K, V> cache = cacheManager.getCache(cacheName, true);
@@ -86,11 +92,11 @@ public class InfinispanUtils {
         return cache;
     }
 
-    public static <R> R submit(final CacheName cacheName, final Callable<R> task, Object... keys) {
+    public static <R> R submit(final CacheName config, final String appId, final Callable<R> task, Object... keys) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
         
-        final Cache cache = cacheManager.getCache(cacheName.getName());
+        final Cache cache = cacheManager.getCache(toCacheName(config.getName(), appId));
         try {
             final DistributedExecutorService des = new DefaultExecutorService(cache);
             final Future<R> result = des.submit(task, keys);

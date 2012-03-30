@@ -30,7 +30,8 @@ package org.jboss.capedwarf.common.infinispan;
 public enum CacheName {
     DEFAULT("default"),
     MEMCACHE("memcache"),
-    DIST("dist");
+    DIST("dist"),
+    TASKS("tasks");
 
     private String name;
 

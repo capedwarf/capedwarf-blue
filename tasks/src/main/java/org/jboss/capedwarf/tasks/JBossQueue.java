@@ -32,6 +32,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueConstants;
+import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.apache.lucene.search.Query;
@@ -65,6 +66,7 @@ public class JBossQueue implements Queue {
     private static final TargetInvocation<TaskOptions.Method> getMethod = ReflectionUtils.cacheInvocation(TaskOptions.class, "getMethod");
     private static final TargetInvocation<String> getTaskName = ReflectionUtils.cacheInvocation(TaskOptions.class, "getTaskName");
     private static final TargetInvocation<Long> getEtaMillis = ReflectionUtils.cacheInvocation(TaskOptions.class, "getEtaMillis");
+    private static final TargetInvocation<RetryOptions> getRetryOptions = ReflectionUtils.cacheInvocation(TaskOptions.class, "getRetryOptions");
 
     private final String queueName;
     private final Cache<String, Object> tasks;
@@ -99,7 +101,7 @@ public class JBossQueue implements Queue {
         builder.read(c);
         builder.dataContainer().dataContainer(container);
 
-        return InfinispanUtils.getCache(queueName + "_" + Application.getAppId(), builder.build());
+        return InfinispanUtils.getCache("tasks", queueName + "_" + Application.getAppId(), builder.build());
     }
 
     private Cache<String, Object> getTasks() {
@@ -156,8 +158,9 @@ public class JBossQueue implements Queue {
                         taskName = UUID.randomUUID().toString(); // TODO -- unique enough?
                         copy.taskName(taskName);
                     }
-                    Long lifespan = getEtaMillis.invoke(copy);
-                    getTasks().put(taskName, new TaskOptionsEntity(taskName, copy.getTag(), lifespan, copy), lifespan, TimeUnit.MILLISECONDS);
+                    Long lifespan = getEtaMillis.invoke(to);
+                    RetryOptions retryOptions = getRetryOptions.invoke(to);
+                    getTasks().put(taskName, new TaskOptionsEntity(taskName, copy.getTag(), lifespan, copy, retryOptions), lifespan, TimeUnit.MILLISECONDS);
                 } else if (m == TaskOptions.Method.POST) {
                     final MessageCreator mc = createMessageCreator(to);
                     final String id = producer.sendMessage(mc);

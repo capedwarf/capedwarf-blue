@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.cluster;
 
 import com.google.appengine.api.datastore.Key;
+import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.environment.AbstractEnvironment;
@@ -41,6 +42,6 @@ public class ClusterEnvironment extends AbstractEnvironment {
     }
 
     public Long getUniqueId(Key key) {
-        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(key), key.getKind());
+        return InfinispanUtils.submit(CacheName.DIST, Application.getAppId(), new KeyGeneratorTask(key), key.getKind());
     }
 }

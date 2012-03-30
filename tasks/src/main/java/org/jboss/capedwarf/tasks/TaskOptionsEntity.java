@@ -24,6 +24,7 @@ package org.jboss.capedwarf.tasks;
 
 import java.io.Serializable;
 
+import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
@@ -41,15 +42,17 @@ public class TaskOptionsEntity implements Serializable {
     private String tag;
     private long eta;
     private TaskOptions options;
+    private RetryOptions retry;
 
     public TaskOptionsEntity() {
     }
 
-    public TaskOptionsEntity(String name, String tag, long eta, TaskOptions options) {
+    public TaskOptionsEntity(String name, String tag, long eta, TaskOptions options, RetryOptions retry) {
         this.name = name;
         this.tag = tag;
         this.eta = eta;
         this.options = options;
+        this.retry = retry;
     }
 
     public String getName() {
@@ -84,5 +87,13 @@ public class TaskOptionsEntity implements Serializable {
 
     public void setOptions(TaskOptions options) {
         this.options = options;
+    }
+
+    public RetryOptions getRetry() {
+        return retry;
+    }
+
+    public void setRetry(RetryOptions retry) {
+        this.retry = retry;
     }
 }
