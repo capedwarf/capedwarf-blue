@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.taskqueue.LeaseOptions;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueConstants;
 import com.google.appengine.api.taskqueue.RetryOptions;
@@ -231,6 +232,10 @@ public class JBossQueue implements Queue {
             handles.add(new TaskHandle(toe.getOptions(), queueName));
         }
         return handles;
+    }
+
+    public List<TaskHandle> leaseTasks(LeaseOptions options) {
+        return null; // TODO
     }
 
     public void purge() {

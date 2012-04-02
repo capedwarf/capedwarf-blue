@@ -44,45 +44,36 @@
 
     <properties>
         <version.cdi.api>1.0-SP4</version.cdi.api>
-        <version.com.google.gae>1.6.3</version.com.google.gae>
-        <version.com.google.gae.api>1.6.3</version.com.google.gae.api>
-        <version.com.google.gae.labs>1.6.3</version.com.google.gae.labs>
+        <version.com.google.gae>1.6.4</version.com.google.gae>
+        <version.com.google.gae.api>1.6.4</version.com.google.gae.api>
+        <version.com.google.gae.labs>1.6.4</version.com.google.gae.labs>
         <version.com.google.guava>11.0.2</version.com.google.guava>
         <version.json>20090211</version.json>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
-        <version.org.jboss.seam>3.0.0.Final</version.org.jboss.seam>
         <version.org.jboss.logging>3.1.0.GA</version.org.jboss.logging>
         <version.org.jboss.modules.jboss-modules>1.1.1.GA</version.org.jboss.modules.jboss-modules>
-        <version.org.jboss.xnio.xnio-api>3.0.3.GA</version.org.jboss.xnio.xnio-api>
-        <version.org.jboss.xnio.xnio-nio>3.0.3.GA</version.org.jboss.xnio.xnio-nio>
         <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
         <version.org.jivesoftware.smack>3.1.0</version.org.jivesoftware.smack>
         <version.org.picketlink>2.0.2.Final</version.org.picketlink>
         <version.org.picketlink.consolidated.social>2.0.0.Beta1</version.org.picketlink.consolidated.social>
         <version.javassist>3.15.0-GA</version.javassist>
-        <version.slf4j>1.6.1</version.slf4j>
-        <version.javax.validation>1.0.0.GA</version.javax.validation>
-        <version.javax.servlet.jsp>2.1</version.javax.servlet.jsp>
-        <version.javax.faces.api>2.0.0.Beta1</version.javax.faces.api>
-        <version.javax.faces.impl>2.1.3-b02-jbossorg-2</version.javax.faces.impl>
         <version.javax.el>1.2</version.javax.el>
         <version.javax.el.impl>1.2</version.javax.el.impl>
-        <version.javax.cache>1.0-dev-2</version.javax.cache>
-        <version.javax.mail>1.4</version.javax.mail>
         <version.javax.jpa2>1.0.0.Final</version.javax.jpa2>
+        <version.javax.mail>1.4.4</version.javax.mail>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
         <version.org.datanucleus.core>1.1.5</version.org.datanucleus.core>
         <version.org.datanucleus.jpa>1.1.5</version.org.datanucleus.jpa>
         <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
         <version.org.datanucleus.gae>1.0.10</version.org.datanucleus.gae>
         <version.org.datanucleus.jdo>2.3-eb</version.org.datanucleus.jdo>
-        <version.org.hibernate.search>4.1.0.Beta1</version.org.hibernate.search>
-        <version.org.infinispan>5.1.2.FINAL</version.org.infinispan>
+        <version.org.hibernate.search>4.1.0.CR3</version.org.hibernate.search>
+        <version.org.infinispan>5.1.3.FINAL</version.org.infinispan>
         <version.net.jcip>1.0</version.net.jcip>
         <version.junit>4.7</version.junit>
         <version.arquillian>1.0.0.CR7</version.arquillian>
-        <version.jboss.as7>7.1.0.Final</version.jboss.as7>
-        <version.jboss.maven.transformer>1.0.0-SNAPSHOT</version.jboss.maven.transformer>
+        <version.jboss.as7>7.1.1.Final</version.jboss.as7>
+        <version.jboss.maven.transformer>1.0.0.Beta1</version.jboss.maven.transformer>
         <version.metainf>1.1</version.metainf>
         <version.org.apache.httpcomponents>4.1.1</version.org.apache.httpcomponents>
     </properties>
@@ -352,16 +343,6 @@
                 <version>${version.com.google.guava}</version>
             </dependency>
 
-            <!-- Seam3 -->
-
-            <dependency>
-                <groupId>org.jboss.seam</groupId>
-                <artifactId>seam-bom</artifactId>
-                <version>${version.org.jboss.seam}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
             <dependency>
                 <groupId>org.picketlink</groupId>
                 <artifactId>picketlink-fed-api</artifactId>
@@ -413,18 +394,6 @@
                 <groupId>org.apache.velocity</groupId>
                 <artifactId>velocity</artifactId>
                 <version>${version.org.apache.velocity}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.servlet.jsp</groupId>
-                <artifactId>jsp-api</artifactId>
-                <version>${version.javax.servlet.jsp}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>jcache</groupId>
-                <artifactId>jcache</artifactId>
-                <version>${version.javax.cache}</version>
             </dependency>
 
             <dependency>
@@ -518,18 +487,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.spec.javax.faces</groupId>
-                <artifactId>jboss-jsf-api_2.1_spec</artifactId>
-                <version>${version.javax.faces.api}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun.faces</groupId>
-                <artifactId>jsf-impl</artifactId>
-                <version>${version.javax.faces.impl}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>javax.el</groupId>
                 <artifactId>el-api</artifactId>
                 <version>${version.javax.el}</version>
@@ -561,30 +518,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${version.slf4j}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-ext</artifactId>
-                <version>${version.slf4j}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-jdk14</artifactId>
-                <version>${version.slf4j}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${version.javax.validation}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.kohsuke.metainf-services</groupId>
                 <artifactId>metainf-services</artifactId>
                 <version>${version.metainf}</version>
@@ -600,20 +533,6 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <!-- XNIO -->
-
-            <dependency>
-                <groupId>org.jboss.xnio</groupId>
-                <artifactId>xnio-api</artifactId>
-                <version>${version.org.jboss.xnio.xnio-api}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.xnio</groupId>
-                <artifactId>xnio-nio</artifactId>
-                <version>${version.org.jboss.xnio.xnio-nio}</version>
             </dependency>
 
             <!-- Testing -->
@@ -649,10 +568,10 @@
     </dependencyManagement>
 
     <scm>
-        <connection>scm:git:git://github.com/capedwarf/capedwarf-blue.git</connection>
-        <developerConnection>scm:git:git://github.com/capedwarf/capedwarf-blue.git
+        <connection>scm:git:git@github.com/capedwarf/capedwarf-blue.git</connection>
+        <developerConnection>scm:git:git@github.com/capedwarf/capedwarf-blue.git
         </developerConnection>
-        <url>scm:git:git://github.com/capedwarf/capedwarf-blue.git</url>
+        <url>scm:git:git@github.com/capedwarf/capedwarf-blue.git</url>
     </scm>
 
 </project>
