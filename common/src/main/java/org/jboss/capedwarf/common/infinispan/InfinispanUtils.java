@@ -24,10 +24,13 @@ package org.jboss.capedwarf.common.infinispan;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import com.google.apphosting.api.ApiProxy;
+import org.hibernate.search.Environment;
+import org.hibernate.search.cfg.SearchMapping;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -63,6 +66,15 @@ public class InfinispanUtils {
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
         return cacheManager.getCacheConfiguration(config);
+    }
+
+    public static SearchMapping applyIndexing(String config, String appId, ConfigurationBuilder builder) {
+        Properties properties = new Properties();
+        properties.setProperty("hibernate.search.default.indexBase", "./indexes_" + appId);
+        SearchMapping mapping = new SearchMapping();
+        properties.put(Environment.MODEL_MAPPING, mapping);
+        builder.indexing().withProperties(properties);
+        return mapping;
     }
 
     public static <K, V> Cache<K, V> getCache(String config, String appId) {

@@ -39,6 +39,7 @@ public class TaskOptionsEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String name;
+    private String queue;
     private String tag;
     private long eta;
     private TaskOptions options;
@@ -47,7 +48,7 @@ public class TaskOptionsEntity implements Serializable {
     public TaskOptionsEntity() {
     }
 
-    public TaskOptionsEntity(String name, String tag, long eta, TaskOptions options, RetryOptions retry) {
+    public TaskOptionsEntity(String name, String queue, String tag, long eta, TaskOptions options, RetryOptions retry) {
         this.name = name;
         this.tag = tag;
         this.eta = eta;
@@ -61,6 +62,15 @@ public class TaskOptionsEntity implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Field
+    public String getQueue() {
+        return queue;
+    }
+
+    public void setQueue(String queue) {
+        this.queue = queue;
     }
 
     @Field

@@ -29,6 +29,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueConstants;
@@ -38,6 +39,7 @@ import com.google.appengine.api.taskqueue.TaskOptions;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
+import org.hibernate.search.cfg.SearchMapping;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
@@ -61,6 +63,7 @@ import org.jboss.capedwarf.common.reflection.TargetInvocation;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class JBossQueue implements Queue {
+    private static final String TASKS = "tasks";
     private static final String ID = "ID:";
     private static final Sort SORT = new Sort(new SortField("eta", SortField.LONG));
     private static final TargetInvocation<TaskOptions.Method> getMethod = ReflectionUtils.cacheInvocation(TaskOptions.class, "getMethod");
@@ -85,7 +88,7 @@ public class JBossQueue implements Queue {
     }
 
     private Cache<String, Object> getCache() {
-        Configuration c = InfinispanUtils.getConfiguration("tasks");
+        Configuration c = InfinispanUtils.getConfiguration(TASKS);
         if (c == null)
             throw new IllegalArgumentException("No such tasks cache config!");
 
@@ -101,7 +104,12 @@ public class JBossQueue implements Queue {
         builder.read(c);
         builder.dataContainer().dataContainer(container);
 
-        return InfinispanUtils.getCache("tasks", queueName + "_" + Application.getAppId(), builder.build());
+        final String appId = Application.getAppId();
+        SearchMapping mapping = InfinispanUtils.applyIndexing(TASKS, appId, builder);
+        mapping.entity(Entity.class).indexed().indexName(TASKS + "_" + appId + "__" + TaskOptionsEntity.class.getName());
+        mapping.entity(Entity.class).indexed().indexName(TASKS + "_" + appId + "__" + TaskLeaseEntity.class.getName());
+
+        return InfinispanUtils.getCache(TASKS, appId, builder.build());
     }
 
     private Cache<String, Object> getTasks() {
@@ -160,7 +168,7 @@ public class JBossQueue implements Queue {
                     }
                     Long lifespan = getEtaMillis.invoke(to);
                     RetryOptions retryOptions = getRetryOptions.invoke(to);
-                    getTasks().put(taskName, new TaskOptionsEntity(taskName, copy.getTag(), lifespan, copy, retryOptions), lifespan, TimeUnit.MILLISECONDS);
+                    getTasks().put(taskName, new TaskOptionsEntity(taskName, queueName, copy.getTag(), lifespan, copy, retryOptions), lifespan, TimeUnit.MILLISECONDS);
                 } else if (m == TaskOptions.Method.POST) {
                     final MessageCreator mc = createMessageCreator(to);
                     final String id = producer.sendMessage(mc);
@@ -207,11 +215,13 @@ public class JBossQueue implements Queue {
     @SuppressWarnings("unchecked")
     public List<TaskHandle> leaseTasksByTag(long lease, TimeUnit unit, long countLimit, String tag) {
         final QueryBuilder builder = searchManager.buildQueryBuilderForClass(TaskOptionsEntity.class).get();
+        final Query queueQuery = builder.keyword().onField("queue").matching(queueName).createQuery();
         final Query lq;
         if (tag == null) {
-            lq = builder.all().createQuery();    
+            lq = queueQuery;
         } else {
-            lq = builder.keyword().onField("tag").matching(tag).createQuery();
+            final Query tagQuery = builder.keyword().onField("tag").matching(tag).createQuery();
+            lq = builder.bool().must(queueQuery).must(tagQuery).createQuery();
         }
         final CacheQuery query = searchManager.getQuery(lq, TaskOptionsEntity.class)
                 .maxResults((int) countLimit)
