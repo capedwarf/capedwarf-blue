@@ -86,6 +86,13 @@ public class InfinispanUtils {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
+        //noinspection SynchronizeOnNonFinalField
+        synchronized (cacheManager) {
+            final Cache<K, V> cache = cacheManager.getCache(toCacheName(config, appId), false);
+            if (cache != null)
+                return cache;
+        }
+
         final Configuration existing = cacheManager.getCacheConfiguration(config);
         if (existing == null)
             throw new IllegalArgumentException("No such config: " + config);
@@ -100,20 +107,24 @@ public class InfinispanUtils {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
-        String cacheName = toCacheName(config, appId);
-        
-        cacheManager.defineConfiguration(cacheName, configuration);
+        final String cacheName = toCacheName(config, appId);
+        //noinspection SynchronizeOnNonFinalField
+        synchronized (cacheManager) {
+            final Cache<K, V> cache = cacheManager.getCache(toCacheName(config, appId), false);
+            if (cache != null)
+                return cache;
 
-        Cache<K, V> cache = cacheManager.getCache(cacheName, true);
-        cache.start(); // re-start?
-        return cache;
+            cacheManager.defineConfiguration(cacheName, configuration);
+
+            return cacheManager.getCache(cacheName, true);
+        }
     }
 
     public static <R> R submit(final CacheName config, final String appId, final Callable<R> task, Object... keys) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
         
-        final Cache cache = cacheManager.getCache(toCacheName(config.getName(), appId));
+        final Cache cache = getCache(config.getName(), appId);
         try {
             final DistributedExecutorService des = new DefaultExecutorService(cache);
             final Future<R> result = des.submit(task, keys);
@@ -124,17 +135,14 @@ public class InfinispanUtils {
     }
     
     public static GridFilesystem getGridFilesystem() {
-        String appId = ApiProxy.getCurrentEnvironment().getAppId();
+        final String appId = ApiProxy.getCurrentEnvironment().getAppId();
         GridFilesystem gfs = gridFilesystems.get(appId);
         if (gfs == null) {
             synchronized (gridFilesystems) {
                 gfs = gridFilesystems.get(appId);
                 if (gfs == null) {
-                    EmbeddedCacheManager cm = getCacheManager();
-                    Cache<String, byte[]> data = cm.getCache(DATA);
-                    Cache<String, GridFile.Metadata> metadata = cm.getCache(METADATA);
-                    data.start();
-                    metadata.start();
+                    final Cache<String, byte[]> data = getCache(DATA, appId);
+                    final Cache<String, GridFile.Metadata> metadata = getCache(METADATA, appId);
                     gfs = new GridFilesystem(data, metadata);
                     gridFilesystems.put(appId, gfs);
                 }
