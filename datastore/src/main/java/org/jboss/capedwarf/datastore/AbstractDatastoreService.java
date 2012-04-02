@@ -39,6 +39,7 @@ import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
@@ -63,25 +64,15 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     protected Cache<Key, Entity> createStore() {
-        return getCache(getStoreCacheName());
-    }
-
-    private <K, V> Cache<K, V> getCache(String cacheName) {
-        Configuration c = InfinispanUtils.getConfiguration(getStoreCacheName());
+        Configuration c = InfinispanUtils.getConfiguration(CacheName.DEFAULT);
         if (c == null)
             throw new IllegalArgumentException("No such default cache config!");
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.read(c);
 
-        final String appId = Application.getAppId();
-        InfinispanUtils.applyIndexing(getStoreCacheName(), appId, builder, Entity.class);
-
-        return InfinispanUtils.getCache(cacheName, appId);
-    }
-
-    private String getStoreCacheName() {
-        return "default";
+        InfinispanUtils.applyIndexing(CacheName.DEFAULT, builder, Entity.class);
+        return InfinispanUtils.getCache(CacheName.DEFAULT);
     }
 
     public PreparedQuery prepare(Query query) {

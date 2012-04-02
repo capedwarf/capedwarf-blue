@@ -49,6 +49,7 @@ import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
@@ -61,7 +62,6 @@ import org.jboss.capedwarf.common.reflection.TargetInvocation;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class JBossQueue implements Queue {
-    private static final String TASKS = "tasks";
     private static final String ID = "ID:";
     private static final Sort SORT = new Sort(new SortField("eta", SortField.LONG));
     private static final TargetInvocation<TaskOptions.Method> getMethod = ReflectionUtils.cacheInvocation(TaskOptions.class, "getMethod");
@@ -86,7 +86,7 @@ public class JBossQueue implements Queue {
     }
 
     private Cache<String, Object> getCache() {
-        Configuration c = InfinispanUtils.getConfiguration(TASKS);
+        Configuration c = InfinispanUtils.getConfiguration(CacheName.TASKS);
         if (c == null)
             throw new IllegalArgumentException("No such tasks cache config!");
 
@@ -102,10 +102,8 @@ public class JBossQueue implements Queue {
         builder.read(c);
         builder.dataContainer().dataContainer(container);
 
-        final String appId = Application.getAppId();
-        InfinispanUtils.applyIndexing(TASKS, appId, builder, TaskOptionsEntity.class, TaskLeaseEntity.class);
-
-        return InfinispanUtils.getCache(TASKS, appId, builder.build());
+        InfinispanUtils.applyIndexing(CacheName.TASKS, builder, TaskOptionsEntity.class, TaskLeaseEntity.class);
+        return InfinispanUtils.getCache(CacheName.TASKS, builder.build());
     }
 
     private Cache<String, Object> getTasks() {
