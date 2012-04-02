@@ -20,28 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.cluster;
+package org.jboss.capedwarf.tasks;
 
-import com.google.appengine.api.datastore.Key;
-import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.environment.AbstractEnvironment;
-import org.jboss.capedwarf.environment.Environment;
-import org.kohsuke.MetaInfServices;
+import java.io.Serializable;
+
+import com.google.appengine.api.taskqueue.TaskOptions;
 
 /**
- * Cluster env.
- * 
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@MetaInfServices(Environment.class)
-public class ClusterEnvironment extends AbstractEnvironment {
-    public String getDomain() {
-        return "cluster-mode"; // TODO - per node?
+public class TaskLeaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+    static final String LEASE = "LEASE_";
+
+    private TaskOptions options;
+
+    public TaskLeaseEntity() {
     }
 
-    public Long getUniqueId(Key key) {
-        return InfinispanUtils.submit(CacheName.DIST, Application.getAppId(), new KeyGeneratorTask(key), key.getKind());
+    public TaskLeaseEntity(TaskOptions options) {
+        this.options = options;
+    }
+
+    public TaskOptions getOptions() {
+        return options;
+    }
+
+    public void setOptions(TaskOptions options) {
+        this.options = options;
     }
 }

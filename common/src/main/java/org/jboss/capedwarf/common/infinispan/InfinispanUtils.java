@@ -22,19 +22,21 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
 import com.google.apphosting.api.ApiProxy;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -48,15 +50,53 @@ public class InfinispanUtils {
     private static EmbeddedCacheManager cacheManager;
     private static final Map<String, GridFilesystem> gridFilesystems = new HashMap<String, GridFilesystem>();
 
-    public static EmbeddedCacheManager getCacheManager() {
+    protected static EmbeddedCacheManager getCacheManager() {
         return cacheManager;
     }
 
-    public static <R> R submit(final CacheName cacheName, final Callable<R> task, Object... keys) {
+    protected static String toCacheName(String config, String appId) {
+        return config + "_" + appId;
+    }
+    
+    public static Configuration getConfiguration(String config) {
+        if (cacheManager == null)
+            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+
+        return cacheManager.getCacheConfiguration(config);
+    }
+
+    public static <K, V> Cache<K, V> getCache(String config, String appId) {
+        if (cacheManager == null)
+            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+
+        final Configuration existing = cacheManager.getCacheConfiguration(config);
+        if (existing == null)
+            throw new IllegalArgumentException("No such config: " + config);
+
+        final ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.read(existing);
+
+        return getCache(config, appId, builder.build());
+    }
+    
+    public static <K, V> Cache<K, V> getCache(String config, String appId, Configuration configuration) {
+        if (cacheManager == null)
+            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+
+        String cacheName = toCacheName(config, appId);
+        
+        cacheManager.defineConfiguration(cacheName, configuration);
+
+        Cache<K, V> cache = cacheManager.getCache(cacheName, true);
+        cache.start(); // re-start?
+        return cache;
+    }
+
+    public static <R> R submit(final CacheName config, final String appId, final Callable<R> task, Object... keys) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
         
-        final Cache cache = cacheManager.getCache(cacheName.getName());
+        final Cache cache = cacheManager.getCache(toCacheName(config.getName(), appId));
         try {
             final DistributedExecutorService des = new DefaultExecutorService(cache);
             final Future<R> result = des.submit(task, keys);

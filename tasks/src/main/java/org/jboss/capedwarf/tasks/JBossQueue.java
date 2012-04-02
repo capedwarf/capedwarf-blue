@@ -22,23 +22,38 @@
 
 package org.jboss.capedwarf.tasks;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueConstants;
+import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.hibernate.search.query.dsl.QueryBuilder;
+import org.infinispan.AdvancedCache;
+import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.EvictionConfiguration;
+import org.infinispan.container.DataContainer;
+import org.infinispan.query.CacheQuery;
+import org.infinispan.query.Search;
+import org.infinispan.query.SearchManager;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.reflection.TargetInvocation;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * JBoss Queue.
@@ -47,23 +62,50 @@ import java.util.concurrent.TimeUnit;
  */
 public class JBossQueue implements Queue {
     private static final String ID = "ID:";
-    private static final Map<String, Queue> cache = new HashMap<String, Queue>();
+    private static final Sort SORT = new Sort(new SortField("eta", SortField.LONG));
     private static final TargetInvocation<TaskOptions.Method> getMethod = ReflectionUtils.cacheInvocation(TaskOptions.class, "getMethod");
-    
-    private final String queueName;
+    private static final TargetInvocation<String> getTaskName = ReflectionUtils.cacheInvocation(TaskOptions.class, "getTaskName");
+    private static final TargetInvocation<Long> getEtaMillis = ReflectionUtils.cacheInvocation(TaskOptions.class, "getEtaMillis");
+    private static final TargetInvocation<RetryOptions> getRetryOptions = ReflectionUtils.cacheInvocation(TaskOptions.class, "getRetryOptions");
 
-    public static synchronized Queue getQueue(String queueName) {
-        Queue queue = cache.get(queueName);
-        if (queue == null) {
-            queue = new JBossQueue(queueName);
-            cache.put(queueName, queue);
-        }
-        return queue;
+    private final String queueName;
+    private final Cache<String, Object> tasks;
+    private final SearchManager searchManager;
+
+    public static Queue getQueue(String queueName) {
+        return new JBossQueue(queueName); // do not cache
     }
 
     private JBossQueue(String queueName) {
         validateQueueName(queueName);
         this.queueName = queueName;
+        AdvancedCache<String,Object> ac = getCache().getAdvancedCache();
+        this.tasks = ac.with(Application.getAppClassloader());
+        this.searchManager = Search.getSearchManager(tasks);
+    }
+
+    private Cache<String, Object> getCache() {
+        Configuration c = InfinispanUtils.getConfiguration("tasks");
+        if (c == null)
+            throw new IllegalArgumentException("No such tasks cache config!");
+
+        EvictionConfiguration e = c.eviction();
+        DataContainer container = new PurgeDataContainer(
+                c.locking().concurrencyLevel(),
+                e.maxEntries(),
+                e.strategy(),
+                e.threadPolicy(),
+                this);
+
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.read(c);
+        builder.dataContainer().dataContainer(container);
+
+        return InfinispanUtils.getCache("tasks", queueName + "_" + Application.getAppId(), builder.build());
+    }
+
+    private Cache<String, Object> getTasks() {
+        return tasks;
     }
 
     protected static MessageCreator createMessageCreator(final TaskOptions taskOptions) {
@@ -107,14 +149,27 @@ public class JBossQueue implements Queue {
         try {
             final List<TaskHandle> handles = new ArrayList<TaskHandle>();
             for (TaskOptions to : taskOptionses) {
+                TaskOptions copy = null;
                 final TaskOptions.Method m = getMethod.invoke(to);
-                if (m == TaskOptions.Method.PULL)
-                    throw new IllegalArgumentException("PULL method is not yet supported: " + to);
-
-                final MessageCreator mc = createMessageCreator(to);
-                final String id = producer.sendMessage(mc);
-                final TaskOptions copy = new TaskOptions(to).taskName(toTaskName(id));
-                handles.add(new TaskHandle(copy, getQueueName()));
+                if (m == TaskOptions.Method.PULL) {
+                    copy = new TaskOptions(to);
+                    String taskName = getTaskName.invoke(to);
+                    if (taskName == null) {
+                        taskName = UUID.randomUUID().toString(); // TODO -- unique enough?
+                        copy.taskName(taskName);
+                    }
+                    Long lifespan = getEtaMillis.invoke(to);
+                    RetryOptions retryOptions = getRetryOptions.invoke(to);
+                    getTasks().put(taskName, new TaskOptionsEntity(taskName, copy.getTag(), lifespan, copy, retryOptions), lifespan, TimeUnit.MILLISECONDS);
+                } else if (m == TaskOptions.Method.POST) {
+                    final MessageCreator mc = createMessageCreator(to);
+                    final String id = producer.sendMessage(mc);
+                    copy = new TaskOptions(to);
+                    if (getTaskName.invoke(to) == null)
+                        copy.taskName(toTaskName(id));
+                }
+                if (copy != null)
+                    handles.add(new TaskHandle(copy, getQueueName()));
             }
             return handles;
         } catch (Exception e) {
@@ -126,11 +181,12 @@ public class JBossQueue implements Queue {
 
     public boolean deleteTask(String taskName) {
         validateTaskName(taskName);
-        return deleteTask(new TaskHandle(TaskOptions.Builder.withTaskName(taskName), queueName));
+        final Cache<String, Object> cache = getTasks();
+        return (cache.remove(TaskLeaseEntity.LEASE + taskName) != null) || (cache.remove(taskName) != null);
     }
 
     public boolean deleteTask(TaskHandle taskHandle) {
-        return false; // TODO
+        return deleteTask(taskHandle.getName());
     }
 
     public List<Boolean> deleteTask(List<TaskHandle> taskHandles) {
@@ -145,19 +201,52 @@ public class JBossQueue implements Queue {
     }
 
     public List<TaskHandle> leaseTasksByTagBytes(long lease, TimeUnit unit, long countLimit, byte[] tag) {
-        return leaseTasksByTag(lease, unit, countLimit, new String(tag));
+        return leaseTasksByTag(lease, unit, countLimit, tag == null ? null : new String(tag));
     }
 
+    @SuppressWarnings("unchecked")
     public List<TaskHandle> leaseTasksByTag(long lease, TimeUnit unit, long countLimit, String tag) {
-        return null;  // TODO
+        final QueryBuilder builder = searchManager.buildQueryBuilderForClass(TaskOptionsEntity.class).get();
+        final Query lq;
+        if (tag == null) {
+            lq = builder.all().createQuery();    
+        } else {
+            lq = builder.keyword().onField("tag").matching(tag).createQuery();
+        }
+        final CacheQuery query = searchManager.getQuery(lq, TaskOptionsEntity.class)
+                .maxResults((int) countLimit)
+                .sort(SORT);
+
+        List<TaskHandle> handles = new ArrayList<TaskHandle>();
+        for (Object obj : query) {
+            TaskOptionsEntity toe = (TaskOptionsEntity) obj;
+            final String name = toe.getName();
+            final Cache<String, Object> cache = getTasks();
+            cache.remove(name);
+            cache.put(TaskLeaseEntity.LEASE + name, new TaskLeaseEntity(toe.getOptions()), lease, unit);
+            handles.add(new TaskHandle(toe.getOptions(), queueName));
+        }
+        return handles;
     }
 
     public void purge() {
-        // TODO
+        getTasks().clear();
     }
 
     public TaskHandle modifyTaskLease(TaskHandle taskHandle, long lease, TimeUnit unit) {
-        return null;  // TODO
+        final String name = taskHandle.getName();
+        final Cache<String, Object> cache = getTasks();
+        TaskLeaseEntity tle = (TaskLeaseEntity) cache.get(TaskLeaseEntity.LEASE + name);
+        if (tle != null) {
+            if (lease == 0) {
+                cache.remove(TaskLeaseEntity.LEASE + name);
+                return add(tle.getOptions());
+            } else {
+                cache.replace(TaskLeaseEntity.LEASE + name, tle, lease, unit);
+                taskHandle = new TaskHandle(tle.getOptions().etaMillis(unit.toMillis(lease)), queueName);
+            }
+        }
+        return taskHandle;
     }
 
     static void validateQueueName(String queueName) {

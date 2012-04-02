@@ -22,6 +22,10 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.Collection;
+import java.util.NoSuchElementException;
+import java.util.logging.Logger;
+
 import com.google.appengine.api.datastore.BaseDatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
@@ -29,7 +33,6 @@ import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.infinispan.Cache;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
@@ -37,10 +40,6 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
-
-import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.logging.Logger;
 
 /**
  * Base Datastore service.
@@ -66,12 +65,11 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     private <K, V> Cache<K, V> getCache(String cacheName) {
-        EmbeddedCacheManager manager = InfinispanUtils.getCacheManager();
-        return manager.getCache(cacheName, true);
+        return InfinispanUtils.getCache(cacheName, Application.getAppId());
     }
 
     private String getStoreCacheName() {
-        return "default"; // TODO
+        return "default";
     }
 
     public PreparedQuery prepare(Query query) {

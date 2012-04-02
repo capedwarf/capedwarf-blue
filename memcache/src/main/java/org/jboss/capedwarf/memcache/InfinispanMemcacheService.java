@@ -24,20 +24,6 @@
 
 package org.jboss.capedwarf.memcache;
 
-import com.google.appengine.api.NamespaceManager;
-import com.google.appengine.api.memcache.ErrorHandler;
-import com.google.appengine.api.memcache.Expiration;
-import com.google.appengine.api.memcache.InvalidValueException;
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.Stats;
-import org.infinispan.AdvancedCache;
-import org.infinispan.Cache;
-import org.infinispan.context.Flag;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.common.infinispan.WrapperTxCallable;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,6 +33,20 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
+import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.memcache.ErrorHandler;
+import com.google.appengine.api.memcache.Expiration;
+import com.google.appengine.api.memcache.InvalidValueException;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.Stats;
+import org.infinispan.AdvancedCache;
+import org.infinispan.Cache;
+import org.infinispan.context.Flag;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.infinispan.CacheName;
+import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.infinispan.WrapperTxCallable;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -71,8 +71,7 @@ public class InfinispanMemcacheService implements MemcacheService {
     }
 
     private Cache<NamespacedKey, Object> getCache(String cacheName) {
-        EmbeddedCacheManager manager = InfinispanUtils.getCacheManager();
-        return manager.getCache(cacheName, true);
+        return InfinispanUtils.getCache(cacheName, Application.getAppId());
     }
 
     private String getCacheName() {
