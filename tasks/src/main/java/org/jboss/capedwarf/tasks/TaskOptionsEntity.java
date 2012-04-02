@@ -50,6 +50,7 @@ public class TaskOptionsEntity implements Serializable {
 
     public TaskOptionsEntity(String name, String queue, String tag, long eta, TaskOptions options, RetryOptions retry) {
         this.name = name;
+        this.queue = queue;
         this.tag = tag;
         this.eta = eta;
         this.options = options;
