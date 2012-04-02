@@ -29,7 +29,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueConstants;
@@ -39,7 +38,6 @@ import com.google.appengine.api.taskqueue.TaskOptions;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
-import org.hibernate.search.cfg.SearchMapping;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
@@ -105,9 +103,7 @@ public class JBossQueue implements Queue {
         builder.dataContainer().dataContainer(container);
 
         final String appId = Application.getAppId();
-        SearchMapping mapping = InfinispanUtils.applyIndexing(TASKS, appId, builder);
-        mapping.entity(Entity.class).indexed().indexName(TASKS + "_" + appId + "__" + TaskOptionsEntity.class.getName());
-        mapping.entity(Entity.class).indexed().indexName(TASKS + "_" + appId + "__" + TaskLeaseEntity.class.getName());
+        InfinispanUtils.applyIndexing(TASKS, appId, builder, TaskOptionsEntity.class, TaskLeaseEntity.class);
 
         return InfinispanUtils.getCache(TASKS, appId, builder.build());
     }

@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
 
 import com.google.apphosting.api.ApiProxy;
 import org.hibernate.search.Environment;
+import org.hibernate.search.cfg.EntityMapping;
 import org.hibernate.search.cfg.SearchMapping;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
@@ -68,10 +69,14 @@ public class InfinispanUtils {
         return cacheManager.getCacheConfiguration(config);
     }
 
-    public static SearchMapping applyIndexing(String config, String appId, ConfigurationBuilder builder) {
+    public static SearchMapping applyIndexing(String config, String appId, ConfigurationBuilder builder, Class<?> ... classes) {
         Properties properties = new Properties();
         properties.setProperty("hibernate.search.default.indexBase", "./indexes_" + appId);
         SearchMapping mapping = new SearchMapping();
+        for (Class<?> clazz : classes) {
+            EntityMapping entity = mapping.entity(clazz);
+            entity.indexed().indexName(toCacheName(config, appId) + "__" + clazz.getName());
+        }
         properties.put(Environment.MODEL_MAPPING, mapping);
         builder.indexing().withProperties(properties);
         return mapping;

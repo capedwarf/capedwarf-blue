@@ -32,7 +32,6 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
-import org.hibernate.search.cfg.SearchMapping;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -76,8 +75,7 @@ public class AbstractDatastoreService implements BaseDatastoreService {
         builder.read(c);
 
         final String appId = Application.getAppId();
-        SearchMapping mapping = InfinispanUtils.applyIndexing(getStoreCacheName(), appId, builder);
-        mapping.entity(Entity.class).indexed().indexName(getStoreCacheName() + "_" + appId + "__" + Entity.class.getName());
+        InfinispanUtils.applyIndexing(getStoreCacheName(), appId, builder, Entity.class);
 
         return InfinispanUtils.getCache(cacheName, appId);
     }
