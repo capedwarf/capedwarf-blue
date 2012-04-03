@@ -25,6 +25,7 @@ package org.jboss.test.capedwarf.tasks.test;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.google.appengine.api.taskqueue.LeaseOptions;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskHandle;
@@ -100,5 +101,20 @@ public class PullTestCase {
         handles = queue.leaseTasksByTag(30, TimeUnit.MINUTES, 100, "qwerty");
         Assert.assertEquals(1, handles.size());
         Assert.assertEquals(th2.getName(), handles.get(0).getName());
+    }
+
+    @Test
+    public void testPullWithGroupTag() throws Exception {
+        final Queue queue = QueueFactory.getQueue("default");
+
+        TaskHandle th1 = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo3").payload("foobar").etaMillis(15000));
+        queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("qwerty").payload("foofoo").etaMillis(11000));
+        TaskHandle th3 = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo3").payload("foofoo").etaMillis(10000));
+
+        LeaseOptions options = LeaseOptions.Builder.withLeasePeriod(1000L, TimeUnit.SECONDS).countLimit(100).groupByTag();
+        List<TaskHandle> handles = queue.leaseTasks(options);
+        Assert.assertEquals(2, handles.size());
+        Assert.assertEquals(th3.getName(), handles.get(0).getName());
+        Assert.assertEquals(th1.getName(), handles.get(1).getName());
     }
 }
