@@ -22,6 +22,13 @@
 
 package org.jboss.capedwarf.files;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.Random;
+
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
@@ -43,13 +50,6 @@ import com.google.appengine.api.files.RecordWriteChannel;
 import org.infinispan.io.GridFilesystem;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
-import java.util.Random;
 
 /**
  * JBoss GAE File service.
@@ -187,6 +187,10 @@ public class JBossFileService implements FileService {
         }
         GridFilesystem gfs = getGridFilesystem();
         return new JBossFileReadChannel(gfs.getReadableChannel(getFilePath(file)));
+    }
+
+    public String getDefaultGsBucketName() {
+        return null; // TODO
     }
 
     private boolean exists(AppEngineFile file) {

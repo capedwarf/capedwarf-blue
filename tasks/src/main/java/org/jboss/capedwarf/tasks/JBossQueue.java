@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.taskqueue.LeaseOptions;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueConstants;
 import com.google.appengine.api.taskqueue.RetryOptions;
@@ -49,6 +50,7 @@ import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
@@ -85,7 +87,7 @@ public class JBossQueue implements Queue {
     }
 
     private Cache<String, Object> getCache() {
-        Configuration c = InfinispanUtils.getConfiguration("tasks");
+        Configuration c = InfinispanUtils.getConfiguration(CacheName.TASKS);
         if (c == null)
             throw new IllegalArgumentException("No such tasks cache config!");
 
@@ -101,7 +103,8 @@ public class JBossQueue implements Queue {
         builder.read(c);
         builder.dataContainer().dataContainer(container);
 
-        return InfinispanUtils.getCache("tasks", queueName + "_" + Application.getAppId(), builder.build());
+        InfinispanUtils.applyIndexing(CacheName.TASKS, builder, TaskOptionsEntity.class, TaskLeaseEntity.class);
+        return InfinispanUtils.getCache(CacheName.TASKS, builder.build());
     }
 
     private Cache<String, Object> getTasks() {
@@ -160,7 +163,7 @@ public class JBossQueue implements Queue {
                     }
                     Long lifespan = getEtaMillis.invoke(to);
                     RetryOptions retryOptions = getRetryOptions.invoke(to);
-                    getTasks().put(taskName, new TaskOptionsEntity(taskName, copy.getTag(), lifespan, copy, retryOptions), lifespan, TimeUnit.MILLISECONDS);
+                    getTasks().put(taskName, new TaskOptionsEntity(taskName, queueName, copy.getTag(), lifespan, copy, retryOptions), lifespan, TimeUnit.MILLISECONDS);
                 } else if (m == TaskOptions.Method.POST) {
                     final MessageCreator mc = createMessageCreator(to);
                     final String id = producer.sendMessage(mc);
@@ -207,11 +210,13 @@ public class JBossQueue implements Queue {
     @SuppressWarnings("unchecked")
     public List<TaskHandle> leaseTasksByTag(long lease, TimeUnit unit, long countLimit, String tag) {
         final QueryBuilder builder = searchManager.buildQueryBuilderForClass(TaskOptionsEntity.class).get();
+        final Query queueQuery = builder.keyword().onField("queue").matching(queueName).createQuery();
         final Query lq;
         if (tag == null) {
-            lq = builder.all().createQuery();    
+            lq = queueQuery;
         } else {
-            lq = builder.keyword().onField("tag").matching(tag).createQuery();
+            final Query tagQuery = builder.keyword().onField("tag").matching(tag).createQuery();
+            lq = builder.bool().must(queueQuery).must(tagQuery).createQuery();
         }
         final CacheQuery query = searchManager.getQuery(lq, TaskOptionsEntity.class)
                 .maxResults((int) countLimit)
@@ -227,6 +232,10 @@ public class JBossQueue implements Queue {
             handles.add(new TaskHandle(toe.getOptions(), queueName));
         }
         return handles;
+    }
+
+    public List<TaskHandle> leaseTasks(LeaseOptions options) {
+        return null; // TODO
     }
 
     public void purge() {

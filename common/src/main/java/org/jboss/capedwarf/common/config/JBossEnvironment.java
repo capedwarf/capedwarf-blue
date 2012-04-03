@@ -24,12 +24,12 @@
 
 package org.jboss.capedwarf.common.config;
 
-import com.google.appengine.api.NamespaceManager;
-import com.google.apphosting.api.ApiProxy;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.google.appengine.api.NamespaceManager;
+import com.google.apphosting.api.ApiProxy;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -84,6 +84,10 @@ public class JBossEnvironment implements ApiProxy.Environment {
 
     public Map<String, Object> getAttributes() {
         return attributes;
+    }
+
+    public long getRemainingMillis() {
+        return 0; // TODO
     }
 
     public void setEmail(String email) {

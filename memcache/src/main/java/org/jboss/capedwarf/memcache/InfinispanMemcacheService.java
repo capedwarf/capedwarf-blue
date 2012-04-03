@@ -43,7 +43,6 @@ import com.google.appengine.api.memcache.Stats;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.infinispan.WrapperTxCallable;
@@ -67,15 +66,7 @@ public class InfinispanMemcacheService implements MemcacheService {
 
     public InfinispanMemcacheService(String namespace) {
         setNamespace(namespace);
-        this.cache = getCache(getCacheName());
-    }
-
-    private Cache<NamespacedKey, Object> getCache(String cacheName) {
-        return InfinispanUtils.getCache(cacheName, Application.getAppId());
-    }
-
-    private String getCacheName() {
-        return CacheName.MEMCACHE.getName();
+        this.cache = InfinispanUtils.getCache(CacheName.MEMCACHE);
     }
 
     public <T> Map<T, IdentifiableValue> getIdentifiables(Collection<T> ts) {
