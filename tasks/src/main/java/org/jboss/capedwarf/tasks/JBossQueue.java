@@ -88,8 +88,6 @@ public class JBossQueue implements Queue {
 
     private Cache<String, Object> getCache() {
         Configuration c = InfinispanUtils.getConfiguration(CacheName.TASKS);
-        if (c == null)
-            throw new IllegalArgumentException("No such tasks cache config!");
 
         EvictionConfiguration e = c.eviction();
         DataContainer container = new PurgeDataContainer(

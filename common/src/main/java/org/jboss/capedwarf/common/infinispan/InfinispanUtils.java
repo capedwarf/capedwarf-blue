@@ -89,11 +89,11 @@ public class InfinispanUtils {
 
     public static SearchMapping applyIndexing(CacheName config, ConfigurationBuilder builder, Class<?> ... classes) {
         final String appId = Application.getAppId();
-        IndexingConfigurationBuilder indexing = builder.indexing();
+        final IndexingConfigurationBuilder indexing = builder.indexing();
         indexing.addProperty("hibernate.search.default.indexBase", "./indexes_" + appId);
-        SearchMapping mapping = new SearchMapping();
+        final SearchMapping mapping = new SearchMapping();
         for (Class<?> clazz : classes) {
-            EntityMapping entity = mapping.entity(clazz);
+            final EntityMapping entity = mapping.entity(clazz);
             entity.indexed().indexName(toCacheName(config, appId) + "__" + clazz.getName());
         }
         indexing.setProperty(Environment.MODEL_MAPPING, mapping);
