@@ -65,14 +65,12 @@ public class AbstractDatastoreService implements BaseDatastoreService {
 
     protected Cache<Key, Entity> createStore() {
         Configuration c = InfinispanUtils.getConfiguration(CacheName.DEFAULT);
-        if (c == null)
-            throw new IllegalArgumentException("No such default cache config!");
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.read(c);
 
         InfinispanUtils.applyIndexing(CacheName.DEFAULT, builder, Entity.class);
-        return InfinispanUtils.getCache(CacheName.DEFAULT);
+        return InfinispanUtils.getCache(CacheName.DEFAULT, builder.build());
     }
 
     public PreparedQuery prepare(Query query) {

@@ -24,7 +24,6 @@ package org.jboss.capedwarf.common.infinispan;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -34,6 +33,7 @@ import org.hibernate.search.cfg.SearchMapping;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.IndexingConfigurationBuilder;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.io.GridFile;
@@ -57,9 +57,6 @@ public class InfinispanUtils {
     }
 
     protected static <K, V> Cache<K, V> getCache(CacheName config, String appId, Configuration configuration) {
-        if (cacheManager == null)
-            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
-
         final String cacheName = toCacheName(config, appId);
         //noinspection SynchronizeOnNonFinalField
         synchronized (cacheManager) {
@@ -80,27 +77,36 @@ public class InfinispanUtils {
     public static Configuration getConfiguration(CacheName config) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+        if (config == null)
+            throw new IllegalArgumentException("Null config enum!");
 
-        return cacheManager.getCacheConfiguration(config.getName());
+        final Configuration c = cacheManager.getCacheConfiguration(config.getName());
+        if (c == null)
+            throw new IllegalArgumentException("No such default cache config: " + config);
+
+        return c;
     }
 
     public static SearchMapping applyIndexing(CacheName config, ConfigurationBuilder builder, Class<?> ... classes) {
         final String appId = Application.getAppId();
-        Properties properties = new Properties();
-        properties.setProperty("hibernate.search.default.indexBase", "./indexes_" + appId);
+        IndexingConfigurationBuilder indexing = builder.indexing();
+        indexing.addProperty("hibernate.search.default.indexBase", "./indexes_" + appId);
         SearchMapping mapping = new SearchMapping();
         for (Class<?> clazz : classes) {
             EntityMapping entity = mapping.entity(clazz);
             entity.indexed().indexName(toCacheName(config, appId) + "__" + clazz.getName());
         }
-        properties.put(Environment.MODEL_MAPPING, mapping);
-        builder.indexing().withProperties(properties);
+        indexing.setProperty(Environment.MODEL_MAPPING, mapping);
         return mapping;
     }
 
     public static <K, V> Cache<K, V> getCache(CacheName config) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+        if (config == null)
+            throw new IllegalArgumentException("Null config enum!");
+        if (config.hasConfig())
+            throw new IllegalArgumentException("Cache " + config + " needs custom configuration!");
 
         final String appId = Application.getAppId();
         //noinspection SynchronizeOnNonFinalField
@@ -110,10 +116,7 @@ public class InfinispanUtils {
                 return cache;
         }
 
-        final Configuration existing = cacheManager.getCacheConfiguration(config.getName());
-        if (existing == null)
-            throw new IllegalArgumentException("No such config: " + config);
-
+        final Configuration existing = getConfiguration(config);
         final ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.read(existing);
 
@@ -121,6 +124,13 @@ public class InfinispanUtils {
     }
     
     public static <K, V> Cache<K, V> getCache(CacheName config, Configuration configuration) {
+        if (cacheManager == null)
+            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+        if (config == null)
+            throw new IllegalArgumentException("Null config enum!");
+        if (config.hasConfig() == false)
+            throw new IllegalArgumentException("Cache " + config + " has default configuration!");
+
         final String appId = Application.getAppId();
         return getCache(config, appId, configuration);
     }
