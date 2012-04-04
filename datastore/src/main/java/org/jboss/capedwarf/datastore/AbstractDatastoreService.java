@@ -70,7 +70,7 @@ public class AbstractDatastoreService implements BaseDatastoreService {
         builder.read(c);
 
         InfinispanUtils.applyIndexing(CacheName.DEFAULT, builder, Entity.class);
-        return InfinispanUtils.getCache(CacheName.DEFAULT, builder.build());
+        return InfinispanUtils.getCache(CacheName.DEFAULT, builder);
     }
 
     public PreparedQuery prepare(Query query) {

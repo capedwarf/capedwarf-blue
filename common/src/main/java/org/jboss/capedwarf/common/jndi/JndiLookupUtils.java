@@ -22,25 +22,22 @@
 
 package org.jboss.capedwarf.common.jndi;
 
-import javassist.util.proxy.MethodFilter;
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyFactory;
-import javassist.util.proxy.ProxyObject;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Logger;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import javassist.util.proxy.MethodHandler;
+import org.jboss.capedwarf.common.reflection.BytecodeUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -138,17 +135,7 @@ public class JndiLookupUtils {
                 }
             }));
         } else {
-            ProxyFactory factory = new ProxyFactory();
-            factory.setFilter(FINALIZE_FILTER);
-            factory.setSuperclass(expected);
-            Class<?> proxyClass = getProxyClass(factory);
-            ProxyObject proxy;
-            try {
-                proxy = (ProxyObject) proxyClass.newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            proxy.setHandler(new MethodHandler() {
+            final MethodHandler handler = new MethodHandler() {
                 private volatile Object delegate;
 
                 public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
@@ -161,38 +148,8 @@ public class JndiLookupUtils {
 
                     return thisMethod.invoke(delegate, args);
                 }
-            });
-            return expected.cast(proxy);
+            };
+            return BytecodeUtils.proxy(expected, handler);
         }
     }
-
-    protected static Class<?> getProxyClass(ProxyFactory factory) {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm == null)
-            return factory.createClass();
-        else
-            return AccessController.doPrivileged(new ClassCreator(factory));
-    }
-
-    /**
-     * Privileged class creator.
-     */
-    protected static class ClassCreator implements PrivilegedAction<Class<?>> {
-        private ProxyFactory factory;
-
-        public ClassCreator(ProxyFactory factory) {
-            this.factory = factory;
-        }
-
-        public Class<?> run() {
-            return factory.createClass();
-        }
-    }
-
-    private static final MethodFilter FINALIZE_FILTER = new MethodFilter() {
-        public boolean isHandled(Method m) {
-            // skip finalize methods
-            return !("finalize".equals(m.getName()) && m.getParameterTypes().length == 0);
-        }
-    };
 }

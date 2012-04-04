@@ -102,7 +102,7 @@ public class JBossQueue implements Queue {
         builder.dataContainer().dataContainer(container);
 
         InfinispanUtils.applyIndexing(CacheName.TASKS, builder, TaskOptionsEntity.class, TaskLeaseEntity.class);
-        return InfinispanUtils.getCache(CacheName.TASKS, builder.build());
+        return InfinispanUtils.getCache(CacheName.TASKS, builder);
     }
 
     private Cache<String, Object> getTasks() {
