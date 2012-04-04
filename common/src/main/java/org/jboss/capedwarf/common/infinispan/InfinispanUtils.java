@@ -22,12 +22,15 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
+import javassist.util.proxy.MethodHandler;
 import org.hibernate.search.Environment;
+import org.hibernate.search.backend.impl.jgroups.JGroupsChannelProvider;
 import org.hibernate.search.cfg.EntityMapping;
 import org.hibernate.search.cfg.SearchMapping;
 import org.infinispan.Cache;
@@ -41,6 +44,9 @@ import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import org.jboss.capedwarf.common.reflection.BytecodeUtils;
+import org.jgroups.Channel;
+import org.jgroups.Receiver;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -56,7 +62,7 @@ public class InfinispanUtils {
         return cacheManager;
     }
 
-    protected static <K, V> Cache<K, V> getCache(CacheName config, String appId, Configuration configuration) {
+    protected static <K, V> Cache<K, V> getCache(CacheName config, String appId, ConfigurationBuilder builder) {
         final String cacheName = toCacheName(config, appId);
         //noinspection SynchronizeOnNonFinalField
         synchronized (cacheManager) {
@@ -64,7 +70,7 @@ public class InfinispanUtils {
             if (cache != null)
                 return cache;
 
-            cacheManager.defineConfiguration(cacheName, configuration);
+            cacheManager.defineConfiguration(cacheName, builder.build());
 
             return cacheManager.getCache(cacheName, true);
         }
@@ -73,7 +79,32 @@ public class InfinispanUtils {
     protected static String toCacheName(CacheName config, String appId) {
         return config.getName() + "_" + appId;
     }
-    
+
+    protected static boolean isMaster() {
+        try {
+            JndiLookupUtils.lookup("infinispan.indexing.master", Object.class, "java:jboss/capedwarf/indexing/master");
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    protected static Channel wrap(final Channel channel) {
+        final MethodHandler handler = new MethodHandler() {
+            public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
+                final String methodName = thisMethod.getName();
+                if ("setReceiver".equals(methodName) && args.length == 1 && (args[0] instanceof Receiver)) {
+                    final Receiver passed = (Receiver) args[0];
+                    channel.setReceiver(new WrapperReceiver(passed));
+                    return null;
+                } else {
+                    return thisMethod.invoke(channel, args);
+                }
+            }
+        };
+        return BytecodeUtils.proxy(Channel.class, handler);
+    }
+
     public static Configuration getConfiguration(CacheName config) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
@@ -97,6 +128,11 @@ public class InfinispanUtils {
             entity.indexed().indexName(toCacheName(config, appId) + "__" + clazz.getName());
         }
         indexing.setProperty(Environment.MODEL_MAPPING, mapping);
+
+        final Channel channel = JndiLookupUtils.lookup("infinispan.indexing.channel", Channel.class, "java:jboss/capedwarf/indexing/channel");
+        indexing.setProperty(JGroupsChannelProvider.CHANNEL_INJECT, wrap(channel));
+        indexing.addProperty("hibernate.search.default.worker.backend", "jgroups" + (isMaster() ? "Master" : "Slave"));
+
         return mapping;
     }
 
@@ -120,10 +156,10 @@ public class InfinispanUtils {
         final ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.read(existing);
 
-        return getCache(config, appId, builder.build());
+        return getCache(config, appId, builder);
     }
     
-    public static <K, V> Cache<K, V> getCache(CacheName config, Configuration configuration) {
+    public static <K, V> Cache<K, V> getCache(CacheName config, ConfigurationBuilder builder) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
         if (config == null)
@@ -132,7 +168,7 @@ public class InfinispanUtils {
             throw new IllegalArgumentException("Cache " + config + " has default configuration!");
 
         final String appId = Application.getAppId();
-        return getCache(config, appId, configuration);
+        return getCache(config, appId, builder);
     }
 
     public static <R> R submit(final CacheName config, final Callable<R> task, Object... keys) {
