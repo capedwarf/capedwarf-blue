@@ -88,8 +88,6 @@ public class JBossQueue implements Queue {
 
     private Cache<String, Object> getCache() {
         Configuration c = InfinispanUtils.getConfiguration(CacheName.TASKS);
-        if (c == null)
-            throw new IllegalArgumentException("No such tasks cache config!");
 
         EvictionConfiguration e = c.eviction();
         DataContainer container = new PurgeDataContainer(
@@ -207,35 +205,53 @@ public class JBossQueue implements Queue {
         return leaseTasksByTag(lease, unit, countLimit, tag == null ? null : new String(tag));
     }
 
-    @SuppressWarnings("unchecked")
     public List<TaskHandle> leaseTasksByTag(long lease, TimeUnit unit, long countLimit, String tag) {
+        return leaseTasks(new LeaseOptionsInternal(lease, unit, countLimit, tag));
+    }
+
+    public List<TaskHandle> leaseTasks(LeaseOptions options) {
+        return leaseTasks(new LeaseOptionsInternal(options));
+    }
+
+    @SuppressWarnings("unchecked")
+    protected List<TaskHandle> leaseTasks(LeaseOptionsInternal options) {
         final QueryBuilder builder = searchManager.buildQueryBuilderForClass(TaskOptionsEntity.class).get();
         final Query queueQuery = builder.keyword().onField("queue").matching(queueName).createQuery();
+        final String tag = options.getTag();
         final Query lq;
         if (tag == null) {
-            lq = queueQuery;
+            if (options.isGroupByTag()) {
+                final CacheQuery first = searchManager.getQuery(queueQuery, TaskOptionsEntity.class).maxResults(1).sort(SORT);
+                final List<Object> singleton = first.list();
+                if (singleton.isEmpty()) {
+                    return Collections.emptyList();
+                } else {
+                    final String tmp = TaskOptionsEntity.class.cast(singleton.get(0)).getTag();
+                    final Query tagQuery = builder.keyword().onField("tag").matching(tmp).createQuery();
+                    lq = builder.bool().must(queueQuery).must(tagQuery).createQuery();
+                }
+            } else {
+                lq = queueQuery;
+            }
         } else {
             final Query tagQuery = builder.keyword().onField("tag").matching(tag).createQuery();
             lq = builder.bool().must(queueQuery).must(tagQuery).createQuery();
         }
+
         final CacheQuery query = searchManager.getQuery(lq, TaskOptionsEntity.class)
-                .maxResults((int) countLimit)
+                .maxResults((int) options.getCountLimit())
                 .sort(SORT);
 
-        List<TaskHandle> handles = new ArrayList<TaskHandle>();
+        final List<TaskHandle> handles = new ArrayList<TaskHandle>();
         for (Object obj : query) {
             TaskOptionsEntity toe = (TaskOptionsEntity) obj;
             final String name = toe.getName();
             final Cache<String, Object> cache = getTasks();
             cache.remove(name);
-            cache.put(TaskLeaseEntity.LEASE + name, new TaskLeaseEntity(toe.getOptions()), lease, unit);
+            cache.put(TaskLeaseEntity.LEASE + name, new TaskLeaseEntity(toe.getOptions()), options.getLease(), options.getUnit());
             handles.add(new TaskHandle(toe.getOptions(), queueName));
         }
         return handles;
-    }
-
-    public List<TaskHandle> leaseTasks(LeaseOptions options) {
-        return null; // TODO
     }
 
     public void purge() {

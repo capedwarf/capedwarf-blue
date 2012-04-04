@@ -28,20 +28,26 @@ package org.jboss.capedwarf.common.infinispan;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public enum CacheName {
-    DEFAULT("default"),
-    DATA("data"),
-    METADATA("metadata"),
-    MEMCACHE("memcache"),
-    DIST("dist"),
-    TASKS("tasks");
+    DEFAULT("default", true),
+    DATA("data", false),
+    METADATA("metadata", false),
+    MEMCACHE("memcache", false),
+    DIST("dist", false),
+    TASKS("tasks", true);
 
     private String name;
+    private boolean config;
 
-    private CacheName(String name) {
+    private CacheName(String name, boolean config) {
         this.name = name;
+        this.config = config;
     }
 
     public String getName() {
         return name;
+    }
+
+    public boolean hasConfig() {
+        return config;
     }
 }
