@@ -24,7 +24,7 @@
         <module>capabilities</module>
         <module>channel</module>
         <module>cluster</module>
-        <module>cluster-tests</module>
+        <!--module>cluster-tests</module-->
         <module>datastore</module>
         <module>environment</module>
         <module>files</module>
@@ -84,8 +84,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                     <debug>true</debug>
                     <encoding>UTF-8</encoding>
                     <fork>true</fork>
