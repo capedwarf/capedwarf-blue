@@ -33,10 +33,13 @@ import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
@@ -61,15 +64,13 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     protected Cache<Key, Entity> createStore() {
-        return getCache(getStoreCacheName());
-    }
+        Configuration c = InfinispanUtils.getConfiguration(CacheName.DEFAULT);
 
-    private <K, V> Cache<K, V> getCache(String cacheName) {
-        return InfinispanUtils.getCache(cacheName, Application.getAppId());
-    }
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.read(c);
 
-    private String getStoreCacheName() {
-        return "default";
+        InfinispanUtils.applyIndexing(CacheName.DEFAULT, builder, Entity.class);
+        return InfinispanUtils.getCache(CacheName.DEFAULT, builder.build());
     }
 
     public PreparedQuery prepare(Query query) {

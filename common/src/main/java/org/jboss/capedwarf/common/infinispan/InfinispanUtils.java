@@ -27,24 +27,26 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import com.google.apphosting.api.ApiProxy;
+import org.hibernate.search.Environment;
+import org.hibernate.search.cfg.EntityMapping;
+import org.hibernate.search.cfg.SearchMapping;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.IndexingConfigurationBuilder;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InfinispanUtils {
-    private static String[] defaultJndiNames = {"java:jboss/infinispan/container/capedwarf", "java:CacheManager/capedwarf"};
-    private static final String DATA = "GridFilesystem_DATA";
-    private static final String METADATA = "GridFilesystem_METADATA";
+    private static String[] defaultJndiNames = {"java:jboss/infinispan/container/capedwarf"};
 
     private static volatile int cacheManagerUsers;
     private static EmbeddedCacheManager cacheManager;
@@ -54,49 +56,90 @@ public class InfinispanUtils {
         return cacheManager;
     }
 
-    protected static String toCacheName(String config, String appId) {
-        return config + "_" + appId;
+    protected static <K, V> Cache<K, V> getCache(CacheName config, String appId, Configuration configuration) {
+        final String cacheName = toCacheName(config, appId);
+        //noinspection SynchronizeOnNonFinalField
+        synchronized (cacheManager) {
+            final Cache<K, V> cache = cacheManager.getCache(toCacheName(config, appId), false);
+            if (cache != null)
+                return cache;
+
+            cacheManager.defineConfiguration(cacheName, configuration);
+
+            return cacheManager.getCache(cacheName, true);
+        }
+    }
+
+    protected static String toCacheName(CacheName config, String appId) {
+        return config.getName() + "_" + appId;
     }
     
-    public static Configuration getConfiguration(String config) {
+    public static Configuration getConfiguration(CacheName config) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+        if (config == null)
+            throw new IllegalArgumentException("Null config enum!");
 
-        return cacheManager.getCacheConfiguration(config);
+        final Configuration c = cacheManager.getCacheConfiguration(config.getName());
+        if (c == null)
+            throw new IllegalArgumentException("No such default cache config: " + config);
+
+        return c;
     }
 
-    public static <K, V> Cache<K, V> getCache(String config, String appId) {
+    public static SearchMapping applyIndexing(CacheName config, ConfigurationBuilder builder, Class<?> ... classes) {
+        final String appId = Application.getAppId();
+        final IndexingConfigurationBuilder indexing = builder.indexing();
+        indexing.addProperty("hibernate.search.default.indexBase", "./indexes_" + appId);
+        final SearchMapping mapping = new SearchMapping();
+        for (Class<?> clazz : classes) {
+            final EntityMapping entity = mapping.entity(clazz);
+            entity.indexed().indexName(toCacheName(config, appId) + "__" + clazz.getName());
+        }
+        indexing.setProperty(Environment.MODEL_MAPPING, mapping);
+        return mapping;
+    }
+
+    public static <K, V> Cache<K, V> getCache(CacheName config) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+        if (config == null)
+            throw new IllegalArgumentException("Null config enum!");
+        if (config.hasConfig())
+            throw new IllegalArgumentException("Cache " + config + " needs custom configuration!");
 
-        final Configuration existing = cacheManager.getCacheConfiguration(config);
-        if (existing == null)
-            throw new IllegalArgumentException("No such config: " + config);
+        final String appId = Application.getAppId();
+        //noinspection SynchronizeOnNonFinalField
+        synchronized (cacheManager) {
+            final Cache<K, V> cache = cacheManager.getCache(toCacheName(config, appId), false);
+            if (cache != null)
+                return cache;
+        }
 
+        final Configuration existing = getConfiguration(config);
         final ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.read(existing);
 
         return getCache(config, appId, builder.build());
     }
     
-    public static <K, V> Cache<K, V> getCache(String config, String appId, Configuration configuration) {
+    public static <K, V> Cache<K, V> getCache(CacheName config, Configuration configuration) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+        if (config == null)
+            throw new IllegalArgumentException("Null config enum!");
+        if (config.hasConfig() == false)
+            throw new IllegalArgumentException("Cache " + config + " has default configuration!");
 
-        String cacheName = toCacheName(config, appId);
-        
-        cacheManager.defineConfiguration(cacheName, configuration);
-
-        Cache<K, V> cache = cacheManager.getCache(cacheName, true);
-        cache.start(); // re-start?
-        return cache;
+        final String appId = Application.getAppId();
+        return getCache(config, appId, configuration);
     }
 
-    public static <R> R submit(final CacheName config, final String appId, final Callable<R> task, Object... keys) {
+    public static <R> R submit(final CacheName config, final Callable<R> task, Object... keys) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
         
-        final Cache cache = cacheManager.getCache(toCacheName(config.getName(), appId));
+        final Cache cache = getCache(config);
         try {
             final DistributedExecutorService des = new DefaultExecutorService(cache);
             final Future<R> result = des.submit(task, keys);
@@ -107,17 +150,14 @@ public class InfinispanUtils {
     }
     
     public static GridFilesystem getGridFilesystem() {
-        String appId = ApiProxy.getCurrentEnvironment().getAppId();
+        final String appId = Application.getAppId();
         GridFilesystem gfs = gridFilesystems.get(appId);
         if (gfs == null) {
             synchronized (gridFilesystems) {
                 gfs = gridFilesystems.get(appId);
                 if (gfs == null) {
-                    EmbeddedCacheManager cm = getCacheManager();
-                    Cache<String, byte[]> data = cm.getCache(DATA);
-                    Cache<String, GridFile.Metadata> metadata = cm.getCache(METADATA);
-                    data.start();
-                    metadata.start();
+                    final Cache<String, byte[]> data = getCache(CacheName.DATA);
+                    final Cache<String, GridFile.Metadata> metadata = getCache(CacheName.METADATA);
                     gfs = new GridFilesystem(data, metadata);
                     gridFilesystems.put(appId, gfs);
                 }
