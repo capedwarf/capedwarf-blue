@@ -62,7 +62,7 @@ public class InfinispanUtils {
         return cacheManager;
     }
 
-    protected static <K, V> Cache<K, V> getCache(CacheName config, String appId, ConfigurationBuilder builder) {
+    protected static <K, V> Cache<K, V> getCache(CacheName config, String appId, ConfigurationCallback callback) {
         final String cacheName = toCacheName(config, appId);
         //noinspection SynchronizeOnNonFinalField
         synchronized (cacheManager) {
@@ -70,7 +70,10 @@ public class InfinispanUtils {
             if (cache != null)
                 return cache;
 
-            cacheManager.defineConfiguration(cacheName, builder.build());
+            final ConfigurationBuilder builder = callback.configure(cacheManager);
+            if (builder != null) {
+                cacheManager.defineConfiguration(cacheName, builder.build());
+            }
 
             return cacheManager.getCache(cacheName, true);
         }
@@ -146,10 +149,16 @@ public class InfinispanUtils {
         final ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.read(existing);
 
-        return getCache(config, appId, builder);
+        final ConfigurationCallback callback = new ConfigurationCallback() {
+            public ConfigurationBuilder configure(EmbeddedCacheManager manager) {
+                return builder;
+            }
+        };
+
+        return getCache(config, appId, callback);
     }
     
-    public static <K, V> Cache<K, V> getCache(CacheName config, ConfigurationBuilder builder) {
+    public static <K, V> Cache<K, V> getCache(CacheName config, ConfigurationCallback callback) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
         if (config == null)
@@ -158,7 +167,7 @@ public class InfinispanUtils {
             throw new IllegalArgumentException("Cache " + config + " has default configuration!");
 
         final String appId = Application.getAppId();
-        return getCache(config, appId, builder);
+        return getCache(config, appId, callback);
     }
 
     public static <R> R submit(final CacheName config, final Callable<R> task, Object... keys) {
