@@ -45,7 +45,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.BytecodeUtils;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.jgroups.Receiver;
 
 /**
@@ -62,7 +62,7 @@ public class InfinispanUtils {
         return cacheManager;
     }
 
-    protected static <K, V> Cache<K, V> getCache(CacheName config, String appId, ConfigurationBuilder builder) {
+    protected static <K, V> Cache<K, V> getCache(CacheName config, String appId, ConfigurationCallback callback) {
         final String cacheName = toCacheName(config, appId);
         //noinspection SynchronizeOnNonFinalField
         synchronized (cacheManager) {
@@ -70,7 +70,10 @@ public class InfinispanUtils {
             if (cache != null)
                 return cache;
 
-            cacheManager.defineConfiguration(cacheName, builder.build());
+            final ConfigurationBuilder builder = callback.configure(cacheManager);
+            if (builder != null) {
+                cacheManager.defineConfiguration(cacheName, builder.build());
+            }
 
             return cacheManager.getCache(cacheName, true);
         }
@@ -80,16 +83,7 @@ public class InfinispanUtils {
         return config.getName() + "_" + appId;
     }
 
-    protected static boolean isMaster() {
-        try {
-            JndiLookupUtils.lookup("infinispan.indexing.master", Object.class, "java:jboss/capedwarf/indexing/master");
-            return true;
-        } catch (Throwable t) {
-            return false;
-        }
-    }
-
-    protected static Channel wrap(final Channel channel) {
+    protected static JChannel wrap(final JChannel channel) {
         final MethodHandler handler = new MethodHandler() {
             public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
                 final String methodName = thisMethod.getName();
@@ -102,7 +96,7 @@ public class InfinispanUtils {
                 }
             }
         };
-        return BytecodeUtils.proxy(Channel.class, handler);
+        return BytecodeUtils.proxy(JChannel.class, handler);
     }
 
     public static Configuration getConfiguration(CacheName config) {
@@ -129,9 +123,8 @@ public class InfinispanUtils {
         }
         indexing.setProperty(Environment.MODEL_MAPPING, mapping);
 
-        final Channel channel = JndiLookupUtils.lookup("infinispan.indexing.channel", Channel.class, "java:jboss/capedwarf/indexing/channel");
+        final JChannel channel = JndiLookupUtils.lookup("infinispan.indexing.channel", JChannel.class, "java:jboss/capedwarf/indexing/channel");
         indexing.setProperty(JGroupsChannelProvider.CHANNEL_INJECT, wrap(channel));
-        indexing.addProperty("hibernate.search.default.worker.backend", "jgroups" + (isMaster() ? "Master" : "Slave"));
 
         return mapping;
     }
@@ -156,10 +149,16 @@ public class InfinispanUtils {
         final ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.read(existing);
 
-        return getCache(config, appId, builder);
+        final ConfigurationCallback callback = new ConfigurationCallback() {
+            public ConfigurationBuilder configure(EmbeddedCacheManager manager) {
+                return builder;
+            }
+        };
+
+        return getCache(config, appId, callback);
     }
     
-    public static <K, V> Cache<K, V> getCache(CacheName config, ConfigurationBuilder builder) {
+    public static <K, V> Cache<K, V> getCache(CacheName config, ConfigurationCallback callback) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
         if (config == null)
@@ -168,7 +167,7 @@ public class InfinispanUtils {
             throw new IllegalArgumentException("Cache " + config + " has default configuration!");
 
         final String appId = Application.getAppId();
-        return getCache(config, appId, builder);
+        return getCache(config, appId, callback);
     }
 
     public static <R> R submit(final CacheName config, final Callable<R> task, Object... keys) {

@@ -50,7 +50,7 @@ public final class BytecodeUtils {
         if (handler == null)
             throw new IllegalArgumentException("Null method handler!");
 
-        final ProxyFactory factory = new ProxyFactory();
+        final ProxyFactory factory = new InternalProxyFactory();
         factory.setFilter(BytecodeUtils.FINALIZE_FILTER);
         factory.setSuperclass(expected);
         final Class<?> proxyClass = getProxyClass(factory);
@@ -84,6 +84,13 @@ public final class BytecodeUtils {
 
         public Class<?> run() {
             return factory.createClass();
+        }
+    }
+
+    private static class InternalProxyFactory extends ProxyFactory {
+        @Override
+        protected ClassLoader getClassLoader() {
+            return getClass().getClassLoader();
         }
     }
 }
