@@ -45,7 +45,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.BytecodeUtils;
-import org.jgroups.Channel;
+import org.jgroups.JChannel;
 import org.jgroups.Receiver;
 
 /**
@@ -80,16 +80,7 @@ public class InfinispanUtils {
         return config.getName() + "_" + appId;
     }
 
-    protected static boolean isMaster() {
-        try {
-            JndiLookupUtils.lookup("infinispan.indexing.master", Object.class, "java:jboss/capedwarf/indexing/master");
-            return true;
-        } catch (Throwable t) {
-            return false;
-        }
-    }
-
-    protected static Channel wrap(final Channel channel) {
+    protected static JChannel wrap(final JChannel channel) {
         final MethodHandler handler = new MethodHandler() {
             public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
                 final String methodName = thisMethod.getName();
@@ -102,7 +93,7 @@ public class InfinispanUtils {
                 }
             }
         };
-        return BytecodeUtils.proxy(Channel.class, handler);
+        return BytecodeUtils.proxy(JChannel.class, handler);
     }
 
     public static Configuration getConfiguration(CacheName config) {
@@ -129,9 +120,8 @@ public class InfinispanUtils {
         }
         indexing.setProperty(Environment.MODEL_MAPPING, mapping);
 
-        final Channel channel = JndiLookupUtils.lookup("infinispan.indexing.channel", Channel.class, "java:jboss/capedwarf/indexing/channel");
+        final JChannel channel = JndiLookupUtils.lookup("infinispan.indexing.channel", JChannel.class, "java:jboss/capedwarf/indexing/channel");
         indexing.setProperty(JGroupsChannelProvider.CHANNEL_INJECT, wrap(channel));
-        indexing.addProperty("hibernate.search.default.worker.backend", "jgroups" + (isMaster() ? "Master" : "Slave"));
 
         return mapping;
     }
