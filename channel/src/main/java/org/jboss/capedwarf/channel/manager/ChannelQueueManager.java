@@ -20,41 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.channel;
+package org.jboss.capedwarf.channel.manager;
 
 import com.google.appengine.api.channel.ChannelServiceFactory;
-import org.jboss.capedwarf.common.infinispan.CacheName;
+import org.jboss.capedwarf.channel.JBossChannelService;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  *
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class ChannelConnectionManager {
+public class ChannelQueueManager {
 
-    private Map<String, ChannelConnection> connections = new HashMap<String, ChannelConnection>();
+    private Map<String, ChannelQueue> queues = new HashMap<String, ChannelQueue>();
 
-    public static final ChannelConnectionManager instance = new ChannelConnectionManager(); // TODO: make this as it should be
+    public static final ChannelQueueManager instance = new ChannelQueueManager(); // TODO: make this as it should be
 
-    public static ChannelConnectionManager getInstance() {
+    public static ChannelQueueManager getInstance() {
         return instance;
     }
 
-    public ChannelConnection getChannelConnection(String channelToken) {
-        return connections.get(channelToken);
+    public boolean channelQueueExists(String channelToken) {
+        return queues.containsKey(channelToken);
     }
 
-    public ChannelConnection createChannelConnection(String channelToken) {
-        ChannelManager channelManager = ((JBossChannelService) ChannelServiceFactory.getChannelService()).getChannelManager();
+    public ChannelQueue getChannelQueue(String channelToken) {
+        return queues.get(channelToken);
+    }
 
-        Channel channel = channelManager.getChannelByToken(channelToken);
+    public ChannelQueue createChannelQueue(String channelToken) {
+        Channel channel = ChannelManager.getInstance().getChannelByToken(channelToken);
         channel.setConnectedNode(InfinispanUtils.getLocalNode());
 
-        ChannelConnection connection = new ChannelConnection();
-        connections.put(channelToken, connection);
-        return connection;
+        ChannelQueue queue = new ChannelQueue();
+        queues.put(channelToken, queue);
+        return queue;
     }
+
 }

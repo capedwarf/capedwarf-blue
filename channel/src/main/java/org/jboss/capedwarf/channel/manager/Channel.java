@@ -20,9 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.channel;
+package org.jboss.capedwarf.channel.manager;
 
 import org.infinispan.remoting.transport.Address;
+import org.jboss.capedwarf.channel.util.ClusterUtils;
+
+import java.util.concurrent.Callable;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -66,5 +69,18 @@ public class Channel {
 
     public void setConnectedNode(Address connectedNode) {
         this.connectedNode = connectedNode;
+    }
+
+    public void sendMessage(String message) {
+        submitTask(new SendMessageTask(getToken(), message));
+    }
+
+    public void close() {
+        submitTask(new CloseChannelTask(getToken()));
+    }
+
+    private void submitTask(Callable<Void> task) {
+        ClusterUtils.submitToAllNodes(task);
+//        ClusterUtils.submitToNode(getConnectedNode(), task);  TODO: submit only to node which holds the connection for the channel
     }
 }

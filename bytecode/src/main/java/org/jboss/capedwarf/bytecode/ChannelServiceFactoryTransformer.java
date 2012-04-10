@@ -20,30 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.channel;
+package org.jboss.capedwarf.bytecode;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import javassist.CtClass;
+import javassist.CtMethod;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class ChannelConnection {
-
-    private BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
-
-    public void send(String message) {
-        try {
-            queue.put(message);
-        } catch (InterruptedException e) {
-            // ignored
-        }
-    }
-
-    public String getPendingMessage(long timeoutMillis) throws InterruptedException {
-        return queue.poll(timeoutMillis, TimeUnit.MILLISECONDS);
+public class ChannelServiceFactoryTransformer extends JavassistTransformer {
+    protected void transform(CtClass clazz) throws Exception {
+        CtMethod method = clazz.getDeclaredMethod("getChannelService");
+        method.setBody("return new org.jboss.capedwarf.channel.JBossChannelService();");
     }
 }

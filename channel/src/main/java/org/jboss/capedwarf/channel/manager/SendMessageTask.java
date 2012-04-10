@@ -20,32 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.channel;
-
-import org.infinispan.AdvancedCache;
-import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
-import org.jboss.capedwarf.common.infinispan.BaseTxTask;
+package org.jboss.capedwarf.channel.manager;
 
 import java.io.Serializable;
-import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class SendMessageTask implements Callable<Void>, Serializable {
+
+    private final Logger log = Logger.getLogger(getClass().getName());
+
     private String channelToken;
     private String message;
-    
+
     public SendMessageTask(String channelToken, String message) {
         this.channelToken = channelToken;
         this.message = message;
     }
 
     public Void call() throws Exception {
-        ChannelConnection channelConnection = ChannelConnectionManager.getInstance().getChannelConnection(channelToken);
-        channelConnection.send(message);
+        if (ChannelQueueManager.getInstance().channelQueueExists(channelToken)) {
+            log.info("Obtaining channel connection for token " + channelToken);
+            ChannelQueue channelQueue = ChannelQueueManager.getInstance().getChannelQueue(channelToken);
+            log.info("Sending message " + message);
+            channelQueue.send(message);
+        }
         return null;
     }
 }

@@ -25,8 +25,8 @@ package org.jboss.capedwarf.channel;
 import com.google.appengine.api.channel.ChannelMessage;
 import com.google.appengine.api.channel.ChannelPresence;
 import com.google.appengine.api.channel.ChannelService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
+import org.jboss.capedwarf.channel.manager.Channel;
+import org.jboss.capedwarf.channel.manager.ChannelManager;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -51,8 +51,9 @@ public class JBossChannelService implements ChannelService {
     }
 
     public void sendMessage(ChannelMessage message) {
-        Channel channel = channelManager.getChannel(message.getClientId());
-        channelManager.sendMessage(channel, message.getMessage());
+        for (Channel channel : channelManager.getChannels(message.getClientId())) {
+            channel.sendMessage(message.getMessage());
+        }
     }
 
     public ChannelMessage parseMessage(HttpServletRequest request) {

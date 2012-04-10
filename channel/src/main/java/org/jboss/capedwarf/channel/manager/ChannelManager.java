@@ -20,20 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.channel;
+package org.jboss.capedwarf.channel.manager;
 
+import com.google.appengine.api.channel.ChannelServiceFactory;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
-import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.channel.JBossChannelService;
 
+import java.security.MessageDigest;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class ChannelManager {
+
+    private final Logger log = Logger.getLogger(getClass().getName());
 
     public static final String CHANNEL_ENTITY_KIND = "Channel";
     public static final String PROPERTY_CLIENT_ID = "clientId";
@@ -70,19 +78,30 @@ public class ChannelManager {
                 (String) entity.getProperty(PROPERTY_TOKEN));
     }
 
-    public Channel getChannel(String clientId) {
+    public Set<Channel> getChannels(String clientId) {
         Query query = new Query(CHANNEL_ENTITY_KIND).addFilter(PROPERTY_CLIENT_ID, Query.FilterOperator.EQUAL, clientId);
-        Entity entity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
-        return entityToChannel(entity);
+        List<Entity> entities = DatastoreServiceFactory.getDatastoreService().prepare(query).asList(FetchOptions.Builder.withDefaults());
+        Set<Channel> set = new HashSet<Channel>();
+        for (Entity entity : entities) {
+            set.add(entityToChannel(entity));
+        }
+        return set;
     }
 
     public Channel getChannelByToken(String token) {
+        if (token == null) {
+            throw new NullPointerException("token should not be null");
+        }
         Query query = new Query(CHANNEL_ENTITY_KIND).addFilter(PROPERTY_TOKEN, Query.FilterOperator.EQUAL, token);
         Entity entity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
+        if (entity == null) {
+            throw new NoSuchChannelException("No channel with token " + token);
+        }
         return entityToChannel(entity);
     }
 
-    public void sendMessage(Channel channel, String message) {
-        ClusterUtils.submitToNode(channel.getConnectedNode(), new SendMessageTask(channel.getToken(), message));
+    public static ChannelManager getInstance() {
+        return ((JBossChannelService) ChannelServiceFactory.getChannelService()).getChannelManager();
     }
+
 }

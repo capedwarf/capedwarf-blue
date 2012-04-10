@@ -20,33 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.channel;
+package org.jboss.capedwarf.channel.transport;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
+import org.jboss.capedwarf.channel.manager.ChannelQueue;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
- *
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@WebServlet(urlPatterns = ChannelServlet.SERVLET_URI + "/*")
-public class ChannelServlet extends HttpServlet {
+public class LongIFrameChannelTransport implements ChannelTransport {
 
-    public static final String SERVLET_URI = "/_ah/channel";
+    private final Logger log = Logger.getLogger(getClass().getName());
 
-    public static final int MAX_CONNECTION_DURATION = 30000;
-
-    @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String channelToken = req.getParameter("token");
-        ChannelConnection connection = ChannelConnectionManager.getInstance().createChannelConnection(channelToken);
-
+    public void serveMessages(HttpServletRequest req, HttpServletResponse resp, String channelToken, ChannelQueue queue) throws IOException {
+        log.info("Channel queue opened.");
+        resp.setContentType("text/html");
         resp.setHeader("Transfer-Encoding", "chunked");
+
         PrintWriter writer = resp.getWriter();
+
+        writeMessage(writer, channelToken, "open", "");
+
 
         long startTime = System.currentTimeMillis();
         while (true) {
@@ -56,14 +56,26 @@ public class ChannelServlet extends HttpServlet {
                 break;
             }
             try {
-                String message = connection.getPendingMessage(timeLeft);
-                if (message != null) {
-                    writer.println(message);
-                    writer.flush();
+                log.info("Waiting for message (for " + timeLeft + "ms)");
+                List<String> messages = queue.getPendingMessages(timeLeft);
+                for (String message : messages) {
+                    log.info("Received message " + message);
+                    writeMessage(writer, channelToken, "message", message);
                 }
             } catch (InterruptedException e) {
                 // ignored
             }
         }
+
+        writeMessage(writer, channelToken, "close", "");
     }
+
+    private void writeMessage(PrintWriter writer, String channelToken, String type, String message) {
+        log.info("Sending message to browser: type=" + type + "; message=" + message);
+        writer.println("<script language=\"JavaScript\" type=\"text/javascript\">");
+        writer.println("parent.handleChannelMessage(\"" + channelToken + "\", \"" + type + "\", \"" + message + "\");");
+        writer.println("</script>");
+        writer.flush();
+    }
+
 }

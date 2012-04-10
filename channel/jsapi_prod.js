@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 (function() {
     function throwException(ex) {
         throw ex;
@@ -49,9 +71,9 @@
         return function() {
             return a.apply(b, arguments)
         }
-    }, w = function(a, b, c) {
-        w = Function.prototype.bind && -1 != Function.prototype.bind.toString().indexOf("native code") ? ia : ja;
-        return w.apply(null, arguments)
+    }, bind = function(a, b, c) {
+        bind = Function.prototype.bind && -1 != Function.prototype.bind.toString().indexOf("native code") ? ia : ja;
+        return bind.apply(null, arguments)
     }, ka = function(a, b) {
         var c = Array.prototype.slice.call(arguments, 1);
         return function() {
@@ -65,30 +87,33 @@
         var c = name.split("."), d = q;
         !(c[0]in d) && d.execScript && d.execScript("var " + c[0]);
         for (var f; c.length && (f = c.shift());) !c.length && value !== j ? d[f] = value : d = d[f] ? d[f] : d[f] = {}
-    }, y = function(a, b) {
+    }, extend = function(subclass, superclass) {
         function c() {
         }
 
-        c.prototype = b.prototype;
-        a.D = b.prototype;
-        a.prototype = new c;
-        a.prototype.constructor = a
+        c.prototype = superclass.prototype;
+        subclass.D = superclass.prototype;
+        subclass.prototype = new c;
+        subclass.prototype.constructor = subclass
     };
     Function.prototype.bind = Function.prototype.bind || function(a, b) {
         if (1 < arguments.length) {
             var c = Array.prototype.slice.call(arguments, 1);
             c.unshift(this, a);
-            return w.apply(null, c)
+            return bind.apply(null, c)
         }
-        return w(this, a)
+        return bind(this, a)
     };
-    var ma = function() {
+
+
+
+    var AbstractSomething = function() {
     };
-    ma.prototype.ba = false;
-    ma.prototype.V = function() {
-        this.ba || (this.ba = true, this.i())
+    AbstractSomething.prototype.connected = false;
+    AbstractSomething.prototype.V = function() {
+        this.connected || (this.connected = true, this.close())
     };
-    ma.prototype.i = function() {
+    AbstractSomething.prototype.close = function() {
         this.ic && na.apply(null, this.ic)
     };
     var oa = function(a) {
@@ -103,7 +128,7 @@
         this.stack = Error().stack || "";
         a && (this.message = "" + a)
     };
-    y(pa, Error);
+    extend(pa, Error);
     pa.prototype.name = "CustomError";
     var qa = function(a, b) {
         for (var c = 1; c < arguments.length; c++)var d = ("" + arguments[c]).replace(/\$/g, "$$$$"), a = a.replace(/\%s/, d);
@@ -124,7 +149,7 @@
         pa.call(this, qa.apply(null, b));
         b.shift()
     };
-    y(Aa, pa);
+    extend(Aa, pa);
     Aa.prototype.name = "AssertionError";
     var Ba = function(a, b, c) {
         if (!a) {
@@ -132,7 +157,7 @@
             if (b)var f = f + (": " + b), e = d;
             throwException(new Aa("" + f, e || []))
         }
-    }, Ca = function(a, b) {
+    }, error = function(a, b) {
         throwException(new Aa("Failure" + (a ? ": " + a : ""), Array.prototype.slice.call(arguments, 1)))
     };
     var z = Array.prototype, Da = z.indexOf ? function(a, b, c) {
@@ -183,23 +208,22 @@
             for (var e = 0; e < Na.length; e++)c = Na[e], Object.prototype.hasOwnProperty.call(d, c) && (a[c] = d[c])
         }
     };
-    var Pa, Qa, Ra, Sa, Ta = function() {
+    var isOpera1, isIE1, isSafari, isMozilla, getUserAgent = function() {
         return q.navigator ? q.navigator.userAgent : null
     };
-    Sa = Ra = Qa = Pa = false;
-    var Ua;
-    if (Ua = Ta()) {
-        var Va = q.navigator;
-        Pa = 0 == Ua.indexOf("Opera");
-        Qa = !Pa && -1 != Ua.indexOf("MSIE");
-        Ra = !Pa && -1 != Ua.indexOf("WebKit");
-        Sa = !Pa && !Ra && "Gecko" == Va.product
+    isMozilla = isSafari = isIE1 = isOpera1 = false;
+    var userAgent;
+    if (userAgent = getUserAgent()) {
+        isOpera1 = 0 == userAgent.indexOf("Opera");
+        isIE1 = !isOpera1 && -1 != userAgent.indexOf("MSIE");
+        isSafari = !isOpera1 && -1 != userAgent.indexOf("WebKit");
+        isMozilla = !isOpera1 && !isSafari && "Gecko" == q.navigator.product
     }
-    var Wa = Pa, A = Qa, B = Sa, C = Ra, Xa;
+    var opera = isOpera1, isIE = isIE1, mozilla = isMozilla, safari = isSafari, Xa;
     a:{
         var Ya = "", Za;
-        if (Wa && q.opera)var $a = q.opera.version, Ya = "function" == typeof $a ? $a() : $a; else if (B ? Za = /rv\:([^\);]+)(\)|;)/ : A ? Za = /MSIE\s+([^\);]+)(\)|;)/ : C && (Za = /WebKit\/(\S+)/), Za)var ab = Za.exec(Ta()), Ya = ab ? ab[1] : "";
-        if (A) {
+        if (opera && q.opera)var $a = q.opera.version, Ya = "function" == typeof $a ? $a() : $a; else if (mozilla ? Za = /rv\:([^\);]+)(\)|;)/ : isIE ? Za = /MSIE\s+([^\);]+)(\)|;)/ : safari && (Za = /WebKit\/(\S+)/), Za)var ab = Za.exec(getUserAgent()), Ya = ab ? ab[1] : "";
+        if (isIE) {
             var bb, cb = q.document;
             bb = cb ? cb.documentMode : j;
             if (bb > parseFloat(Ya)) {
@@ -226,11 +250,11 @@
         }
         return b
     }, fb = {}, gb = function() {
-        return fb[9] || (fb[9] = A && document.documentMode && 9 <= document.documentMode)
+        return fb[9] || (fb[9] = isIE && document.documentMode && 9 <= document.documentMode)
     };
-    var hb, ib = !A || gb();
-    !B && !A || A && gb() || B && D("1.9.1");
-    A && D("9");
+    var hb, ib = !isIE || gb();
+    !mozilla && !isIE || isIE && gb() || mozilla && D("1.9.1");
+    isIE && D("9");
     var jb = function(a, b) {
         var c;
         c = (c = a.className) && "function" == typeof c.split ? c.split(/\s+/) : [];
@@ -245,12 +269,12 @@
         return a ? new kb(9 == a.nodeType ? a : a.ownerDocument || a.document) : hb || (hb = new kb)
     }, lb = function(a, b) {
         var c = b && "*" != b ? b.toUpperCase() : "";
-        return a.querySelectorAll && a.querySelector && (!C || "CSS1Compat" == document.compatMode || D("528")) && c ? a.querySelectorAll(c + "") : a.getElementsByTagName(c || "*")
+        return a.querySelectorAll && a.querySelector && (!safari || "CSS1Compat" == document.compatMode || D("528")) && c ? a.querySelectorAll(c + "") : a.getElementsByTagName(c || "*")
     }, nb = function(a, b) {
         Ka(b, function(b, d) {
-            "style" == d ? a.style.cssText = b : "class" == d ? a.className = b : "for" == d ? a.htmlFor = b : d in mb ? a.setAttribute(mb[d], b) : 0 == d.lastIndexOf("aria-", 0) ? a.setAttribute(d, b) : a[d] = b
+            "style" == d ? a.style.cssText = b : "class" == d ? a.className = b : "for" == d ? a.htmlFor = b : d in HtmlTagAttributes ? a.setAttribute(HtmlTagAttributes[d], b) : 0 == d.lastIndexOf("aria-", 0) ? a.setAttribute(d, b) : a[d] = b
         })
-    }, mb = {cellpadding:"cellPadding",cellspacing:"cellSpacing",colspan:"colSpan",rowspan:"rowSpan",valign:"vAlign",height:"height",width:"width",usemap:"useMap",frameborder:"frameBorder",maxlength:"maxLength",type:"type"}, pb = function(a, b, c) {
+    }, HtmlTagAttributes = {cellpadding:"cellPadding",cellspacing:"cellSpacing",colspan:"colSpan",rowspan:"rowSpan",valign:"vAlign",height:"height",width:"width",usemap:"useMap",frameborder:"frameBorder",maxlength:"maxLength",type:"type"}, pb = function(a, b, c) {
         function d(c) {
             c && b.appendChild(v(c) ? a.createTextNode(c) : c)
         }
@@ -259,7 +283,7 @@
             var e = c[f];
             s(e) && !(ea(e) && 0 < e.nodeType) ? Ea(ob(e) ? Ha(e) : e, d) : d(e)
         }
-    }, qb = function(a) {
+    }, removeElement = function(a) {
         return a && a.parentNode ? a.parentNode.removeChild(a) : null
     }, ob = function(a) {
         if (a && "number" == typeof a.length) {
@@ -269,11 +293,11 @@
         }
         return false
     }, kb = function(a) {
-        this.v = a || q.document || document
+        this.document = a || q.document || document
     };
     p = kb.prototype;
     p.qb = function(a, b, c) {
-        var d = this.v, f = arguments, e = f[0], g = f[1];
+        var d = this.document, f = arguments, e = f[0], g = f[1];
         if (!ib && g && (g.name || g.type)) {
             e = ["<",e];
             g.name && e.push(' name="', za(g.name), '"');
@@ -293,18 +317,18 @@
         return e
     };
     p.createElement = function(a) {
-        return this.v.createElement(a)
+        return this.document.createElement(a)
     };
     p.createTextNode = function(a) {
-        return this.v.createTextNode(a)
+        return this.document.createTextNode(a)
     };
-    p.e = function() {
-        return this.v.parentWindow || this.v.defaultView
+    p.getWindow = function() {
+        return this.document.parentWindow || this.document.defaultView
     };
     p.appendChild = function(a, b) {
         a.appendChild(b)
     };
-    p.removeNode = qb;
+    p.removeNode = removeElement;
     var rb = function(a) {
         rb[" "](a);
         return a
@@ -317,18 +341,18 @@
         }
         return false
     };
-    !A || gb();
-    var tb = !A || gb();
-    A && D("8");
-    !C || D("528");
-    B && D("1.9b") || A && D("8") || Wa && D("9.5") || C && D("528");
-    !B || D("8");
+    !isIE || gb();
+    var tb = !isIE || gb();
+    isIE && D("8");
+    !safari || D("528");
+    mozilla && D("1.9b") || isIE && D("8") || opera && D("9.5") || safari && D("528");
+    !mozilla || D("8");
     var ub = function(a, b) {
         this.type = a;
         this.currentTarget = this.target = b
     };
-    y(ub, ma);
-    ub.prototype.i = function() {
+    extend(ub, AbstractSomething);
+    ub.prototype.close = function() {
         delete this.type;
         delete this.target;
         delete this.currentTarget
@@ -338,7 +362,7 @@
     var vb = function(a, b) {
         a && this.qa(a, b)
     };
-    y(vb, ub);
+    extend(vb, ub);
     p = vb.prototype;
     p.target = null;
     p.relatedTarget = null;
@@ -362,10 +386,10 @@
         this.target = a.target || a.srcElement;
         this.currentTarget = b;
         var d = a.relatedTarget;
-        d ? B && (sb(d, "nodeName") || (d = null)) : "mouseover" == c ? d = a.fromElement : "mouseout" == c && (d = a.toElement);
+        d ? mozilla && (sb(d, "nodeName") || (d = null)) : "mouseover" == c ? d = a.fromElement : "mouseout" == c && (d = a.toElement);
         this.relatedTarget = d;
-        this.offsetX = C || a.offsetX !== j ? a.offsetX : a.layerX;
-        this.offsetY = C || a.offsetY !== j ? a.offsetY : a.layerY;
+        this.offsetX = safari || a.offsetX !== j ? a.offsetX : a.layerX;
+        this.offsetY = safari || a.offsetY !== j ? a.offsetY : a.layerY;
         this.clientX = a.clientX !== j ? a.clientX : a.pageX;
         this.clientY = a.clientY !== j ? a.clientY : a.pageY;
         this.screenX = a.screenX || 0;
@@ -383,8 +407,8 @@
         delete this.ec;
         delete this.Qa
     };
-    p.i = function() {
-        vb.D.i.call(this);
+    p.close = function() {
+        vb.D.close.call(this);
         this.relatedTarget = this.currentTarget = this.target = this.ra = null
     };
     var wb = function() {
@@ -777,37 +801,38 @@
     $b.prototype.Gb = function(a) {
         this.ka = a
     };
-    var I = function(a) {
-        this.Hb = a
+    var Logger = function(a) {
+        this.name = a
     };
-    I.prototype.za = null;
-    I.prototype.ka = null;
-    I.prototype.Ua = null;
-    I.prototype.Ib = null;
-    var J = function(a, b) {
+    Logger.prototype.parent = null;
+    Logger.prototype.ka = null;
+    Logger.prototype.Ua = null;
+    Logger.prototype.Ib = null;
+
+    var KeyValuePair = function(a, b) {
         this.name = a;
         this.value = b
     };
-    J.prototype.toString = function() {
+    KeyValuePair.prototype.toString = function() {
         return this.name
     };
-    var bc = new J("SEVERE", 1E3), cc = new J("WARNING", 900), dc = new J("INFO", 800), ec = new J("CONFIG", 700), fc = new J("FINE", 500), gc = new J("FINEST", 300);
-    I.prototype.getName = function() {
-        return this.Hb
+
+    Logger.prototype.getName = function() {
+        return this.name
     };
-    I.prototype.getParent = function() {
-        return this.za
+    Logger.prototype.getParent = function() {
+        return this.parent
     };
-    I.prototype.Gb = function(a) {
+    Logger.prototype.Gb = function(a) {
         this.ka = a
     };
     var hc = function(a) {
         if (a.ka)return a.ka;
-        if (a.za)return hc(a.za);
-        Ca("Root logger has no level set.");
+        if (a.parent)return hc(a.parent);
+        error("Root logger has no level set.");
         return null
     };
-    I.prototype.log = function(a, b, c) {
+    Logger.prototype.log = function(a, b, c) {
         if (a.value >= hc(this).value) {
             a = this.gc(a, b, c);
             b = "log:" + a.dc;
@@ -820,8 +845,8 @@
             }
         }
     };
-    I.prototype.gc = function(a, b, c) {
-        var d = new $b(a, "" + b, this.Hb);
+    Logger.prototype.gc = function(a, b, c) {
+        var d = new $b(a, "" + b, this.name);
         if (c) {
             d.Ab = c;
             var f;
@@ -852,84 +877,87 @@
         }
         return d
     };
-    var L = function(a, b) {
-        K.log(bc, a, b)
-    }, M = function(a, b) {
-        a.log(cc, b, j)
+    var severe = function(a, b) {
+        LOG.log(new KeyValuePair("SEVERE", 1E3), a, b)
+    }, warn = function(a, b) {
+        a.log(new KeyValuePair("WARNING", 900), b, j)
     };
-    I.prototype.info = function(a, b) {
-        this.log(dc, a, b)
+    Logger.prototype.info = function(a, b) {
+        this.log(new KeyValuePair("INFO", 800), a, b)
     };
-    var N = function(a) {
-        K.log(fc, a, j)
-    }, O = function(a) {
-        K.log(gc, a, j)
+    var fine = function(a) {
+        LOG.log(new KeyValuePair("FINE", 500), a, j)
+    }, finest = function(a) {
+        LOG.log(new KeyValuePair("FINEST", 300), a, j)
     }, ic = {}, jc = null, kc = function(a) {
-        jc || (jc = new I(""), ic[""] = jc, jc.Gb(ec));
+        jc || (jc = new Logger(""), ic[""] = jc, jc.Gb(new KeyValuePair("CONFIG", 700)));
         var b;
         if (!(b = ic[a])) {
-            b = new I(a);
+            b = new Logger(a);
             var c = a.lastIndexOf("."), d = a.substr(c + 1), c = kc(a.substr(0, c));
             c.Ua || (c.Ua = {});
             c.Ua[d] = b;
-            b.za = c;
+            b.parent = c;
             ic[a] = b
         }
         return b
     };
-    var lc = function() {
-        this.la = {}
+
+
+    var AbstractChannel = function() {
+        this.handlerMethods = {}
     };
-    y(lc, ma);
-    lc.prototype.na = kc("goog.messaging.AbstractChannel");
-    lc.prototype.u = function(a) {
+    extend(AbstractChannel, AbstractSomething);
+    AbstractChannel.prototype.na = kc("goog.messaging.AbstractChannel");
+    AbstractChannel.prototype.connect = function(a) {
         a && a()
     };
-    lc.prototype.r = function() {
+    AbstractChannel.prototype.isClosing = function() {
         return true
     };
-    var mc = function(a, b, c) {
-        a.la[b] = {eb:c,fb:false}
+    var registerHandlerMethod = function(channel, methodName, func) {
+        channel.handlerMethods[methodName] = {eb:func,fb:false}
     };
-    lc.prototype.i = function() {
-        lc.D.i.call(this);
+    AbstractChannel.prototype.close = function() {
+        AbstractChannel.D.close.call(this);
         oa(this.na);
         delete this.na;
-        delete this.la;
+        delete this.handlerMethods;
         delete this.Ya
     };
-    var nc = RegExp("^(?:([^:/?#.]+):)?(?://(?:([^/?#]*)@)?([\\w\\d\\-\\u0100-\\uffff.%]*)(?::([0-9]+))?)?([^?#]+)?(?:\\?([^#]*))?(?:#(.*))?$"), oc = function(a) {
+    var nc = RegExp("^(?:([^:/?#.]+):)?(?://(?:([^/?#]*)@)?([\\w\\d\\-\\u0100-\\uffff.%]*)(?::([0-9]+))?)?([^?#]+)?(?:\\?([^#]*))?(?:#(.*))?$");
+    var oc = function(a) {
         var b = a.match(nc), a = b[1], c = b[2], d = b[3], b = b[4], f = [];
         a && f.push(a, ":");
         d && (f.push("//"), c && f.push(c, "@"), f.push(d), b && f.push(":", b));
         return f.join("")
     };
-    var P = function(a, b) {
+    var Url = function(a, b) {
         var c;
-        a instanceof P ? (this.U(b == null ? a.w : b), Q(this, a.n), pc(this, a.ia), qc(this, a.F), rc(this, a.G), sc(this, a.J), tc(this, a.t.fa()), uc(this, a.ha)) : a && (c = ("" + a).match(nc)) ? (this.U(!!b), Q(this, c[1] || "", true), pc(this, c[2] || "", true), qc(this, c[3] || "", true), rc(this, c[4]), sc(this, c[5] || "", true), tc(this, c[6] || "", true), uc(this, c[7] || "", true)) : (this.U(!!b), this.t = new vc(null, this, this.w))
+        a instanceof Url ? (this.U(b == null ? a.w : b), Q(this, a.protocol), pc(this, a.ia), qc(this, a.F), rc(this, a.G), sc(this, a.J), tc(this, a.parameters.fa()), uc(this, a.ha)) : a && (c = ("" + a).match(nc)) ? (this.U(!!b), Q(this, c[1] || "", true), pc(this, c[2] || "", true), qc(this, c[3] || "", true), rc(this, c[4]), sc(this, c[5] || "", true), tc(this, c[6] || "", true), uc(this, c[7] || "", true)) : (this.U(!!b), this.parameters = new vc(null, this, this.w))
     };
-    p = P.prototype;
-    p.n = "";
-    p.ia = "";
-    p.F = "";
-    p.G = null;
-    p.J = "";
-    p.ha = "";
-    p.jc = false;
-    p.w = false;
-    p.toString = function() {
+    p = Url.prototype;
+    Url.prototype.protocol = "";
+    Url.prototype.ia = "";
+    Url.prototype.F = "";
+    Url.prototype.G = null;
+    Url.prototype.J = "";
+    Url.prototype.ha = "";
+    Url.prototype.jc = false;
+    Url.prototype.w = false;
+    Url.prototype.toString = function() {
         if (this.p)return this.p;
         var a = [];
-        this.n && a.push(wc(this.n, xc), ":");
+        this.protocol && a.push(wc(this.protocol, xc), ":");
         this.F && (a.push("//"), this.ia && a.push(wc(this.ia, xc), "@"), a.push(v(this.F) ? encodeURIComponent(this.F) : null), this.G != null && a.push(":", "" + this.G));
         this.J && (this.F && "/" != this.J.charAt(0) && a.push("/"), a.push(wc(this.J, "/" == this.J.charAt(0) ? yc : zc)));
-        var b = "" + this.t;
+        var b = "" + this.parameters;
         b && a.push("?", b);
         this.ha && a.push("#", wc(this.ha, Ac));
         return this.p = a.join("")
     };
-    p.fa = function() {
-        var a = this.n, b = this.ia, c = this.F, d = this.G, f = this.J, e = this.t.fa(), g = this.ha, i = new P(null, this.w);
+    Url.prototype.fa = function() {
+        var a = this.protocol, b = this.ia, c = this.F, d = this.G, f = this.J, e = this.parameters.fa(), g = this.ha, i = new Url(null, this.w);
         a && Q(i, a);
         b && pc(i, b);
         c && qc(i, c);
@@ -942,8 +970,8 @@
     var Q = function(a, b, c) {
         R(a);
         delete a.p;
-        a.n = c ? b ? decodeURIComponent(b) : "" : b;
-        a.n && (a.n = a.n.replace(/:$/, ""))
+        a.protocol = c ? b ? decodeURIComponent(b) : "" : b;
+        a.protocol && (a.protocol = a.protocol.replace(/:$/, ""))
     }, pc = function(a, b, c) {
         R(a);
         delete a.p;
@@ -952,10 +980,10 @@
         R(a);
         delete a.p;
         a.F = c ? b ? decodeURIComponent(b) : "" : b
-    }, rc = function(a, b) {
+    }, rc = function(a, port) {
         R(a);
         delete a.p;
-        b ? (b = Number(b), (isNaN(b) || 0 > b) && throwException(Error("Bad port number " + b)), a.G = b) : a.G = null
+        port ? (port = Number(port), (isNaN(port) || 0 > port) && throwException(Error("Bad port number " + port)), a.G = port) : a.G = null
     }, sc = function(a, b, c) {
         R(a);
         delete a.p;
@@ -963,8 +991,8 @@
     }, tc = function(a, b, c) {
         R(a);
         delete a.p;
-        b instanceof vc ? (a.t = b, a.t.Oa = a, a.t.U(a.w)) :
-            (c || (b = wc(b, Bc)), a.t = new vc(b, a, a.w))
+        b instanceof vc ? (a.parameters = b, a.parameters.Oa = a, a.parameters.U(a.w)) :
+            (c || (b = wc(b, Bc)), a.parameters = new vc(b, a, a.w))
     }, uc = function(a, b, c) {
         R(a);
         delete a.p;
@@ -972,9 +1000,9 @@
     }, R = function(a) {
         a.jc && throwException(Error("Tried to modify a read-only Uri"))
     };
-    P.prototype.U = function(a) {
+    Url.prototype.U = function(a) {
         this.w = a;
-        this.t && this.t.U(a);
+        this.parameters && this.parameters.U(a);
         return this
     };
     var Cc = /^[a-zA-Z0-9\-_.!~*'():\/;?]*$/, wc = function(a, b) {
@@ -1103,100 +1131,125 @@
         }, this));
         this.w = a
     };
-    var Gc = {1:"NativeMessagingTransport",2:"FrameElementMethodTransport",3:"IframeRelayTransport",4:"IframePollingTransport",5:"FlashTransport",6:"NixTransport"}, Hc = ["pu","lru","pru","lpu","ppu"], T = {}, Jc = function(a) {
-        for (var b = Ic, c = b.length, d = ""; 0 < a--;)d += b.charAt(Math.floor(Math.random() * c));
+    var TransportMethodNames = {1:"NativeMessagingTransport",2:"FrameElementMethodTransport",3:"IframeRelayTransport",4:"IframePollingTransport",5:"FlashTransport",6:"NixTransport"};
+    var Hc = ["url","lru","pru","lpu","ppu"];
+    var channels = {};
+
+    var createRandomString = function(length) {
+        var d = ""
+        var b = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        for (var c = b.length; 0 < length--;) {
+            d += b.charAt(Math.floor(Math.random() * c));
+        }
         return d
-    }, Ic = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", K = kc("goog.net.xpc");
-    var U = function(a) {
+    };
+    LOG = kc("goog.net.xpc");
+
+
+    var AbstractTransport = function(a) {
         this.l = a || E()
     };
-    y(U, ma);
-    U.prototype.aa = 0;
-    U.prototype.e = function() {
-        return this.l.e()
+    extend(AbstractTransport, AbstractSomething);
+
+    AbstractTransport.prototype.transportMethod = 0;
+    AbstractTransport.prototype.getWindow = function() {
+        return this.l.getWindow()
     };
-    U.prototype.getName = function() {
-        return Gc[this.aa] || ""
+    AbstractTransport.prototype.getName = function() {
+        return TransportMethodNames[this.transportMethod] || ""
     };
-    var Kc = function(a, b) {
+
+
+
+
+
+    var FrameElementMethodTransport = function(crossPageChannel, b) {
         this.l = b || E();
-        this.a = a;
+        this.crossPageChannel = crossPageChannel;
         this.ga = [];
-        this.Nb = w(this.Vb, this)
+        this.Nb = bind(this.Vb, this)
     };
-    y(Kc, U);
-    p = Kc.prototype;
-    p.aa = 2;
-    p.Ka = false;
-    p.u = function() {
-        0 == Lc(this.a) ? (this.B = this.a.P, this.B.XPC_toOuter = w(this.hb, this)) : this.gb()
+    extend(FrameElementMethodTransport, AbstractTransport);
+    FrameElementMethodTransport.prototype.transportMethod = 2;
+    FrameElementMethodTransport.prototype.Ka = false;
+    FrameElementMethodTransport.prototype.connect = function() {
+        0 == Lc(this.crossPageChannel) ? (this.B = this.crossPageChannel.P, this.B.XPC_toOuter = bind(this.hb, this)) : this.setup()
     };
-    p.gb = function() {
+    FrameElementMethodTransport.prototype.setup = function() {
         var a = true;
         try {
-            this.B || (this.B = this.e().frameElement), this.B && this.B.XPC_toOuter && (this.Ga = this.B.XPC_toOuter, this.B.XPC_toOuter.XPC_toInner = w(this.hb, this), a = false, this.send("tp", "SETUP_ACK"), V(this.a))
+            this.B || (this.B = this.getWindow().frameElement), this.B && this.B.XPC_toOuter && (this.Ga = this.B.XPC_toOuter, this.B.XPC_toOuter.XPC_toInner = bind(this.hb, this), a = false, this.send("tp", "SETUP_ACK"), V(this.crossPageChannel))
         } catch(b) {
-            L("exception caught while attempting setup: " + b)
+            severe("exception caught while attempting setup: " + b)
         }
-        a && (this.mb || (this.mb = w(this.gb, this)), this.e().setTimeout(this.mb, 100))
+        a && (this.mb || (this.mb = bind(this.setup, this)), this.getWindow().setTimeout(this.mb, 100))
     };
-    p.Ja = function(a) {
-        0 == Lc(this.a) && !this.a.r() && "SETUP_ACK" == a ? (this.Ga = this.B.XPC_toOuter.XPC_toInner, V(this.a)) : throwException(Error("Got unexpected transport message."))
+    FrameElementMethodTransport.prototype.handleSetupMessage = function(a) {
+        0 == Lc(this.crossPageChannel) && !this.crossPageChannel.isClosing() && "SETUP_ACK" == a ? (this.Ga = this.B.XPC_toOuter.XPC_toInner, V(this.crossPageChannel)) : throwException(Error("Got unexpected transport message."))
     };
-    p.hb = function(a, b) {
-        !this.Ka && 0 == this.ga.length ? this.a.A(a, b) : (this.ga.push({Pb:a,Ha:b}), 1 == this.ga.length && this.e().setTimeout(this.Nb, 1))
+    FrameElementMethodTransport.prototype.hb = function(a, b) {
+        !this.Ka && 0 == this.ga.length ? this.crossPageChannel.deliver(a, b) : (this.ga.push({Pb:a,Ha:b}), 1 == this.ga.length && this.getWindow().setTimeout(this.Nb, 1))
     };
-    p.Vb = function() {
+    FrameElementMethodTransport.prototype.Vb = function() {
         for (; this.ga.length;) {
             var a = this.ga.shift();
-            this.a.A(a.Pb, a.Ha)
+            this.crossPageChannel.deliver(a.Pb, a.Ha)
         }
     };
-    p.send = function(a, b) {
+    FrameElementMethodTransport.prototype.send = function(a, b) {
         this.Ka = true;
         this.Ga(a, b);
         this.Ka = false
     };
-    p.i = function() {
-        Kc.D.i.call(this);
+    FrameElementMethodTransport.prototype.close = function() {
+        FrameElementMethodTransport.D.close.call(this);
         this.B = this.Ga = null
     };
-    var W = function(a, b) {
+
+
+
+
+    var IFramePollingTransport = function(crossPageChannel, b) {
         this.l = b || E();
-        this.a = a;
-        this.ea = this.a.b.ppu;
-        this.Ob = this.a.b.lpu;
-        this.oa = []
+        this.crossPageChannel = crossPageChannel;
+        this.url = this.crossPageChannel.b.ppu;
+        this.Ob = this.crossPageChannel.b.lpu;
+        this.events = []
     }, Mc, Nc;
-    y(W, U);
-    W.prototype.aa = 4;
-    W.prototype.pa = 0;
-    W.prototype.S = false;
-    W.prototype.I = false;
-    var Oc = function(a) {
-        return"googlexpc_" + a.a.name + "_msg"
-    }, Pc = function(a) {
-        return"googlexpc_" + a.a.name + "_ack"
+    extend(IFramePollingTransport, AbstractTransport);
+    IFramePollingTransport.prototype.transportMethod = 4;
+    IFramePollingTransport.prototype.pa = 0;
+    IFramePollingTransport.prototype.S = false;
+    IFramePollingTransport.prototype.initialized = false;
+
+    var getMsgFrameName = function(transport) {
+        return"googlexpc_" + transport.crossPageChannel.name + "_msg"
     };
-    W.prototype.u = function() {
-        if (!this.ba) {
-            N("transport connect called");
-            if (!this.I) {
-                N("initializing...");
-                var a = Oc(this);
-                this.R = Qc(this, a);
-                this.Ea = this.e().frames[a];
-                a = Pc(this);
-                this.Q = Qc(this, a);
-                this.Da = this.e().frames[a];
-                this.I = true
+
+    var getAckFrameName = function(transport) {
+        return"googlexpc_" + transport.crossPageChannel.name + "_ack"
+    };
+
+    IFramePollingTransport.prototype.connect = function() {
+        if (!this.connected) {
+            fine("transport connect called");
+            if (!this.initialized) {
+                fine("initializing...");
+                var name = getMsgFrameName(this);
+                this.msgSenderFrame = createSenderFrame(this, name);
+                this.msgReceiverFrame = this.getWindow().frames[name];
+
+                name = getAckFrameName(this);
+                this.ackSenderFrame = createSenderFrame(this, name);
+                this.ackReceiverFrame = this.getWindow().frames[name];
+                this.initialized = true
             }
-            if (!Rc(this, Oc(this)) || !Rc(this, Pc(this))) {
-                O("foreign frames not (yet) present");
-                if (1 == Lc(this.a) && !this.Lb)O("innerPeerReconnect called"), this.a.name = Jc(10), O("switching channels: " + this.a.name), Sc(this), this.I = false, this.Lb = Qc(this, "googlexpc_reconnect_" + this.a.name); else if (0 ==
-                    Lc(this.a)) {
-                    O("outerPeerReconnect called");
-                    for (var a = this.a.o.frames, b = a.length, c = 0; c < b; c++) {
+            if (!frameExists(this, getMsgFrameName(this)) || !frameExists(this, getAckFrameName(this))) {
+                finest("foreign frames not (yet) present");
+                if (1 == Lc(this.crossPageChannel) && !this.Lb)finest("innerPeerReconnect called"), this.crossPageChannel.name = createRandomString(10), finest("switching channels: " + this.crossPageChannel.name), deconstructSenderFrames(this), this.initialized = false, this.Lb = createSenderFrame(this, "googlexpc_reconnect_" + this.crossPageChannel.name); else if (0 ==
+                    Lc(this.crossPageChannel)) {
+                    finest("outerPeerReconnect called");
+                    for (var a = this.crossPageChannel.window.frames, b = a.length, c = 0; c < b; c++) {
                         var d;
                         try {
                             a[c] && a[c].name && (d = a[c].name)
@@ -1205,107 +1258,111 @@
                         if (d) {
                             var e = d.split("_");
                             if (3 == e.length && "googlexpc" == e[0] && "reconnect" == e[1]) {
-                                this.a.name = e[2];
-                                Sc(this);
-                                this.I = false;
+                                this.crossPageChannel.name = e[2];
+                                deconstructSenderFrames(this);
+                                this.initialized = false;
                                 break
                             }
                         }
                     }
                 }
-                this.e().setTimeout(w(this.u, this), 100)
-            } else N("foreign frames present"), this.Wa = new Tc(this, this.a.o.frames[Oc(this)], w(this.Kb, this)), this.Va = new Tc(this, this.a.o.frames[Pc(this)], w(this.Jb, this)), this.Xa()
+                this.getWindow().setTimeout(bind(this.connect, this), 100)
+            } else fine("foreign frames present"), this.Wa = new Tc(this, this.crossPageChannel.window.frames[getMsgFrameName(this)], bind(this.msgReceived, this)), this.Va = new Tc(this, this.crossPageChannel.window.frames[getAckFrameName(this)], bind(this.ackReceived, this)), this.setup()
         }
     };
-    var Qc = function(a, b) {
-        O("constructing sender frame: " + b);
-        var c = document.createElement("iframe"), d = c.style;
-        d.position = "absolute";
-        d.top = "-10px";
-        d.left = "10px";
-        d.width = "1px";
-        d.height = "1px";
-        c.id = c.name = b;
-        c.src = a.ea + "#INITIAL";
-        a.e().document.body.appendChild(c);
-        return c
-    }, Sc = function(a) {
-        O("deconstructSenderFrames called");
-        a.R && (a.R.parentNode.removeChild(a.R), a.R = null, a.Ea = null);
-        a.Q && (a.Q.parentNode.removeChild(a.Q), a.Q = null, a.Da = null)
-    }, Rc = function(a, b) {
-        O("checking for receive frame: " + b);
+    var createSenderFrame = function(transport, name) {
+        finest("constructing sender frame: " + name);
+        var iframe = document.createElement("iframe");
+        iframe.style.position = "absolute";
+        iframe.style.top = "-10px";
+        iframe.style.left = "10px";
+        iframe.style.width = "1px";
+        iframe.style.height = "1px";
+        iframe.id = iframe.name = name;
+        iframe.src = transport.url + "#INITIAL";
+        transport.getWindow().document.body.appendChild(iframe);
+        return iframe
+    };
+
+    var deconstructSenderFrames = function(transport) {
+        finest("deconstructSenderFrames called");
+        transport.msgSenderFrame && (transport.msgSenderFrame.parentNode.removeChild(transport.msgSenderFrame), transport.msgSenderFrame = null, transport.msgReceiverFrame = null);
+        transport.ackSenderFrame && (transport.ackSenderFrame.parentNode.removeChild(transport.ackSenderFrame), transport.ackSenderFrame = null, transport.ackReceiverFrame = null)
+    };
+
+    var frameExists = function(a, b) {
+        finest("checking for receive frame: " + b);
         try {
-            var c = a.a.o.frames[b];
-            if (!c ||
-                0 != c.location.href.indexOf(a.Ob))return false
+            var c = a.crossPageChannel.window.frames[b];
+            if (!c || 0 != c.location.href.indexOf(a.Ob)) return false
         } catch(d) {
             return false
         }
         return true
     };
-    W.prototype.Xa = function() {
-        var a = this.a.o.frames;
-        !a[Pc(this)] || !a[Oc(this)] ? (this.bb || (this.bb = w(this.Xa, this)), this.e().setTimeout(this.bb, 100), N("local frames not (yet) present")) : (this.$a = new Uc(this.ea, this.Ea), this.ma = new Uc(this.ea, this.Da), N("local frames ready"), this.e().setTimeout(w(function() {
+    IFramePollingTransport.prototype.setup = function() {
+        var a = this.crossPageChannel.window.frames;
+        !a[getAckFrameName(this)] || !a[getMsgFrameName(this)] ? (this.bb || (this.bb = bind(this.setup, this)), this.getWindow().setTimeout(this.bb, 100), fine("local frames not (yet) present")) : (this.$a = new Sender(this.url, this.msgReceiverFrame), this.ma = new Sender(this.url, this.ackReceiverFrame), fine("local frames ready"), this.getWindow().setTimeout(bind(function() {
             this.$a.send("SETUP");
             this.S = true;
-            N("SETUP sent")
+            fine("SETUP sent")
         }, this), 100))
     };
-    var Vc = function(a) {
+    var deliverQueuedMessages = function(a) {
         if (a.La && a.jb) {
-            if (V(a.a), a.W) {
-                N("delivering queued messages (" + a.W.length + ")");
-                for (var b = 0, c; b < a.W.length; b++)c = a.W[b], a.a.A(c.Sb, c.Ha);
+            if (V(a.crossPageChannel), a.W) {
+                fine("delivering queued messages (" + a.W.length + ")");
+                for (var b = 0, c; b < a.W.length; b++)c = a.W[b], a.crossPageChannel.deliver(c.Sb, c.Ha);
                 delete a.W
             }
-        } else O("checking if connected: ack sent:" + a.La + ", ack rcvd: " + a.jb)
+        } else finest("checking if connected: ack sent:" + a.La + ", ack rcvd: " + a.jb)
     };
-    W.prototype.Kb = function(a) {
-        O("msg received: " + a);
-        if ("SETUP" == a)this.ma && (this.ma.send("SETUP_ACK"), O("SETUP_ACK sent"), this.La = true, Vc(this)); else if (this.a.r() || this.La) {
+    IFramePollingTransport.prototype.msgReceived = function(a) {
+        finest("msg received: " + a);
+        if ("SETUP" == a)this.ma && (this.ma.send("SETUP_ACK"), finest("SETUP_ACK sent"), this.La = true, deliverQueuedMessages(this)); else if (this.crossPageChannel.isClosing() || this.La) {
             var b = a.indexOf("|"), c = a.substring(0, b), a = a.substring(b + 1), b = c.indexOf(",");
             if (-1 == b) {
                 var d;
                 this.ma.send("ACK:" + c);
                 Wc(this, a)
             } else d = c.substring(0, b), this.ma.send("ACK:" + d), c = c.substring(b + 1).split("/"), b = parseInt(c[0], 10), c = parseInt(c[1], 10), 1 == b && (this.Na = []), this.Na.push(a), b == c && (Wc(this, this.Na.join("")), delete this.Na)
-        } else M(K,
-            "received msg, but channel is not connected")
+        } else warn(LOG, "received msg, but channel is not connected")
     };
-    W.prototype.Jb = function(a) {
-        O("ack received: " + a);
-        "SETUP_ACK" == a ? (this.S = false, this.jb = true, Vc(this)) : this.a.r() ? this.S ? parseInt(a.split(":")[1], 10) == this.pa ? (this.S = false, Xc(this)) : M(K, "got ack with wrong sequence") : M(K, "got unexpected ack") : M(K, "received ack, but channel not connected")
+    IFramePollingTransport.prototype.ackReceived = function(msg) {
+        finest("ack received: " + msg);
+        "SETUP_ACK" == msg ? (this.S = false, this.jb = true, deliverQueuedMessages(this)) : this.crossPageChannel.isClosing() ? this.S ? parseInt(msg.split(":")[1], 10) == this.pa ? (this.S = false, Xc(this)) : warn(LOG, "got ack with wrong sequence") : warn(LOG, "got unexpected ack") : warn(LOG, "received ack, but channel not connected")
     };
-    var Xc = function(a) {
-        if (!a.S && a.oa.length) {
-            var b = a.oa.shift();
-            ++a.pa;
-            a.$a.send(a.pa + b);
-            O("msg sent: " + a.pa + b);
-            a.S = true
+    var Xc = function(transport) {
+        if (!transport.S && transport.events.length) {
+            var b = transport.events.shift();
+            ++transport.pa;
+            transport.$a.send(transport.pa + b);
+            finest("msg sent: " + transport.pa + b);
+            transport.S = true
         }
     }, Wc = function(a, b) {
         var c = b.indexOf(":"), d = b.substr(0, c), c = b.substring(c + 1);
-        a.a.r() ? a.a.A(d, c) : ((a.W || (a.W = [])).push({Sb:d,Ha:c}), O("queued delivery"))
+        a.crossPageChannel.isClosing() ? a.crossPageChannel.deliver(d, c) : ((a.W || (a.W = [])).push({Sb:d,Ha:c}), finest("queued delivery"))
     };
-    W.prototype.Ba = 3800;
-    W.prototype.send = function(a, b) {
+    IFramePollingTransport.prototype.Ba = 3800;
+    IFramePollingTransport.prototype.send = function(a, b) {
         var c = a + ":" + b;
-        if (!A || b.length <= this.Ba)this.oa.push("|" + c); else for (var d = b.length, f = Math.ceil(d / this.Ba), e = 0, g = 1; e < d;)this.oa.push("," + g + "/" + f + "|" + c.substr(e, this.Ba)), g++, e += this.Ba;
+        if (!isIE || b.length <= this.Ba) {
+            this.events.push("|" + c);
+        } else for (var d = b.length, f = Math.ceil(d / this.Ba), e = 0, g = 1; e < d;)this.events.push("," + g + "/" + f + "|" + c.substr(e, this.Ba)), g++, e += this.Ba;
         Xc(this)
     };
-    W.prototype.i = function() {
-        W.D.i.call(this);
+    IFramePollingTransport.prototype.close = function() {
+        IFramePollingTransport.D.close.call(this);
         var a = Yc;
         Fa(a, this.Wa);
         Fa(a, this.Va);
         this.Wa = this.Va = null;
-        qb(this.R);
-        qb(this.Q);
-        this.Ea = this.Da = this.R = this.Q = null
+        removeElement(this.msgSenderFrame);
+        removeElement(this.ackSenderFrame);
+        this.msgReceiverFrame = this.ackReceiverFrame = this.msgSenderFrame = this.ackSenderFrame = null
     };
-    var Yc = [], Zc = w(function() {
+    var Yc = [], Zc = bind(function() {
         var a = false;
         try {
             for (var b = 0, c = Yc.length; b < c; b++) {
@@ -1322,71 +1379,77 @@
                 a = d
             }
         } catch(i) {
-            if (K.info("receive_() failed: " + i), b = Yc[b].k.a, K.info("Transport Error"), b.close(), !Yc.length)return
+            if (LOG.info("receive_() failed: " + i), b = Yc[b].transporter.crossPageChannel, LOG.info("Transport Error"), b.close(), !Yc.length)return
         }
         b = la();
         a && (Mc = b);
         Nc = window.setTimeout(Zc, 1E3 > b - Mc ? 10 : 100)
-    }, W), $c = function() {
-        N("starting receive-timer");
+    }, IFramePollingTransport), $c = function() {
+        fine("starting receive-timer");
         Mc = la();
         Nc && window.clearTimeout(Nc);
-        Nc = window.setTimeout(Zc,
-            10)
-    }, Uc = function(a, b) {
-        this.ea = a;
-        this.Fb = b;
-        this.Ta = 0
+        Nc = window.setTimeout(Zc, 10)
     };
-    Uc.prototype.send = function(a) {
-        this.Ta = ++this.Ta % 2;
-        a = this.ea + "#" + this.Ta + encodeURIComponent(a);
+
+    var Sender = function(url, document) {
+        this.url = url;
+        this.document = document;
+        this.oneOrTwo = 0
+    };
+    Sender.prototype.send = function(url) {
+        this.oneOrTwo = ++this.oneOrTwo % 2;
+        url = this.url + "#" + this.oneOrTwo + encodeURIComponent(url);
         try {
-            C ? this.Fb.location.href = a : this.Fb.location.replace(a)
+            safari ? this.document.location.href = url : this.document.location.replace(url)
         } catch(b) {
-            L("sending failed", b)
+            severe("sending failed", b)
         }
         $c()
     };
-    var Tc = function(a, b, c) {
-        this.k = a;
+    var Tc = function(transporter, b, c) {
+        this.transporter = transporter;
         this.pb = b;
         this.Ub = c;
         this.ob = this.pb.location.href.split("#")[0] + "#INITIAL";
         Yc.push(this);
         $c()
     };
-    var X = function(a, b) {
+
+
+
+
+
+    var IFrameRelayTransporter = function(crossPageChannel, b) {
         this.l = b || E();
-        this.a = a;
-        this.Mb = this.a.b.pru;
-        this.ab = this.a.b.ifrid;
-        C && ad()
+        this.crossPageChannel = crossPageChannel;
+        this.Mb = this.crossPageChannel.b.pru;
+        this.ab = this.crossPageChannel.b.iframeId;
+        safari && ad()
     };
-    y(X, U);
-    if (C)var bd = [], cd = 0, ad = function() {
+    extend(IFrameRelayTransporter, AbstractTransport);
+    if (safari)var bd = [], cd = 0, ad = function() {
         cd || (cd = window.setTimeout(function() {
-            dd()
+            safariRemove()
         }, 1E3))
-    }, dd = function(a) {
+    }, safariRemove = function(a) {
         for (var b = la(), a = a || 3E3; bd.length && b - bd[0].timestamp >= a;) {
             var c = bd.shift().Tb;
-            qb(c);
-            O("iframe removed")
+            removeElement(c);
+            finest("iframe removed")
         }
         cd = window.setTimeout(ed, 1E3)
     }, ed = function() {
-        dd()
+        safariRemove()
     };
     var fd = {};
-    X.prototype.aa = 3;
-    X.prototype.u = function() {
-        this.e().xpcRelay || (this.e().xpcRelay = gd);
+    IFrameRelayTransporter.prototype.transportMethod = 3;
+    IFrameRelayTransporter.prototype.connect = function() {
+        this.getWindow().xpcRelay || (this.getWindow().xpcRelay = gd);
         this.send("tp", "SETUP")
     };
     var gd = function(a, b) {
         var c = b.indexOf(":"), d = b.substr(0, c), f = b.substr(c + 1);
-        if (!A || -1 == (c = d.indexOf("|")))var e = d; else {
+        if (!isIE || -1 == (c = d.indexOf("|")))var e = d; else {
             var e = d.substr(0, c), d = d.substr(c + 1), c = d.indexOf("+"), g = d.substr(0, c), c = parseInt(d.substr(c + 1), 10), i = fd[g];
             i || (i = fd[g] = {Db:[],Eb:0,Cb:0});
             -1 != d.indexOf("++") && (i.Cb = c + 1);
@@ -1396,251 +1459,280 @@
             f = i.Db.join("");
             delete fd[g]
         }
-        T[a].A(e, decodeURIComponent(f))
+        channels[a].deliver(e, decodeURIComponent(f))
     };
-    X.prototype.Ja = function(a) {
-        "SETUP" == a ? (this.send("tp", "SETUP_ACK"), V(this.a)) : "SETUP_ACK" == a && V(this.a)
+    IFrameRelayTransporter.prototype.handleSetupMessage = function(msg) {
+        "SETUP" == msg ? (this.send("tp", "SETUP_ACK"), V(this.crossPageChannel)) : "SETUP_ACK" == msg && V(this.crossPageChannel)
     };
-    X.prototype.send = function(a, b) {
+    IFrameRelayTransporter.prototype.send = function(a, b) {
         var c = encodeURIComponent(b), d = c.length;
-        if (A && 1800 < d)for (var f = Math.floor(2147483648 * Math.random()).toString(36) + Math.abs(Math.floor(2147483648 * Math.random()) ^ la()).toString(36), e = 0, g = 0; e < d; g++) {
+        if (isIE && 1800 < d)for (var f = Math.floor(2147483648 * Math.random()).toString(36) + Math.abs(Math.floor(2147483648 * Math.random()) ^ la()).toString(36), e = 0, g = 0; e < d; g++) {
             var i = c.substr(e, 1800), e = e + 1800;
-            hd(this, a, i, f + (e >= d ? "++" : "+") + g)
-        } else hd(this, a, c)
+            createIFrame(this, a, i, f + (e >= d ? "++" : "+") + g)
+        } else createIFrame(this, a, c)
     };
-    var hd = function(a, b, c, d) {
-        if (A) {
-            var f = a.e().document.createElement("div");
-            f.innerHTML = '<iframe onload="this.xpcOnload()"></iframe>';
-            f = f.childNodes[0];
-            f.xpcOnload = id
-        } else f = a.e().document.createElement("iframe"), C ? bd.push({timestamp:la(),Tb:f}) : Bb(f, "load", id);
-        var e = f.style;
-        e.visibility = "hidden";
-        e.width = f.style.height = "0px";
-        e.position = "absolute";
-        e = a.Mb;
-        e += "#" + a.a.name;
-        a.ab && (e += "," + a.ab);
-        e += "|" + b;
-        d && (e += "|" + d);
-        e += ":" + c;
-        f.src = e;
-        a.e().document.body.appendChild(f);
-        O("msg sent: " + e)
-    }, id = function() {
-        O("iframe-load");
-        qb(this)
+    var createIFrame = function(ifrmaeRelayTransporter, b, c, d) {
+        if (isIE) {
+            var div = ifrmaeRelayTransporter.getWindow().document.createElement("div");
+            div.innerHTML = '<iframe onload="this.xpcOnload()"></iframe>';
+            iframe = div.childNodes[0];
+            iframe.xpcOnload = iframeOnLoad
+        } else {
+            iframe = ifrmaeRelayTransporter.getWindow().document.createElement("iframe");
+            safari ? bd.push({timestamp:la(),Tb:div}) : Bb(div, "load", iframeOnLoad);
+        }
+        iframe.style.visibility = "hidden";
+        iframe.style.width = iframe.style.height = "0px";
+        iframe.style.position = "absolute";
+
+        var src = ifrmaeRelayTransporter.Mb;
+        src += "#" + ifrmaeRelayTransporter.crossPageChannel.name;
+        ifrmaeRelayTransporter.ab && (src += "," + ifrmaeRelayTransporter.ab);
+        src += "|" + b;
+        d && (src += "|" + d);
+        src += ":" + c;
+        iframe.src = src;
+
+        ifrmaeRelayTransporter.getWindow().document.body.appendChild(div);
+        finest("msg sent: " + src)
+    }, iframeOnLoad = function() {
+        finest("iframe-load");
+        removeElement(this)
     };
-    X.prototype.i = function() {
-        X.D.i.call(this);
-        C && dd(0)
+    IFrameRelayTransporter.prototype.close = function() {
+        IFrameRelayTransporter.D.close.call(this);
+        safari && safariRemove(0)
     };
-    var Y = function(a, b, c) {
+
+
+
+
+
+    var NativeMessagingTransporter = function(crossPageChannel, b, c) {
         this.l = c || E();
-        this.a = a;
-        this.nb = b || "*"
+        this.crossPageChannel = crossPageChannel;
+        this.hostname = b || "*"
     };
-    y(Y, U);
-    Y.prototype.I = false;
-    Y.prototype.aa = 1;
-    var jd = {}, kd = function(a) {
+    extend(NativeMessagingTransporter, AbstractTransport);
+    NativeMessagingTransporter.prototype.initialized = false;
+    NativeMessagingTransporter.prototype.transportMethod = 1;
+
+    var jd = {};
+    var kd = function(a) {
         var b = a.ra.data;
         if (!v(b))return false;
-        var c = b.indexOf("|"), d = b.indexOf(":");
-        if (-1 == c || -1 == d)return false;
-        var f = b.substring(0, c), c = b.substring(c + 1, d), b = b.substring(d + 1);
-        N("messageReceived: channel=" + f + ", service=" + c + ", payload=" + b);
-        if (d = T[f])return d.A(c, b, a.ra.origin), (true);
-        for (var e in T)if (a = T[e], 1 == Lc(a) && !a.r() && "tp" == c && "SETUP" == b)return N("changing channel name to " + f), a.name = f, delete T[e], T[f] = a, a.A(c, b), (true);
-        K.info('channel name mismatch; message ignored"');
+        var pipeIndex = b.indexOf("|"), colonIndex = b.indexOf(":");
+        if (-1 == pipeIndex || -1 == colonIndex)return false;
+        var channelName = b.substring(0, pipeIndex), service = b.substring(pipeIndex + 1, colonIndex), payload = b.substring(colonIndex + 1);
+        fine("messageReceived: channel=" + channelName + ", service=" + service + ", payload=" + payload);
+        if (something = channels[channelName])return something.deliver(service, payload, a.ra.origin), (true);
+        for (var e in channels)if (a = channels[e], 1 == Lc(a) && !a.isClosing() && "tp" == service && "SETUP" == payload)return fine("changing channel name to " + channelName), a.name = channelName, delete channels[e], channels[channelName] = a, a.deliver(service, payload), (true);
+        LOG.info('channel name mismatch; message ignored"');
         return false
     };
-    p = Y.prototype;
-    p.Ja = function(a) {
-        switch (a) {
+    NativeMessagingTransporter.prototype.handleSetupMessage = function(msg) {
+        switch (msg) {
             case "SETUP":
                 this.send("tp", "SETUP_ACK");
                 break;
             case "SETUP_ACK":
-                V(this.a)
+                V(this.crossPageChannel)
         }
     };
-    p.u = function() {
-        var a = this.e(), b = ha(a), c = jd[b];
+    NativeMessagingTransporter.prototype.connect = function() {
+        var a = this.getWindow(), b = ha(a), c = jd[b];
         "number" == typeof c || (c = 0);
-        0 == c && Bb(a.postMessage ? a : a.document, "message", kd, false, Y);
+        0 == c && Bb(a.postMessage ? a : a.document, "message", kd, false, NativeMessagingTransporter);
         jd[b] = c + 1;
-        this.I = true;
-        this.kb()
+        this.initialized = true;
+        this.connectInternal()
     };
-    p.kb = function() {
-        !this.a.r() && !this.ba && (this.send("tp", "SETUP"), this.e().setTimeout(w(this.kb, this), 100))
+    NativeMessagingTransporter.prototype.connectInternal = function() {
+        if (!this.crossPageChannel.isClosing() && !this.connected) {
+            this.send("tp", "SETUP");
+            this.getWindow().setTimeout(bind(this.connectInternal, this), 100);
+        }
     };
-    p.send = function(a, b) {
-        var c = this.a.o;
-        if (c) {
-            var d = c.postMessage ? c : c.document;
-            this.send = function(a, b) {
-                N("send(): payload=" + b + " to hostname=" + this.nb);
-                d.postMessage(this.a.name + "|" + a + ":" + b, this.nb)
+    NativeMessagingTransporter.prototype.send = function(a, payload) {
+        var window = this.crossPageChannel.window;
+        if (window) {
+            var worker = window.postMessage ? window : window.document;
+            this.send = function(a, payload) {
+                fine("send(): payload=" + payload + " to hostname=" + this.hostname);
+                worker.postMessage(this.crossPageChannel.name + "|" + a + ":" + payload, this.hostname)
             };
-            this.send(a, b)
-        } else N("send(): window not ready")
+            this.send(a, payload)
+        } else fine("send(): window not ready")
     };
-    p.i = function() {
-        Y.D.i.call(this);
-        if (this.I) {
-            var a = this.e(), b = ha(a), c = jd[b];
+    NativeMessagingTransporter.prototype.close = function() {
+        NativeMessagingTransporter.D.close.call(this);
+        if (this.initialized) {
+            var a = this.getWindow(), b = ha(a), c = jd[b];
             jd[b] = c - 1;
-            1 == c && Eb(a.postMessage ? a : a.document, "message", kd, false, Y)
+            1 == c && Eb(a.postMessage ? a : a.document, "message", kd, false, NativeMessagingTransporter)
         }
         delete this.send
     };
-    var ld = function(a, b) {
+
+
+    var NixTransporter = function(crossPageChannel, b) {
         this.l = b || E();
-        this.a = a;
-        this.Za = a.at || "";
-        this.cb = a.rat || "";
-        var c = this.e();
-        if (!c.nix_setup_complete)try {
-            c.execScript("Class GCXPC____NIXVBS_wrapper\n Private m_Transport\nPrivate m_Auth\nPublic Sub SetTransport(transport)\nIf isEmpty(m_Transport) Then\nSet m_Transport = transport\nEnd If\nEnd Sub\nPublic Sub SetAuth(auth)\nIf isEmpty(m_Auth) Then\nm_Auth = auth\nEnd If\nEnd Sub\nPublic Function GetAuthToken()\n GetAuthToken = m_Auth\nEnd Function\nPublic Sub SendMessage(service, payload)\n Call m_Transport.GCXPC____NIXJS_handle_message(service, payload)\nEnd Sub\nPublic Sub CreateChannel(channel)\n Call m_Transport.GCXPC____NIXJS_create_channel(channel)\nEnd Sub\nPublic Sub GCXPC____NIXVBS_container()\n End Sub\nEnd Class\n Function GCXPC____NIXVBS_get_wrapper(transport, auth)\nDim wrap\nSet wrap = New GCXPC____NIXVBS_wrapper\nwrap.SetTransport transport\nwrap.SetAuth auth\nSet GCXPC____NIXVBS_get_wrapper = wrap\nEnd Function",
-                "vbscript"), c.nix_setup_complete = true
+        this.crossPageChannel = crossPageChannel;
+        this.Za = crossPageChannel.at || "";
+        this.cb = crossPageChannel.rat || "";
+        var window = this.getWindow();
+        if (!window.nix_setup_complete)try {
+            window.execScript("Class GCXPC____NIXVBS_wrapper\n Private m_Transport\nPrivate m_Auth\nPublic Sub SetTransport(transport)\nIf isEmpty(m_Transport) Then\nSet m_Transport = transport\nEnd If\nEnd Sub\nPublic Sub SetAuth(auth)\nIf isEmpty(m_Auth) Then\nm_Auth = auth\nEnd If\nEnd Sub\nPublic Function GetAuthToken()\n GetAuthToken = m_Auth\nEnd Function\nPublic Sub SendMessage(service, payload)\n Call m_Transport.GCXPC____NIXJS_handle_message(service, payload)\nEnd Sub\nPublic Sub CreateChannel(channel)\n Call m_Transport.GCXPC____NIXJS_create_channel(channel)\nEnd Sub\nPublic Sub GCXPC____NIXVBS_container()\n End Sub\nEnd Class\n Function GCXPC____NIXVBS_get_wrapper(transport, auth)\nDim wrap\nSet wrap = New GCXPC____NIXVBS_wrapper\nwrap.SetTransport transport\nwrap.SetAuth auth\nSet GCXPC____NIXVBS_get_wrapper = wrap\nEnd Function", "vbscript");
+            window.nix_setup_complete = true
         } catch(d) {
-            L("exception caught while attempting global setup: " + d)
+            severe("exception caught while attempting global setup: " + d)
         }
-        this.GCXPC____NIXJS_handle_message = this.Rb;
-        this.GCXPC____NIXJS_create_channel = this.Qb
+        this.GCXPC____NIXJS_handle_message = this.handleMessage;
+        this.GCXPC____NIXJS_create_channel = this.createChannel
     };
-    y(ld, U);
-    p = ld.prototype;
-    p.aa = 6;
-    p.T = false;
-    p.H = null;
-    p.u = function() {
-        0 == Lc(this.a) ? this.lb() : this.ib()
+    extend(NixTransporter, AbstractTransport);
+    NixTransporter.prototype.transportMethod = 6;
+    NixTransporter.prototype.T = false;
+    NixTransporter.prototype.opener = null;
+    NixTransporter.prototype.connect = function() {
+        0 == Lc(this.crossPageChannel) ? this.lb() : this.ib()
     };
-    p.lb = function() {
+    NixTransporter.prototype.lb = function() {
         if (!this.T) {
-            var a = this.a.P;
+            var a = this.crossPageChannel.P;
             try {
-                a.contentWindow.opener = this.e().GCXPC____NIXVBS_get_wrapper(this, this.Za), this.T = true
+                a.contentWindow.opener = this.getWindow().GCXPC____NIXVBS_get_wrapper(this, this.Za), this.T = true
             } catch(b) {
-                L("exception caught while attempting setup: " + b)
+                severe("exception caught while attempting setup: " + b)
             }
-            this.T || this.e().setTimeout(w(this.lb, this), 100)
+            this.T || this.getWindow().setTimeout(bind(this.lb, this), 100)
         }
     };
-    p.ib = function() {
+    NixTransporter.prototype.ib = function() {
         if (!this.T) {
             try {
-                var a = this.e().opener;
-                if (a && "GCXPC____NIXVBS_container"in a) {
-                    this.H = a;
-                    if (this.H.GetAuthToken() != this.cb) {
-                        L("Invalid auth token from other party");
+                var opener = this.getWindow().opener;
+                if (opener && "GCXPC____NIXVBS_container"in opener) {
+                    this.opener = opener;
+                    if (this.opener.GetAuthToken() != this.cb) {
+                        severe("Invalid auth token from other party");
                         return
                     }
-                    this.H.CreateChannel(this.e().GCXPC____NIXVBS_get_wrapper(this, this.Za));
+                    this.opener.CreateChannel(this.getWindow().GCXPC____NIXVBS_get_wrapper(this, this.Za));
                     this.T = true;
-                    V(this.a)
+                    V(this.crossPageChannel)
                 }
             } catch(b) {
-                L("exception caught while attempting setup: " + b);
+                severe("exception caught while attempting setup: " + b);
                 return
             }
-            this.T || this.e().setTimeout(w(this.ib, this), 100)
+            this.T || this.getWindow().setTimeout(bind(this.ib, this), 100)
         }
     };
-    p.Qb = function(a) {
-        ("unknown" != typeof a || !("GCXPC____NIXVBS_container"in a)) && L("Invalid NIX channel given to createChannel_");
-        this.H = a;
-        this.H.GetAuthToken() != this.cb ? L("Invalid auth token from other party") : V(this.a)
+    NixTransporter.prototype.createChannel = function(a) {
+        ("unknown" != typeof a || !("GCXPC____NIXVBS_container"in a)) && severe("Invalid NIX channel given to createChannel_");
+        this.opener = a;
+        this.opener.GetAuthToken() != this.cb ? severe("Invalid auth token from other party") : V(this.crossPageChannel)
     };
-    p.Rb = function(a, b) {
-        this.e().setTimeout(w(function() {
-            this.a.A(a, b)
+    NixTransporter.prototype.handleMessage = function(service, payload) {
+        this.getWindow().setTimeout(bind(function() {
+            this.crossPageChannel.deliver(service, payload)
         }, this), 1)
     };
-    p.send = function(a, b) {
-        "unknown" !== typeof this.H && L("NIX channel not connected");
-        this.H.SendMessage(a, b)
+    NixTransporter.prototype.send = function(a, b) {
+        "unknown" !== typeof this.opener && severe("NIX channel not connected");
+        this.opener.SendMessage(a, b)
     };
-    p.i = function() {
-        ld.D.i.call(this);
-        this.H = null
+    NixTransporter.prototype.close = function() {
+        NixTransporter.D.close.call(this);
+        this.opener = null
     };
-    var Z = function(a, b) {
-        this.la = {};
+
+
+
+    var CrossPageChannel = function(a, b) {
+        this.handlerMethods = {};
         for (var c = 0, d; d = Hc[c]; c++)d in a && !/^https?:\/\//.test(a[d]) && throwException(Error("URI " + a[d] + " is invalid for field " + d));
         this.b = a;
-        this.name = this.b.cn || Jc(10);
+        this.name = this.b.cn || createRandomString(10);
         this.l = b || E();
         this.ca = [];
-        a.lpu = a.lpu || oc(this.l.e().location.href) + "/robots.txt";
-        a.ppu = a.ppu || oc(a.pu || "") + "/robots.txt";
-        T[this.name] = this;
+        a.lpu = a.lpu || oc(this.l.getWindow().location.href) + "/robots.txt";
+        a.ppu = a.ppu || oc(a.url || "") + "/robots.txt";
+        channels[this.name] = this;
         Bb(window, "unload", md);
-        K.info("CrossPageChannel created: " + this.name)
+        LOG.info("CrossPageChannel created: " + this.name)
     };
-    y(Z, lc);
-    var nd = /^%*tp$/, od = /^%+tp$/;
-    p = Z.prototype;
-    p.k = null;
-    p.Ra = 1;
-    p.r = function() {
-        return 2 == this.Ra
+    extend(CrossPageChannel, AbstractChannel);
+    var someRegexp = /^%*tp$/, someOtherRegexp = /^%+tp$/;
+
+    CrossPageChannel.prototype.transporter = null;
+    CrossPageChannel.prototype.status = 1;
+    CrossPageChannel.prototype.isClosing = function() {
+        return 2 == this.status
     };
-    p.o = null;
-    p.P = null;
-    var qd = function(a) {
-        var b = document.body, c = a.b.ifrid;
-        c || (c = a.b.ifrid = "xpcpeer" + Jc(4));
-        var d = document.createElement("IFRAME");
-        d.id = d.name = c;
-        d.style.width = d.style.height = "100%";
-        var f = pd(a);
-        B || C ? (a.Ia = true, window.setTimeout(w(function() {
-            this.Ia = false;
-            b.appendChild(d);
-            d.src = f.toString();
-            K.info("peer iframe created (" + c + ")");
-            this.da && this.u(this.Fa)
-        }, a), 1)) : (d.src = f.toString(), b.appendChild(d), K.info("peer iframe created (" + c + ")"))
-    }, pd = function(a) {
-        var b = a.b.pu;
-        v(b) && (b = a.b.pu = new P(b));
-        var c = {};
-        c.cn = a.name;
-        c.tp =
-            a.b.tp;
-        a.b.lru && (c.pru = a.b.lru);
-        a.b.lpu && (c.ppu = a.b.lpu);
-        a.b.ppu && (c.lpu = a.b.ppu);
+    CrossPageChannel.prototype.window = null;
+    CrossPageChannel.prototype.P = null;
+
+    var createIFrame = function(a) {
+        iframeId = a.b.iframeId;
+        iframeId || (iframeId = a.b.iframeId = "xpcpeer" + createRandomString(4));
+
+        var iframe = document.createElement("IFRAME");
+        iframe.id = iframeId;
+        iframe.name = iframeId;
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        var iframeSrcUrl = getUrl(a);
+        if (mozilla || safari) {
+            a.Ia = true;
+            window.setTimeout(bind(function() {
+                this.Ia = false;
+                iframe.src = iframeSrcUrl.toString();
+                document.body.appendChild(iframe);
+                LOG.info("peer iframe created (" + iframeId + ")");
+                this.da && this.connect(this.Fa)
+            }, a), 1);
+        } else {
+            iframe.src = iframeSrcUrl.toString();
+            document.body.appendChild(iframe);
+            LOG.info("peer iframe created (" + iframeId + ")");
+        }
+    };
+
+    var getUrl = function(a) {
+        var b = a.b.url;
+        v(b) && (b = a.b.url = new Url(b));
+        var xpc = {};
+        xpc.cn = a.name;
+        xpc.tp = a.b.tp;
+        a.b.lru && (xpc.pru = a.b.lru);
+        a.b.lpu && (xpc.ppu = a.b.lpu);
+        a.b.ppu && (xpc.lpu = a.b.ppu);
         a = b;
-        c = Mb(c);
+        xpc = Mb(xpc);
         R(a);
         delete a.p;
-        a.t.set("xpc", c);
+        a.parameters.set("xpc", xpc);
         return b
     };
-    Z.prototype.Ia = false;
-    Z.prototype.da = false;
-    Z.prototype.u = function(a) {
+    CrossPageChannel.prototype.Ia = false;
+    CrossPageChannel.prototype.da = false;
+    CrossPageChannel.prototype.connect = function(a) {
         this.Fa = a || ba;
-        if (this.Ia)K.info("connect() deferred"), this.da = true; else {
+        if (this.Ia)LOG.info("connect() deferred"), this.da = true; else {
             this.da = false;
-            K.info("connect()");
-            this.b.ifrid && (this.P = v(this.b.ifrid) ? this.l.v.getElementById(this.b.ifrid) : this.b.ifrid);
-            this.P && ((a = this.P.contentWindow) || (a = window.frames[this.b.ifrid]), this.o = a);
-            this.o || (window == top && throwException(Error("CrossPageChannel: Can't connect, peer window-object not set.")), this.o = window.parent);
-            if (!this.k) {
+            LOG.info("connect()");
+            this.b.iframeId && (this.P = v(this.b.iframeId) ? this.l.document.getElementById(this.b.iframeId) : this.b.iframeId);
+            this.P && ((a = this.P.contentWindow) || (a = window.frames[this.b.iframeId]), this.window = a);
+            this.window || (window == top && throwException(Error("CrossPageChannel: Can't connect, peer window-object not set.")), this.window = window.parent);
+            if (!this.transporter) {
                 if (!this.b.tp) {
                     var a = this.b, b;
                     if (da(document.postMessage) || da(window.postMessage) ||
-                        A && window.postMessage)b = 1; else if (B)b = 2; else if (A && this.b.pru)b = 3; else {
+                        isIE && window.postMessage)b = 1; else if (mozilla)b = 2; else if (isIE && this.b.pru)b = 3; else {
                         var c;
-                        if (c = A) {
+                        if (c = isIE) {
                             c = false;
                             try {
                                 b = window.opener, window.opener = {}, c = sb(window, "opener"), window.opener = b
@@ -1653,133 +1745,141 @@
                 }
                 switch (this.b.tp) {
                     case 1:
-                        this.k = new Y(this, this.b.ph, this.l);
+                        this.transporter = new NativeMessagingTransporter(this, this.b.ph, this.l);
                         break;
                     case 6:
-                        this.k = new ld(this, this.l);
+                        this.transporter = new NixTransporter(this, this.l);
                         break;
                     case 2:
-                        this.k = new Kc(this, this.l);
+                        this.transporter = new FrameElementMethodTransport(this, this.l);
                         break;
                     case 3:
-                        this.k = new X(this, this.l);
+                        this.transporter = new IFrameRelayTransporter(this, this.l);
                         break;
                     case 4:
-                        this.k = new W(this, this.l)
+                        this.transporter = new IFramePollingTransport(this, this.l)
                 }
-                this.k ? K.info("Transport created: " + this.k.getName()) : throwException(Error("CrossPageChannel: No suitable transport found!"))
+                this.transporter ? LOG.info("Transport created: " + this.transporter.getName()) : throwException(Error("CrossPageChannel: No suitable transport found!"))
             }
-            for (this.k.u(); 0 <
+            for (this.transporter.connect(); 0 <
                 this.ca.length;)this.ca.shift()()
         }
     };
-    Z.prototype.close = function() {
-        this.r() && (this.Ra = 3, this.k.V(), this.Fa = this.k = null, this.da = false, this.ca.length = 0, K.info('Channel "' + this.name + '" closed'))
+    CrossPageChannel.prototype.close = function() {
+        this.isClosing() && (this.status = 3, this.transporter.V(), this.Fa = this.transporter = null, this.da = false, this.ca.length = 0, LOG.info('Channel "' + this.name + '" closed'))
     };
     var V = function(a) {
-        a.r() || (a.Ra = 2, K.info('Channel "' + a.name + '" connected'), a.Fa())
+        a.isClosing() || (a.status = 2, LOG.info('Channel "' + a.name + '" connected'), a.Fa())
     };
-    Z.prototype.send = function(a, b) {
-        this.r() ? Boolean(this.o.closed) ? (L("Peer has disappeared."), this.close()) : (ea(b) && (b = Mb(b)), this.k.send(rd(a), b)) : L("Can't send. Channel not connected.")
+    CrossPageChannel.prototype.send = function(a, b) {
+        this.isClosing() ? Boolean(this.window.closed) ? (severe("Peer has disappeared."), this.close()) : (ea(b) && (b = Mb(b)), this.transporter.send(rd(a), b)) : severe("Can't send. Channel not connected.")
     };
-    Z.prototype.A = function(a, b, c) {
-        if (this.da)this.ca.push(w(this.A, this, a, b, c)); else {
+    CrossPageChannel.prototype.deliver = function(serviceName, payload, origin) {
+        if (this.da)this.ca.push(bind(this.deliver, this, serviceName, payload, origin)); else {
             var d = this.b.ph;
-            if (/^[\s\xa0]*$/.test(c == null ? "" : "" + c) || /^[\s\xa0]*$/.test(d == null ? "" : "" + d) || c == this.b.ph)if (this.ba)M(K, "CrossPageChannel::deliver_(): Disposed."); else if (!a || "tp" == a)this.k.Ja(b); else if (this.r()) {
-                if (a = a.replace(/%[0-9a-f]{2}/gi, decodeURIComponent), a = od.test(a) ? a.substring(1) : a, c = this.la[a], c || (this.Ya ? (c = ka(this.Ya, a), d = ea(b), c = {eb:c,fb:d}) : (M(this.na, 'Unknown service name "' + a + '"'), c = null)), c) {
+            if (/^[\s\xa0]*$/.test(origin == null ? "" : "" + origin) || /^[\s\xa0]*$/.test(d == null ? "" : "" + d) || origin == this.b.ph)if (this.connected)warn(LOG, "CrossPageChannel::deliver_(): Disposed."); else if (!serviceName || "tp" == serviceName)this.transporter.handleSetupMessage(payload); else if (this.isClosing()) {
+                if (serviceName = serviceName.replace(/%[0-9a-f]{2}/gi, decodeURIComponent), serviceName = someOtherRegexp.test(serviceName) ? serviceName.substring(1) : serviceName, origin = this.handlerMethods[serviceName], origin || (this.Ya ? (origin = ka(this.Ya, serviceName), d = ea(payload), origin = {eb:origin,fb:d}) : (warn(this.na, 'Unknown service name "' + serviceName + '"'), origin = null)), origin) {
                     var f;
                     a:{
-                        if ((d =
-                            c.fb) && v(b))try {
-                            f = Jb(b);
+                        if ((d = origin.fb) && v(payload))try {
+                            f = Jb(payload);
                             break a
                         } catch(e) {
-                            M(this.na, "Expected JSON payload for " + a + ', was "' + b + '"');
+                            warn(this.na, "Expected JSON payload for " + serviceName + ', was "' + payload + '"');
                             f = null;
                             break a
-                        } else if (!d && !v(b)) {
-                            f = Mb(b);
+                        } else if (!d && !v(payload)) {
+                            f = Mb(payload);
                             break a
                         }
-                        f = b
+                        f = payload
                     }
-                    f != null && c.eb(f)
+                    f != null && origin.eb(f)
                 }
-            } else K.info("CrossPageChannel::deliver_(): Not connected."); else M(K, 'Message received from unapproved origin "' + c + '" - rejected.')
+            } else LOG.info("CrossPageChannel::deliver_(): Not connected."); else warn(LOG, 'Message received from unapproved origin "' + origin + '" - rejected.')
         }
     };
     var rd = function(a) {
-        nd.test(a) && (a = "%" + a);
+        someRegexp.test(a) && (a = "%" + a);
         return a.replace(/[%:|]/g, encodeURIComponent)
     }, Lc = function(a) {
-        return window.parent == a.o ? 1 : 0
+        return window.parent == a.window ? 1 : 0
     };
-    Z.prototype.i = function() {
-        Z.D.i.call(this);
+    CrossPageChannel.prototype.close = function() {
+        CrossPageChannel.D.close.call(this);
         this.close();
-        this.P = this.o = null;
-        delete T[this.name];
+        this.P = this.window = null;
+        delete channels[this.name];
         this.ca.length = 0
     };
     var md = function() {
-        for (var a in T) {
-            var b = T[a];
+        for (var a in channels) {
+            var b = channels[a];
             b && b.V()
         }
     };
-    var sd = function(a, b) {
-        A ? a.cssText = b : a[C ? "innerText" : "innerHTML"] = b
+    var sd = function(element, content) {
+        isIE ? element.cssText = content : element[safari ? "innerText" : "innerHTML"] = content
     };
-    var td = function(token, b, c, d, f, e) {
-        var d = new P(d || window.location.href), g = new P, f = f ? f : Math.floor(1E3 * Math.random()) + ".talkgadget.google.com";
-        qc(g, f);
-        sc(g, "/talkgadget/d");
-        R(g);
-        delete g.p;
-        g.t.set("token", token);
-        e && rc(g, e);
-        var a = c || "wcs-iframe", c = "#" + a + " { display: none; }", i = E(j), m = null;
-        if (A)m = i.v.createStyleSheet(), sd(m, c); else {
-            var n = lb(i.v, "head")[0];
-            n || (m = lb(i.v, "body")[0], n = i.qb("head"), m.parentNode.insertBefore(n, m));
-            m = i.qb("style");
-            sd(m, c);
-            i.appendChild(n, m)
+    var WcsCrossPageChannel = function(token, b, iframeId, href, f, e) {
+        var url = new Url(href || window.location.href);
+        var url2 = new Url;
+        var host = f ? f : Math.floor(1E3 * Math.random()) + ".talkgadget.google.com";
+        qc(url2, host);
+        sc(url2, "/talkgadget/d");
+        R(url2);
+        delete url2.p;
+        url2.parameters.set("token", token);
+        e && rc(url2, e);
+        var a = iframeId || "wcs-iframe";
+        var c = "#" + a + " { display: none; }";
+        var i = E(j);
+        var styleSheet = null;
+        if (isIE) {
+            styleSheet = i.document.createStyleSheet();
+            sd(styleSheet, c);
+        } else {
+            var n = lb(i.document, "head")[0];
+            n || (styleSheet = lb(i.document, "body")[0], n = i.qb("head"), styleSheet.parentNode.insertBefore(n, styleSheet));
+            styleSheet = i.qb("style");
+            sd(styleSheet, c);
+            i.appendChild(n, styleSheet)
         }
         c = {};
-        i = new P;
-        qc(i, f);
+
+        i = new Url;
+        qc(i, host);
         e && rc(i, e);
         sc(i, "/talkgadget/xpc_blank");
-        "http" == d.n || "https" == d.n ? (Q(g, d.n), Q(i, d.n), e = new P, Q(e, d.n), qc(e, d.F), 80 != d.G && rc(e, d.G), sc(e, b)) : (Q(g, "http"), Q(i, "http"), e = new P("http://www.google.com/xpc_blank"));
+        "http" == url.protocol || "https" == url.protocol ? (Q(url2, url.protocol), Q(i, url.protocol), e = new Url, Q(e, url.protocol), qc(e, url.F), 80 != url.G && rc(e, url.G), sc(e, b)) : (Q(url2, "http"), Q(i, "http"), e = new Url("http://www.google.com/xpc_blank"));
         c.lpu = e.toString();
         c.ppu = i.toString();
-        c.ifrid = a;
-        c.pu = g.toString();
-        Z.call(this, c)
+        c.iframeId = a;
+        c.url = url2.toString();
+        CrossPageChannel.call(this, c)
     };
-    y(td, Z);
-    assign("chat.WcsCrossPageChannel", td);
+    extend(WcsCrossPageChannel, CrossPageChannel);
+    assign("chat.WcsCrossPageChannel", WcsCrossPageChannel);
     var ud = null, vd = null, wd = null;
 
 
-    var MySocket = function(token, handler, c, d, f) {
+    var MySocket = function(token, handler, channel, elementId, f) {
         this.readyState = 0;
-        this.someArray = [];
+        this.events = [];
         this.onopen = handler.onopen;
         this.onmessage = handler.onmessage;
         this.onerror = handler.onerror;
         this.onclose = handler.onclose;
-        this.N = c || new td(token, "/_ah/channel/xpc_blank");
-        this.taElementId = c ? d : "wcs-iframe";
-        this.sb = f || new xd(token);
+        this.channel = channel || new WcsCrossPageChannel(token, "/_ah/channel/xpc_blank");
+        this.taElementId = channel ? elementId : "wcs-iframe";
+        this.parsedToken = f || new ParsedToken(token);
         document.body || throwException("document.body is not defined -- do not create socket from script in <head>.");
-        qd(this.N);
-        mc(this.N, "opened", w(this.Zb, this));
-        mc(this.N, "onMessage", w(this.Yb, this));
-        mc(this.N, "onError", w(this.Xb, this));
-        mc(this.N, "onClosed", w(this.close, this));
-        this.N.u(w(function() {
+        createIFrame(this.channel);
+        registerHandlerMethod(this.channel, "opened", bind(this.opened, this));
+        registerHandlerMethod(this.channel, "onMessage", bind(this.onMessage, this));
+        registerHandlerMethod(this.channel, "onError", bind(this.onError, this));
+        registerHandlerMethod(this.channel, "onClosed", bind(this.close, this));
+        this.channel.connect(bind(function() {
         }, this))
     };
     MySocket.prototype.send = function() {
@@ -1788,65 +1888,65 @@
     MySocket.prototype.close = function() {
         this.close()
     };
-    MySocket.prototype.fc = function() {
-        for (var a = 0, b; b = this.someArray[a]; a++)switch (b.type) {
+    MySocket.prototype.handleEvent = function() {
+        for (var i = 0, event; event = this.events[i]; i++)switch (event.type) {
             case 0:
-                this.onopen(b.Aa);
+                this.onopen(event.body);
                 break;
             case 1:
-                this.onmessage(b.Aa);
+                this.onmessage(event.body);
                 break;
             case 2:
-                this.onerror(b.Aa);
+                this.onerror(event.body);
                 break;
             case 3:
-                this.onclose(b.Aa)
+                this.onclose(event.body)
         }
-        this.someArray = []
+        this.events = []
     };
-    var yd = function(a, b, c) {
-        a.someArray.push({type:b,Aa:c});
-        window.setTimeout(w(a.fc, a), 1)
+    var pushEvent = function(socket, eventType, eventBody) {
+        socket.events.push({type:eventType,body:eventBody});
+        window.setTimeout(bind(socket.handleEvent, socket), 1)
     };
-    MySocket.prototype.Yb = function(a) {
-        for (var a = Jb(a), b = a.m, a = a.s, c = this.sb, d = [], f = 0, e = 0; e < b.length; e++) {
-            for (var g = b.charCodeAt(e); 255 < g;)d[f++] = g & 255, g >>= 8;
+    MySocket.prototype.onMessage = function(a) {
+        for (var a = Jb(a), messageBody = a.m, a = a.s, c = this.parsedToken, d = [], f = 0, e = 0; e < messageBody.length; e++) {
+            for (var g = messageBody.charCodeAt(e); 255 < g;)d[f++] = g & 255, g >>= 8;
             d[f++] = g
         }
         d.push(c.wa);
-        c = c.ghmac;
-        c.reset();
-        c.update(d);
-        a:if (d = c.Z(), !s(d) || !s(a) || d.length != a.length)a = false; else {
-            c = d.length;
-            for (f = 0; f < c; f++)if (d[f] !== a[f]) {
+
+        var ghmac = c.ghmac;
+        ghmac.reset();
+        ghmac.update(d);
+        a:if (d = ghmac.Z(), !s(d) || !s(a) || d.length != a.length)a = false; else {
+            for (f = 0; f < d.length; f++)if (d[f] !== a[f]) {
                 a = false;
                 break a
             }
             a = true
         }
-        a && yd(this, 1, {data:b});
-        this.sb.wa++
+        a && pushEvent(this, 1, {data:messageBody});
+        this.parsedToken.wa++
     };
-    MySocket.prototype.Xb = function(a) {
+    MySocket.prototype.onError = function(a) {
         a = Jb(a);
-        yd(this, 2, {description:a.d,code:a.c})
+        pushEvent(this, 2, {description:a.d,code:a.c})
     };
-    MySocket.prototype.Zb = function() {
+    MySocket.prototype.opened = function() {
         this.readyState = 1;
-        yd(this, 0, {})
+        pushEvent(this, 0, {})
     };
     MySocket.prototype.close = function() {
-        this.N.close();
+        this.channel.close();
         this.readyState = 3;
-        yd(this, 3, {});
+        pushEvent(this, 3, {});
         if (this.taElementId) {
-            var a = new kb, b = v(this.taElementId) ? a.v.getElementById(this.taElementId) : this.taElementId;
+            var a = new kb, b = v(this.taElementId) ? a.document.getElementById(this.taElementId) : this.taElementId;
             b && a.removeNode(b)
         }
     };
-    var xd = function(a) {
-        for (; 0 != a.length % 4;)a += ".";
+    var ParsedToken = function(token) {
+        for (; 0 != token.length % 4;)token += ".";
         this.wa = 0;
         try {
             if (!ud) {
@@ -1855,21 +1955,21 @@
                 wd = {};
                 for (var b = 0; 65 > b; b++) ud[b] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=".charAt(b), vd[b] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.".charAt(b), wd[vd[b]] = b
             }
-            for (var b = wd, c = [], d = 0; d < a.length;) {
-                var f = b[a.charAt(d++)], e = d < a.length ? b[a.charAt(d)] : 0;
+            for (var b = wd, c = [], d = 0; d < token.length;) {
+                var f = b[token.charAt(d++)], e = d < token.length ? b[token.charAt(d)] : 0;
                 ++d;
-                var g = d < a.length ? b[a.charAt(d)] : 0;
+                var g = d < token.length ? b[token.charAt(d)] : 0;
                 ++d;
-                var i = d < a.length ? b[a.charAt(d)] : 0;
+                var i = d < token.length ? b[token.charAt(d)] : 0;
                 ++d;
                 (f == null || e == null || g == null || i == null) && throwException(Error());
-                c.push(f <<
-                    2 | e >> 4);
+                c.push(f << 2 | e >> 4);
                 64 != g && (c.push(e << 4 & 240 | g >> 2), 64 != i && c.push(g << 6 & 192 | i))
             }
             this.Bb = c
         } catch(m) {
-            m.message && throwException(Error("The provided token is invalid (" + m.name + ": " + m.message + ")")), throwException(Error("The provided token is invalid."))
+            m.message && throwException(Error("The provided token is invalid (" + m.name + ": " + m.message + ")"));
+            throwException(Error("The provided token is invalid."))
         }
         this.sha1 = new SHA1;
         this.ghmac = new G_HMAC(this.sha1, this.Bb, this.Bb.length)
@@ -1925,7 +2025,7 @@
     };
     var Bd = function(a, b) {
         return(a << b | a >>> 32 - b) & 4294967295
-    }, Cd = function(a, b) {
+    }, someChecksumFunction = function(a, b) {
         for (var c = a.cc, d = 0; 64 > d; d += 4)c[d / 4] = b[d] << 24 | b[d + 1] << 16 | b[d + 2] << 8 | b[d + 3];
         for (d = 16; 80 > d; ++d)c[d] = Bd(c[d - 3] ^ c[d - 8] ^ c[d - 14] ^ c[d - 16], 1);
         for (var f = a.h[0], e = a.h[1], g = a.h[2], i = a.h[3], m = a.h[4], n, t, d = 0; 80 > d; ++d)40 > d ? 20 > d ? (n = i ^ e & (g ^ i), t = 1518500249) : (n = e ^ g ^ i, t = 1859775393) : 60 > d ? (n = e & g | i & (e | g), t = 2400959708) : (n = e ^ g ^ i, t = 3395469782), n = Bd(f, 5) + n + m + t + c[d] & 4294967295, m = i, i = g, g = Bd(e, 30), e = f, f = n;
@@ -1938,17 +2038,17 @@
     SHA1.prototype.update = function(a, b) {
         b || (b = a.length);
         var c = 0;
-        if (0 == this.O)for (; c + 64 < b;)Cd(this, a.slice(c, c + 64)), c += 64, this.$ += 64;
+        if (0 == this.O)for (; c + 64 < b;)someChecksumFunction(this, a.slice(c, c + 64)), c += 64, this.$ += 64;
         for (; c < b;)if (this.ua[this.O++] = a[c++], ++this.$, 64 == this.O) {
             this.O = 0;
-            for (Cd(this, this.ua); c + 64 < b;)Cd(this, a.slice(c, c + 64)), c += 64, this.$ += 64
+            for (someChecksumFunction(this, this.ua); c + 64 < b;)someChecksumFunction(this, a.slice(c, c + 64)), c += 64, this.$ += 64
         }
     };
     SHA1.prototype.Z = function() {
         var a = Array(20), b = 8 * this.$;
         56 > this.O ? this.update(this.xa, 56 - this.O) : this.update(this.xa, 64 - (this.O - 56));
         for (var c = 63; 56 <= c; --c)this.ua[c] = b & 255, b >>>= 8;
-        Cd(this, this.ua);
+        someChecksumFunction(this, this.ua);
         for (c = b = 0; 5 > c; ++c)for (var d = 24; 0 <= d; d -= 8)a[b++] = this.h[c] >> d & 255;
         return a
     };

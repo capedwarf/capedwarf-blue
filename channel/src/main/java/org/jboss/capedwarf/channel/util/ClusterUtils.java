@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.channel;
+package org.jboss.capedwarf.channel.util;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.commands.read.DistributedExecuteCommand;
@@ -33,30 +33,33 @@ import java.util.Collections;
 import java.util.concurrent.Callable;
 
 /**
- *
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class ClusterUtils {
-    public static void submitToNode(Address nodeAddress, Callable<Void> task) {
+
+    public static void submitToAllNodes(Callable<Void> task) {
         try {
             task.call();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        // TODO invoke task on correct node.
+//        DistributedExecuteCommand<Void> command = new DistributedExecuteCommand<Void>(Collections.emptyList(), task);
 //        AdvancedCache cache = InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache();
 //        RpcManager rpc = cache.getRpcManager();
-//        rpc.invokeRemotely(
-//                Collections.singleton(nodeAddress),
-//                new DistributedExecuteCommand<Void>(Collections.emptyList(), task),
-//                false);
+//        rpc.broadcastRpcCommand(command, false);
     }
 
-//    private static Address getAddress(RpcManager rpc, String nodeAddress) {
-//        for (Address address : rpc.getTransport().getMembers()) {
-//            address.
-//        }
-//
-//        return null;  //To change body of created methods use File | Settings | File Templates.
-//    }
+    public static void submitToNode(Address nodeAddress, Callable<Void> task) {
+        AdvancedCache cache = InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache();
+        RpcManager rpc = cache.getRpcManager();
+        rpc.invokeRemotely(
+                Collections.singleton(nodeAddress),
+                new DistributedExecuteCommand<Void>(Collections.emptyList(), task),
+                false);
+    }
+
+    private static Address getAddress(RpcManager rpc, String nodeAddress) {
+        return null;  // TODO
+    }
 }
