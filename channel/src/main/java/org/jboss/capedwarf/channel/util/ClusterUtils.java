@@ -38,16 +38,32 @@ import java.util.concurrent.Callable;
 public class ClusterUtils {
 
     public static void submitToAllNodes(Callable<Void> task) {
+        if (isStandalone()) {
+            executeLocally(task);
+        } else {
+            executeOnAllNodes(task);
+        }
+    }
+
+    public static boolean isStandalone() {
+        return true;    // TODO
+    }
+
+    private static void executeLocally(Callable<Void> task) {
         try {
             task.call();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (RuntimeException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
+    }
 
-//        DistributedExecuteCommand<Void> command = new DistributedExecuteCommand<Void>(Collections.emptyList(), task);
-//        AdvancedCache cache = InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache();
-//        RpcManager rpc = cache.getRpcManager();
-//        rpc.broadcastRpcCommand(command, false);
+    private static void executeOnAllNodes(Callable<Void> task) {
+        DistributedExecuteCommand<Void> command = new DistributedExecuteCommand<Void>(Collections.emptyList(), task);
+        AdvancedCache cache = InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache();
+        RpcManager rpc = cache.getRpcManager();
+        rpc.broadcastRpcCommand(command, false);
     }
 
     public static void submitToNode(Address nodeAddress, Callable<Void> task) {
