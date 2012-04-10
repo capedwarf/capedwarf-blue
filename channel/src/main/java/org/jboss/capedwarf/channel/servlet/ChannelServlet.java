@@ -92,14 +92,25 @@ public class ChannelServlet extends HttpServlet {
             return;
         }
 
-        ChannelTransport transport = ChannelTransportFactory.getChannelTransport(req.getParameter("transport"));
-        transport.serveMessages(req, resp, channelToken, queue);
+        String transportType = req.getParameter("transport");
+        ChannelTransport transport = ChannelTransportFactory.createChannelTransport(transportType, req, resp, channelToken, queue);
+        transport.serveMessages();
     }
 
 
     private void serveJavascript(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/javascript");
-        InputStream in = getClass().getResourceAsStream("/org/jboss/capedwarf/channel/channelapi.js");
+        includeScript(resp, "/org/jboss/capedwarf/channel/channelapi.js");
+        includeScript(resp, "/org/jboss/capedwarf/channel/CapedwarfChannel.js");
+        includeScript(resp, "/org/jboss/capedwarf/channel/CapedwarfChannelManager.js");
+        includeScript(resp, "/org/jboss/capedwarf/channel/CapedwarfSocket.js");
+        includeScript(resp, "/org/jboss/capedwarf/channel/LongIFrameTransport.js");
+        includeScript(resp, "/org/jboss/capedwarf/channel/SuccessiveXmlHttpTransport.js");
+        includeScript(resp, "/org/jboss/capedwarf/channel/WebSocketTransport.js");
+    }
+
+    private void includeScript(HttpServletResponse resp, String scriptPath) throws IOException {
+        InputStream in = getClass().getResourceAsStream(scriptPath);
         try {
             IOUtils.copyStream(in, resp.getOutputStream());
         } finally {

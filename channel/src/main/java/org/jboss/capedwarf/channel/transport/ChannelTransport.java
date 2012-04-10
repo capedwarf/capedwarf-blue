@@ -35,5 +35,5 @@ public interface ChannelTransport {
 
     public static final int MAX_CONNECTION_DURATION = 30000;
 
-    void serveMessages(HttpServletRequest req, HttpServletResponse resp, String channelToken, ChannelQueue queue) throws IOException;
+    void serveMessages() throws IOException;
 }

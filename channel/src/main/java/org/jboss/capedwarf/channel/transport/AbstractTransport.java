@@ -28,16 +28,35 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ *
  */
-public class ChannelTransportFactory {
-    public static ChannelTransport createChannelTransport(String transportType, HttpServletRequest req, HttpServletResponse resp, String channelToken, ChannelQueue queue) {
-        if ("LongIFrame".equals(transportType)) {
-            return new LongIFrameChannelTransport(req, resp, channelToken, queue);
-        } else if ("SuccessiveXmlHttp".equals(transportType)) {
-            return new SuccessiveXmlHttpChannelTransport(req, resp, channelToken, queue);
-        } else {
-            throw new IllegalArgumentException("Unknown transport type: " + transportType);
-        }
+public abstract class AbstractTransport implements ChannelTransport {
+
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
+    private final String channelToken;
+    private final ChannelQueue queue;
+
+    public AbstractTransport(HttpServletRequest request, HttpServletResponse response, String channelToken, ChannelQueue queue) {
+        this.request = request;
+        this.response = response;
+        this.channelToken = channelToken;
+        this.queue = queue;
+    }
+
+    public HttpServletRequest getRequest() {
+        return request;
+    }
+
+    public HttpServletResponse getResponse() {
+        return response;
+    }
+
+    public String getChannelToken() {
+        return channelToken;
+    }
+
+    public ChannelQueue getQueue() {
+        return queue;
     }
 }

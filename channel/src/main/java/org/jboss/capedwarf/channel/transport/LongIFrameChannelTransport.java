@@ -34,18 +34,22 @@ import java.util.logging.Logger;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class LongIFrameChannelTransport implements ChannelTransport {
+public class LongIFrameChannelTransport extends AbstractTransport {
 
     private final Logger log = Logger.getLogger(getClass().getName());
 
-    public void serveMessages(HttpServletRequest req, HttpServletResponse resp, String channelToken, ChannelQueue queue) throws IOException {
+    public LongIFrameChannelTransport(HttpServletRequest req, HttpServletResponse resp, String channelToken, ChannelQueue queue) {
+        super(req, resp, channelToken, queue);
+    }
+
+    public void serveMessages() throws IOException {
         log.info("Channel queue opened.");
-        resp.setContentType("text/html");
-        resp.setHeader("Transfer-Encoding", "chunked");
+        getResponse().setContentType("text/html");
+        getResponse().setHeader("Transfer-Encoding", "chunked");
 
-        PrintWriter writer = resp.getWriter();
+        PrintWriter writer = getResponse().getWriter();
 
-        writeMessage(writer, channelToken, "open", "");
+        writeMessage(writer, getChannelToken(), "open", "");
 
 
         long startTime = System.currentTimeMillis();
@@ -57,17 +61,17 @@ public class LongIFrameChannelTransport implements ChannelTransport {
             }
             try {
                 log.info("Waiting for message (for " + timeLeft + "ms)");
-                List<String> messages = queue.getPendingMessages(timeLeft);
+                List<String> messages = getQueue().getPendingMessages(timeLeft);
                 for (String message : messages) {
                     log.info("Received message " + message);
-                    writeMessage(writer, channelToken, "message", message);
+                    writeMessage(writer, getChannelToken(), "message", message);
                 }
             } catch (InterruptedException e) {
                 // ignored
             }
         }
 
-        writeMessage(writer, channelToken, "close", "");
+        writeMessage(writer, getChannelToken(), "close", "");
     }
 
     private void writeMessage(PrintWriter writer, String channelToken, String type, String message) {

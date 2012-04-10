@@ -35,54 +35,78 @@ import java.util.logging.Logger;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class SuccessiveXmlHttpChannelTransport implements ChannelTransport {
+public class SuccessiveXmlHttpChannelTransport extends AbstractTransport {
 
     private final Logger log = Logger.getLogger(getClass().getName());
 
-    public void serveMessages(HttpServletRequest req, HttpServletResponse resp, String channelToken, ChannelQueue queue) throws IOException {
+    public SuccessiveXmlHttpChannelTransport(HttpServletRequest req, HttpServletResponse resp, String channelToken, ChannelQueue queue) {
+        super(req, resp, channelToken, queue);
+    }
+
+    public void serveMessages() throws IOException {
         log.info("Channel queue opened.");
-        resp.setContentType("text/javascript");
-        resp.setHeader("Transfer-Encoding", "chunked");
+        getResponse().setContentType("text/javascript");
+        getResponse().setHeader("Transfer-Encoding", "chunked");
 
-        PrintWriter writer = resp.getWriter();
+        PrintWriter writer = getResponse().getWriter();
 
-        int requestIndex = Integer.valueOf(req.getParameter("requestIndex"));
-        if (requestIndex == 0) {
-            writeMessage(writer, channelToken, "open", "");
+        if (isFirstRequest()) {
+            writeOpenMessage(writer);
             return;
         }
 
+        serveMessages(writer);
+    }
 
+    private boolean isFirstRequest() {
+        int requestIndex = Integer.valueOf(getRequest().getParameter("requestIndex"));
+        return requestIndex == 0;
+    }
+
+    private void serveMessages(PrintWriter writer) {
         long startTime = System.currentTimeMillis();
         while (true) {
             long timeActive = System.currentTimeMillis() - startTime;
             long timeLeft = MAX_CONNECTION_DURATION - timeActive;
             if (timeLeft < 0) {
-                break;
+                return;
             }
+
             try {
                 log.info("Waiting for message (for " + timeLeft + "ms)");
-                List<String> messages = queue.getPendingMessages(timeLeft);
-                for (String message : messages) {
-                    log.info("Received message " + message);
-                    writeMessage(writer, channelToken, "message", message);
-                }
+                List<String> messages = getQueue().getPendingMessages(timeLeft);
                 if (!messages.isEmpty()) {
-                    break;
+                    writeMessages(writer, messages);
+                    return;
                 }
             } catch (ChannelQueueClosedException ex) {
-                log.info("Channel closed: " + channelToken);
-                writeMessage(writer, channelToken, "close", "");
-                break;
+                log.info("Channel closed: " + getChannelToken());
+                writeCloseMessage(writer);
+                return;
             } catch (InterruptedException e) {
                 // ignored
             }
         }
     }
 
+    private void writeMessages(PrintWriter writer, List<String> messages) {
+        for (String message : messages) {
+            log.info("Received message " + message);
+            writeMessage(writer, getChannelToken(), "message", message);
+        }
+    }
+
+    private void writeOpenMessage(PrintWriter writer) {
+        writeMessage(writer, getChannelToken(), "open", "");
+    }
+
+    private void writeCloseMessage(PrintWriter writer) {
+        writeMessage(writer, getChannelToken(), "close", "");
+    }
+
     private void writeMessage(PrintWriter writer, String channelToken, String type, String message) {
         log.info("Sending message to browser: type=" + type + "; message=" + message);
-        writer.println("parent.handleChannelMessage(\"" + channelToken + "\", \"" + type + "\", \"" + message + "\");");
+        writer.println("handleChannelMessage(\"" + channelToken + "\", \"" + type + "\", \"" + message + "\");");
         writer.flush();
     }
 
