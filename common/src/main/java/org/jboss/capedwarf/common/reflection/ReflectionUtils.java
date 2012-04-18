@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
  * Reflection hacks.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 public final class ReflectionUtils {
 
@@ -187,7 +188,7 @@ public final class ReflectionUtils {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Get static field value.
      *
@@ -206,7 +207,7 @@ public final class ReflectionUtils {
 
     /**
      * Set field value.
-     * 
+     *
      * @param target the target
      * @param fieldName the field name
      * @param value the value
@@ -225,7 +226,7 @@ public final class ReflectionUtils {
 
     /**
      * Set static field value.
-     * 
+     *
      * @param clazz the class
      * @param fieldName the field name
      * @param value the value
@@ -317,5 +318,32 @@ public final class ReflectionUtils {
             throw new RuntimeException(t);
         }
         throw new IllegalStateException("Couldn't find field: " + clazz.getName() + " / " + fieldName);
+    }
+
+    /**
+     * Set value value to field fieldName on object object.
+     *
+     * @param object
+     * @param fieldName
+     * @param value
+     */
+    public static void setInstanceProperty(Object object, String fieldName, Object value) {
+        if (object == null)
+            throw new IllegalArgumentException("Null object");
+        if (fieldName == null)
+            throw new IllegalArgumentException("Null field name");
+
+        Class<?> clazz = object.getClass();
+        Field field;
+        try {
+            field = clazz.getField(fieldName);
+            boolean accesible = field.isAccessible();
+            if (!accesible) {
+                field.setAccessible(true);
+            }
+            field.set(object, value);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
     }
 }

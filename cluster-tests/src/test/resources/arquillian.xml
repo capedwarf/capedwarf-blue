@@ -6,6 +6,10 @@
     <defaultProtocol type="Servlet 3.0"/>
     <group qualifier="jboss-cluster" >
 
+		  <!--
+		  node A run parameters
+		  ./standalone.sh -c standalone-full-ha.xml -Djboss.node.name=node-a -Dinfinispan.jgroups.node.type=jgroupsMaster -Djboss.server.data.dir=/opt/jboss/jboss-as-7.1.1.Final-SNAPSHOT-CD-A/standalone/data1
+        -->
         <container qualifier="container-1" >
             <configuration>
                 <property name="managementAddress">127.0.0.1</property>
@@ -14,9 +18,8 @@
         </container>
 
         <!--
-        node B config:
-         - run with -Djboss.node.name=node-b
-         - use port offset 100
+        node B run parameters
+        .standalone.sh -c standalone-full-ha.xml -Djboss.node.name=node-b -Dinfinispan.jgroups.node.type=jgroupsSlave -Djboss.server.data.dir=/opt/jboss/jboss-as-7.1.1.Final-SNAPSHOT-CD-A/standalone/data2 -Djboss.socket.binding.port-offset=100
          -->
         <container qualifier="container-2">
             <configuration>
