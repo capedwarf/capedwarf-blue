@@ -73,7 +73,7 @@
         <version.junit>4.7</version.junit>
         <version.arquillian>1.0.0.CR7</version.arquillian>
         <version.jboss.as7>7.1.1.Final</version.jboss.as7>
-        <version.jboss.maven.transformer>1.0.0.Beta1</version.jboss.maven.transformer>
+        <version.jboss.maven.transformer>1.0.0.Beta2</version.jboss.maven.transformer>
         <version.metainf>1.1</version.metainf>
         <version.org.apache.httpcomponents>4.1.1</version.org.apache.httpcomponents>
     </properties>

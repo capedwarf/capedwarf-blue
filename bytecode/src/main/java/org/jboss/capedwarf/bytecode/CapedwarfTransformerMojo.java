@@ -24,7 +24,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
-import org.jboss.maven.plugins.transformer.TransformerMojo;
+import org.jboss.maven.plugins.transformer.TransformerUtils;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -33,7 +33,7 @@ public class CapedwarfTransformerMojo {
 
     public static void main(String[] args) {
         String pathToAppEngineJar = args[0];
-        TransformerMojo.main(createArgs(pathToAppEngineJar));
+        TransformerUtils.main(createArgs(pathToAppEngineJar));
     }
 
     private static String[] createArgs(String pathToAppEngineJar) {
