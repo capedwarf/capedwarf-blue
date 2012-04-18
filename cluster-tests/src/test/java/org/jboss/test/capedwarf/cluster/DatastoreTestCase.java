@@ -30,7 +30,6 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @Test
     @OperateOnDeployment("dep1")
     public void putStoresEntityOnDepA() throws Exception {
-        System.out.println(">>> putStoresEntityOnDepA");
         Entity entity = createTestEntity("KIND", 1);
         getService().put(entity);
         assertStoreContains(entity);
@@ -40,7 +39,6 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @Test
     @OperateOnDeployment("dep2")
     public void putStoresEntityOnDepB() throws Exception {
-        System.out.println(">>> putStoresEntityOnDepB");
         Entity entity = createTestEntity("KIND", 2);
         getService().put(entity);
         assertStoreContains(entity);
@@ -51,7 +49,6 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @Test
     @OperateOnDeployment("dep1")
     public void getEntityOnDepA() throws Exception {
-        System.out.println(">>> getEntityOnDepA");
         Key key = KeyFactory.createKey("KIND", 1);
         Entity lookup = getService().get(key);
 
@@ -65,7 +62,6 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @Test
     @OperateOnDeployment("dep2")
     public void getEntityOnDepB() throws Exception {
-        System.out.println(">>> getEntityOnDepB()");
         Entity entity = createTestEntity("KIND", 1);
         assertStoreContains(entity);
     }
@@ -73,8 +69,7 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @InSequence(55)
     @Test
     @OperateOnDeployment("dep1")
-    public void indexGenInsertOnA() {
-        System.out.println(">>> indexGenInsertOnA");
+    public void indexGenAndQueryInsertOnA() throws Exception {
         Entity entity = new Entity("indexGen");
         entity.setProperty("text", "A");
         getService().put(entity);
@@ -83,6 +78,7 @@ public class DatastoreTestCase extends AbstractClusteredTest {
         entity2.setProperty("text", "A1");
         getService().put(entity2);
 
+        waitForSync();
         int count = getService().prepare(new Query("indexGen")).countEntities(Builder.withDefaults());
         Assert.assertEquals(2, count);
     }
@@ -90,10 +86,9 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @InSequence(60)
     @Test
     @OperateOnDeployment("dep2")
-    public void indexGenInsertOnB() throws Exception {
+    public void indexGenAndQueryInsertOnB() throws Exception {
         waitForSync();
 
-        System.out.println(">>> indexGenInsertOnB");
         Entity entity = new Entity("indexGen");
         entity.setProperty("text", "B");
         getService().put(entity);
@@ -107,8 +102,7 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @InSequence(70)
     @Test
     @OperateOnDeployment("dep1")
-    public void indexGenTestOverrideA() throws Exception {
-        System.out.println(">>> indexGenTestOverrideA");
+    public void testContentOnA() throws Exception {
 
         waitForSync();
 
@@ -130,10 +124,18 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @InSequence(80)
     @Test
     @OperateOnDeployment("dep2")
-    public void indexGenTestOverrideB() {
-        System.out.println(">>> indexGenTestOverrideB");
+    public void testContentOnB() {
         List<Entity> list = getService().prepare(new Query("indexGen")).asList(Builder.withDefaults());
         Assert.assertEquals(3, list.size());
+
+        List<String> cached = new ArrayList<String>();
+        for (Entity entity : list) {
+            cached.add((String) entity.getProperty("text"));
+        }
+
+        Assert.assertTrue(cached.contains("A"));
+        Assert.assertTrue(cached.contains("A1"));
+        Assert.assertTrue(cached.contains("B"));
     }
 
     @InSequence(1000)
