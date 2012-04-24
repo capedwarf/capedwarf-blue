@@ -23,19 +23,35 @@
 package org.jboss.capedwarf.appidentity;
 
 import com.google.appengine.api.appidentity.AppIdentityService;
+import com.google.appengine.api.appidentity.AppIdentityServiceFailureException;
 import com.google.appengine.api.appidentity.PublicCertificate;
 import com.google.appengine.api.memcache.Expiration;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.environment.EnvironmentFactory;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class JBossAppIdentityService implements AppIdentityService {
     public static final String MEMCACHE_NAMESPACE = "_ah_";
@@ -43,11 +59,82 @@ public class JBossAppIdentityService implements AppIdentityService {
     public static final long OFFSET = 300000L;
 
     public SigningResult signForApp(byte[] bytes) {
-        return null; // TODO
+        rotateCertificatesIfNeeded();
+        CertificateBundle bundle = getCertificateStore().getCurrentBundle();
+        byte[] signature = sign(bytes, bundle.getPrivateKey());
+        return new SigningResult(bundle.getName(), signature);
     }
 
     public Collection<PublicCertificate> getPublicCertificatesForApp() {
-        return null; // TODO
+        rotateCertificatesIfNeeded();
+        Collection<PublicCertificate> certificates = new ArrayList<PublicCertificate>();
+        for (CertificateBundle bundle : getCertificateStore().getAllBundles()) {
+            if (!bundle.isStale()) {
+                certificates.add(new PublicCertificate(bundle.getName(), convertToPEMFormat(bundle.getCertificate())));
+            }
+        }
+        return certificates;
+    }
+
+    private void rotateCertificatesIfNeeded() {
+        if (rotationNeeded()) {
+            rotateCertificates();
+        }
+    }
+
+    private boolean rotationNeeded() {
+        CertificateBundle bundle = getCertificateStore().getCurrentBundle();
+        return bundle == null || bundle.isStale();
+    }
+
+    public void rotateCertificates() {
+        CertificateStore certificateStore = getCertificateStore();
+        certificateStore.store(createNewCertificate());
+        certificateStore.removeStaleCertificates();
+    }
+
+    private CertificateStore getCertificateStore() {
+        return CertificateStoreFactory.getCertificateStore();
+    }
+
+    private CertificateBundle createNewCertificate() {
+        KeyPair keyPair = CertificateGenerator.getInstance().generateKeyPair();
+        String domain = EnvironmentFactory.getEnvironment().getDomain();
+        X509Certificate certificate = CertificateGenerator.getInstance().generateCertificate(keyPair, domain);
+        return new CertificateBundle(certificate.getSerialNumber().toString(), keyPair, certificate);
+    }
+
+    private byte[] sign(byte[] bytes, PrivateKey privateKey) {
+        try {
+            Signature dsa = Signature.getInstance("SHA1WithRSA", "BC");
+            dsa.initSign(privateKey);
+            dsa.update(bytes);
+            return dsa.sign();
+
+        } catch (NoSuchAlgorithmException e) {
+            throw new AppIdentityServiceFailureException("Cannot sign: " + e);
+        } catch (NoSuchProviderException e) {
+            throw new AppIdentityServiceFailureException("Cannot sign: " + e);
+        } catch (InvalidKeyException e) {
+            throw new AppIdentityServiceFailureException("Cannot sign: " + e);
+        } catch (SignatureException e) {
+            throw new AppIdentityServiceFailureException("Cannot sign: " + e);
+        }
+    }
+
+    public String convertToPEMFormat(final X509Certificate certificate) {
+        try {
+            StringWriter stringWriter = new StringWriter();
+            PemWriter pemWriter = new PemWriter(stringWriter);
+            pemWriter.writeObject(new PemObject(certificate.getType(), certificate.getEncoded()));
+            pemWriter.flush();
+            return stringWriter.toString();
+
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot format certificate to PEM format", e);
+        } catch (CertificateEncodingException e) {
+            throw new RuntimeException("Cannot format certificate to PEM format", e);
+        }
     }
 
     public String getServiceAccountName() {
