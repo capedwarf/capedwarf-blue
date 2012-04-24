@@ -50,6 +50,7 @@
         <version.com.google.guava>11.0.2</version.com.google.guava>
         <version.json>20090211</version.json>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
+        <version.org.bouncycastle>1.47</version.org.bouncycastle>
         <version.org.jboss.logging>3.1.0.GA</version.org.jboss.logging>
         <version.org.jboss.modules.jboss-modules>1.1.1.GA</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
@@ -388,6 +389,18 @@
                 <artifactId>jboss-servlet-api_3.0_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.servlet.api}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>${version.org.bouncycastle}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcmail-jdk15on</artifactId>
+                <version>${version.org.bouncycastle}</version>
             </dependency>
 
             <dependency>
