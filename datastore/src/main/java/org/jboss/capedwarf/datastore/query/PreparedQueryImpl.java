@@ -1,5 +1,8 @@
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.Iterator;
+import java.util.List;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -8,9 +11,6 @@ import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.datastore.QueryResultList;
 import org.infinispan.query.CacheQuery;
-
-import java.util.Iterator;
-import java.util.List;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 
@@ -33,6 +33,7 @@ public class PreparedQueryImpl implements PreparedQuery {
         return asQueryResultList(fetchOptions);
     }
 
+    @SuppressWarnings("unchecked")
     public QueryResultList<Entity> asQueryResultList(FetchOptions fetchOptions) {
         apply(fetchOptions, cacheQuery);
         List<?> objects = cacheQuery.list();
@@ -67,6 +68,7 @@ public class PreparedQueryImpl implements PreparedQuery {
         return asQueryResultIterator(withDefaults());
     }
 
+    @SuppressWarnings("unchecked")
     public QueryResultIterator<Entity> asQueryResultIterator(FetchOptions fetchOptions) {
         return new QueryResultIteratorImpl<Entity>(createQueryIterator(fetchOptions));
     }
@@ -98,7 +100,7 @@ public class PreparedQueryImpl implements PreparedQuery {
         }
     }
 
-    private Iterator<Entity> createQueryIterator(FetchOptions fetchOptions) {
+    private Iterator createQueryIterator(FetchOptions fetchOptions) {
         apply(fetchOptions, cacheQuery);
 
         Integer chunkSize = fetchOptions.getChunkSize();
