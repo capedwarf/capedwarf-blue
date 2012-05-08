@@ -41,7 +41,7 @@
 
         <dependency>
             <groupId>org.picketlink</groupId>
-            <artifactId>picketlink-fed-api</artifactId>
+            <artifactId>picketlink-core</artifactId>
         </dependency>
 
         <dependency>
