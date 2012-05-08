@@ -53,7 +53,8 @@
         <version.org.jboss.modules.jboss-modules>1.1.1.GA</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
         <version.org.jivesoftware.smack>3.1.0</version.org.jivesoftware.smack>
-        <version.org.picketlink>2.0.2.Final</version.org.picketlink>
+        <version.org.picketlink>2.1.0.Final</version.org.picketlink>
+        <version.org.picketlink.fed>2.0.3.Final</version.org.picketlink.fed>
         <version.org.picketlink.consolidated.social>2.0.0.Beta1</version.org.picketlink.consolidated.social>
         <version.javassist>3.15.0-GA</version.javassist>
         <version.javax.el>1.2</version.javax.el>
@@ -345,7 +346,7 @@
             <dependency>
                 <groupId>org.picketlink</groupId>
                 <artifactId>picketlink-fed-api</artifactId>
-                <version>${version.org.picketlink}</version>
+                <version>${version.org.picketlink.fed}</version>
             </dependency>
 
             <dependency>
