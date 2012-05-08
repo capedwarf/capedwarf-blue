@@ -33,6 +33,7 @@ import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.taskqueue.LeaseOptions;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueConstants;
+import com.google.appengine.api.taskqueue.QueueStatistics;
 import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
@@ -280,6 +281,10 @@ public class JBossQueue implements Queue {
             }
         }
         return taskHandle;
+    }
+
+    public QueueStatistics fetchStatistics() {
+        return null; // TODO
     }
 
     static void validateQueueName(String queueName) {

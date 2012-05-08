@@ -24,6 +24,16 @@
 
 package org.jboss.capedwarf.images;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.images.Image;
@@ -32,17 +42,9 @@ import com.google.appengine.api.images.Transform;
 import org.jboss.capedwarf.common.config.JBossEnvironment;
 import org.jboss.capedwarf.common.io.IOUtils;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @WebServlet(urlPatterns = ImageServlet.SERVLET_URI)
 public class ImageServlet extends HttpServlet {
@@ -95,17 +97,23 @@ public class ImageServlet extends HttpServlet {
     }
 
     public static String getServingUrl(BlobKey blobKey) {
-        return getServletUrl() + "/" + blobKey.getKeyString() + "/";
+        return getServingUrl(blobKey, false);
+    }
+
+    public static String getServingUrl(BlobKey blobKey, boolean secureUrl) {
+        return getServletUrl(secureUrl) + "/" + blobKey.getKeyString() + "/";
     }
 
     public static String getServingUrl(BlobKey blobKey, int imageSize, boolean crop) {
-        return getServingUrl(blobKey)
-                + ImageRequest.SIZE_TOKEN + imageSize
-                + (crop ? ImageRequest.CROP_TOKEN : "");
+        return getServingUrl(blobKey, imageSize, crop, false);
     }
 
-    private static String getServletUrl() {
-        return JBossEnvironment.getThreadLocalInstance().getBaseApplicationUrl() + SERVLET_URI;
+    public static String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
+        return getServingUrl(blobKey, secureUrl) + ImageRequest.SIZE_TOKEN + imageSize + (crop ? ImageRequest.CROP_TOKEN : "");
+    }
+
+    private static String getServletUrl(boolean secureUrl) {
+        return JBossEnvironment.getThreadLocalInstance().getBaseApplicationUrl(secureUrl) + SERVLET_URI;
     }
 
 }

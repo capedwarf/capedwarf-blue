@@ -39,6 +39,10 @@ public class JBossEnvironment implements ApiProxy.Environment {
     private static final ThreadLocal<JBossEnvironment> threadLocalInstance = new ThreadLocal<JBossEnvironment>();
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
 
+    private static final String HTTPS = "https";
+    private static final String DELIMITER = "://";
+    private static final int DEFAULT_HTTP_PORT = 80;
+
     private String email;
     private String authDomain;
     private Map<String, Object> attributes = new HashMap<String, Object>();
@@ -46,6 +50,7 @@ public class JBossEnvironment implements ApiProxy.Environment {
     private CapedwarfConfiguration capedwarfConfiguration;
     private AppEngineWebXml appEngineWebXml;
     private String baseApplicationUrl;
+    private String secureBaseApplicationUrl;
 
     public String getAppId() {
         assertInitialized();
@@ -114,13 +119,23 @@ public class JBossEnvironment implements ApiProxy.Environment {
         return capedwarfConfiguration.getAdmins();
     }
 
-    public void setBaseApplicationUrl(String baseApplicationUrl) {
+    public void setBaseApplicationUrl(String scheme, String serverName, int port, String context) {
+        String sPort = (port == DEFAULT_HTTP_PORT) ? "" : ":" + port;
+        baseApplicationUrl = scheme + DELIMITER + serverName + sPort + context;
+        if (HTTPS.equals(scheme)) {
+            secureBaseApplicationUrl = baseApplicationUrl;
+        } else {
+            secureBaseApplicationUrl = HTTPS + DELIMITER + serverName + sPort + context;
+        }
         attributes.put(DEFAULT_VERSION_HOSTNAME, baseApplicationUrl);
-        this.baseApplicationUrl = baseApplicationUrl;
     }
 
     public String getBaseApplicationUrl() {
-        return baseApplicationUrl;
+        return getBaseApplicationUrl(false);
+    }
+
+    public String getBaseApplicationUrl(boolean secureUrl) {
+        return secureUrl ? secureBaseApplicationUrl : baseApplicationUrl;
     }
 
     public static JBossEnvironment getThreadLocalInstance() {

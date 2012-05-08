@@ -22,13 +22,6 @@
 
 package org.jboss.capedwarf.images;
 
-import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.images.*;
-import org.jboss.capedwarf.common.threads.ExecutorFactory;
-import org.jboss.capedwarf.images.transform.JBossTransform;
-import org.jboss.capedwarf.images.transform.JBossTransformFactory;
-import org.jboss.capedwarf.images.util.ImageUtils;
-
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -36,11 +29,24 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.images.Composite;
+import com.google.appengine.api.images.Image;
+import com.google.appengine.api.images.ImagesService;
+import com.google.appengine.api.images.ImagesServiceFactory;
+import com.google.appengine.api.images.InputSettings;
+import com.google.appengine.api.images.OutputSettings;
+import com.google.appengine.api.images.Transform;
+import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.images.transform.JBossTransform;
+import org.jboss.capedwarf.images.transform.JBossTransformFactory;
+import org.jboss.capedwarf.images.util.ImageUtils;
+
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class JBossImagesService implements ImagesService {
-
 
     public Image applyTransform(Transform transform, Image image) {
         return applyTransform(transform, image, OutputEncoding.PNG);
@@ -123,10 +129,17 @@ public class JBossImagesService implements ImagesService {
         return ImageServlet.getServingUrl(blobKey);
     }
 
+    public String getServingUrl(BlobKey blobKey, boolean secureUrl) {
+        return ImageServlet.getServingUrl(blobKey, secureUrl);
+    }
+
     public String getServingUrl(BlobKey blobKey, int imageSize, boolean crop) {
         return ImageServlet.getServingUrl(blobKey, imageSize, crop);
     }
 
+    public String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
+        return ImageServlet.getServingUrl(blobKey, imageSize, crop, secureUrl);
+    }
 
     private byte[] getByteArray(BufferedImage bufferedImage, OutputSettings outputSettings) {
         String formatName = getFormatName(outputSettings.getOutputEncoding());

@@ -53,8 +53,6 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
 
     private static Logger log = Logger.getLogger(GAEListener.class.getName());
 
-    private static final int DEFAULT_HTTP_PORT = 80;
-
     private static final String APPENGINE_WEB_XML = "/WEB-INF/appengine-web.xml";
     private static final String CAPEDWARF_WEB_XML = "/WEB-INF/capedwarf-web.xml";
 
@@ -146,10 +144,7 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     }
 
     private void initRequestData(JBossEnvironment environment, HttpServletRequest request) {
-        environment.setBaseApplicationUrl(request.getScheme() + "://"
-                + request.getServerName()
-                + (request.getServerPort() == DEFAULT_HTTP_PORT ? "" : (":" + request.getServerPort()))
-                + request.getContextPath());
+        environment.setBaseApplicationUrl(request.getScheme(), request.getServerName(), request.getServerPort(), request.getContextPath());
     }
 
     private void initUserData(JBossEnvironment environment, HttpServletRequest request) {
