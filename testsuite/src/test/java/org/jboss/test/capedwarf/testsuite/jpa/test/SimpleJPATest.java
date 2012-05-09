@@ -6,8 +6,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.jboss.capedwarf.testsuite.jpa.Client;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,12 +13,11 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class SimpleJPATest extends AbstractJPATest {
+public abstract class SimpleJPATest extends AbstractJPATest {
 
     protected static WebArchive getBaseDeployment() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class);
+        final WebArchive war = getCapedwarfDeployment();
         war.addPackage(Client.class.getPackage());
-        war.setWebXML(new StringAsset("<web/>")).addAsWebInfResource("appengine-web.xml");
         war.addClass(AbstractJPATest.class);
         war.addClass(SimpleJPATest.class);
         return war;

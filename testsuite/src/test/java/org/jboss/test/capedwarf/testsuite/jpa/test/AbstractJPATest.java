@@ -5,10 +5,12 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
+import org.jboss.test.capedwarf.testsuite.AbstractTest;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class AbstractJPATest {
+public abstract class AbstractJPATest extends AbstractTest {
 
     private EntityManagerFactory emf;
 
