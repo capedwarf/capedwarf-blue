@@ -1,15 +1,16 @@
 package org.jboss.test.capedwarf.testsuite.jpa.test;
 
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
 import org.jboss.capedwarf.testsuite.jpa.Client;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import java.util.List;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -44,33 +45,43 @@ public class SimpleJPATest extends AbstractJPATest {
             }
         };
         run(ema1);
-        final Long id = client.getId();
-        Assert.assertNotNull("Null client id", id);
+        try {
+            final Long id = client.getId();
+            Assert.assertNotNull("Null client id", id);
 
-        EMAction<Client> ema2 = new EMAction<Client>() {
-            public Client go(EntityManager em) throws Throwable {
-                Query q = em.createQuery("select from Client c where c.username = :username");
-                q.setParameter("username", "alesj");
-                @SuppressWarnings("unchecked")
-                List<Client> clients = q.getResultList();
-                return (clients.isEmpty()) ? null : clients.get(0);
-            }
-        };
-        Client c = run(ema2, false);
-        Assert.assertNotNull(c);
-        Assert.assertEquals(id, c.getId());
-        Assert.assertEquals("alesj", c.getUsername());
-        Assert.assertEquals("password", c.getPassword());
+            EMAction<Client> ema2 = new EMAction<Client>() {
+                public Client go(EntityManager em) throws Throwable {
+                    Query q = em.createQuery("select from Client c where c.username = :username");
+                    q.setParameter("username", "alesj");
+                    @SuppressWarnings("unchecked")
+                    List<Client> clients = q.getResultList();
+                    return (clients.isEmpty()) ? null : clients.get(0);
+                }
+            };
+            Client c = run(ema2, false);
+            Assert.assertNotNull(c);
+            Assert.assertEquals(id, c.getId());
+            Assert.assertEquals("alesj", c.getUsername());
+            Assert.assertEquals("password", c.getPassword());
 
-        EMAction<Client> ema3 = new EMAction<Client>() {
-            public Client go(EntityManager em) throws Throwable {
-                return em.find(Client.class, id);
-            }
-        };
-        c = run(ema3, false);
-        Assert.assertNotNull(c);
-        Assert.assertEquals(id, c.getId());
-        Assert.assertEquals("alesj", c.getUsername());
-        Assert.assertEquals("password", c.getPassword());
+            EMAction<Client> ema3 = new EMAction<Client>() {
+                public Client go(EntityManager em) throws Throwable {
+                    return em.find(Client.class, id);
+                }
+            };
+            c = run(ema3, false);
+            Assert.assertNotNull(c);
+            Assert.assertEquals(id, c.getId());
+            Assert.assertEquals("alesj", c.getUsername());
+            Assert.assertEquals("password", c.getPassword());
+        } finally {
+            EMAction<Void> delete = new EMAction<Void>() {
+                public Void go(EntityManager em) throws Throwable {
+                    em.remove(client);
+                    return null;
+                }
+            };
+            run(delete);
+        }
     }
 }
