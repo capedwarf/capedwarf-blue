@@ -72,13 +72,14 @@ public abstract class SimpleJPATest extends AbstractJPATest {
             Assert.assertEquals("alesj", c.getUsername());
             Assert.assertEquals("password", c.getPassword());
         } finally {
-            EMAction<Void> delete = new EMAction<Void>() {
-                public Void go(EntityManager em) throws Throwable {
-                    em.remove(client);
-                    return null;
+            EMAction<Integer> delete = new EMAction<Integer>() {
+                public Integer go(EntityManager em) throws Throwable {
+                    Query query = em.createQuery("delete from Client c where c.id = :id");
+                    query.setParameter("id", client.getId());
+                    return query.executeUpdate();
                 }
             };
-            run(delete);
+            Assert.assertTrue(1 == run(delete));
         }
     }
 }
