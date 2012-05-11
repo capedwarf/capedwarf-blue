@@ -129,46 +129,6 @@
 
     <repositories>
         <repository>
-            <id>oss-sonatype-central</id>
-            <name>OSS Sonatype Central</name>
-            <url>https://oss.sonatype.org/content/repositories/central/</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-        </repository>
-        <repository>
-            <id>maven-gae-plugin</id>
-            <name>Maven-gae-plugin Repository</name>
-            <url>http://maven-gae-plugin.googlecode.com/svn/repository</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-        </repository>
-        <repository>
-            <id>mvnrepository</id>
-            <name>Maven Repository</name>
-            <url>http://mvnrepository.com/artifact/</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-        </repository>
-        <repository>
-            <id>atlassian</id>
-            <name>Atlassian Repository</name>
-            <url>https://maven.atlassian.com/content/groups/public</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-        </repository>
-        <repository>
             <id>datanucleus</id>
             <name>Datanucleus Repository</name>
             <url>http://www.datanucleus.org/downloads/maven2</url>
@@ -182,20 +142,6 @@
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Maven Repository Group</name>
             <url>https://repository.jboss.org/nexus/content/groups/public</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>jboss-deprecated-repository</id>
-            <name>JBoss Deprecated Maven Repository</name>
-            <url>https://repository.jboss.org/nexus/content/repositories/deprecated</url>
             <layout>default</layout>
             <releases>
                 <enabled>true</enabled>
