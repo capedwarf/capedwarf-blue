@@ -22,7 +22,7 @@ public class AbstractClusteredTest {
     }
 
     public static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
+        return ShrinkWrap.create(WebArchive.class, "cluster-tests.war")
             .addClass(AbstractClusteredTest.class)
             .setWebXML(new StringAsset("<web/>"))
             .addAsWebInfResource("appengine-web.xml");
