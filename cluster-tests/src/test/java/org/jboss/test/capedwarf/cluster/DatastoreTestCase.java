@@ -66,13 +66,31 @@ public class DatastoreTestCase extends AbstractClusteredTest {
         assertStoreContains(entity);
     }
 
+    @InSequence(52)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void queryOnA() throws Exception {
+        int count = getService().prepare(new Query("KIND")).countEntities(Builder.withDefaults());
+        Assert.assertTrue("Number of entities: " + count, count == 2);
+    }
+
+    @InSequence(53)
+    @Test
+    @OperateOnDeployment("dep2")
+    public void queryOnB() throws Exception {
+        int count = getService().prepare(new Query("KIND")).countEntities(Builder.withDefaults());
+        Assert.assertTrue("Number of entities: " + count, count == 2);
+    }
+
     @InSequence(55)
     @Test
     @OperateOnDeployment("dep1")
     public void indexGenAndQueryInsertOnA() throws Exception {
         Entity entity = new Entity("indexGen");
         entity.setProperty("text", "A");
-        getService().put(entity);
+        Key key = getService().put(entity);
+
+        Assert.assertNotNull(getService().get(KeyFactory.createKey("indexGen", key.getId())));
 
         Entity entity2 = new Entity("indexGen");
         entity2.setProperty("text", "A1");
@@ -174,7 +192,7 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     }
 
     private void waitForSync() throws InterruptedException {
-        Thread.sleep(3000L);
+        Thread.sleep(5000L);
     }
 
 }
