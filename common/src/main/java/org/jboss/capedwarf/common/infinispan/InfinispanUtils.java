@@ -108,6 +108,10 @@ public class InfinispanUtils {
         indexing.setProperty(JGroupsChannelProvider.CHANNEL_INJECT, channel);
         indexing.setProperty(JGroupsChannelProvider.CLASSLOADER, InfinispanUtils.class.getClassLoader());
 
+        // TODO -- fix this!!
+        short muxId = (short)(CacheName.DEFAULT.equals(config) ? 1 : -1);
+        indexing.setProperty(JGroupsChannelProvider.MUX_ID, muxId);
+
         return mapping;
     }
 
