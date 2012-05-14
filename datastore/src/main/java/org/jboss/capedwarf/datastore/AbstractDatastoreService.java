@@ -82,12 +82,12 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     public PreparedQuery prepare(Query query) {
-        CacheQuery cacheQuery = queryConverter.convert(query);
-        return new PreparedQueryImpl(query, cacheQuery);
+        return prepare(getCurrentTransaction(null), query);
     }
 
     public PreparedQuery prepare(Transaction transaction, Query query) {
-        return prepare(query);
+        CacheQuery cacheQuery = queryConverter.convert(query);
+        return new PreparedQueryImpl(query, cacheQuery);
     }
 
     public Transaction getCurrentTransaction() {

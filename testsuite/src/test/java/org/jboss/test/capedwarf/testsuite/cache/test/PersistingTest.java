@@ -41,7 +41,7 @@ import org.junit.Test;
  */
 public abstract class PersistingTest extends AbstractTest {
     protected static WebArchive getBaseDeployment() {
-        return getCapedwarfDeployment("persisting").addClass(PersistingTest.class);
+        return getCapedwarfDeployment().addClass(PersistingTest.class);
     }
 
     @Test
@@ -61,7 +61,7 @@ public abstract class PersistingTest extends AbstractTest {
     }
 
     protected File getMarker() {
-        return new File(System.getProperty("jboss.data.dir"), "marker.cd");
+        return new File(System.getProperty("jboss.server.data.dir"), "marker.cd");
     }
 
     protected Long readMarker() throws Exception {
@@ -69,12 +69,18 @@ public abstract class PersistingTest extends AbstractTest {
         if (marker.exists() == false)
             return null;
 
-        BufferedReader reader = new BufferedReader(new FileReader(marker));
+        long id;
         try {
-            return Long.parseLong(reader.readLine());
+            BufferedReader reader = new BufferedReader(new FileReader(marker));
+            try {
+                id = Long.parseLong(reader.readLine());
+            } finally {
+                reader.close();
+            }
         } finally {
-            reader.close();
+            Assert.assertTrue(marker.delete());
         }
+        return id;
     }
 
     protected void writeMarker(long id) throws Exception {

@@ -32,7 +32,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 public abstract class AbstractTest {
 
     protected static WebArchive getCapedwarfDeployment() {
-        return getCapedwarfDeployment(null);
+        return getCapedwarfDeployment("testsuite");
     }
 
     protected static WebArchive getCapedwarfDeployment(String name) {
