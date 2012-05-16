@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -50,6 +51,7 @@ import org.jgroups.JChannel;
  */
 public class InfinispanUtils {
     private static String[] defaultJndiNames = {"java:jboss/infinispan/container/capedwarf"};
+    private static final String MUX_GEN  = "mux_gen";
 
     private static volatile int cacheManagerUsers;
     private static EmbeddedCacheManager cacheManager;
@@ -108,11 +110,26 @@ public class InfinispanUtils {
         indexing.setProperty(JGroupsChannelProvider.CHANNEL_INJECT, channel);
         indexing.setProperty(JGroupsChannelProvider.CLASSLOADER, InfinispanUtils.class.getClassLoader());
 
-        // TODO -- fix this!!
-        short muxId = (short)(CacheName.DEFAULT.equals(config) ? 1 : -1);
+        int prefix = (CacheName.DEFAULT.equals(config) ? 1 : -1);
+        short muxId = (short) (prefix * getMuxId(appId));
         indexing.setProperty(JGroupsChannelProvider.MUX_ID, muxId);
 
         return mapping;
+    }
+
+    protected static short getMuxId(String appId) {
+        Cache<String, ?> dist = cacheManager.getCache(CacheName.DIST.getName());
+        Object generator = dist.get(MUX_GEN);
+        if (generator == null)
+            throw new IllegalArgumentException("No mux id generator stored in dist cache!");
+
+        // use reflection hack
+        try {
+            Method getMuxId = generator.getClass().getMethod("getMuxId", String.class);
+            return (Short) getMuxId.invoke(generator, appId);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static <K, V> Cache<K, V> getCache(CacheName config) {
