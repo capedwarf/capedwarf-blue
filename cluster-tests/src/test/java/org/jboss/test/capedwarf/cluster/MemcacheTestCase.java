@@ -1,12 +1,12 @@
 package org.jboss.test.capedwarf.cluster;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import com.google.appengine.api.memcache.Expiration;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -14,9 +14,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.google.appengine.api.memcache.Expiration;
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Matej Lazar
@@ -71,8 +71,12 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     @OperateOnDeployment("dep2")
     public void testGetOnDepB() {
         //sleep(3000);
-        assertTrue(service.contains("key"));
-        assertEquals("value", service.get("key"));
+        try {
+            assertTrue(service.contains("key"));
+            assertEquals("value", service.get("key"));
+        } finally {
+            assertTrue(service.delete("key"));
+        }
     }
 
     @Test
@@ -92,9 +96,13 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     @InSequence(60)
     @OperateOnDeployment("dep2")
     public void testPutReplaceOnlyIfPresentOnDepB() {
-        assertEquals("value2", service.get("key"));
-        service.put("key", "value3", null, MemcacheService.SetPolicy.REPLACE_ONLY_IF_PRESENT);
-        assertEquals("value3", service.get("key"));
+        try {
+            assertEquals("value2", service.get("key"));
+            service.put("key", "value3", null, MemcacheService.SetPolicy.REPLACE_ONLY_IF_PRESENT);
+            assertEquals("value3", service.get("key"));
+        } finally {
+            assertTrue(service.delete("key"));
+        }
     }
 
     @Test
@@ -110,8 +118,12 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     @InSequence(80)
     @OperateOnDeployment("dep2")
     public void testPutAddOnlyIfNotPresentOnDepB() {
-        service.put("key", "thirdValue", null, MemcacheService.SetPolicy.ADD_ONLY_IF_NOT_PRESENT);
-        assertEquals("firstValue", service.get("key"));
+        try {
+            service.put("key", "thirdValue", null, MemcacheService.SetPolicy.ADD_ONLY_IF_NOT_PRESENT);
+            assertEquals("firstValue", service.get("key"));
+        } finally {
+            assertTrue(service.delete("key"));
+        }
     }
 
     @Test
@@ -127,13 +139,17 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     @InSequence(100)
     @OperateOnDeployment("dep2")
     public void testGetIdentifiableOnDepB() {
-        MemcacheService.IdentifiableValue identifiable = service.getIdentifiable("key");
-        assertEquals("value", identifiable.getValue());
+        try {
+            MemcacheService.IdentifiableValue identifiable = service.getIdentifiable("key");
+            assertEquals("value", identifiable.getValue());
+        } finally {
+            assertTrue(service.delete("key"));
+        }
     }
 
-    @Test
-    @InSequence(110)
-    @OperateOnDeployment("dep1")
+//    @Test // TODO
+//    @InSequence(110)
+//    @OperateOnDeployment("dep1")
     public void testPutIfUntouchedOnDepA() {
         service.put("key", "value");
 
@@ -148,7 +164,7 @@ public class MemcacheTestCase extends AbstractClusteredTest {
         assertEquals("newValue", service.get("key"));
     }
 
-//    @Test
+//    @Test // TODO
 //    @InSequence(120)
 //    @OperateOnDeployment("dep2")
     public void testPutIfUntouchedOnDepB() {
@@ -177,10 +193,15 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     @InSequence(140)
     @OperateOnDeployment("dep2")
     public void testGetAllOnDepB() {
-        Map<String, Object> map = service.getAll(Arrays.asList("key1", "key2"));
-        assertEquals(2, map.size());
-        assertEquals("value1", map.get("key1"));
-        assertEquals("value2", map.get("key2"));
+        List<String> keys = Arrays.asList("key1", "key2");
+        try {
+            Map<String, Object> map = service.getAll(keys);
+            assertEquals(2, map.size());
+            assertEquals("value1", map.get("key1"));
+            assertEquals("value2", map.get("key2"));
+        } finally {
+            service.deleteAll(keys);
+        }
     }
 
     @Test
@@ -189,7 +210,7 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     public void testDeleteOnDepA() {
         service.put("key", "value");
         service.put("key2", "value");
-        service.delete("key");
+        assertTrue(service.delete("key"));
         assertFalse(service.contains("key"));
     }
 
@@ -198,7 +219,7 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     @OperateOnDeployment("dep2")
     public void testDeleteOnDepB() {
         assertTrue(service.contains("key2"));
-        service.delete("key2");
+        assertTrue(service.delete("key2"));
         assertFalse(service.contains("key2"));
     }
 
@@ -222,15 +243,19 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     @InSequence(180)
     @OperateOnDeployment("dep2")
     public void testDeleteAllOnDepB() {
-        assertTrue(service.contains("key3"));
-        assertTrue(service.contains("key4"));
-        assertTrue(service.contains("key5"));
+        try {
+            assertTrue(service.contains("key3"));
+            assertTrue(service.contains("key4"));
+            assertTrue(service.contains("key5"));
 
-        service.deleteAll(Arrays.asList("key3", "key4"));
+            service.deleteAll(Arrays.asList("key3", "key4"));
 
-        assertFalse(service.contains("key3"));
-        assertFalse(service.contains("key4"));
-        assertTrue(service.contains("key5"));
+            assertFalse(service.contains("key3"));
+            assertFalse(service.contains("key4"));
+            assertTrue(service.contains("key5"));
+        } finally {
+            assertTrue(service.delete("key5"));
+        }
     }
 
     @Test
@@ -266,8 +291,12 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     @InSequence(210)
     @OperateOnDeployment("dep2")
     public void testIncrementOnDepB() {
-        long x = service.increment("increment-key", 4);
-        assertEquals(25L, x);
+        try {
+            long x = service.increment("increment-key", 4);
+            assertEquals(25L, x);
+        } finally {
+            assertTrue(service.delete("increment-key"));
+        }
     }
 
     private void sleep(int millis) {
