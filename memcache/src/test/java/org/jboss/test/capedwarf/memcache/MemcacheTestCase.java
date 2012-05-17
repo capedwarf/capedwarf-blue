@@ -41,9 +41,11 @@ import org.junit.runner.RunWith;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -156,6 +158,21 @@ public class MemcacheTestCase {
     }
 
     @Test
+    public void testGetIdentifiables() {
+        service.put("key1", "value1");
+        service.put("key2", "value2");
+        Map<String, MemcacheService.IdentifiableValue> identifiables = service.getIdentifiables(Arrays.asList("key1", "key2"));
+
+        assertEquals(2, identifiables.size());
+
+        assertNotNull(identifiables.get("key1"));
+        assertEquals("value1", identifiables.get("key1").getValue());
+
+        assertNotNull(identifiables.get("key2"));
+        assertEquals("value2", identifiables.get("key2").getValue());
+    }
+
+    @Test
     public void testPutIfUntouched() {
         service.put("key", "value");
 
@@ -168,6 +185,37 @@ public class MemcacheTestCase {
         boolean valueWasStored2 = service.putIfUntouched("key", identifiable, "newestValue");
         assertFalse(valueWasStored2);
         assertEquals("newValue", service.get("key"));
+    }
+
+    @Test
+    public void testPutIfUntouchedMulti() {
+        service.put("key1", "value1");
+        service.put("key2", "value2");
+
+        MemcacheService.IdentifiableValue identifiable1 = service.getIdentifiable("key1");
+        MemcacheService.IdentifiableValue identifiable2 = service.getIdentifiable("key2");
+
+
+        HashMap<Object, MemcacheService.CasValues> map = new HashMap<Object, MemcacheService.CasValues>();
+        map.put("key1", new MemcacheService.CasValues(identifiable1, "newValue1"));
+        map.put("key2", new MemcacheService.CasValues(identifiable2, "newValue2"));
+
+        Set<Object> storedKeys = service.putIfUntouched(map);
+        assertEquals(2, storedKeys.size());
+        assertTrue(storedKeys.contains("key1"));
+        assertTrue(storedKeys.contains("key2"));
+        assertEquals("newValue1", service.get("key1"));
+        assertEquals("newValue2", service.get("key2"));
+
+
+        map = new HashMap<Object, MemcacheService.CasValues>();
+        map.put("key1", new MemcacheService.CasValues(identifiable1, "newestValue1"));
+        map.put("key2", new MemcacheService.CasValues(identifiable1, "newestValue2"));
+
+        storedKeys = service.putIfUntouched(map);
+        assertTrue(storedKeys.isEmpty());
+        assertEquals("newValue1", service.get("key1"));
+        assertEquals("newValue2", service.get("key2"));
     }
 
     @Test

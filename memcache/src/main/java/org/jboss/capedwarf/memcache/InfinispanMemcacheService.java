@@ -68,18 +68,6 @@ public class InfinispanMemcacheService implements MemcacheService {
         this.cache = InfinispanUtils.getCache(CacheName.MEMCACHE);
     }
 
-    public <T> Map<T, IdentifiableValue> getIdentifiables(Collection<T> ts) {
-        return null; // TODO
-    }
-
-    public <T> Set<T> putIfUntouched(Map<T, CasValues> tCasValuesMap) {
-        return null; // TODO
-    }
-
-    public <T> Set<T> putIfUntouched(Map<T, CasValues> tCasValuesMap, Expiration expiration) {
-        return null; // TODO
-    }
-
     public String getNamespace() {
         return namespace;
     }
@@ -94,7 +82,15 @@ public class InfinispanMemcacheService implements MemcacheService {
     }
 
     public IdentifiableValue getIdentifiable(final Object key) {
-        return new MyIdentifiableValue(cache.get(namespacedKey(key)));
+        return new MyIdentifiableValue(get(key));
+    }
+
+    public <T> Map<T, IdentifiableValue> getIdentifiables(Collection<T> keys) {
+        Map<T, IdentifiableValue> map = new HashMap<T, IdentifiableValue>();
+        for (T key : keys) {
+            map.put(key, getIdentifiable(key));
+        }
+        return map;
     }
 
     public boolean contains(Object key) {
@@ -102,9 +98,10 @@ public class InfinispanMemcacheService implements MemcacheService {
     }
 
     public <T> Map<T, Object> getAll(Collection<T> keys) {
+        // TODO: batching
         Map<T, Object> map = new HashMap<T, Object>();
         for (T key : keys) {
-            map.put(key, cache.get(namespacedKey(key)));
+            map.put(key, get(key));
         }
         return map;
     }
@@ -137,6 +134,25 @@ public class InfinispanMemcacheService implements MemcacheService {
             default:
                 throw new IllegalArgumentException("Unsupported policy " + policy);
         }
+    }
+
+    public <T> Set<T> putIfUntouched(Map<T, CasValues> values) {
+        return putIfUntouched(values, null);
+    }
+
+    public <T> Set<T> putIfUntouched(Map<T, CasValues> values, Expiration expiration) {
+        //        TODO: cache.startBatch();
+        Set<T> set = new HashSet<T>();
+        for (Map.Entry<T, CasValues> entry : values.entrySet()) {
+            T key = entry.getKey();
+            CasValues casValues = entry.getValue();
+            Expiration actualExpiration = casValues.getExipration() == null ? expiration : casValues.getExipration();
+            boolean stored = putIfUntouched(key, casValues.getOldValue(), casValues.getNewValue(), actualExpiration);
+            if (stored) {
+                set.add(key);
+            }
+        }
+        return set;
     }
 
     public boolean putIfUntouched(Object key, IdentifiableValue oldValue, Object newValue) {
@@ -215,7 +231,7 @@ public class InfinispanMemcacheService implements MemcacheService {
         if (ac.lock(namespacedKey(key)) == false)
             throw new IllegalArgumentException("Cannot lock key: " + key);
     }
-        
+
     protected long castToLong(Object value) {
         if (value instanceof Long) {
             return (Long) value;
@@ -238,7 +254,7 @@ public class InfinispanMemcacheService implements MemcacheService {
             long newValue = castToLong(value) + delta;
             put(key, newValue);
             return newValue;
-        }        
+        }
     }
 
     public Long increment(Object key, long delta) {

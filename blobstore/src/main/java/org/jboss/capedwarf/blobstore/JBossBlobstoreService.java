@@ -30,6 +30,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +59,7 @@ public class JBossBlobstoreService implements BlobstoreService {
 
     private static final String SERVE_HEADER = "X-AppEngine-BlobKey";
     private static final String UPLOADED_BLOBKEY_ATTR = "com.google.appengine.api.blobstore.upload.blobkeys";
+    private static final String UPLOADED_BLOBKEY_LIST_ATTR = "com.google.appengine.api.blobstore.upload.blobkeylists";
     private static final String BLOB_RANGE_HEADER = "X-AppEngine-BlobRange";
 
     public String createUploadUrl(String successPath) {
@@ -148,14 +150,23 @@ public class JBossBlobstoreService implements BlobstoreService {
 
     public void storeUploadedBlobs(HttpServletRequest request) throws IOException, ServletException {
         Map<String, BlobKey> map = new HashMap<String, BlobKey>();
+        Map<String, List<BlobKey>> map2 = new HashMap<String, List<BlobKey>>();
         for (Part part : request.getParts()) {
             if (ServletUtils.isFile(part)) {
                 BlobKey blobKey = storeUploadedBlob(part);
-                map.put(part.getName(), blobKey);
+                String name = part.getName();
+                map.put(name, blobKey);
+                List<BlobKey> list = map2.get(name);
+                if (list == null) {
+                    list = new LinkedList<BlobKey>();
+                    map2.put(name, list);
+                }
+                list.add(blobKey);
             }
         }
 
         request.setAttribute(UPLOADED_BLOBKEY_ATTR, map);
+        request.setAttribute(UPLOADED_BLOBKEY_LIST_ATTR, map2);
     }
 
     private BlobKey storeUploadedBlob(Part part) throws IOException {
@@ -186,8 +197,13 @@ public class JBossBlobstoreService implements BlobstoreService {
         return map;
     }
 
-    public Map<String, List<BlobKey>> getUploads(HttpServletRequest httpServletRequest) {
-        return new HashMap<String, List<BlobKey>>(); // TODO
+    @SuppressWarnings("unchecked")
+    public Map<String, List<BlobKey>> getUploads(HttpServletRequest request) {
+        Map<String, List<BlobKey>> map = (Map<String, List<BlobKey>>) request.getAttribute(UPLOADED_BLOBKEY_LIST_ATTR);
+        if (map == null) {
+            throw new IllegalStateException("Must be called from a blob upload callback request.");
+        }
+        return map;
     }
 
     public InputStream getStream(BlobKey blobKey) throws FileNotFoundException {
