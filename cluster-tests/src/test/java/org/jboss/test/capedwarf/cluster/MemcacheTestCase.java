@@ -1,12 +1,13 @@
 package org.jboss.test.capedwarf.cluster;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import com.google.appengine.api.memcache.Expiration;
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -14,9 +15,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import com.google.appengine.api.memcache.Expiration;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
 /**
  * @author Matej Lazar
@@ -273,7 +274,7 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     @InSequence(190)
     @OperateOnDeployment("dep1")
     public void testPutExpirationOnDepA() {
-        service.put("key44", "value", Expiration.byDeltaMillis(3000));
+        service.put("key44", "value", Expiration.byDeltaMillis(4500));
         assertTrue(service.contains("key44"));
     }
 
@@ -283,7 +284,7 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     public void testPutExpirationOnDepB() {
         sleep(3000);
         assertTrue(service.contains("key44"));
-        sleep(4000);
+        sleep(3000);
         assertFalse(service.contains("key44"));
     }
 
