@@ -20,35 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.infinispan;
+package org.jboss.capedwarf.search;
+
+import org.apache.lucene.document.Document;
+import org.hibernate.search.bridge.FieldBridge;
+import org.hibernate.search.bridge.LuceneOptions;
+
+import java.util.Locale;
 
 /**
- * Available caches in CapeDwarf.
- *
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public enum CacheName {
-    DEFAULT("default", true),
-    DATA("data", false),
-    METADATA("metadata", false),
-    MEMCACHE("memcache", false),
-    DIST("dist", false),
-    SEARCH("search", true),
-    TASKS("tasks", true);
+public class LocaleBridge implements FieldBridge {
 
-    private String name;
-    private boolean config;
+    public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
+        Locale locale = (Locale) value;
+        luceneOptions.addFieldToDocument(
+            name,
+            locale == null ? null : locale.toString(),
+            document);
 
-    private CacheName(String name, boolean config) {
-        this.name = name;
-        this.config = config;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean hasConfig() {
-        return config;
     }
 }

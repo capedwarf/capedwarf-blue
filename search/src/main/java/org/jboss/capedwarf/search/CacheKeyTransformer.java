@@ -20,35 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.infinispan;
+package org.jboss.capedwarf.search;
+
+import org.infinispan.query.Transformer;
+
+import java.util.regex.Pattern;
 
 /**
- * Available caches in CapeDwarf.
- *
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public enum CacheName {
-    DEFAULT("default", true),
-    DATA("data", false),
-    METADATA("metadata", false),
-    MEMCACHE("memcache", false),
-    DIST("dist", false),
-    SEARCH("search", true),
-    TASKS("tasks", true);
+public class CacheKeyTransformer implements Transformer {
 
-    private String name;
-    private boolean config;
+    private static final String TOKEN_DELIMITER = ":_$capedwarf$_:";
 
-    private CacheName(String name, boolean config) {
-        this.name = name;
-        this.config = config;
+    public Object fromString(String s) {
+        String[] tokens = s.split(Pattern.quote(TOKEN_DELIMITER));
+        if (tokens.length != 3) {
+            throw new IllegalArgumentException("Not a valid CacheKey string: " + s);
+        }
+
+        return new CacheKey(tokens[0], tokens[1], tokens[2]);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public boolean hasConfig() {
-        return config;
+    public String toString(Object customType) {
+        CacheKey cacheKey = (CacheKey) customType;
+        return cacheKey.getIndexName() + TOKEN_DELIMITER + cacheKey.getNamespace() + TOKEN_DELIMITER + cacheKey.getDocumentId();
     }
 }

@@ -20,35 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.infinispan;
+package org.jboss.capedwarf.bytecode;
+
+import javassist.CtClass;
+import javassist.CtMethod;
 
 /**
- * Available caches in CapeDwarf.
- *
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public enum CacheName {
-    DEFAULT("default", true),
-    DATA("data", false),
-    METADATA("metadata", false),
-    MEMCACHE("memcache", false),
-    DIST("dist", false),
-    SEARCH("search", true),
-    TASKS("tasks", true);
+public class SearchServiceFactoryTransformer extends JavassistTransformer {
+    protected void transform(CtClass clazz) throws Exception {
+        CtMethod method = clazz.getDeclaredMethod("getSearchService");
+        method.setBody("return new org.jboss.capedwarf.search.CapedwarfSearchService();");
 
-    private String name;
-    private boolean config;
-
-    private CacheName(String name, boolean config) {
-        this.name = name;
-        this.config = config;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean hasConfig() {
-        return config;
+        CtMethod method2 = clazz.getDeclaredMethod("getSearchService", new CtClass[]{clazz.getClassPool().get("java.lang.String")});
+        method2.setBody("return new org.jboss.capedwarf.search.CapedwarfSearchService($1);");
     }
 }
