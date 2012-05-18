@@ -20,35 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.infinispan;
+package org.jboss.test.capedwarf.search;
+
+import junit.framework.Assert;
+import org.jboss.capedwarf.search.CacheKey;
+import org.jboss.capedwarf.search.CacheKeyTransformer;
+import org.junit.Test;
 
 /**
- * Available caches in CapeDwarf.
  *
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public enum CacheName {
-    DEFAULT("default", true),
-    DATA("data", false),
-    METADATA("metadata", false),
-    MEMCACHE("memcache", false),
-    DIST("dist", false),
-    SEARCH("search", true),
-    TASKS("tasks", true);
+public class CacheKeyTransformerTest {
 
-    private String name;
-    private boolean config;
-
-    private CacheName(String name, boolean config) {
-        this.name = name;
-        this.config = config;
+    @Test
+    public void testSimpleCase() {
+        CacheKeyTransformer transformer = new CacheKeyTransformer();
+        CacheKey cacheKey = new CacheKey("index", "namespace", "id");
+        Assert.assertEquals(cacheKey, transformer.fromString(transformer.toString(cacheKey)));
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public boolean hasConfig() {
-        return config;
+    @Test
+    public void testEmptyNamespace() {
+        CacheKeyTransformer transformer = new CacheKeyTransformer();
+        CacheKey cacheKey = new CacheKey("index", "", "id");
+        Assert.assertEquals(cacheKey, transformer.fromString(transformer.toString(cacheKey)));
     }
 }

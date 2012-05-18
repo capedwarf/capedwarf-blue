@@ -27,26 +27,12 @@ package org.jboss.capedwarf.bytecode;
 import com.google.appengine.api.datastore.Entity;
 import javassist.CtClass;
 import javassist.NotFoundException;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.ClassFile;
-import javassist.bytecode.ConstPool;
-import javassist.bytecode.annotation.Annotation;
-import javassist.bytecode.annotation.ClassMemberValue;
-import javassist.bytecode.annotation.EnumMemberValue;
-import javassist.bytecode.annotation.StringMemberValue;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.ProvidedId;
-import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.FieldBridge;
 import org.jboss.capedwarf.datastore.query.EntityKeyBridge;
 import org.jboss.capedwarf.datastore.query.PropertyMapBridge;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
-
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -55,100 +41,20 @@ public class EntityTransformer extends JavassistTransformer {
 
     @Override
     protected void transform(CtClass clazz) throws Exception {
-        annotateClass(clazz, ProvidedId.class, Indexed.class);
-        annotateGetKindMethod(clazz);
-        annotateGetKeyMethod(clazz);
-        annotateGetPropertyMapMethod(clazz);
+        new EntityAnnotator(clazz).addAnnotations();
     }
 
-    private void annotateGetKindMethod(CtClass clazz) throws NotFoundException {
-        ConstPool constPool = getConstPool(clazz);
-        constPool.addClassInfo(Field.class.getName());
-
-        Annotation fieldAnnotation = createFieldAnnotation(QueryConverter.KIND_PROPERTY_KEY, constPool);
-        addAnnotationsToMethod(clazz, "getKind", fieldAnnotation);
-    }
-
-    private void annotateGetKeyMethod(CtClass clazz) throws NotFoundException {
-        ConstPool constPool = getConstPool(clazz);
-        Annotation fieldAnnotation = createFieldAnnotation(Entity.KEY_RESERVED_PROPERTY, constPool);
-        Annotation fieldBridgeAnnotation = createFieldBridgeAnnotation(EntityKeyBridge.class, constPool);
-        addAnnotationsToMethod(clazz, "getKey", fieldAnnotation, fieldBridgeAnnotation);
-    }
-
-    private void addAnnotationsToMethod(CtClass clazz, String methodName, Annotation... annotations) throws NotFoundException {
-        AnnotationsAttribute attribute = createAnnotationAttribute(clazz, annotations);
-        clazz.getDeclaredMethod(methodName).getMethodInfo().addAttribute(attribute);
-    }
-
-    private AnnotationsAttribute createAnnotationAttribute(CtClass clazz, Annotation... annotations) {
-        AnnotationsAttribute attribute = new AnnotationsAttribute(getConstPool(clazz), AnnotationsAttribute.visibleTag);
-        for (Annotation annotation : annotations) {
-            attribute.addAnnotation(annotation);
+    private class EntityAnnotator extends HibernateSearchAnnotator {
+        private EntityAnnotator(CtClass clazz) {
+            super(clazz);
         }
-        return attribute;
-    }
 
-    private ConstPool getConstPool(CtClass clazz) {
-        ClassFile ccFile = clazz.getClassFile();
-        return ccFile.getConstPool();
-    }
-
-    private void annotateGetPropertyMapMethod(CtClass clazz) throws NotFoundException {
-        ConstPool constPool = getConstPool(clazz);
-//        constPool.addClassInfo(Field.class.getName());        IS THIS NECESSARY OR NOT!?  APPARENTLY NOT
-//        constPool.addClassInfo(FieldBridge.class.getName());
-//        constPool.addClassInfo(PropertyMapBridge.class.getName());
-
-        Annotation fieldAnnotation = createFieldAnnotation(constPool);
-        Annotation fieldBridgeAnnotation = createFieldBridgeAnnotation(PropertyMapBridge.class, constPool);
-        addAnnotationsToMethod(clazz, "getPropertyMap", fieldAnnotation, fieldBridgeAnnotation);
-    }
-
-    private Annotation createFieldAnnotation(String name, ConstPool constPool) {
-        constPool.addStringInfo(name);
-
-        Annotation annotation = createFieldAnnotation(constPool);
-        annotation.addMemberValue("name", new StringMemberValue(name, constPool));
-        return annotation;
-    }
-
-    private Annotation createFieldAnnotation(ConstPool constPool) {
-        int storeEnumClassIndex = constPool.addUtf8Info(Store.class.getName());
-        int yesEnumValueIndex = constPool.addUtf8Info(Store.YES.name());
-
-        int indexEnumClassIndex = constPool.addUtf8Info(Index.class.getName());
-        int yesTokenizedEnumValueIndex = constPool.addUtf8Info(Index.YES.name());
-
-        int analyzeEnumClassIndex = constPool.addUtf8Info(Analyze.class.getName());
-        int noTokenizedEnumValueAnalyze = constPool.addUtf8Info(Analyze.NO.name());
-
-        Annotation annotation = new Annotation(Field.class.getName(), constPool);
-        annotation.addMemberValue("index", new EnumMemberValue(indexEnumClassIndex, yesTokenizedEnumValueIndex, constPool));
-        annotation.addMemberValue("analyze", new EnumMemberValue(analyzeEnumClassIndex, noTokenizedEnumValueAnalyze, constPool));
-        annotation.addMemberValue("store", new EnumMemberValue(storeEnumClassIndex, yesEnumValueIndex, constPool));
-        return annotation;
-    }
-
-    private Annotation createFieldBridgeAnnotation(Class<? extends org.hibernate.search.bridge.FieldBridge> implClass, ConstPool constPool) {
-        Annotation fieldBridgeAnnotation = new Annotation(FieldBridge.class.getName(), constPool);
-        fieldBridgeAnnotation.addMemberValue("impl", new ClassMemberValue(implClass.getName(), constPool));
-        return fieldBridgeAnnotation;
-    }
-
-    private void annotateClass(CtClass clazz, Class<? extends java.lang.annotation.Annotation>... annotationClasses) {
-        ClassFile ccFile = clazz.getClassFile();
-        ConstPool constPool = ccFile.getConstPool();
-
-        Annotation[] annotations = createAnnotations(constPool, annotationClasses);
-        ccFile.addAttribute(createAnnotationAttribute(clazz, annotations));
-    }
-
-    private Annotation[] createAnnotations(ConstPool constPool, Class<? extends java.lang.annotation.Annotation>[] annotationClasses) {
-        List<Annotation> annotationList = new LinkedList<Annotation>();
-        for (Class<? extends java.lang.annotation.Annotation> annotationClass : annotationClasses) {
-            annotationList.add(new Annotation(annotationClass.getName(), constPool));
+        @Override
+        public void addAnnotations() throws Exception {
+            addAnnotationsToClass(ProvidedId.class, Indexed.class);
+            addAnnotationsToMethod("getKind", createFieldAnnotation(QueryConverter.KIND_PROPERTY_KEY));
+            addAnnotationsToMethod("getKey", createFieldAnnotation(Entity.KEY_RESERVED_PROPERTY), createFieldBridgeAnnotation(EntityKeyBridge.class));
+            addAnnotationsToMethod("getPropertyMap", createFieldAnnotation(), createFieldBridgeAnnotation(PropertyMapBridge.class));
         }
-        return annotationList.toArray(new Annotation[annotationList.size()]);
     }
 }
