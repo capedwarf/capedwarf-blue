@@ -56,8 +56,6 @@
         <version.org.picketlink>2.1.1.Final</version.org.picketlink>
         <version.org.picketlink.consolidated.social>2.0.0.Beta1</version.org.picketlink.consolidated.social>
         <version.javassist>3.15.0-GA</version.javassist>
-        <version.javax.el>1.2</version.javax.el>
-        <version.javax.el.impl>1.2</version.javax.el.impl>
         <version.javax.jpa2>1.0.0.Final</version.javax.jpa2>
         <version.javax.mail>1.4.4</version.javax.mail>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
@@ -442,25 +440,6 @@
                 <artifactId>cdi-api</artifactId>
                 <version>${version.cdi.api}</version>
             </dependency>
-
-            <dependency>
-                <groupId>javax.el</groupId>
-                <artifactId>el-api</artifactId>
-                <version>${version.javax.el}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.el</groupId>
-                <artifactId>el-ri</artifactId>
-                <version>${version.javax.el.impl}</version>
-            </dependency>
-
-
-            <!--<dependency>-->
-            <!--<groupId>org.jboss.weld.servlet</groupId>-->
-            <!--<artifactId>weld-servlet</artifactId>-->
-            <!--<version>${version.org.jboss.weld.servlet}</version>-->
-            <!--</dependency>-->
 
             <dependency>
                 <groupId>org.jboss.logging</groupId>
