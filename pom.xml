@@ -373,13 +373,13 @@
             </dependency>
 
             <dependency>
-                <groupId>com.google.appengine</groupId>
+                <groupId>javax.jdo</groupId>
                 <artifactId>jdo2-api</artifactId>
                 <version>${version.org.datanucleus.jdo}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.google.appengine</groupId>
+                <groupId>org.apache.geronimo.specs</groupId>
                 <artifactId>geronimo-jta_1.1_spec</artifactId>
                 <version>${version.org.datanucleus.jta}</version>
             </dependency>
