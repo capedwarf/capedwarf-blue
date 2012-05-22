@@ -1,10 +1,10 @@
 package org.jboss.test.capedwarf.testsuite.jpa.test;
 
+import java.io.File;
+
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.DependencyResolvers;
 import org.jboss.shrinkwrap.resolver.api.maven.MavenDependencyResolver;
-
-import java.io.File;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -34,8 +34,8 @@ public class TestUtils {
         war.addAsLibraries(getResolver().artifact("org.datanucleus:datanucleus-core").resolveAsFiles());
         war.addAsLibraries(getResolver().artifact("org.datanucleus:datanucleus-jpa").resolveAsFiles());
         war.addAsLibraries(getResolver().artifact("com.google.appengine.orm:datanucleus-appengine").resolveAsFiles());
-        war.addAsLibraries(getResolver().artifact("com.google.appengine:jdo2-api").resolveAsFiles());
-        war.addAsLibraries(getResolver().artifact("com.google.appengine:geronimo-jta_1.1_spec").resolveAsFiles());
+        war.addAsLibraries(getResolver().artifact("javax.jdo:jdo2-api").resolveAsFiles());
+        war.addAsLibraries(getResolver().artifact("org.apache.geronimo.specs:geronimo-jta_1.1_spec").resolveAsFiles());
     }
 
     public static void addPersistenceXml(WebArchive war, String resource) {

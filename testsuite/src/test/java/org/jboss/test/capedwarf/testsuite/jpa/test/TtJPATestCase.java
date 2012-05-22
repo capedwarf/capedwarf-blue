@@ -16,6 +16,7 @@ public class TtJPATestCase extends SimpleJPATest {
     @Deployment
     public static WebArchive getDeployment() {
         final WebArchive war = getBaseDeployment();
+        war.addClass(TtJPATestCase.class);
         TestUtils.addPersistenceXml(war, "jpa/tt-persistence.xml");
         TestUtils.addLibraries(war);
         return war;
