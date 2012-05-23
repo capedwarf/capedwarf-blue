@@ -26,9 +26,13 @@ import java.io.Serializable;
 
 import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskOptions;
+import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Norms;
+import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.ProvidedId;
+import org.hibernate.search.annotations.TermVector;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -65,7 +69,7 @@ public class TaskOptionsEntity implements Serializable {
         this.name = name;
     }
 
-    @Field
+    @Field(analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
     public String getQueue() {
         return queue;
     }
@@ -74,7 +78,7 @@ public class TaskOptionsEntity implements Serializable {
         this.queue = queue;
     }
 
-    @Field
+    @Field(analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
     public String getTag() {
         return tag;
     }
@@ -83,6 +87,7 @@ public class TaskOptionsEntity implements Serializable {
         this.tag = tag;
     }
 
+    @NumericField
     @Field
     public long getEta() {
         return eta;

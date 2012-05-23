@@ -25,14 +25,10 @@ package org.jboss.capedwarf.tasks;
 import java.io.Serializable;
 
 import com.google.appengine.api.taskqueue.TaskOptions;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.ProvidedId;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@Indexed
-@ProvidedId // TODO -- remove this once fixed in Ispan
 public class TaskLeaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     static final String LEASE = "LEASE_";

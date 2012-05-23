@@ -41,6 +41,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.query.dsl.TermTermination;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
@@ -89,7 +90,7 @@ public class JBossQueue implements Queue {
             builder.read(c);
             builder.dataContainer().dataContainer(container);
 
-            InfinispanUtils.applyIndexing(CacheName.TASKS, builder, TaskOptionsEntity.class, TaskLeaseEntity.class);
+            InfinispanUtils.applyIndexing(CacheName.TASKS, builder, TaskOptionsEntity.class);
             return builder;
         }
     };
@@ -225,7 +226,7 @@ public class JBossQueue implements Queue {
     @SuppressWarnings("unchecked")
     protected List<TaskHandle> leaseTasks(LeaseOptionsInternal options) {
         final QueryBuilder builder = searchManager.buildQueryBuilderForClass(TaskOptionsEntity.class).get();
-        final Query queueQuery = builder.keyword().onField("queue").matching(queueName).createQuery();
+        final Query queueQuery = toTerm(builder, "queue", queueName).createQuery();
         final String tag = options.getTag();
         final Query lq;
         if (tag == null) {
@@ -236,14 +237,14 @@ public class JBossQueue implements Queue {
                     return Collections.emptyList();
                 } else {
                     final String tmp = TaskOptionsEntity.class.cast(singleton.get(0)).getTag();
-                    final Query tagQuery = builder.keyword().onField("tag").matching(tmp).createQuery();
+                    final Query tagQuery = toTerm(builder, "tag", tmp).createQuery();
                     lq = builder.bool().must(queueQuery).must(tagQuery).createQuery();
                 }
             } else {
                 lq = queueQuery;
             }
         } else {
-            final Query tagQuery = builder.keyword().onField("tag").matching(tag).createQuery();
+            final Query tagQuery = toTerm(builder, "tag", tag).createQuery();
             lq = builder.bool().must(queueQuery).must(tagQuery).createQuery();
         }
 
@@ -285,6 +286,10 @@ public class JBossQueue implements Queue {
 
     public QueueStatistics fetchStatistics() {
         return null; // TODO
+    }
+
+    static TermTermination toTerm(QueryBuilder builder, String field, Object value) {
+        return builder.keyword().onField(field).ignoreAnalyzer().ignoreFieldBridge().matching(value);
     }
 
     static void validateQueueName(String queueName) {
