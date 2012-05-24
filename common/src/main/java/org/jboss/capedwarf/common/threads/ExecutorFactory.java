@@ -23,7 +23,10 @@
 package org.jboss.capedwarf.common.threads;
 
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -41,4 +44,16 @@ public class ExecutorFactory {
         return executor;
     }
 
+    /**
+     * Wrap callable into future task.
+     *
+     * @param callable the callable
+     * @return future task
+     */
+    public static <T> Future<T> wrap(Callable<T> callable) {
+        final FutureTask<T> task = new FutureTask<T>(callable);
+        final Executor executor = getInstance();
+        executor.execute(task);
+        return task;
+    }
 }

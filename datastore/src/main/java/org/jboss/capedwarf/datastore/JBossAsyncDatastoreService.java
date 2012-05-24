@@ -22,6 +22,11 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
 import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
@@ -32,13 +37,6 @@ import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 /**
  * JBoss async DatastoreService impl.
@@ -54,10 +52,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     }
 
     protected <T> Future<T> wrap(final Callable<T> callable) {
-        final FutureTask<T> task = new FutureTask<T>(callable);
-        final Executor executor = ExecutorFactory.getInstance();
-        executor.execute(task);
-        return task;        
+        return ExecutorFactory.wrap(callable);
     }
     
     public Future<Transaction> beginTransaction() {

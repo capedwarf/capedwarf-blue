@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.search;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
@@ -29,35 +32,17 @@ import com.google.appengine.api.search.ListIndexesRequest;
 import com.google.appengine.api.search.ListIndexesResponse;
 import com.google.appengine.api.search.SearchService;
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.ConfigurationCallback;
+import org.jboss.capedwarf.common.infinispan.ConfigurationCallbacks;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-
-import java.util.concurrent.Future;
+import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfSearchService implements SearchService {
-
-    private static final CacheName CACHE_NAME = CacheName.SEARCH;
-
-    private static final ConfigurationCallback CALLBACK = new ConfigurationCallback() {
-        public ConfigurationBuilder configure(EmbeddedCacheManager manager) {
-            Configuration c = InfinispanUtils.getConfiguration(CACHE_NAME);
-
-            ConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.read(c);
-
-            InfinispanUtils.applyIndexing(CACHE_NAME, builder, CacheValue.class);
-            return builder;
-        }
-    };
-
 
     private String namespace;
 
@@ -75,7 +60,7 @@ public class CapedwarfSearchService implements SearchService {
 
     private void initCache() {
         ClassLoader classLoader = Application.getAppClassloader();
-        this.cache = InfinispanUtils.<CacheKey, CacheValue>getCache(CACHE_NAME, CALLBACK).getAdvancedCache().with(classLoader);
+        this.cache = InfinispanUtils.<CacheKey, CacheValue>getCache(CacheName.DEFAULT, ConfigurationCallbacks.DEFAULT_CALLBACK).getAdvancedCache().with(classLoader);
     }
 
     public Index getIndex(IndexSpec indexSpec) {
@@ -100,11 +85,15 @@ public class CapedwarfSearchService implements SearchService {
     }
 
     public ListIndexesResponse listIndexes(ListIndexesRequest request) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  // TODO
     }
 
-    public Future<ListIndexesResponse> listIndexesAsync(ListIndexesRequest request) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<ListIndexesResponse> listIndexesAsync(final ListIndexesRequest request) {
+        return ExecutorFactory.wrap(new Callable<ListIndexesResponse>() {
+            public ListIndexesResponse call() throws Exception {
+                return listIndexes(request);
+            }
+        });
     }
 
     public void clear() {

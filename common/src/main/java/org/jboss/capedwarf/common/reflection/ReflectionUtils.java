@@ -26,6 +26,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import org.jboss.capedwarf.common.app.Application;
+
 /**
  * Reflection hacks.
  *
@@ -35,6 +37,25 @@ public final class ReflectionUtils {
 
     private static final Class[] EMPTY_CLASSES = new Class[0];
     private static final Object[] EMPTY_ARGS = new Object[0];
+
+    /**
+     * Load class.
+     *
+     * @param className the classname
+     * @return loaded class or rutime exception
+     */
+    public static Class<?> loadClass(String className) {
+        ClassLoader appCL = Application.getAppClassloader();
+        Class<?> clazz = loadClass(appCL, className);
+        if (clazz != null)
+            return clazz;
+
+        clazz = loadClass(ReflectionUtils.class.getClassLoader(), className);
+        if (clazz != null)
+            return clazz;
+
+        throw new RuntimeException(new ClassNotFoundException(className));
+    }
 
     /**
      * Create new instance.
@@ -236,6 +257,21 @@ public final class ReflectionUtils {
             field.set(null, value);
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Try loading the class.
+     *
+     * @param cl the classloader
+     * @param className the classname
+     * @return loaded class or null
+     */
+    private static Class<?> loadClass(ClassLoader cl, String className) {
+        try {
+            return cl.loadClass(className);
+        } catch (ClassNotFoundException ignored) {
+            return null;
         }
     }
 

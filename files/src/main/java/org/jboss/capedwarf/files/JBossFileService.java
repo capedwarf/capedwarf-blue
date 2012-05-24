@@ -42,6 +42,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileReadChannel;
 import com.google.appengine.api.files.FileService;
+import com.google.appengine.api.files.FileStat;
 import com.google.appengine.api.files.FileWriteChannel;
 import com.google.appengine.api.files.FinalizationException;
 import com.google.appengine.api.files.GSFileOptions;
@@ -236,4 +237,31 @@ public class JBossFileService implements FileService {
         return new AppEngineFile(blobKey.getKeyString());
     }
 
+    protected Entity getFileInfo(Key key) {
+        try {
+            DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+            return datastoreService.get(key);
+        } catch (EntityNotFoundException e) {
+            return null;
+        }
+    }
+
+    public FileStat stat(AppEngineFile file) throws IOException {
+        Entity info = getFileInfo(KeyFactory.createKey(BlobInfoFactory.KIND, getBlobKey(file).getKeyString()));
+        if (info == null) {
+            info = getFileInfo(getTempBlobInfoKey(file));
+            if (info == null) {
+                throw new FileNotFoundException(file.toString());
+            } else {
+                throw ReflectionUtils.newInstance(FinalizationException.class);
+            }
+        } else {
+            final FileStat stat = new FileStat();
+            stat.setFinalized(true);
+            stat.setFilename(info.getProperty(BlobInfoFactory.FILENAME).toString());
+            stat.setLength((Long)info.getProperty(BlobInfoFactory.SIZE));
+            // TODO -- setMtime, setCtime
+            return stat;
+        }
+    }
 }

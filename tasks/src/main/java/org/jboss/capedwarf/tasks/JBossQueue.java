@@ -90,7 +90,7 @@ public class JBossQueue implements Queue {
             builder.read(c);
             builder.dataContainer().dataContainer(container);
 
-            InfinispanUtils.applyIndexing(CacheName.TASKS, builder, TaskOptionsEntity.class);
+            InfinispanUtils.applyIndexing(CacheName.TASKS, builder);
             return builder;
         }
     };

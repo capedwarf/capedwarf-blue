@@ -33,15 +33,12 @@ import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.ConfigurationCallback;
+import org.jboss.capedwarf.common.infinispan.ConfigurationCallbacks;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
@@ -53,18 +50,6 @@ import org.jboss.capedwarf.datastore.query.QueryConverter;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class AbstractDatastoreService implements BaseDatastoreService {
-    private static final ConfigurationCallback CALLBACK = new ConfigurationCallback() {
-        public ConfigurationBuilder configure(EmbeddedCacheManager manager) {
-            Configuration c = InfinispanUtils.getConfiguration(CacheName.DEFAULT);
-
-            ConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.read(c);
-
-            InfinispanUtils.applyIndexing(CacheName.DEFAULT, builder, Entity.class);
-            return builder;
-        }
-    };
-
     protected final Logger log = Logger.getLogger(getClass().getName());
     protected final Cache<Key, Entity> store;
     protected final SearchManager searchManager;
@@ -78,7 +63,7 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     protected Cache<Key, Entity> createStore() {
-        return InfinispanUtils.getCache(CacheName.DEFAULT, CALLBACK);
+        return InfinispanUtils.getCache(CacheName.DEFAULT, ConfigurationCallbacks.DEFAULT_CALLBACK);
     }
 
     public PreparedQuery prepare(Query query) {

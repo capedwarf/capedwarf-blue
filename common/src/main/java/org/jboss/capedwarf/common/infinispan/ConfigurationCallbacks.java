@@ -22,44 +22,28 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
-import com.google.appengine.api.datastore.Entity;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
- * Available caches in CapeDwarf.
+ * Cache configuration callbacks.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public enum CacheName {
-    DEFAULT("default", true, new CacheIndexing().addClass(Entity.class).addClass("org.jboss.capedwarf.search.CacheValue")),
-    DATA("data", false),
-    METADATA("metadata", false),
-    MEMCACHE("memcache", false),
-    DIST("dist", false),
-    TASKS("tasks", true, new CacheIndexing().addClass("org.jboss.capedwarf.tasks.TaskOptionsEntity"));
+public final class ConfigurationCallbacks {
+    /**
+     * Default cache's callback.
+     */
+    public static final ConfigurationCallback DEFAULT_CALLBACK = new ConfigurationCallback() {
+        public ConfigurationBuilder configure(EmbeddedCacheManager manager) {
+            Configuration c = InfinispanUtils.getConfiguration(CacheName.DEFAULT);
 
-    private String name;
-    private boolean config;
-    private CacheIndexing indexing;
+            ConfigurationBuilder builder = new ConfigurationBuilder();
+            builder.read(c);
 
-    private CacheName(String name, boolean config) {
-        this.name = name;
-        this.config = config;
-    }
-
-    private CacheName(String name, boolean config, CacheIndexing indexing) {
-        this(name, config);
-        this.indexing = indexing;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean hasConfig() {
-        return config;
-    }
-
-    public CacheIndexing getIndexing() {
-        return indexing;
-    }
+            InfinispanUtils.applyIndexing(CacheName.DEFAULT, builder);
+            return builder;
+        }
+    };
 }

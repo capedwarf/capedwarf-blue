@@ -22,44 +22,30 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
-import com.google.appengine.api.datastore.Entity;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
- * Available caches in CapeDwarf.
+ * Cache indexing.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public enum CacheName {
-    DEFAULT("default", true, new CacheIndexing().addClass(Entity.class).addClass("org.jboss.capedwarf.search.CacheValue")),
-    DATA("data", false),
-    METADATA("metadata", false),
-    MEMCACHE("memcache", false),
-    DIST("dist", false),
-    TASKS("tasks", true, new CacheIndexing().addClass("org.jboss.capedwarf.tasks.TaskOptionsEntity"));
+public class CacheIndexing {
+    private Set<Class<?>> classes = new CopyOnWriteArraySet<Class<?>>();
 
-    private String name;
-    private boolean config;
-    private CacheIndexing indexing;
-
-    private CacheName(String name, boolean config) {
-        this.name = name;
-        this.config = config;
+    public CacheIndexing addClass(Class<?> clazz) {
+        classes.add(clazz);
+        return this;
     }
 
-    private CacheName(String name, boolean config, CacheIndexing indexing) {
-        this(name, config);
-        this.indexing = indexing;
+    public CacheIndexing addClass(String className) {
+        classes.add(ReflectionUtils.loadClass(className));
+        return this;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public boolean hasConfig() {
-        return config;
-    }
-
-    public CacheIndexing getIndexing() {
-        return indexing;
+    public Iterable<Class<?>> getClasses() {
+        return classes;
     }
 }

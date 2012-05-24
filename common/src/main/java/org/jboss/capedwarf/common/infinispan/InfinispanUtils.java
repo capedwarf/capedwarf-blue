@@ -95,12 +95,16 @@ public class InfinispanUtils {
         return c;
     }
 
-    public static SearchMapping applyIndexing(CacheName config, ConfigurationBuilder builder, Class<?> ... classes) {
+    public static SearchMapping applyIndexing(CacheName config, ConfigurationBuilder builder) {
+        final CacheIndexing ci = config.getIndexing();
+        if (ci == null)
+            throw new IllegalArgumentException("Missing cache indexing info: " + config);
+
         final String appId = Application.getAppId();
         final IndexingConfigurationBuilder indexing = builder.indexing();
         indexing.addProperty("hibernate.search.default.indexBase", "./indexes_" + appId);
         final SearchMapping mapping = new SearchMapping();
-        for (Class<?> clazz : classes) {
+        for (Class<?> clazz : ci.getClasses()) {
             final EntityMapping entity = mapping.entity(clazz);
             entity.indexed().indexName(toCacheName(config, appId) + "__" + clazz.getName());
         }

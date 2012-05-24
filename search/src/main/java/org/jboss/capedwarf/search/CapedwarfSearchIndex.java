@@ -22,7 +22,15 @@
 
 package org.jboss.capedwarf.search;
 
-import com.google.appengine.api.search.AddDocumentsResponse;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
+import com.google.appengine.api.search.AddResponse;
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Cursor;
 import com.google.appengine.api.search.Document;
@@ -46,16 +54,11 @@ import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Future;
+import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfSearchIndex implements Index {
 
@@ -90,28 +93,45 @@ public class CapedwarfSearchIndex implements Index {
         return removeAsync(Arrays.asList(documentIds));
     }
 
-    public Future<Void> removeAsync(Iterable<String> documentIds) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Void> removeAsync(final Iterable<String> documentIds) {
+        return ExecutorFactory.wrap(new Callable<Void>() {
+            public Void call() throws Exception {
+                remove(documentIds);
+                return null;
+            }
+        });
     }
 
-    public Future<AddDocumentsResponse> addAsync(Document... documents) {
+    public Future<AddResponse> addAsync(Document... documents) {
         return addAsync(Arrays.asList(documents));
     }
 
-    public Future<AddDocumentsResponse> addAsync(Iterable<Document> documents) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<AddResponse> addAsync(final Iterable<Document> documents) {
+        return ExecutorFactory.wrap(new Callable<AddResponse>() {
+            public AddResponse call() throws Exception {
+                return add(documents);
+            }
+        });
     }
 
     public Future<Results<ScoredDocument>> searchAsync(String queryString) {
         return searchAsync(Query.newBuilder().build(queryString));
     }
 
-    public Future<Results<ScoredDocument>> searchAsync(Query query) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<Results<ScoredDocument>> searchAsync(final Query query) {
+        return ExecutorFactory.wrap(new Callable<Results<ScoredDocument>>() {
+            public Results<ScoredDocument> call() throws Exception {
+                return search(query);
+            }
+        });
     }
 
-    public Future<ListResponse<Document>> listDocumentsAsync(ListRequest listRequest) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Future<ListResponse<Document>> listDocumentsAsync(final ListRequest listRequest) {
+        return ExecutorFactory.wrap(new Callable<ListResponse<Document>>() {
+            public ListResponse<Document> call() throws Exception {
+                return listDocuments(listRequest);
+            }
+        });
     }
 
     public void remove(String... documentIds) {
@@ -132,11 +152,11 @@ public class CapedwarfSearchIndex implements Index {
         return new CacheValue(getName(), getNamespace(), document);
     }
 
-    public AddDocumentsResponse add(Document... documents) {
+    public AddResponse add(Document... documents) {
         return add(Arrays.asList(documents));
     }
 
-    public AddDocumentsResponse add(Iterable<Document> documents) {
+    public AddResponse add(Iterable<Document> documents) {
         List<Document> documentList = new ArrayList<Document>();
         List<String> documentIds = new ArrayList<String>();
         for (Document document : documents) {
@@ -147,7 +167,7 @@ public class CapedwarfSearchIndex implements Index {
         }
 
         return ReflectionUtils.newInstance(
-            AddDocumentsResponse.class,
+            AddResponse.class,
             new Class[]{List.class, List.class},
             new Object[]{documentList, documentIds});
     }
@@ -245,6 +265,6 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public Schema getSchema() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;  // TODO
     }
 }
