@@ -351,7 +351,6 @@ public class SearchTestCase {
         assertEquals(5, index.listDocuments(listRequest).getResults().size());
     }
 
-    @Ignore("listDocuments not fully implemented yet")
     @Test
     public void testListDocumentsWithStartId() {
         Index index = getTestIndex();

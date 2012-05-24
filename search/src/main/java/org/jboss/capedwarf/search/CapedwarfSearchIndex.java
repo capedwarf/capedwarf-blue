@@ -47,8 +47,10 @@ import com.google.appengine.api.search.StatusCode;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.Sort;
 import org.apache.lucene.util.Version;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.query.dsl.RangeTerminationExcludable;
 import org.infinispan.Cache;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
@@ -248,15 +250,37 @@ public class CapedwarfSearchIndex implements Index {
 
     public ListResponse<Document> listDocuments(ListRequest listRequest) {
         List<Document> documents = new ArrayList<Document>();
-        CacheQuery cacheQuery = searchManager.getQuery(createIndexAndNamespaceQuery());
-        if (listRequest.getLimit() > 0) {
-            cacheQuery.maxResults(listRequest.getLimit());
-        }
+        CacheQuery cacheQuery = createListDocumentsQuery(listRequest);
         for (Object o : cacheQuery.list()) {
             CacheValue cacheValue = (CacheValue) o;
             documents.add(cacheValue.getDocument());
         }
         return newListResponse(documents);
+    }
+
+    private CacheQuery createListDocumentsQuery(ListRequest listRequest) {
+        CacheQuery query;
+        if (listRequest.getStartId() == null) {
+            query = searchManager.getQuery(createIndexAndNamespaceQuery());
+        } else {
+            query = searchManager.getQuery(
+                createQueryBuilder().bool()
+                    .must(createIndexAndNamespaceQuery())
+                    .must(createStartingIdQuery(listRequest))
+                    .createQuery());
+        }
+        if (listRequest.getLimit() > 0) {
+            query.maxResults(listRequest.getLimit());
+        }
+        return query;
+    }
+
+    private org.apache.lucene.search.Query createStartingIdQuery(ListRequest listRequest) {
+        RangeTerminationExcludable range = createQueryBuilder().range().onField(CacheValue.ID_FIELD_NAME).above(listRequest.getStartId());
+        if (!listRequest.isIncludeStart()) {
+            range = range.excludeLimit();
+        }
+        return range.createQuery();
     }
 
     @SuppressWarnings("unchecked")
