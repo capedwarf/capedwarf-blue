@@ -72,13 +72,11 @@ public class SearchTestCase {
     public void setUp() throws Exception {
         service = SearchServiceFactory.getSearchService();
         ((CapedwarfSearchService)service).clear();
-        Assert.assertTrue("Tests can only be run on an empty cache", ((CapedwarfSearchService) service).isEmpty());
     }
 
     @After
     public void tearDown() throws Exception {
         ((CapedwarfSearchService)service).clear();
-        Assert.assertTrue("tearDown didn't clear cache", ((CapedwarfSearchService) service).isEmpty());
     }
 
     @Deployment
