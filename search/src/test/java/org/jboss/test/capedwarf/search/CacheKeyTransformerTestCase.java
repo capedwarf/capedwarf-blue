@@ -28,9 +28,9 @@ import org.jboss.capedwarf.search.CacheKeyTransformer;
 import org.junit.Test;
 
 /**
- *
+ * Non-Arquillian on purpose.
  */
-public class CacheKeyTransformerTest {
+public class CacheKeyTransformerTestCase {
 
     @Test
     public void testSimpleCase() {

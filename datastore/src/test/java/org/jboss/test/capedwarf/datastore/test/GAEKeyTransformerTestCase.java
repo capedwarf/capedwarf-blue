@@ -43,7 +43,7 @@ import static org.junit.Assert.assertFalse;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class GAEKeyTransformerTest {
+public class GAEKeyTransformerTestCase {
 
     private GAEKeyTransformer transformer = new GAEKeyTransformer();
 

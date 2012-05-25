@@ -22,7 +22,9 @@
 
 package org.jboss.test.capedwarf.log;
 
-import com.google.appengine.api.log.AppLogLine;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+
 import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.log.RequestLogs;
@@ -36,38 +38,33 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.List;
-import java.util.logging.Logger;
-
 /**
  *
  */
 @RunWith(Arquillian.class)
-public class LoggingTest {
+public class LoggingConfigurationTestCase {
 
     @Deployment
     public static Archive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
                 .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web.xml");
+                .addAsWebInfResource("appengine-web-with-logging-properties.xml", "appengine-web.xml")
+                .addAsWebInfResource("logging.properties");
     }
 
     @Test
-    public void testLogging() {
+    public void testLoggingCanBeTurnedOff() {
         Logger log = Logger.getLogger("TestLogger");
         log.info("hello");
+        flush(log);
 
         Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery());
-        Assert.assertTrue(iterable.iterator().hasNext());
+        Assert.assertFalse("log should be empty, but it is not", iterable.iterator().hasNext());
+    }
 
-        for (RequestLogs requestLogs : iterable) {
-            List<AppLogLine> appLogLines = requestLogs.getAppLogLines();
-            for (AppLogLine appLogLine : appLogLines) {
-                if ("hello".equals(appLogLine.getLogMessage())) {
-                    return; // test passes
-                }
-            }
+    private void flush(Logger log) {
+        for (Handler handler : log.getHandlers()) {
+            handler.flush();
         }
-        Assert.fail("Did not find 'hello' in logs.");
     }
 }

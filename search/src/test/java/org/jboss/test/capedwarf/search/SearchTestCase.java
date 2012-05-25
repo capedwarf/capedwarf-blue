@@ -22,6 +22,14 @@
 
 package org.jboss.test.capedwarf.search;
 
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
@@ -45,14 +53,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-
 import static com.google.appengine.api.search.Field.FieldType.TEXT;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -64,7 +64,7 @@ import static junit.framework.Assert.fail;
  *
  */
 @RunWith(Arquillian.class)
-public class SearchTest {
+public class SearchTestCase {
 
     private SearchService service;
 
@@ -84,7 +84,7 @@ public class SearchTest {
     @Deployment
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
-            .addClass(SearchTest.class)
+            .addClass(SearchTestCase.class)
             .setWebXML(new StringAsset("<web/>"))
             .addAsWebInfResource("appengine-web.xml");
     }

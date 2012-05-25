@@ -22,6 +22,10 @@
 
 package org.jboss.test.capedwarf.log;
 
+import java.util.List;
+import java.util.logging.Logger;
+
+import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.log.RequestLogs;
@@ -32,41 +36,38 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.logging.Handler;
-import java.util.logging.Logger;
 
 /**
  *
  */
-@Ignore
 @RunWith(Arquillian.class)
-public class LoggingConfigurationTest {
+public class LoggingTestCase {
 
     @Deployment
     public static Archive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
                 .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web-with-logging-properties.xml", "appengine-web.xml")
-                .addAsWebInfResource("logging.properties");
+                .addAsWebInfResource("appengine-web.xml");
     }
 
     @Test
-    public void testLoggingCanBeTurnedOff() {
+    public void testLogging() {
         Logger log = Logger.getLogger("TestLogger");
         log.info("hello");
-        flush(log);
 
         Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery());
-        Assert.assertFalse("log should be empty, but it is not", iterable.iterator().hasNext());
-    }
+        Assert.assertTrue(iterable.iterator().hasNext());
 
-    private void flush(Logger log) {
-        for (Handler handler : log.getHandlers()) {
-            handler.flush();
+        for (RequestLogs requestLogs : iterable) {
+            List<AppLogLine> appLogLines = requestLogs.getAppLogLines();
+            for (AppLogLine appLogLine : appLogLines) {
+                if ("hello".equals(appLogLine.getLogMessage())) {
+                    return; // test passes
+                }
+            }
         }
+        Assert.fail("Did not find 'hello' in logs.");
     }
 }
