@@ -36,26 +36,30 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
+ * @author Marko Luksa
  */
 @RunWith(Arquillian.class)
-public class LoggingTestCase {
+public class LoggingTestCase extends AbstractLoggingTest {
 
     @Deployment
     public static Archive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
+                .addClass(AbstractLoggingTest.class)
                 .setWebXML(new StringAsset("<web/>"))
                 .addAsWebInfResource("appengine-web.xml");
     }
 
     @Test
+    @Ignore
     public void testLogging() {
-        Logger log = Logger.getLogger("TestLogger");
+        Logger log = Logger.getLogger(LoggingTestCase.class.getName());
         log.info("hello");
+        flush(log);
 
         Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery());
         Assert.assertTrue(iterable.iterator().hasNext());
