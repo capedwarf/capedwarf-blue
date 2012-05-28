@@ -22,6 +22,10 @@
 
 package org.jboss.test.capedwarf.files.test;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
@@ -29,9 +33,11 @@ import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileReadChannel;
 import com.google.appengine.api.files.FileService;
 import com.google.appengine.api.files.FileServiceFactory;
+import com.google.appengine.api.files.FileStat;
 import com.google.appengine.api.files.FileWriteChannel;
 import com.google.appengine.api.files.FinalizationException;
 import com.google.appengine.api.files.RecordWriteChannel;
+import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -42,11 +48,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -167,6 +171,39 @@ public class FilesTestCase {
         assertTrue(getFileContents(file).isEmpty());
     }
 
+    @Test
+    public void testStats() throws Exception {
+        AppEngineFile file = service.createNewBlobFile("text/plain", "records123.txt");
+        writeToFileAndFinalize(file, "This is content.");
+        FileStat stat = service.stat(file);
+        Assert.assertNotNull(stat);
+        Assert.assertTrue(stat.isFinalized());
+        Assert.assertEquals("records123.txt", stat.getFilename());
+        Assert.assertTrue(stat.getLength() > 0);
+    }
+
+    @Test
+    public void testStatsNotFinalized() throws Exception {
+        AppEngineFile file = service.createNewBlobFile("text/plain", "records321.txt");
+        writeToFile(file, "This is content.");
+        try {
+            service.stat(file);
+        } catch (Exception e) {
+            Assert.assertTrue(e instanceof FinalizationException);
+        }
+    }
+
+    @Test
+    public void testStatsFileNotFound() throws Exception {
+        AppEngineFile file = service.createNewBlobFile("text/plain", "records456.txt");
+        writeToFile(file, "This is content.");
+        try {
+            AppEngineFile tmp = new AppEngineFile(AppEngineFile.FileSystem.BLOBSTORE, "some-not-existing-path.txt");
+            service.stat(tmp);
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage(), e instanceof FileNotFoundException);
+        }
+    }
 
     private void writeToFile(AppEngineFile file, String content) throws IOException {
         writeToFile(file, content, false);
