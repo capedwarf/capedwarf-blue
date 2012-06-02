@@ -167,14 +167,14 @@ public class SearchTestCase {
 
         Document doc1 = Document.newBuilder()
             .setId(documentId)
-            .setOrderId(123)
+            .setRank(123)
             .addField(newField("bar").setText("ding"))
             .build();
         index.add(doc1);
 
         Document doc2 = Document.newBuilder()
             .setId(documentId)
-            .setOrderId(456)
+            .setRank(456)
             .addField(newField("bar").setText("dong"))
             .build();
         index.add(doc2);
@@ -184,7 +184,7 @@ public class SearchTestCase {
 
         Document retrievedDoc = results.get(0);
         assertEquals(doc2, retrievedDoc);
-        assertEquals(456, retrievedDoc.getOrderId());
+        assertEquals(456, retrievedDoc.getRank());
         assertEquals("dong", retrievedDoc.getOnlyField("bar").getText());
     }
 
@@ -218,13 +218,13 @@ public class SearchTestCase {
         Document doc = Document.newBuilder()
             .setId("foo")
             .setLocale(Locale.CANADA)
-            .setOrderId(123)
+            .setRank(123)
             .build();
 
         Document retrievedDoc = addAndRetrieve(doc);
         assertEquals("document id is not persisted", "foo", retrievedDoc.getId());
         assertEquals("document locale is not persisted", Locale.CANADA, retrievedDoc.getLocale());
-        assertEquals("document orderId is not persisted", 123, retrievedDoc.getOrderId());
+        assertEquals("document rank is not persisted", 123, retrievedDoc.getRank());
     }
 
     @Test

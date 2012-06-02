@@ -224,7 +224,7 @@ public class CapedwarfSearchIndex implements Index {
         ScoredDocument.Builder builder = ScoredDocument.newBuilder();
         builder.setId(document.getId());
         builder.setLocale(document.getLocale());
-        builder.setOrderId(document.getOrderId());
+        builder.setRank(document.getRank());
         for (Field field : document.getFields()) {
             builder.addField(field);
         }

@@ -43,6 +43,8 @@ public class CacheValue implements Serializable {
 
     public static final String EMPTY_NAMESPACE = "_____EMPTY_NAMESPACE____";
     public static final String ID_FIELD_NAME = "__id__";
+    public static final String RANK_FIELD_NAME = "__rank__";
+    public static final String LOCALE_FIELD_NAME = "__locale__";
     public static final String ALL_FIELD_NAME = "__all__";
 
     private String indexName;
@@ -70,15 +72,15 @@ public class CacheValue implements Serializable {
         return document.getId();
     }
 
-    @Field
+    @Field(name = LOCALE_FIELD_NAME)
     @FieldBridge(impl = LocaleBridge.class)
     public Locale getLocale() {
         return document.getLocale();
     }
 
-    @Field
-    public int getOrderId() {
-        return document.getOrderId();
+    @Field(name = RANK_FIELD_NAME)
+    public int getRank() {
+        return document.getRank();
     }
 
     @Field
