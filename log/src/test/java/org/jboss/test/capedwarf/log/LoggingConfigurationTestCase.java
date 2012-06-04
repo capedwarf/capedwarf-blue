@@ -24,17 +24,12 @@ package org.jboss.test.capedwarf.log;
 
 import java.util.logging.Logger;
 
-import com.google.appengine.api.log.LogQuery;
-import com.google.appengine.api.log.LogServiceFactory;
-import com.google.appengine.api.log.RequestLogs;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,14 +49,20 @@ public class LoggingConfigurationTestCase extends AbstractLoggingTest {
     }
 
     @Test
-    @Ignore
-    public void testLoggingCanBeTurnedOff() {
+    public void testLoggingPropertiesAreHonored() {
+        String infoHello = "info hello";
+        String severeHello = "severe hello";
+
+        assertLogDoesntContain(infoHello);
+        assertLogDoesntContain(severeHello);
+
         Logger log = Logger.getLogger(LoggingConfigurationTestCase.class.getName());
-        log.info("hello");
+        log.info(infoHello);
+        log.severe(severeHello);
         flush(log);
 
-        Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery());
-        Assert.assertFalse("log should be empty, but it is not", iterable.iterator().hasNext());
+        assertLogDoesntContain(infoHello);
+        assertLogContains(severeHello);
     }
 
 }

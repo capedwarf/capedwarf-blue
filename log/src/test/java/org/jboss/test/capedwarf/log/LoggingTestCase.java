@@ -22,21 +22,14 @@
 
 package org.jboss.test.capedwarf.log;
 
-import java.util.List;
 import java.util.logging.Logger;
 
-import com.google.appengine.api.log.AppLogLine;
-import com.google.appengine.api.log.LogQuery;
-import com.google.appengine.api.log.LogServiceFactory;
-import com.google.appengine.api.log.RequestLogs;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,23 +48,13 @@ public class LoggingTestCase extends AbstractLoggingTest {
     }
 
     @Test
-    @Ignore
     public void testLogging() {
+        assertLogDoesntContain("hello");
+
         Logger log = Logger.getLogger(LoggingTestCase.class.getName());
         log.info("hello");
         flush(log);
 
-        Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery());
-        Assert.assertTrue(iterable.iterator().hasNext());
-
-        for (RequestLogs requestLogs : iterable) {
-            List<AppLogLine> appLogLines = requestLogs.getAppLogLines();
-            for (AppLogLine appLogLine : appLogLines) {
-                if ("hello".equals(appLogLine.getLogMessage())) {
-                    return; // test passes
-                }
-            }
-        }
-        Assert.fail("Did not find 'hello' in logs.");
+        assertLogContains("hello");
     }
 }

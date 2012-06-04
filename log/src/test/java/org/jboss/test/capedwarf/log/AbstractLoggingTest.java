@@ -22,16 +22,53 @@
 
 package org.jboss.test.capedwarf.log;
 
+import com.google.appengine.api.log.AppLogLine;
+import com.google.appengine.api.log.LogQuery;
+import com.google.appengine.api.log.LogServiceFactory;
+import com.google.appengine.api.log.RequestLogs;
+import org.jboss.capedwarf.log.JBossLogService;
+import org.junit.Before;
+
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author Ales Justin
+ * @author Marko Luksa
  */
 public class AbstractLoggingTest {
+
+    @Before
+    public void clearLog() {
+        ((JBossLogService) LogServiceFactory.getLogService()).clearLog();
+    }
+
     protected void flush(Logger log) {
         for (Handler handler : log.getHandlers()) {
             handler.flush();
         }
+    }
+
+    protected boolean logContains(String text) {
+        Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery());
+        for (RequestLogs logs : iterable) {
+            for (AppLogLine logLine : logs.getAppLogLines()) {
+                if (logLine.getLogMessage().contains(text)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    protected void assertLogDoesntContain(String text) {
+        assertFalse("log should not contain '" + text + "', but it does", logContains(text));
+    }
+
+    protected void assertLogContains(String text) {
+        assertTrue("log should contain '" + text + "', but it does not", logContains(text));
     }
 }
