@@ -42,6 +42,9 @@ import java.util.Locale;
 public class CacheValue implements Serializable {
 
     public static final String EMPTY_NAMESPACE = "_____EMPTY_NAMESPACE____";
+    public static final String ID_FIELD_NAME = "__id__";
+    public static final String RANK_FIELD_NAME = "__rank__";
+    public static final String LOCALE_FIELD_NAME = "__locale__";
     public static final String ALL_FIELD_NAME = "__all__";
 
     private String indexName;
@@ -49,7 +52,6 @@ public class CacheValue implements Serializable {
     private Document document;
 
     public CacheValue(String indexName, String namespace, Document document) {
-        System.out.println("CacheValue.CacheValue(" + indexName + ", " + namespace + ", document");
         this.indexName = indexName;
         this.namespace = namespace;
         this.document = document;
@@ -65,20 +67,20 @@ public class CacheValue implements Serializable {
         return namespace.isEmpty() ? EMPTY_NAMESPACE : namespace;
     }
 
-    @Field
+    @Field(name = ID_FIELD_NAME)
     public String getId() {
         return document.getId();
     }
 
-    @Field
+    @Field(name = LOCALE_FIELD_NAME)
     @FieldBridge(impl = LocaleBridge.class)
     public Locale getLocale() {
         return document.getLocale();
     }
 
-    @Field
-    public int getOrderId() {
-        return document.getOrderId();
+    @Field(name = RANK_FIELD_NAME)
+    public int getRank() {
+        return document.getRank();
     }
 
     @Field
