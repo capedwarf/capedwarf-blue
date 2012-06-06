@@ -23,7 +23,6 @@
 package org.jboss.test.capedwarf.search;
 
 import com.google.appengine.api.search.query.QueryTreeBuilder;
-import com.google.appengine.api.search.query.QueryTreeVisitor;
 import com.google.appengine.api.search.query.QueryTreeWalker;
 import com.google.appengine.repackaged.org.antlr.runtime.RecognitionException;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.CommonTree;
@@ -34,6 +33,7 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
+import org.jboss.capedwarf.search.PrintingQueryTreeVisitor;
 import org.jboss.capedwarf.search.QueryConverter;
 import org.junit.Test;
 
@@ -62,7 +62,7 @@ public class QueryConverterTestCase {
         assertQueryEquals("bob:hope AND bob:dope", "bob:(hope AND dope)");
         assertQueryEquals("bob:hope AND bob:dope", "bob:(hope dope)");
         assertQueryEquals("bob:[hope TO hope] OR bob:[dope TO dope]", "bob=(hope OR dope)");
-//
+
         assertQueryEquals("field:[12 TO 12]", "field=12");
         assertQueryEquals("field:{12 TO *}", "field>12");
         assertQueryEquals("field:[12 TO *]", "field>=12");
@@ -100,12 +100,11 @@ public class QueryConverterTestCase {
         assertQueryEquals("author:bob OR ((author:rose OR author:tom) AND author:jones)", "author:(bob OR ((rose OR tom) AND jones))");
         assertQueryEquals("author:rose AND (NOT body:filigree)", "author:rose NOT body:filigree");
         assertQueryEquals("(author:Thomas OR author:Jones) AND (NOT body:rose)", "(author:Thomas OR author:Jones) AND (NOT body:rose)");
-
     }
 
     private static void assertQueryEquals(String expectedLuceneQueryString, String gaeQueryString) throws ParseException {
         dumpTree(gaeQueryString);
-        Query query = new QueryConverter(gaeQueryString).convert();
+        Query query = new QueryConverter("all").convert(gaeQueryString);
         Query expectedQuery = new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION)).parse(expectedLuceneQueryString);
         System.out.println("expectedQuery = " + expectedQuery + "    (" + expectedQuery.getClass() + ")");
         System.out.println("query = " + query + "    (" + query.getClass() + ")");
@@ -119,87 +118,9 @@ public class QueryConverterTestCase {
             System.out.println("query = " + query);
             CommonTree tree = new QueryTreeBuilder().parse(query);
             Tree simplifiedTree = QueryTreeWalker.simplify(tree);
-            new QueryTreeWalker(new MyQueryTreeVisitor()).walk(simplifiedTree, 0);
+            new QueryTreeWalker<Integer>(new PrintingQueryTreeVisitor()).walk(simplifiedTree, 0);
         } catch (RecognitionException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private static class MyQueryTreeVisitor implements QueryTreeVisitor<Integer> {
-        public void visitSequence(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("sequence", walker, tree, level);
-        }
-
-        public void visitConjunction(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("conjunction", walker, tree, level);
-        }
-
-        public void visitDisjunction(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("disjunction", walker, tree, level);
-        }
-
-        public void visitNegation(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("negation", walker, tree, level);
-        }
-
-        public void visitRestriction(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("restriction", walker, tree, level);
-        }
-
-        public void visitFuzzy(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("fuzzy", walker, tree, level);
-        }
-
-        public void visitLiteral(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("literal", walker, tree, level);
-        }
-
-        public void visitLessThan(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("<", walker, tree, level);
-        }
-
-        public void visitLessOrEqual(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("<=", walker, tree, level);
-        }
-
-        public void visitGreaterThan(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit(">", walker, tree, level);
-        }
-
-        public void visitGreaterOrEqual(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit(">=", walker, tree, level);
-        }
-
-        public void visitEqual(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("=", walker, tree, level);
-        }
-
-        public void visitContains(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("contains", walker, tree, level);
-        }
-
-        public void visitValue(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("value", walker, tree, level);
-        }
-
-        public void visitOther(QueryTreeWalker walker, Tree tree, Integer level) {
-            visit("other", walker, tree, level);
-        }
-
-        private void visit(String type, QueryTreeWalker walker, Tree tree, Integer level) {
-            System.out.println(indent(level) + type + " " + tree.getText() + " (" + tree + ")");
-            for (int i=0; i<tree.getChildCount(); i++) {
-                Tree child = tree.getChild(i);
-                walker.walk(child, level+1);
-            }
-        }
-
-        private String indent(Integer level) {
-            StringBuilder sbuf = new StringBuilder();
-            for (int i=0; i<level; i++) {
-                sbuf.append("  ");
-            }
-            return sbuf.toString();
         }
     }
 
