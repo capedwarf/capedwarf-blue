@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.search;
 
+import com.google.appengine.api.search.query.QueryLexer;
 import com.google.appengine.api.search.query.QueryTreeVisitor;
 import com.google.appengine.api.search.query.QueryTreeWalker;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.Tree;
@@ -40,6 +41,8 @@ import org.apache.lucene.util.Version;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
+
+    public static final Version LUCENE_VERSION = Version.LUCENE_35;
 
     public void visitSequence(QueryTreeWalker<Context> walker, Tree tree, Context context) {
         visitConjunction(walker, tree, context); // "author:bob author:alice" is equivalent to "author:bob AND author:alice"
@@ -87,13 +90,14 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
     }
 
     public void visitRestriction(QueryTreeWalker<Context> walker, Tree tree, final Context context) {
-        String fieldName = tree.getChild(0).getText();
-        if (fieldName.equals("GLOBAL")) {
-            fieldName = context.getFieldName();
-        }
-
         Context childContext = new ForwardingContext(context);
-        childContext.setFieldName(fieldName);
+
+        if (tree.getChild(0).getType() == QueryLexer.GLOBAL) {
+            childContext.setOnGlobalField(true);
+            childContext.setFieldName(context.getFieldName());
+        } else {
+            childContext.setFieldName(tree.getChild(0).getText());
+        }
 
         walker.walk(tree.getChild(1), childContext);
     }
@@ -132,7 +136,9 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
 
     private Context newChildContext(final Context context, Operator operator) {
         Context childContext = new ForwardingContext(context);
-    if (operator != Operator.EQ && context.getOperator() == null) { // TODO: is this ok?
+        if (context.isOnGlobalField() && operator == Operator.EQ) {
+            childContext.setOperator(context.getOperator() == null ? Operator.CONTAINS : context.getOperator());
+        } else {
             childContext.setOperator(operator);
         }
         return childContext;
@@ -149,11 +155,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
                 context.addSubQuery(createContainsQuery(context, type, text));
                 break;
             case EQ:
-                if (context.getFieldName().equals("all")) {     // TODO
-                    context.addSubQuery(createContainsQuery(context, type, value.getText()));
-                } else {
-                    context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, text, true, true));
-                }
+                context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, text, true, true));
                 break;
             case GREATER_THAN:
                 context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, null, false, false));
@@ -179,7 +181,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
             query = new TermQuery(new Term(context.getFieldName(), text));
         } else {
             try {
-                query = new QueryParser(Version.LUCENE_35, "all", new StandardAnalyzer(Version.LUCENE_35)).parse(context.getFieldName() + ":" + text);
+                query = new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION)).parse(context.getFieldName() + ":" + text);
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }

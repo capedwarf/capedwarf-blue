@@ -29,6 +29,8 @@ import com.google.appengine.repackaged.org.antlr.runtime.tree.CommonTree;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.Tree;
 import org.apache.lucene.search.Query;
 
+import java.util.logging.Logger;
+
 /**
  * Converts GAE Search query string into Lucene query
  *
@@ -36,16 +38,21 @@ import org.apache.lucene.search.Query;
  */
 public class QueryConverter {
 
-    private final String queryString;
+    private final Logger log = Logger.getLogger(getClass().getName());
 
-    public QueryConverter(String queryString) {
-        this.queryString = queryString;
+    private final String allFieldName;
+
+    public QueryConverter(String allFieldName) {
+        this.allFieldName = allFieldName;
     }
 
-    public Query convert() {
+    public Query convert(String queryString) {
+//        log.info("Converting GAE query to Lucene query: " + queryString);
         try {
             CommonTree tree = new QueryTreeBuilder().parse(queryString);
             Tree simplifiedTree = QueryTreeWalker.simplify(tree);
+
+//            dumpTreeToLog(simplifiedTree);
 
             final Query queryHolder[] = new Query[1];
             Context context = new Context() {
@@ -54,11 +61,22 @@ public class QueryConverter {
                     queryHolder[0] = query;
                 }
             };
-            context.setFieldName("all");
+            context.setFieldName(allFieldName);
             new QueryTreeWalker<Context>(new GAEQueryTreeVisitor()).walk(simplifiedTree, context);
             return queryHolder[0];
         } catch (RecognitionException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void dumpTreeToLog(Tree tree) {
+        PrintingQueryTreeVisitor visitor = new PrintingQueryTreeVisitor() {
+            @Override
+            protected void print(String text) {
+                log.info(text);
+            }
+        };
+
+        new QueryTreeWalker<Integer>(visitor).walk(tree, 0);
     }
 }

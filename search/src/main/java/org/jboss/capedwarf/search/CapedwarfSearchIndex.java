@@ -232,11 +232,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     private org.apache.lucene.search.Query createLuceneQuery(Query query) {
-        try {
-            return new QueryParser(Version.LUCENE_35, CacheValue.ALL_FIELD_NAME, new StandardAnalyzer(Version.LUCENE_35)).parse(query.getQueryString());
-        } catch (ParseException e) {
-            throw new RuntimeException("Cannot parse query string: " + query.getQueryString(), e);
-        }
+        return new QueryConverter(CacheValue.ALL_FIELD_NAME).convert(query.getQueryString());
     }
 
     @SuppressWarnings("unchecked")

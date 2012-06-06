@@ -32,6 +32,7 @@ public abstract class Context {
     private Query query;
     private String fieldName;
     private Operator operator;
+    private boolean onGlobalField;
 
     public Context() {
     }
@@ -62,5 +63,13 @@ public abstract class Context {
 
     public Operator getOperator() {
         return operator;
+    }
+
+    public void setOnGlobalField(boolean onGlobalField) {
+        this.onGlobalField = onGlobalField;
+    }
+
+    public boolean isOnGlobalField() {
+        return onGlobalField;
     }
 }
