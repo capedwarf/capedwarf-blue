@@ -32,6 +32,7 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
@@ -148,30 +149,59 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
         Tree type = tree.getChild(0);
         Tree value = tree.getChild(1);
 
-        String text = value.getText().toLowerCase();
+        if (type.getType() == QueryLexer.NUMBER) {
+            double doubleValue = Double.parseDouble(value.getText());
 
-        switch (context.getOperator()) {
-            case CONTAINS:
-                context.addSubQuery(createContainsQuery(context, type, text));
-                break;
-            case EQ:
-                context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, text, true, true));
-                break;
-            case GREATER_THAN:
-                context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, null, false, false));
-                break;
-            case GREATER_OR_EQUAL:
-                context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, null, true, true));
-                break;
-            case LESS_THAN:
-                context.addSubQuery(new TermRangeQuery(context.getFieldName(), null, text, false, false));
-                break;
-            case LESS_OR_EQUAL:
-                context.addSubQuery(new TermRangeQuery(context.getFieldName(), null, text, true, true));
-                break;
-            default:
-                // fail fast
-                throw new RuntimeException("Unsupported operator: " + context.getOperator());
+            switch (context.getOperator()) {
+//                case CONTAINS:
+//                    context.addSubQuery(createContainsQuery(context, type, text));
+//                    break;
+                case EQ:
+                    context.addSubQuery(NumericRangeQuery.newDoubleRange(context.getFieldName(), doubleValue, doubleValue, true, true));
+                    break;
+                case GREATER_THAN:
+                    context.addSubQuery(NumericRangeQuery.newDoubleRange(context.getFieldName(), doubleValue, null, false, false));
+                    break;
+                case GREATER_OR_EQUAL:
+                    context.addSubQuery(NumericRangeQuery.newDoubleRange(context.getFieldName(), doubleValue, null, true, true));
+                    break;
+                case LESS_THAN:
+                    context.addSubQuery(NumericRangeQuery.newDoubleRange(context.getFieldName(), null, doubleValue, false, false));
+                    break;
+                case LESS_OR_EQUAL:
+                    context.addSubQuery(NumericRangeQuery.newDoubleRange(context.getFieldName(), null, doubleValue, true, true));
+                    break;
+                default:
+                    // fail fast
+                    throw new RuntimeException("Unsupported operator: " + context.getOperator());
+            }
+
+        } else {
+            String text = value.getText().toLowerCase();
+
+            switch (context.getOperator()) {
+                case CONTAINS:
+                    context.addSubQuery(createContainsQuery(context, type, text));
+                    break;
+                case EQ:
+                    context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, text, true, true));
+                    break;
+                case GREATER_THAN:
+                    context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, null, false, false));
+                    break;
+                case GREATER_OR_EQUAL:
+                    context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, null, true, true));
+                    break;
+                case LESS_THAN:
+                    context.addSubQuery(new TermRangeQuery(context.getFieldName(), null, text, false, false));
+                    break;
+                case LESS_OR_EQUAL:
+                    context.addSubQuery(new TermRangeQuery(context.getFieldName(), null, text, true, true));
+                    break;
+                default:
+                    // fail fast
+                    throw new RuntimeException("Unsupported operator: " + context.getOperator());
+            }
         }
     }
 

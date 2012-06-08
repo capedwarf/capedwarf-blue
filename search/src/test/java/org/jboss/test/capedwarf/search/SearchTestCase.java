@@ -117,7 +117,6 @@ public class SearchTestCase extends AbstractTestCase {
         assertSearchYields(index, "foo = 2002-05-05", "b");
     }
 
-    @Ignore
     @Test
     public void testSearchByNumberEqualityAndInequality() {
         Index index = getTestIndex();
@@ -133,6 +132,16 @@ public class SearchTestCase extends AbstractTestCase {
         assertSearchYields(index, "foo = 2", "b");
     }
 
+    @Ignore
+    @Test
+    public void testSearchOnHtmlFieldIgnoresTags() {
+        Index index = getTestIndex();
+        index.add(newDocument("a", newField("foo").setHTML("<html><body>hello</body></html>")));
+        index.add(newDocument("b", newField("foo").setHTML("<html><body>body</body></html>")));
+
+        assertSearchYields(index, "foo:body", "b");
+    }
+
     private Date createDate(int year, int month, int day) {
         Calendar cal = Calendar.getInstance();
         cal.set(year, month-1, day, 0, 0, 0);
@@ -143,6 +152,8 @@ public class SearchTestCase extends AbstractTestCase {
     private void assertSearchYields(Index index, String queryString, String... documentIds) {
         Results<ScoredDocument> results = index.search(queryString);
         Collection<ScoredDocument> scoredDocuments = results.getResults();
+        System.out.println("-------------------------------");
+        System.out.println("queryString = " + queryString);
         for (ScoredDocument scoredDocument : scoredDocuments) {
             System.out.println("scoredDocument = " + scoredDocument);
         }

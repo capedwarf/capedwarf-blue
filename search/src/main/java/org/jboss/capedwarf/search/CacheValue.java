@@ -67,18 +67,18 @@ public class CacheValue implements Serializable {
         return namespace.isEmpty() ? EMPTY_NAMESPACE : namespace;
     }
 
-    @Field(name = ID_FIELD_NAME)
+    @Field(name = ID_FIELD_NAME, analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
     public String getId() {
         return document.getId();
     }
 
-    @Field(name = LOCALE_FIELD_NAME)
+    @Field(name = LOCALE_FIELD_NAME, analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
     @FieldBridge(impl = LocaleBridge.class)
     public Locale getLocale() {
         return document.getLocale();
     }
 
-    @Field(name = RANK_FIELD_NAME)
+    @Field(name = RANK_FIELD_NAME, analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
     public int getRank() {
         return document.getRank();
     }
@@ -87,15 +87,6 @@ public class CacheValue implements Serializable {
     @FieldBridge(impl = DocumentFieldBridge.class)
     public Document getDocument() {
         return document;
-    }
-
-    @Field(name=ALL_FIELD_NAME)
-    protected String getAllFieldsString() {
-        StringBuilder sb = new StringBuilder();
-        for (com.google.appengine.api.search.Field field : document.getFields()) {
-            sb.append(DocumentFieldBridge.convertToString(field)).append(" ; ");
-        }
-        return sb.toString();
     }
 
     @Override
