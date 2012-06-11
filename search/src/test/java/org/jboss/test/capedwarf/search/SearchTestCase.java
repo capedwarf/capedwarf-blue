@@ -101,7 +101,6 @@ public class SearchTestCase extends AbstractTestCase {
         assertSearchYields(index, "foo = bbb", "b");
     }
 
-    @Ignore
     @Test
     public void testSearchByDateEqualityAndInequality() {
         Index index = getTestIndex();
@@ -132,7 +131,6 @@ public class SearchTestCase extends AbstractTestCase {
         assertSearchYields(index, "foo = 2", "b");
     }
 
-    @Ignore
     @Test
     public void testSearchOnHtmlFieldIgnoresTags() {
         Index index = getTestIndex();
@@ -140,6 +138,13 @@ public class SearchTestCase extends AbstractTestCase {
         index.add(newDocument("b", newField("foo").setHTML("<html><body>body</body></html>")));
 
         assertSearchYields(index, "foo:body", "b");
+    }
+
+    @Test
+    public void testSearchForNumberInText() {
+        Index index = getTestIndex();
+        index.add(newDocument("a", newField("foo").setText("Founded in 1993, Red Hat has its corporate headquarters in Raleigh, North Carolina with satellite offices worldwide.")));
+        assertSearchYields(index, "foo:1993", "a");
     }
 
     private Date createDate(int year, int month, int day) {

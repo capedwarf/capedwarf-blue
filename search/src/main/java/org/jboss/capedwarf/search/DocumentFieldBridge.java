@@ -35,18 +35,22 @@ import java.text.SimpleDateFormat;
  */
 public class DocumentFieldBridge implements FieldBridge {
 
+    private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
+
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     @SuppressWarnings("unchecked")
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         com.google.appengine.api.search.Document googleDocument = (com.google.appengine.api.search.Document) value;
         for (Field field : googleDocument.getFields()) {
+            String prefixedFieldName = fieldNamePrefixer.getPrefixedFieldName(field.getName(), field.getType());
+            String prefixedAllFieldName = fieldNamePrefixer.getPrefixedFieldName(CacheValue.ALL_FIELD_NAME, field.getType());
             if (field.getType() == Field.FieldType.NUMBER) {
-                luceneOptions.addNumericFieldToDocument(field.getName(), field.getNumber(), document);
-                luceneOptions.addNumericFieldToDocument(CacheValue.ALL_FIELD_NAME, field.getNumber(), document);
+                luceneOptions.addNumericFieldToDocument(prefixedFieldName, field.getNumber(), document);
+                luceneOptions.addNumericFieldToDocument(prefixedAllFieldName, field.getNumber(), document);
             } else {
-                luceneOptions.addFieldToDocument(field.getName(), convertToString(field), document);
-                luceneOptions.addFieldToDocument(CacheValue.ALL_FIELD_NAME, convertToString(field), document);
+                luceneOptions.addFieldToDocument(prefixedFieldName, convertToString(field), document);
+                luceneOptions.addFieldToDocument(prefixedAllFieldName, convertToString(field), document);
             }
         }
     }

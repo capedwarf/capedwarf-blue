@@ -48,22 +48,29 @@ public class QueryConverter {
 
     public Query convert(String queryString) {
 //        log.info("Converting GAE query to Lucene query: " + queryString);
+        Tree tree = parseQuery(queryString);
+//            dumpTreeToLog(tree);
+        return convert(tree);
+    }
+
+    private Query convert(Tree tree) {
+        Context context = new Context() {
+            @Override
+            public void addSubQuery(Query query) {
+                setQuery(query);
+            }
+        };
+        context.setFieldName(allFieldName);
+
+        new QueryTreeWalker<Context>(new GAEQueryTreeVisitor()).walk(tree, context);
+
+        return context.getQuery();
+    }
+
+    private Tree parseQuery(String queryString) {
         try {
             CommonTree tree = new QueryTreeBuilder().parse(queryString);
-            Tree simplifiedTree = QueryTreeWalker.simplify(tree);
-
-//            dumpTreeToLog(simplifiedTree);
-
-            final Query queryHolder[] = new Query[1];
-            Context context = new Context() {
-                @Override
-                public void addSubQuery(Query query) {
-                    queryHolder[0] = query;
-                }
-            };
-            context.setFieldName(allFieldName);
-            new QueryTreeWalker<Context>(new GAEQueryTreeVisitor()).walk(simplifiedTree, context);
-            return queryHolder[0];
+            return QueryTreeWalker.simplify(tree);
         } catch (RecognitionException e) {
             throw new RuntimeException(e);
         }

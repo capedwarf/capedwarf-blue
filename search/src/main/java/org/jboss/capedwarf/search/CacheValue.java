@@ -24,8 +24,10 @@ package org.jboss.capedwarf.search;
 
 import com.google.appengine.api.search.Document;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Norms;
 import org.hibernate.search.annotations.ProvidedId;
@@ -39,6 +41,7 @@ import java.util.Locale;
  */
 @Indexed
 @ProvidedId
+@Analyzer(impl = DocumentFieldAnalyzer.class)
 public class CacheValue implements Serializable {
 
     public static final String EMPTY_NAMESPACE = "_____EMPTY_NAMESPACE____";
@@ -83,7 +86,7 @@ public class CacheValue implements Serializable {
         return document.getRank();
     }
 
-    @Field
+    @Field(index = Index.YES, analyze = Analyze.YES, termVector = TermVector.YES)
     @FieldBridge(impl = DocumentFieldBridge.class)
     public Document getDocument() {
         return document;

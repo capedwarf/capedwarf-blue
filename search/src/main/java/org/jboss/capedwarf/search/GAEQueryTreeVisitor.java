@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.search;
 
+import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.query.QueryLexer;
 import com.google.appengine.api.search.query.QueryTreeVisitor;
 import com.google.appengine.api.search.query.QueryTreeWalker;
@@ -42,6 +43,8 @@ import org.apache.lucene.util.Version;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
+
+    private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
 
     public static final Version LUCENE_VERSION = Version.LUCENE_35;
 
@@ -149,74 +152,76 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
         Tree type = tree.getChild(0);
         Tree value = tree.getChild(1);
 
+        BooleanQuery booleanQuery = new BooleanQuery();
+        for (Field.FieldType fieldType : Field.FieldType.values()) {
+            booleanQuery.add(createQuery(context, type, value, fieldType), BooleanClause.Occur.SHOULD);
+        }
+        context.addSubQuery(booleanQuery);
+    }
+
+    private Query createQuery(Context context, Tree type, Tree value, Field.FieldType fieldType) {
+        String prefixedFieldName = fieldNamePrefixer.getPrefixedFieldName(context.getFieldName(), fieldType);
+        Operator operator = context.getOperator();
         if (type.getType() == QueryLexer.NUMBER) {
-            double doubleValue = Double.parseDouble(value.getText());
-
-            switch (context.getOperator()) {
-//                case CONTAINS:
-//                    context.addSubQuery(createContainsQuery(context, type, text));
-//                    break;
-                case EQ:
-                    context.addSubQuery(NumericRangeQuery.newDoubleRange(context.getFieldName(), doubleValue, doubleValue, true, true));
-                    break;
-                case GREATER_THAN:
-                    context.addSubQuery(NumericRangeQuery.newDoubleRange(context.getFieldName(), doubleValue, null, false, false));
-                    break;
-                case GREATER_OR_EQUAL:
-                    context.addSubQuery(NumericRangeQuery.newDoubleRange(context.getFieldName(), doubleValue, null, true, true));
-                    break;
-                case LESS_THAN:
-                    context.addSubQuery(NumericRangeQuery.newDoubleRange(context.getFieldName(), null, doubleValue, false, false));
-                    break;
-                case LESS_OR_EQUAL:
-                    context.addSubQuery(NumericRangeQuery.newDoubleRange(context.getFieldName(), null, doubleValue, true, true));
-                    break;
-                default:
-                    // fail fast
-                    throw new RuntimeException("Unsupported operator: " + context.getOperator());
-            }
-
+            return createNumericQuery(prefixedFieldName, operator, value);
         } else {
             String text = value.getText().toLowerCase();
-
-            switch (context.getOperator()) {
-                case CONTAINS:
-                    context.addSubQuery(createContainsQuery(context, type, text));
-                    break;
-                case EQ:
-                    context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, text, true, true));
-                    break;
-                case GREATER_THAN:
-                    context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, null, false, false));
-                    break;
-                case GREATER_OR_EQUAL:
-                    context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, null, true, true));
-                    break;
-                case LESS_THAN:
-                    context.addSubQuery(new TermRangeQuery(context.getFieldName(), null, text, false, false));
-                    break;
-                case LESS_OR_EQUAL:
-                    context.addSubQuery(new TermRangeQuery(context.getFieldName(), null, text, true, true));
-                    break;
-                default:
-                    // fail fast
-                    throw new RuntimeException("Unsupported operator: " + context.getOperator());
-            }
+            return createQuery(prefixedFieldName, operator, text, type);
         }
     }
 
-    private Query createContainsQuery(Context context, Tree type, String text) {
-        Query query;
+    private Query createNumericQuery(String field, Operator operator, Tree value) {
+        double doubleValue = Double.parseDouble(value.getText());
+
+        switch (operator) {
+            case CONTAINS:
+                return new TermQuery(new Term(field, value.getText()));
+            case EQ:
+                return NumericRangeQuery.newDoubleRange(field, doubleValue, doubleValue, true, true);
+            case GREATER_THAN:
+                return NumericRangeQuery.newDoubleRange(field, doubleValue, null, false, false);
+            case GREATER_OR_EQUAL:
+                return NumericRangeQuery.newDoubleRange(field, doubleValue, null, true, true);
+            case LESS_THAN:
+                return NumericRangeQuery.newDoubleRange(field, null, doubleValue, false, false);
+            case LESS_OR_EQUAL:
+                return NumericRangeQuery.newDoubleRange(field, null, doubleValue, true, true);
+            default:
+                // fail fast
+                throw new RuntimeException("Unsupported operator: " + operator);
+        }
+    }
+
+    private Query createQuery(String field, Operator operator, String text, Tree type) {
+        switch (operator) {
+            case CONTAINS:
+                return createContainsQuery(field, type, text);
+            case EQ:
+                return new TermRangeQuery(field, text, text, true, true);
+            case GREATER_THAN:
+                return new TermRangeQuery(field, text, null, false, false);
+            case GREATER_OR_EQUAL:
+                return new TermRangeQuery(field, text, null, true, true);
+            case LESS_THAN:
+                return new TermRangeQuery(field, null, text, false, false);
+            case LESS_OR_EQUAL:
+                return new TermRangeQuery(field, null, text, true, true);
+            default:
+                // fail fast
+                throw new RuntimeException("Unsupported operator: " + operator);
+        }
+    }
+
+    private Query createContainsQuery(String field, Tree type, String text) {
         if (type.getText().equals("WORD")) {
-            query = new TermQuery(new Term(context.getFieldName(), text));
+            return new TermQuery(new Term(field, text));
         } else {
             try {
-                query = new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION)).parse(context.getFieldName() + ":" + text);
+                return new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION)).parse(field + ":" + text);
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }
         }
-        return query;
     }
 
     public void visitOther(QueryTreeWalker<Context> walker, Tree tree, Context context) {
