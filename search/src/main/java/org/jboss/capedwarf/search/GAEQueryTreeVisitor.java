@@ -22,7 +22,6 @@
 
 package org.jboss.capedwarf.search;
 
-import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.query.QueryLexer;
 import com.google.appengine.api.search.query.QueryTreeVisitor;
 import com.google.appengine.api.search.query.QueryTreeWalker;
@@ -44,8 +43,6 @@ import org.apache.lucene.util.Version;
  */
 public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
 
-    private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
-
     public static final Version LUCENE_VERSION = Version.LUCENE_35;
 
     public void visitSequence(QueryTreeWalker<Context> walker, Tree tree, Context context) {
@@ -59,6 +56,11 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
             public void addSubQuery(Query query) {
                 ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST);
             }
+
+            @Override
+            public void addNegatedSubQuery(Query query) {
+                ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST_NOT);
+            }
         };
         walkThroughChildren(walker, tree, childContext);
     }
@@ -70,17 +72,25 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
             public void addSubQuery(Query query) {
                 ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.SHOULD);
             }
+
+            @Override
+            public void addNegatedSubQuery(Query query) {
+                ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST_NOT);
+            }
         };
         walkThroughChildren(walker, tree, childContext);
     }
 
-    public void visitNegation(QueryTreeWalker<Context> walker, Tree tree, Context context) {
-        BooleanQuery booleanQuery = new BooleanQuery();
-        context.addSubQuery(booleanQuery);
-        Context childContext = new Context(booleanQuery, context.getFieldName(), context.getOperator()) {
+    public void visitNegation(QueryTreeWalker<Context> walker, Tree tree, final Context context) {
+        Context childContext = new ForwardingContext(context) {
             @Override
             public void addSubQuery(Query query) {
-                ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST_NOT);
+                context.addNegatedSubQuery(query);
+            }
+
+            @Override
+            public void addNegatedSubQuery(Query query) {
+                context.addSubQuery(query);
             }
         };
         walker.walk(tree.getChild(0), childContext);
@@ -149,24 +159,19 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
     }
 
     public void visitValue(QueryTreeWalker<Context> walker, Tree tree, Context context) {
+        String field = context.getFieldName();
+        Operator operator = context.getOperator();
         Tree type = tree.getChild(0);
         Tree value = tree.getChild(1);
-
-        BooleanQuery booleanQuery = new BooleanQuery();
-        for (Field.FieldType fieldType : Field.FieldType.values()) {
-            booleanQuery.add(createQuery(context, type, value, fieldType), BooleanClause.Occur.SHOULD);
-        }
-        context.addSubQuery(booleanQuery);
+        context.addSubQuery(createQuery(field, operator, type, value));
     }
 
-    private Query createQuery(Context context, Tree type, Tree value, Field.FieldType fieldType) {
-        String prefixedFieldName = fieldNamePrefixer.getPrefixedFieldName(context.getFieldName(), fieldType);
-        Operator operator = context.getOperator();
+    protected Query createQuery(String field, Operator operator, Tree type, Tree value) {
         if (type.getType() == QueryLexer.NUMBER) {
-            return createNumericQuery(prefixedFieldName, operator, value);
+            return createNumericQuery(field, operator, value);
         } else {
             String text = value.getText().toLowerCase();
-            return createQuery(prefixedFieldName, operator, text, type);
+            return createQuery(field, operator, text, type);
         }
     }
 
@@ -240,6 +245,11 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
         @Override
         public void addSubQuery(Query query) {
             context.addSubQuery(query);
+        }
+
+        @Override
+        public void addNegatedSubQuery(Query query) {
+            context.addNegatedSubQuery(query);
         }
     }
 }

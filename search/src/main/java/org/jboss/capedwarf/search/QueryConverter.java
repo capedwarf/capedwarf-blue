@@ -27,6 +27,8 @@ import com.google.appengine.api.search.query.QueryTreeWalker;
 import com.google.appengine.repackaged.org.antlr.runtime.RecognitionException;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.CommonTree;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.Tree;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 
 import java.util.logging.Logger;
@@ -59,12 +61,23 @@ public class QueryConverter {
             public void addSubQuery(Query query) {
                 setQuery(query);
             }
+
+            @Override
+            public void addNegatedSubQuery(Query query) {
+                BooleanQuery booleanQuery = new BooleanQuery();
+                booleanQuery.add(query, BooleanClause.Occur.MUST_NOT);
+                setQuery(booleanQuery);
+            }
         };
         context.setFieldName(allFieldName);
 
-        new QueryTreeWalker<Context>(new GAEQueryTreeVisitor()).walk(tree, context);
+        new QueryTreeWalker<Context>(createTreeVisitor()).walk(tree, context);
 
         return context.getQuery();
+    }
+
+    protected GAEQueryTreeVisitor createTreeVisitor() {
+        return new GAEQueryTreeVisitor();
     }
 
     private Tree parseQuery(String queryString) {

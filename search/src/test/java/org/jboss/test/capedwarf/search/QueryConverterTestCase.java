@@ -42,7 +42,6 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-@Ignore("Should be modified to properly handle prefixed field names")
 public class QueryConverterTestCase {
 
     public static final Version LUCENE_VERSION = Version.LUCENE_35;
@@ -55,8 +54,10 @@ public class QueryConverterTestCase {
         assertQueryEquals("field:aaa AND field:bbb AND field:ccc", "field:aaa field:bbb field:ccc");
         assertQueryEquals("field:aaa OR field:bbb OR field:ccc", "field:aaa OR field:bbb OR field:ccc");
         assertQueryEquals("field:aaa AND field:bbb AND field:ccc", "field:aaa AND field:bbb AND field:ccc");
-        assertQueryEquals("author:rose OR (NOT body:filigree)", "author:rose OR NOT body:filigree");
-        assertQueryEquals("author:rose AND (NOT body:filigree)", "author:rose AND NOT body:filigree");
+        assertQueryEquals("author:rose OR NOT body:filigree", "author:rose OR NOT body:filigree");
+        assertQueryEquals("+author:rose -body:filigree", "author:rose AND NOT body:filigree");
+        assertQueryEquals("+author:rose -(body:filigree author:jones)", "author:rose NOT (body:filigree OR author:jones)");
+        assertQueryEquals("+author:rose -(+body:filigree +author:jones)", "author:rose NOT (body:filigree AND author:jones)");
 
         assertQueryEquals("field:[value TO value]", "field=value");
         assertQueryEquals("all:rose", "rose");
@@ -65,11 +66,11 @@ public class QueryConverterTestCase {
         assertQueryEquals("bob:hope AND bob:dope", "bob:(hope dope)");
         assertQueryEquals("bob:[hope TO hope] OR bob:[dope TO dope]", "bob=(hope OR dope)");
 
-        assertQueryEquals("field:[12 TO 12]", "field=12");
-        assertQueryEquals("field:{12 TO *}", "field>12");
-        assertQueryEquals("field:[12 TO *]", "field>=12");
-        assertQueryEquals("field:{* TO 12}", "field<12");
-        assertQueryEquals("field:[* TO 12]", "field<=12");
+        assertQueryEquals("field:[12.0 TO 12.0]", "field=12");
+        assertQueryEquals("field:{12.0 TO *}", "field>12");
+        assertQueryEquals("field:[12.0 TO *]", "field>=12");
+        assertQueryEquals("field:{* TO 12.0}", "field<12");
+        assertQueryEquals("field:[* TO 12.0]", "field<=12");
 
         assertQueryEquals("field:{aaa TO *}", "field>aaa");
         assertQueryEquals("field:[aaa TO *]", "field>=aaa");
@@ -95,13 +96,13 @@ public class QueryConverterTestCase {
         assertQueryEquals("author:rose", "author:rose");
         assertQueryEquals("body:\"any other name\"", "body:\"any other name\"");
         assertQueryEquals("author:\"Rose Jones\" AND body:rose", "author:\"Rose Jones\" body:rose");
-        assertQueryEquals("price:{* TO 100}", "price<100");
+        assertQueryEquals("price:{* TO 100.0}", "price<100");
         assertQueryEquals("sent:[2011-02-28 TO *]", "sent>=2011-02-28");
         assertQueryEquals("product_code:[xyz1000 TO xyz1000]", "product_code = xyz1000");
 
         assertQueryEquals("author:bob OR ((author:rose OR author:tom) AND author:jones)", "author:(bob OR ((rose OR tom) AND jones))");
-        assertQueryEquals("author:rose AND (NOT body:filigree)", "author:rose NOT body:filigree");
-        assertQueryEquals("(author:Thomas OR author:Jones) AND (NOT body:rose)", "(author:Thomas OR author:Jones) AND (NOT body:rose)");
+        assertQueryEquals("author:rose AND NOT body:filigree", "author:rose NOT body:filigree");
+        assertQueryEquals("(author:Thomas OR author:Jones) AND NOT body:rose", "(author:Thomas OR author:Jones) AND (NOT body:rose)");
     }
 
     private static void assertQueryEquals(String expectedLuceneQueryString, String gaeQueryString) throws ParseException {
@@ -110,7 +111,7 @@ public class QueryConverterTestCase {
         Query expectedQuery = new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION)).parse(expectedLuceneQueryString);
         System.out.println("expectedQuery = " + expectedQuery + "    (" + expectedQuery.getClass() + ")");
         System.out.println("query = " + query + "    (" + query.getClass() + ")");
-        Assert.assertEquals(expectedQuery, query);
+        Assert.assertEquals(expectedQuery.toString(), query.toString());
     }
 
 

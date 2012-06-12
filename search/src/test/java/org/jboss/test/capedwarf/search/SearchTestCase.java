@@ -68,6 +68,16 @@ public class SearchTestCase extends AbstractTestCase {
     }
 
     @Test
+    public void testSearchDisjunction() {
+        Index index = getTestIndex();
+        index.add(newDocument("fooaaa", newField("foo").setText("aaa"), newField("bar").setText("bbb")));
+        index.add(newDocument("foobbb", newField("foo").setText("bbb"), newField("bar").setText("ccc")));
+        index.add(newDocument("fooccc", newField("foo").setText("ccc"), newField("bar").setText("bbb")));
+
+        assertSearchYields(index, "foo:aaa OR bar:bbb", "fooaaa", "fooccc");
+    }
+
+    @Test
     public void testSearchByTerm() {
         Index index = getTestIndex();
         index.add(newDocument("fooaaa", newField("foo").setText("bar aaa baz")));
@@ -149,7 +159,7 @@ public class SearchTestCase extends AbstractTestCase {
 
     private Date createDate(int year, int month, int day) {
         Calendar cal = Calendar.getInstance();
-        cal.set(year, month-1, day, 0, 0, 0);
+        cal.set(year, month - 1, day, 0, 0, 0);
         cal.clear(Calendar.MILLISECOND);
         return cal.getTime();
     }
@@ -159,12 +169,13 @@ public class SearchTestCase extends AbstractTestCase {
         Collection<ScoredDocument> scoredDocuments = results.getResults();
         System.out.println("-------------------------------");
         System.out.println("queryString = " + queryString);
+        System.out.println("scoredDocuments = " + scoredDocuments);
         for (ScoredDocument scoredDocument : scoredDocuments) {
             System.out.println("scoredDocument = " + scoredDocument);
         }
-        assertEquals(documentIds.length, results.getNumberFound());
-        assertEquals(documentIds.length, results.getNumberReturned());
-        assertEquals(documentIds.length, scoredDocuments.size());
+        assertEquals("number of found documents", documentIds.length, results.getNumberFound());
+        assertEquals("number of returned documents", documentIds.length, results.getNumberReturned());
+        assertEquals("actual number of ScoredDcuments", documentIds.length, scoredDocuments.size());
 
         Set<String> expectedDocumentIds = new HashSet<String>(Arrays.asList(documentIds));
         for (ScoredDocument scoredDocument : scoredDocuments) {
@@ -215,6 +226,51 @@ public class SearchTestCase extends AbstractTestCase {
         index.add(newDocument(newField("foo").setText("bbb"), newField("bar").setText("bbb")));
 
         assertEquals(2, index.search("aaa").getResults().size());
+    }
+
+    @Test
+    public void testComplexSearch1() {
+        Index index = getTestIndex();
+        index.add(newDocument("bm", newField("author").setText("Bob Marley")));
+        index.add(newDocument("rj", newField("author").setText("Rose Jones")));
+        index.add(newDocument("rt", newField("author").setText("Rose Trunk")));
+        index.add(newDocument("tj", newField("author").setText("Tom Jones")));
+
+        assertSearchYields(index, "author:(bob OR ((rose OR tom) AND jones))", "bm", "rj", "tj");
+    }
+
+    @Test
+    public void testSearchWithNegation() {
+
+        Index index = getTestIndex();
+        index.add(newDocument("with_baz", newField("body").setText("Foo bar baz")));
+        index.add(newDocument("without_baz", newField("body").setText("Foo bar.")));
+
+        assertSearchYields(index, "body:foo AND NOT body:baz", "without_baz");
+        assertSearchYields(index, "body:foo NOT body:baz", "without_baz");
+    }
+
+    @Ignore("check if this is even a valid test")
+    @Test
+    public void testSearchWithNegation2() {
+
+        Index index = getTestIndex();
+        index.add(newDocument("foo_with_baz", newField("body").setText("Foo bar baz")));
+        index.add(newDocument("foo_without_baz", newField("body").setText("Foo bar.")));
+        index.add(newDocument("without_foo_without_baz", newField("body").setText("bar.")));
+        index.add(newDocument("without_foo_with_baz", newField("body").setText("bar baz.")));
+
+        assertSearchYields(index, "body:foo OR NOT body:baz", "foo_with_baz", "foo_without_baz", "without_foo_without_baz");
+    }
+
+    @Ignore("Not supported by Lucene. Must check if it is even supported by GAE")
+    @Test
+    public void testSearchWithNegationOnly() {
+        Index index = getTestIndex();
+        index.add(newDocument("with_baz", newField("body").setText("Foo bar baz")));
+        index.add(newDocument("without_baz", newField("body").setText("Foo bar.")));
+
+        assertSearchYields(index, "NOT body=baz", "without_baz");
     }
 
 }
