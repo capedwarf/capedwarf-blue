@@ -22,60 +22,20 @@
 
 package org.jboss.capedwarf.search;
 
-import org.apache.lucene.search.Query;
+import com.google.appengine.api.search.Field;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public abstract class Context {
+public class FieldNamePrefixer {
 
-    private Query query;
-    private String fieldName;
-    private Operator operator;
-    private boolean onGlobalField;
+    public static final String DELIMITER = "_";
 
-    public Context() {
+    public String getPrefixedFieldName(String fieldName, Field.FieldType fieldType) {
+        return fieldType.name() + DELIMITER + fieldName;
     }
 
-    public Context(Query query, String fieldName, Operator operator) {
-        this.query = query;
-        this.fieldName = fieldName;
-        this.operator = operator;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-    }
-
-    public Query getQuery() {
-        return query;
-    }
-
-    protected void setQuery(Query query) {
-        this.query = query;
-    }
-
-    public abstract void addSubQuery(Query query);
-
-    public abstract void addNegatedSubQuery(Query query);
-
-    public void setOperator(Operator operator) {
-        this.operator = operator;
-    }
-
-    public Operator getOperator() {
-        return operator;
-    }
-
-    public void setOnGlobalField(boolean onGlobalField) {
-        this.onGlobalField = onGlobalField;
-    }
-
-    public boolean isOnGlobalField() {
-        return onGlobalField;
+    public Field.FieldType getFieldType(String prefixedFieldName) {
+        return Field.FieldType.valueOf(prefixedFieldName.substring(0, prefixedFieldName.indexOf(DELIMITER)));
     }
 }

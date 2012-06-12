@@ -22,60 +22,27 @@
 
 package org.jboss.capedwarf.search;
 
+import com.google.appengine.api.search.Field;
+import com.google.appengine.repackaged.org.antlr.runtime.tree.Tree;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public abstract class Context {
+public class MultiFieldGAEQueryTreeVisitor extends GAEQueryTreeVisitor {
 
-    private Query query;
-    private String fieldName;
-    private Operator operator;
-    private boolean onGlobalField;
+    private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
 
-    public Context() {
+    protected Query createQuery(String field, Operator operator, Tree type, Tree value) {
+        BooleanQuery booleanQuery = new BooleanQuery();
+        for (Field.FieldType fieldType : Field.FieldType.values()) {
+            String prefixedFieldName = fieldNamePrefixer.getPrefixedFieldName(field, fieldType);
+            Query query = super.createQuery(prefixedFieldName, operator, type, value);
+            booleanQuery.add(query, BooleanClause.Occur.SHOULD);
+        }
+        return booleanQuery;
     }
 
-    public Context(Query query, String fieldName, Operator operator) {
-        this.query = query;
-        this.fieldName = fieldName;
-        this.operator = operator;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-    }
-
-    public Query getQuery() {
-        return query;
-    }
-
-    protected void setQuery(Query query) {
-        this.query = query;
-    }
-
-    public abstract void addSubQuery(Query query);
-
-    public abstract void addNegatedSubQuery(Query query);
-
-    public void setOperator(Operator operator) {
-        this.operator = operator;
-    }
-
-    public Operator getOperator() {
-        return operator;
-    }
-
-    public void setOnGlobalField(boolean onGlobalField) {
-        this.onGlobalField = onGlobalField;
-    }
-
-    public boolean isOnGlobalField() {
-        return onGlobalField;
-    }
 }

@@ -22,60 +22,28 @@
 
 package org.jboss.capedwarf.search;
 
-import org.apache.lucene.search.Query;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharReader;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.util.Version;
+
+import java.io.Reader;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public abstract class Context {
+public class StandardHtmlAnalyzer extends Analyzer {
 
-    private Query query;
-    private String fieldName;
-    private Operator operator;
-    private boolean onGlobalField;
+    private StandardAnalyzer standardAnalyzer;
 
-    public Context() {
+    public StandardHtmlAnalyzer(Version luceneVersion) {
+        this.standardAnalyzer = new StandardAnalyzer(luceneVersion);
     }
 
-    public Context(Query query, String fieldName, Operator operator) {
-        this.query = query;
-        this.fieldName = fieldName;
-        this.operator = operator;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-    }
-
-    public Query getQuery() {
-        return query;
-    }
-
-    protected void setQuery(Query query) {
-        this.query = query;
-    }
-
-    public abstract void addSubQuery(Query query);
-
-    public abstract void addNegatedSubQuery(Query query);
-
-    public void setOperator(Operator operator) {
-        this.operator = operator;
-    }
-
-    public Operator getOperator() {
-        return operator;
-    }
-
-    public void setOnGlobalField(boolean onGlobalField) {
-        this.onGlobalField = onGlobalField;
-    }
-
-    public boolean isOnGlobalField() {
-        return onGlobalField;
+    @Override
+    public TokenStream tokenStream(String fieldName, Reader reader) {
+        return standardAnalyzer.tokenStream(fieldName, new HTMLStripCharFilter(CharReader.get(reader)));
     }
 }

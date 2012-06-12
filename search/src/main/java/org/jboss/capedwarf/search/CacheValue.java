@@ -24,8 +24,10 @@ package org.jboss.capedwarf.search;
 
 import com.google.appengine.api.search.Document;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Norms;
 import org.hibernate.search.annotations.ProvidedId;
@@ -39,6 +41,7 @@ import java.util.Locale;
  */
 @Indexed
 @ProvidedId
+@Analyzer(impl = DocumentFieldAnalyzer.class)
 public class CacheValue implements Serializable {
 
     public static final String EMPTY_NAMESPACE = "_____EMPTY_NAMESPACE____";
@@ -67,35 +70,26 @@ public class CacheValue implements Serializable {
         return namespace.isEmpty() ? EMPTY_NAMESPACE : namespace;
     }
 
-    @Field(name = ID_FIELD_NAME)
+    @Field(name = ID_FIELD_NAME, analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
     public String getId() {
         return document.getId();
     }
 
-    @Field(name = LOCALE_FIELD_NAME)
+    @Field(name = LOCALE_FIELD_NAME, analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
     @FieldBridge(impl = LocaleBridge.class)
     public Locale getLocale() {
         return document.getLocale();
     }
 
-    @Field(name = RANK_FIELD_NAME)
+    @Field(name = RANK_FIELD_NAME, analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
     public int getRank() {
         return document.getRank();
     }
 
-    @Field
+    @Field(index = Index.YES, analyze = Analyze.YES, termVector = TermVector.YES)
     @FieldBridge(impl = DocumentFieldBridge.class)
     public Document getDocument() {
         return document;
-    }
-
-    @Field(name=ALL_FIELD_NAME)
-    protected String getAllFieldsString() {
-        StringBuilder sb = new StringBuilder();
-        for (com.google.appengine.api.search.Field field : document.getFields()) {
-            sb.append(DocumentFieldBridge.convertToString(field)).append(" ; ");
-        }
-        return sb.toString();
     }
 
     @Override

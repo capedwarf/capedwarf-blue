@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 
 import com.google.appengine.api.search.AddResponse;
 import com.google.appengine.api.search.Consistency;
@@ -44,11 +45,6 @@ import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.Schema;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.StatusCode;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.util.Version;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.RangeTerminationExcludable;
 import org.infinispan.Cache;
@@ -63,6 +59,8 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfSearchIndex implements Index {
+
+    private final Logger log = Logger.getLogger(getClass().getName());
 
     private String name;
     private String namespace;
@@ -232,7 +230,15 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     private org.apache.lucene.search.Query createLuceneQuery(Query query) {
-        return new QueryConverter(CacheValue.ALL_FIELD_NAME).convert(query.getQueryString());
+        QueryConverter queryConverter = new QueryConverter(CacheValue.ALL_FIELD_NAME) {
+            @Override
+            protected GAEQueryTreeVisitor createTreeVisitor() {
+                return new MultiFieldGAEQueryTreeVisitor();
+            }
+        };
+        org.apache.lucene.search.Query luceneQuery = queryConverter.convert(query.getQueryString());
+        log.info("luceneQuery = " + luceneQuery);
+        return luceneQuery;
     }
 
     @SuppressWarnings("unchecked")

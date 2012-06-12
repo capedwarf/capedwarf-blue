@@ -32,6 +32,7 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
@@ -55,6 +56,11 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
             public void addSubQuery(Query query) {
                 ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST);
             }
+
+            @Override
+            public void addNegatedSubQuery(Query query) {
+                ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST_NOT);
+            }
         };
         walkThroughChildren(walker, tree, childContext);
     }
@@ -66,17 +72,25 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
             public void addSubQuery(Query query) {
                 ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.SHOULD);
             }
+
+            @Override
+            public void addNegatedSubQuery(Query query) {
+                ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST_NOT);
+            }
         };
         walkThroughChildren(walker, tree, childContext);
     }
 
-    public void visitNegation(QueryTreeWalker<Context> walker, Tree tree, Context context) {
-        BooleanQuery booleanQuery = new BooleanQuery();
-        context.addSubQuery(booleanQuery);
-        Context childContext = new Context(booleanQuery, context.getFieldName(), context.getOperator()) {
+    public void visitNegation(QueryTreeWalker<Context> walker, Tree tree, final Context context) {
+        Context childContext = new ForwardingContext(context) {
             @Override
             public void addSubQuery(Query query) {
-                ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST_NOT);
+                context.addNegatedSubQuery(query);
+            }
+
+            @Override
+            public void addNegatedSubQuery(Query query) {
+                context.addSubQuery(query);
             }
         };
         walker.walk(tree.getChild(0), childContext);
@@ -145,48 +159,74 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
     }
 
     public void visitValue(QueryTreeWalker<Context> walker, Tree tree, Context context) {
+        String field = context.getFieldName();
+        Operator operator = context.getOperator();
         Tree type = tree.getChild(0);
         Tree value = tree.getChild(1);
+        context.addSubQuery(createQuery(field, operator, type, value));
+    }
 
-        String text = value.getText().toLowerCase();
-
-        switch (context.getOperator()) {
-            case CONTAINS:
-                context.addSubQuery(createContainsQuery(context, type, text));
-                break;
-            case EQ:
-                context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, text, true, true));
-                break;
-            case GREATER_THAN:
-                context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, null, false, false));
-                break;
-            case GREATER_OR_EQUAL:
-                context.addSubQuery(new TermRangeQuery(context.getFieldName(), text, null, true, true));
-                break;
-            case LESS_THAN:
-                context.addSubQuery(new TermRangeQuery(context.getFieldName(), null, text, false, false));
-                break;
-            case LESS_OR_EQUAL:
-                context.addSubQuery(new TermRangeQuery(context.getFieldName(), null, text, true, true));
-                break;
-            default:
-                // fail fast
-                throw new RuntimeException("Unsupported operator: " + context.getOperator());
+    protected Query createQuery(String field, Operator operator, Tree type, Tree value) {
+        if (type.getType() == QueryLexer.NUMBER) {
+            return createNumericQuery(field, operator, value);
+        } else {
+            String text = value.getText().toLowerCase();
+            return createQuery(field, operator, text, type);
         }
     }
 
-    private Query createContainsQuery(Context context, Tree type, String text) {
-        Query query;
+    private Query createNumericQuery(String field, Operator operator, Tree value) {
+        double doubleValue = Double.parseDouble(value.getText());
+
+        switch (operator) {
+            case CONTAINS:
+                return new TermQuery(new Term(field, value.getText()));
+            case EQ:
+                return NumericRangeQuery.newDoubleRange(field, doubleValue, doubleValue, true, true);
+            case GREATER_THAN:
+                return NumericRangeQuery.newDoubleRange(field, doubleValue, null, false, false);
+            case GREATER_OR_EQUAL:
+                return NumericRangeQuery.newDoubleRange(field, doubleValue, null, true, true);
+            case LESS_THAN:
+                return NumericRangeQuery.newDoubleRange(field, null, doubleValue, false, false);
+            case LESS_OR_EQUAL:
+                return NumericRangeQuery.newDoubleRange(field, null, doubleValue, true, true);
+            default:
+                // fail fast
+                throw new RuntimeException("Unsupported operator: " + operator);
+        }
+    }
+
+    private Query createQuery(String field, Operator operator, String text, Tree type) {
+        switch (operator) {
+            case CONTAINS:
+                return createContainsQuery(field, type, text);
+            case EQ:
+                return new TermRangeQuery(field, text, text, true, true);
+            case GREATER_THAN:
+                return new TermRangeQuery(field, text, null, false, false);
+            case GREATER_OR_EQUAL:
+                return new TermRangeQuery(field, text, null, true, true);
+            case LESS_THAN:
+                return new TermRangeQuery(field, null, text, false, false);
+            case LESS_OR_EQUAL:
+                return new TermRangeQuery(field, null, text, true, true);
+            default:
+                // fail fast
+                throw new RuntimeException("Unsupported operator: " + operator);
+        }
+    }
+
+    private Query createContainsQuery(String field, Tree type, String text) {
         if (type.getText().equals("WORD")) {
-            query = new TermQuery(new Term(context.getFieldName(), text));
+            return new TermQuery(new Term(field, text));
         } else {
             try {
-                query = new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION)).parse(context.getFieldName() + ":" + text);
+                return new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION)).parse(field + ":" + text);
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }
         }
-        return query;
     }
 
     public void visitOther(QueryTreeWalker<Context> walker, Tree tree, Context context) {
@@ -205,6 +245,11 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
         @Override
         public void addSubQuery(Query query) {
             context.addSubQuery(query);
+        }
+
+        @Override
+        public void addNegatedSubQuery(Query query) {
+            context.addNegatedSubQuery(query);
         }
     }
 }

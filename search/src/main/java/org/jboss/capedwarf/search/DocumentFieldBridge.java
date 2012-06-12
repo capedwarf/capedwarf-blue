@@ -26,22 +26,32 @@ import com.google.appengine.api.search.Field;
 import org.apache.lucene.document.Document;
 import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.LuceneOptions;
-import org.hibernate.search.bridge.builtin.DateBridge;
-import org.hibernate.search.bridge.impl.BridgeFactory;
 
-import java.util.List;
-import java.util.Map;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class DocumentFieldBridge implements FieldBridge {
 
+    private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
+
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
     @SuppressWarnings("unchecked")
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         com.google.appengine.api.search.Document googleDocument = (com.google.appengine.api.search.Document) value;
         for (Field field : googleDocument.getFields()) {
-            luceneOptions.addFieldToDocument(field.getName(), convertToString(field), document);
+            String prefixedFieldName = fieldNamePrefixer.getPrefixedFieldName(field.getName(), field.getType());
+            String prefixedAllFieldName = fieldNamePrefixer.getPrefixedFieldName(CacheValue.ALL_FIELD_NAME, field.getType());
+            if (field.getType() == Field.FieldType.NUMBER) {
+                luceneOptions.addNumericFieldToDocument(prefixedFieldName, field.getNumber(), document);
+                luceneOptions.addNumericFieldToDocument(prefixedAllFieldName, field.getNumber(), document);
+            } else {
+                luceneOptions.addFieldToDocument(prefixedFieldName, convertToString(field), document);
+                luceneOptions.addFieldToDocument(prefixedAllFieldName, convertToString(field), document);
+            }
         }
     }
 
@@ -54,9 +64,7 @@ public class DocumentFieldBridge implements FieldBridge {
             case HTML:
                 return field.getHTML();
             case DATE:
-                return DateBridge.DATE_DAY.objectToString(field.getDate());
-            case NUMBER:
-                return BridgeFactory.DOUBLE.objectToString(field.getNumber());
+                return DATE_FORMAT.format(field.getDate());
             default:
                 throw new IllegalArgumentException("Unexpected field type " + field.getType() + " (field '" + field.getName() + "')");
         }

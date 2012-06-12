@@ -48,6 +48,7 @@
         <version.com.google.gae.api>1.6.6</version.com.google.gae.api>
         <version.com.google.guava>11.0.2</version.com.google.guava>
         <version.json>20090211</version.json>
+        <version.org.apache.lucene>3.6.0</version.org.apache.lucene>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
         <version.org.bouncycastle>1.47</version.org.bouncycastle>
         <version.org.jboss.logging>3.1.1.GA</version.org.jboss.logging>
@@ -350,6 +351,18 @@
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcmail-jdk15on</artifactId>
                 <version>${version.org.bouncycastle}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${version.org.apache.lucene}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analyzers</artifactId>
+                <version>${version.org.apache.lucene}</version>
             </dependency>
 
             <dependency>
