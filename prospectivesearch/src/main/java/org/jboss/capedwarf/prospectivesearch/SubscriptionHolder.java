@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.prospectivesearch;
 
 import com.google.appengine.api.prospectivesearch.Subscription;
+import org.apache.lucene.search.Query;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
@@ -47,15 +48,18 @@ public class SubscriptionHolder implements Serializable {
 
     private String query;
 
+    private Query luceneQuery;
+
     private long expirationTimeSec;
 
     protected SubscriptionHolder() {
     }
 
-    protected SubscriptionHolder(String topic, String id, String query, long expirationTimeSec) {
+    protected SubscriptionHolder(String topic, String id, String query, Query luceneQuery, long expirationTimeSec) {
         this.topic = topic;
         this.id = id;
         this.query = query;
+        this.luceneQuery = luceneQuery;
         this.expirationTimeSec = expirationTimeSec;
     }
 
@@ -69,5 +73,9 @@ public class SubscriptionHolder implements Serializable {
 
     public String getQuery() {
         return query;
+    }
+
+    public Query getLuceneQuery() {
+        return luceneQuery;
     }
 }

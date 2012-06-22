@@ -32,20 +32,15 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.appengine.repackaged.com.google.common.util.Base64;
-import org.apache.lucene.analysis.Analyzer;
+import com.google.appengine.repackaged.com.google.common.util.Base64DecoderException;
 import org.apache.lucene.analysis.miscellaneous.PatternAnalyzer;
-import org.apache.lucene.analysis.standard.StandardTokenizer;
-import org.apache.lucene.index.memory.MemoryIndex;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.Cache;
-import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
-import org.infinispan.distexec.mapreduce.Mapper;
-import org.infinispan.distexec.mapreduce.Reducer;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
@@ -55,14 +50,10 @@ import org.jboss.capedwarf.common.infinispan.ConfigurationCallbacks;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -91,7 +82,19 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
             throw new QuerySyntaxException(subId, topic, query, "schema is empty");
         }
 
-        cache.put(new TopicAndSubId(topic, subId), new SubscriptionHolder(topic, subId, query, leaseDurationSeconds));
+        try {
+            Query luceneQuery = parseQuery(query);
+            TopicAndSubId key = new TopicAndSubId(topic, subId);
+            SubscriptionHolder value = new SubscriptionHolder(topic, subId, query, luceneQuery, leaseDurationSeconds);
+            cache.put(key, value);
+        } catch (ParseException e) {
+            throw new QuerySyntaxException(subId, topic, query, e.getMessage());
+        }
+    }
+
+    private Query parseQuery(String query) throws ParseException {
+        QueryParser parser = new QueryParser(Version.LUCENE_35, "all", PatternAnalyzer.DEFAULT_ANALYZER);
+        return parser.parse(query);
     }
 
     public void unsubscribe(String topic, String subId) {
@@ -102,29 +105,12 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
         }
     }
 
-    private List<Subscription> getSubscriptions(String topic) {
-        Query luceneQuery = newQueryBuilder().keyword().onField("topic").matching(topic).createQuery();
-        CacheQuery query = getCacheQuery(luceneQuery);
-        List<Object> results = query.list();
-        List<Subscription> list = new ArrayList<Subscription>(results.size());
-        for (Object o : results) {
-            SubscriptionHolder holder = (SubscriptionHolder) o;
-            list.add(holder.toSubscription());
-        }
-        return list;
-    }
-
     private CacheQuery getCacheQuery(Query luceneQuery) {
         return searchManager.getQuery(luceneQuery, SubscriptionHolder.class);
     }
 
     private QueryBuilder newQueryBuilder() {
         return searchManager.buildQueryBuilderForClass(SubscriptionHolder.class).get();
-    }
-
-    private List<Subscription> getSubscriptionsNullSafe(String topic) {
-        List<Subscription> subscriptions = getSubscriptions(topic);
-        return subscriptions == null ? Collections.<Subscription>emptyList() : subscriptions;
     }
 
     public void match(Entity entity, String topic) {
@@ -160,61 +146,12 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
     }
 
     private List<Subscription> findMatching(final Entity entity, final String topic) {
+        MatchMapper mapper = new MatchMapper(topic, entity);
+        MatchReducer reducer = new MatchReducer();
+        MatchCollator collator = new MatchCollator();
 
-        final MapReduceTask<TopicAndSubId, SubscriptionHolder, String, List<Subscription>> task = new MapReduceTask<TopicAndSubId, SubscriptionHolder, String, List<Subscription>>(cache);
-
-        final Mapper mapper = new Mapper() {
-            public void map(Object key, Object value, Collector collector) {
-                if (key instanceof TopicAndSubId && value instanceof SubscriptionHolder) {
-                    map((TopicAndSubId) key, (SubscriptionHolder) value, (Collector<String, List<Subscription>>) collector);
-                }
-            }
-
-            public void map(TopicAndSubId key, SubscriptionHolder value, Collector<String, List<Subscription>> collector) {
-                try {
-                    if (key.getTopic().equals(topic)) {
-
-                        Analyzer analyzer = PatternAnalyzer.DEFAULT_ANALYZER;
-                        MemoryIndex memoryIndex = new MemoryIndex();
-                        for (Map.Entry<String, Object> entry : entity.getProperties().entrySet()) {
-                            memoryIndex.addField(entry.getKey(), String.valueOf(entry.getValue()), analyzer);
-                        }
-                        QueryParser parser = new QueryParser(Version.LUCENE_35, "all", analyzer);
-                        Query query = parser.parse(value.getQuery());
-                        float score = memoryIndex.search(query);
-                        if (score > 0.0f) {
-                            collector.emit("foo", Collections.singletonList(value.toSubscription()));
-                        }
-                    }
-                } catch (ParseException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-            }
-        };
-        Reducer reducer = new Reducer() {
-            public Object reduce(Object reducedKey, Iterator iter) {
-                return reduce((String) reducedKey, (Iterator<List<Subscription>>) iter);
-            }
-
-            public List<Subscription> reduce(String reducedKey, Iterator<List<Subscription>> iter) {
-                List<Subscription> list = new ArrayList<Subscription>();
-                while (iter.hasNext()) {
-                    List<Subscription> topics = iter.next();
-                    list.addAll(topics);
-                }
-                return list;
-            }
-        };
-
-        Map<String, List<Subscription>> result = task.mappedWith(mapper).reducedWith(reducer).execute();
-
-        List<Subscription> subscriptions = result.get("foo");
-
-        if (subscriptions == null) {
-            return Collections.emptyList();
-        } else {
-            return subscriptions;
-        }
+        MapReduceTask<TopicAndSubId, SubscriptionHolder, String, List<Subscription>> task = new MapReduceTask<TopicAndSubId, SubscriptionHolder, String, List<Subscription>>(cache);
+        return task.mappedWith(mapper).reducedWith(reducer).execute(collator);
     }
 
     public List<Subscription> listSubscriptions(String topic) {
@@ -222,7 +159,15 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
     }
 
     public List<Subscription> listSubscriptions(String topic, String subIdStart, int maxResults, long expiresBefore) {
-        return getSubscriptions(topic);
+        Query luceneQuery = newQueryBuilder().keyword().onField("topic").matching(topic).createQuery();
+        CacheQuery query = getCacheQuery(luceneQuery);
+        List<Object> results = query.list();
+        List<Subscription> list = new ArrayList<Subscription>(results.size());
+        for (Object o : results) {
+            SubscriptionHolder holder = (SubscriptionHolder) o;
+            list.add(holder.toSubscription());
+        }
+        return list;
     }
 
     public Subscription getSubscription(String topic, String subId) {
@@ -235,43 +180,16 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
     }
 
     public List<String> listTopics(String topicStart, long maxResults) {
+        TopicsMapper mapper = new TopicsMapper();
+        TopicsReducer reducer = new TopicsReducer();
+        TopicsCollator collator = new TopicsCollator();
+
         MapReduceTask<TopicAndSubId, SubscriptionHolder, String, Set<String>> task = new MapReduceTask<TopicAndSubId, SubscriptionHolder, String, Set<String>>(cache);
-
-        Mapper mapper = new Mapper() {
-            public void map(Object key, Object value, Collector collector) {
-                if (key instanceof TopicAndSubId && value instanceof SubscriptionHolder) {
-                    map((TopicAndSubId) key, (SubscriptionHolder) value, (Collector<String, Set<String>>) collector);
-                }
-            }
-
-            public void map(TopicAndSubId key, SubscriptionHolder value, Collector<String, Set<String>> collector) {
-                collector.emit("foo", Collections.singleton(value.getTopic()));
-            }
-        };
-        Reducer reducer = new Reducer() {
-            public Object reduce(Object reducedKey, Iterator iter) {
-                return reduce((String) reducedKey, (Iterator<Set<String>>) iter);
-            }
-
-            public Set<String> reduce(String reducedKey, Iterator<Set<String>> iter) {
-                Set<String> allTopics = new TreeSet<String>();
-                while (iter.hasNext()) {
-                    Set<String> topics = iter.next();
-                    allTopics.addAll(topics);
-                }
-                return allTopics;
-            }
-        };
-
-        Map<String, Set<String>> result = task.mappedWith(mapper).reducedWith(reducer).execute();
-
-        Set<String> foo = result.get("foo");
-        return foo == null ? Collections.<String>emptyList() : new ArrayList<String>(foo);
+        return task.mappedWith(mapper).reducedWith(reducer).execute(collator);
     }
 
     public Entity getDocument(HttpServletRequest request) {
-        String encodedDocument = request.getParameter("document");
-        return decodeDocument(encodedDocument);
+        return decodeDocument(request.getParameter("document"));
     }
 
     private String encodeDocument(Entity document) {
@@ -281,7 +199,7 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
     private Entity decodeDocument(String encodedDocument) {
         try {
             return EntityTranslator.createFromPbBytes(Base64.decodeWebSafe(encodedDocument));
-        } catch (Exception e) {
+        } catch (Base64DecoderException e) {
             log.log(Level.WARNING, "Could not decode document: " + encodedDocument, e);
             return null;
         }
