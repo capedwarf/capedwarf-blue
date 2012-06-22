@@ -87,6 +87,11 @@
 
         <dependency>
             <groupId>org.jboss.capedwarf.blue</groupId>
+            <artifactId>capedwarf-prospectivesearch</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.capedwarf.blue</groupId>
             <artifactId>capedwarf-search</artifactId>
         </dependency>
 

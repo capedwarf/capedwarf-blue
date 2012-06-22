@@ -25,6 +25,7 @@ package org.jboss.test.capedwarf.tasks.test;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
+import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -33,8 +34,14 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.tasks.support.PrintListener;
 import org.jboss.test.capedwarf.tasks.support.PrintServlet;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+
+import static junit.framework.Assert.*;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -70,11 +77,18 @@ public class TasksTestCase {
                 .addAsWebInfResource("appengine-web.xml");
     }
 
+    @After
+    public void tearDown() throws Exception {
+        PrintServlet.reset();
+    }
+
     @Test
     public void testSmoke() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withUrl(URL));
         sleep();
+
+        assertNotNull(PrintServlet.getLastRequest());
     }
 
     @Test
@@ -89,6 +103,9 @@ public class TasksTestCase {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withHeader("header_key", "header_value").url(URL));
         sleep();
+
+        HttpServletRequest request = (HttpServletRequest) PrintServlet.getLastRequest();
+        assertEquals(request.getHeader("header_key"), "header_value");
     }
 
     @Test
@@ -96,5 +113,8 @@ public class TasksTestCase {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withParam("param_key", "param_value").url(URL));
         sleep();
+
+        ServletRequest request = PrintServlet.getLastRequest();
+        assertEquals(request.getParameter("param_key"), "param_value");
     }
 }

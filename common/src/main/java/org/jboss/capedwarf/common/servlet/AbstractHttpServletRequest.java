@@ -46,6 +46,7 @@ import java.util.Set;
  * Abstract http servlet request.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public abstract class AbstractHttpServletRequest extends AbstractServletRequest implements HttpServletRequest {
 
@@ -120,7 +121,7 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
     }
 
     public String getMethod() {
-        return null;  // TODO
+        return "POST";  // TODO
     }
 
     public String getPathInfo() {

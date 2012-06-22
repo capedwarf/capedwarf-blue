@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Tasks servlet request creator.
@@ -109,6 +110,7 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
     }
 
     static Map<String, Set<String>> get(final Message msg, final String prefix) throws JMSException {
+        String regexSafeDelimiter = Pattern.quote(DELIMITER);
         final Map<String, Set<String>> map = new HashMap<String, Set<String>>();
         final Enumeration names = msg.getPropertyNames();
         while (names.hasMoreElements()) {
@@ -116,7 +118,7 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
             final String value = msg.getStringProperty(name);
             if (name.startsWith(prefix) && name.endsWith(COPY) == false) {
                 final String property = msg.getStringProperty(name + COPY);
-                map.put(value, new HashSet<String>(Arrays.asList(property.split(DELIMITER))));
+                map.put(value, new HashSet<String>(Arrays.asList(property.split(regexSafeDelimiter))));
             }
         }
         return map;
