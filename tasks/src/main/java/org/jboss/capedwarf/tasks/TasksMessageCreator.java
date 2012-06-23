@@ -28,6 +28,7 @@ import org.jboss.capedwarf.common.jms.ServletRequestCreator;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 import javax.jms.BytesMessage;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 import java.util.HashMap;
@@ -63,8 +64,34 @@ public class TasksMessageCreator implements MessageCreator {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void enhanceMessage(Message message) throws Exception {
+        addHeaders(message);
+        addParameters(message);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addParameters(Message message) throws JMSException {
+        final List<Object> params = (List<Object>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getParams");
+        if (params != null && params.size() > 0) {
+            final Map<String, String> map = new HashMap<String, String>();
+            for (Object param : params) {
+                final String key = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedName");
+                final String value = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedValue");
+
+                String values = map.get(key);
+                if (values == null) {
+                    values = value;
+                } else {
+                    values = values + TasksServletRequestCreator.DELIMITER + value;
+                }
+                map.put(key, values);
+            }
+            TasksServletRequestCreator.put(message, TasksServletRequestCreator.PARAMS, map);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addHeaders(Message message) throws JMSException {
         final Map<String, List<String>> headers = (Map<String, List<String>>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getHeaders");
         if (headers != null && headers.size() > 0) {
             final Map<String, String> map = new HashMap<String, String>();
@@ -81,16 +108,6 @@ public class TasksMessageCreator implements MessageCreator {
                 map.put(key, builder.toString());
             }
             TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
-        }
-        final List<Object> params = (List<Object>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getParams");
-        if (params != null && params.size() > 0) {
-            final Map<String, String> map = new HashMap<String, String>();
-            for (Object param : params) {
-                final String key = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedName");
-                final String value = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedValue");
-                map.put(key, value);
-            }
-            TasksServletRequestCreator.put(message, TasksServletRequestCreator.PARAMS, map);
         }
     }
 

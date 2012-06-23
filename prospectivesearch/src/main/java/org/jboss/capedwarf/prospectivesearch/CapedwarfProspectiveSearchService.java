@@ -48,12 +48,15 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.ConfigurationCallbacks;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.search.QueryConverter;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -85,16 +88,22 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
         try {
             Query luceneQuery = parseQuery(query);
             TopicAndSubId key = new TopicAndSubId(topic, subId);
-            SubscriptionHolder value = new SubscriptionHolder(topic, subId, query, luceneQuery, leaseDurationSeconds);
-            cache.put(key, value);
+            long expirationTimeSec = System.currentTimeMillis()/1000 + (leaseDurationSeconds == 0 ? 0xffffffffL : leaseDurationSeconds);
+            SubscriptionHolder value = new SubscriptionHolder(topic, subId, query, luceneQuery, expirationTimeSec);
+
+            if (leaseDurationSeconds == 0) {
+                cache.put(key, value);
+            } else {
+                cache.put(key, value, leaseDurationSeconds, TimeUnit.SECONDS);
+            }
+
         } catch (ParseException e) {
             throw new QuerySyntaxException(subId, topic, query, e.getMessage());
         }
     }
 
     private Query parseQuery(String query) throws ParseException {
-        QueryParser parser = new QueryParser(Version.LUCENE_35, "all", PatternAnalyzer.DEFAULT_ANALYZER);
-        return parser.parse(query);
+        return new QueryConverter("all").convert(query);
     }
 
     public void unsubscribe(String topic, String subId) {
@@ -123,23 +132,28 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
 
     public void match(Entity entity, String topic, String resultKey, String resultRelativeUrl, String resultTaskQueueName, int resultBatchSize, boolean resultReturnDocument) {
         List<Subscription> subscriptions = findMatching(entity, topic);
-        addTasks(entity, subscriptions, resultRelativeUrl, resultTaskQueueName, resultBatchSize, resultReturnDocument);
+        addTasks(entity, subscriptions, topic, resultKey, resultRelativeUrl, resultTaskQueueName, resultBatchSize, resultReturnDocument);
     }
 
-    private void addTasks(Entity entity, List<Subscription> subscriptions, String resultRelativeUrl, String resultTaskQueueName, int resultBatchSize, boolean resultReturnDocument) {
+    private void addTasks(Entity entity, List<Subscription> subscriptions, String topic, String resultKey, String resultRelativeUrl,
+                          String resultTaskQueueName, int resultBatchSize, boolean resultReturnDocument) {
         Queue queue = QueueFactory.getQueue(resultTaskQueueName);
 
-        for (int offset = 0; offset < subscriptions.size(); offset++) {
+        for (int offset = 0; offset < subscriptions.size(); offset+=resultBatchSize) {
             List<Subscription> batch = subscriptions.subList(offset, Math.min(offset + resultBatchSize, subscriptions.size()));
             TaskOptions taskOptions = TaskOptions.Builder.withUrl(resultRelativeUrl)
                 .param("results_offset", String.valueOf(offset))
-                .param("results_count", String.valueOf(batch.size()));
+                .param("results_count", String.valueOf(batch.size()))
+                .param("topic", topic)
+                .param("key", resultKey);
 
             for (Subscription subscription : batch) {
                 taskOptions.param("id", subscription.getId());
             }
 
-            taskOptions.param("document", encodeDocument(entity));
+            if (resultReturnDocument) {
+                taskOptions.param("document", encodeDocument(entity));
+            }
 
             queue.add(taskOptions);
         }

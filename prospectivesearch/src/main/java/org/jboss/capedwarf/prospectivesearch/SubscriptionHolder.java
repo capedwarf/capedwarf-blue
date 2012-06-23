@@ -67,6 +67,10 @@ public class SubscriptionHolder implements Serializable {
         return new Subscription(id, query, expirationTimeSec);
     }
 
+    public String getId() {
+        return id;
+    }
+
     public String getTopic() {
         return topic;
     }
@@ -77,5 +81,9 @@ public class SubscriptionHolder implements Serializable {
 
     public Query getLuceneQuery() {
         return luceneQuery;
+    }
+
+    public long getExpirationTimeSec() {
+        return expirationTimeSec;
     }
 }

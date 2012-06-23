@@ -69,4 +69,11 @@ public abstract class AbstractTestCase {
         schema.put(field, type);
         return schema;
     }
+
+    protected Map<String, FieldType> createSchema(String field1, FieldType type1, String field2, FieldType type2) {
+        Map<String, FieldType> schema = new HashMap<String, FieldType>();
+        schema.put(field1, type1);
+        schema.put(field2, type2);
+        return schema;
+    }
 }

@@ -30,33 +30,94 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class MatchResponseServlet extends HttpServlet {
 
-    private static boolean invoked;
-    private static Entity lastReceivedDocument;
+    private static List<InvocationData> invocations = new ArrayList<InvocationData>();
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        invoked = true;
-        lastReceivedDocument = ProspectiveSearchServiceFactory.getProspectiveSearchService().getDocument(request);
-    }
+        InvocationData invocationData = new InvocationData();
+        invocations.add(invocationData);
 
-    public static boolean isInvoked() {
-        return invoked;
-    }
-
-    public static Entity getLastReceivedDocument() {
-        return lastReceivedDocument;
+        invocationData.key = request.getParameter("key");
+        invocationData.topic = request.getParameter("topic");
+        invocationData.resultsOffset = Integer.parseInt(request.getParameter("results_offset"));
+        invocationData.resultsCount = Integer.parseInt(request.getParameter("results_count"));
+        invocationData.subIds = request.getParameterValues("id");
+        if (request.getParameter("document") != null) {
+            invocationData.lastReceivedDocument = ProspectiveSearchServiceFactory.getProspectiveSearchService().getDocument(request);
+        }
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     }
 
+    public static int getInvocationCount() {
+        return invocations.size();
+    }
+
+    public static boolean isInvoked() {
+        return getInvocationCount() > 0;
+    }
+
+    public static List<InvocationData> getInvocations() {
+        return invocations;
+    }
+
+    public static InvocationData getLastInvocationData() {
+        return invocations.get(invocations.size()-1);
+    }
+
     public static void clear() {
-        invoked = false;
-        lastReceivedDocument = null;
+        invocations.clear();
+    }
+
+    public static List<String> getAllSubIds() {
+        List<String> receivedSubIds = new ArrayList<String>();
+        for (MatchResponseServlet.InvocationData invocationData : getInvocations()) {
+            receivedSubIds.addAll(Arrays.asList(invocationData.getSubIds()));
+        }
+        return receivedSubIds;
+    }
+
+    public static class InvocationData {
+        private Entity lastReceivedDocument;
+        private int resultsOffset;
+        private int resultsCount;
+        private String[] subIds;
+        private String key;
+        private String topic;
+
+        public Entity getDocument() {
+            return lastReceivedDocument;
+        }
+
+        public int getResultsOffset() {
+            return resultsOffset;
+        }
+
+        public int getResultsCount() {
+            return resultsCount;
+        }
+
+        public String[] getSubIds() {
+            return subIds;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getTopic() {
+            return topic;
+        }
     }
 }

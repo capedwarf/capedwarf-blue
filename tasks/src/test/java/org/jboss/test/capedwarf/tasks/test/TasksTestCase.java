@@ -41,6 +41,9 @@ import org.junit.runner.RunWith;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import static junit.framework.Assert.*;
 
 /**
@@ -50,19 +53,19 @@ import static junit.framework.Assert.*;
 public class TasksTestCase {
     private static final String URL = "/_ah/test";
     private static final String WEB_XML =
-                    "<web>" +
-                    " <listener>" +
-                    "  <listener-class>" + PrintListener.class.getName() + "</listener-class>" +
-                    " </listener>" +
-                    " <servlet>" +
-                    "  <servlet-name>PrintServlet</servlet-name>" +
-                    "  <servlet-class>" + PrintServlet.class.getName() + "</servlet-class>" +
-                    " </servlet>" +
-                    " <servlet-mapping>" +
-                    "  <servlet-name>PrintServlet</servlet-name>" +
-                    "  <url-pattern>" + URL + "</url-pattern>" +
-                    " </servlet-mapping>" +
-                    "</web>";
+        "<web>" +
+            " <listener>" +
+            "  <listener-class>" + PrintListener.class.getName() + "</listener-class>" +
+            " </listener>" +
+            " <servlet>" +
+            "  <servlet-name>PrintServlet</servlet-name>" +
+            "  <servlet-class>" + PrintServlet.class.getName() + "</servlet-class>" +
+            " </servlet>" +
+            " <servlet-mapping>" +
+            "  <servlet-name>PrintServlet</servlet-name>" +
+            "  <url-pattern>" + URL + "</url-pattern>" +
+            " </servlet-mapping>" +
+            "</web>";
 
     // we wait for JMS to kick-in
     private static void sleep() throws InterruptedException {
@@ -72,9 +75,9 @@ public class TasksTestCase {
     @Deployment
     public static Archive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
-                .addClasses(PrintServlet.class, PrintListener.class)
-                .setWebXML(new StringAsset(WEB_XML))
-                .addAsWebInfResource("appengine-web.xml");
+            .addClasses(PrintServlet.class, PrintListener.class)
+            .setWebXML(new StringAsset(WEB_XML))
+            .addAsWebInfResource("appengine-web.xml");
     }
 
     @After
@@ -105,16 +108,32 @@ public class TasksTestCase {
         sleep();
 
         HttpServletRequest request = (HttpServletRequest) PrintServlet.getLastRequest();
-        assertEquals(request.getHeader("header_key"), "header_value");
+        assertEquals("header_value", request.getHeader("header_key"));
     }
 
     @Test
     public void testParams() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
-        queue.add(TaskOptions.Builder.withParam("param_key", "param_value").url(URL));
+        queue.add(TaskOptions.Builder.withParam("single_value", "param_value").url(URL));
         sleep();
 
         ServletRequest request = PrintServlet.getLastRequest();
-        assertEquals(request.getParameter("param_key"), "param_value");
+        assertEquals("param_value", request.getParameter("single_value"));
+    }
+
+    @Test
+    public void testMultiValueParams() throws Exception {
+        final Queue queue = QueueFactory.getQueue("default");
+        queue.add(
+            TaskOptions.Builder
+                .withParam("multi_value", "param_value1")
+                .param("multi_value", "param_value2")
+                .url(URL));
+        sleep();
+
+        ServletRequest request = PrintServlet.getLastRequest();
+        assertEquals(
+            new HashSet<String>(Arrays.asList("param_value1", "param_value2")),
+            new HashSet<String>(Arrays.asList(request.getParameterValues("multi_value"))));
     }
 }

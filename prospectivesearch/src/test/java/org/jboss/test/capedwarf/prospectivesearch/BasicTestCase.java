@@ -34,12 +34,15 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -82,11 +85,19 @@ public class BasicTestCase extends AbstractTestCase {
         service.subscribe("foo", "bar", 0, "title:hello", new HashMap<String, FieldType>());
     }
 
-    @Test(expected = Exception.class)
+    @Test
+    public void testSubscriptionIsAutomaticallyRemovedAfterLeaseDurationSeconds() throws Exception {
+        service.subscribe("foo", "bar", 5, "title:hello", createSchema("title", FieldType.STRING));
+        assertSubscriptionExists("foo", "bar");
+        sleepSeconds(10);
+        assertSubscriptionNotExists("foo", "bar");
+    }
+
+    @Test
     public void testUnsubscribeRemovesSubscription() {
         service.subscribe("myTopic", "mySubscription", 0, "title:hello", createSchema("title", FieldType.STRING));
         service.unsubscribe("myTopic", "mySubscription");
-        service.getSubscription("myTopic", "mySubscription");   // should throw IllegalArgumentException: No subscription with topic 'myTopic' and subId 'mySubscription'
+        assertSubscriptionNotExists("myTopic", "mySubscription");
     }
 
     @Test
@@ -118,7 +129,28 @@ public class BasicTestCase extends AbstractTestCase {
 
         assertEquals("mySubscription", subscription.getId());
         assertEquals("title:hello", subscription.getQuery());
-//        assertEquals(0, subscription.getExpirationTime());    // TODO
+    }
+
+    @Test
+    public void testSubscriptionWithoutLeaseTimeSecondsPracticallyNeverExpires() {
+        service.subscribe("myTopic", "mySubscription", 0, "title:hello", createSchema("title", FieldType.STRING));
+        Subscription subscription = service.getSubscription("myTopic", "mySubscription");
+        long expirationTime = subscription.getExpirationTime();
+        long expected = todayPlusHundredYears().getTime() / 1000;
+        assertTrue("subscription should not expire at least 100 years", expirationTime > expected);
+    }
+
+    @Test
+    public void testSubscriptionWithLeaseTimeSecondsHasCorrectExpirationTime() {
+        service.subscribe("myTopic", "mySubscription", 500, "title:hello", createSchema("title", FieldType.STRING));
+        Subscription subscription = service.getSubscription("myTopic", "mySubscription");
+        assertEquals(System.currentTimeMillis() / 1000 + 500, subscription.getExpirationTime(), 10.0);
+    }
+
+    private Date todayPlusHundredYears() {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.YEAR, 100);
+        return cal.getTime();
     }
 
     @Test(expected = Exception.class)
@@ -163,8 +195,29 @@ public class BasicTestCase extends AbstractTestCase {
         assertFalse("topic '" + topic + "' exists, but it shouldn't", getAllTopics().contains(topic));
     }
 
+    private void assertSubscriptionExists(String topic, String subId) {
+        try {
+            service.getSubscription(topic, subId);
+        } catch (IllegalArgumentException e) {
+            fail("subscription with topic " + topic + " and subId " + subId + " does not exists, but it should");
+        }
+    }
+
+    private void assertSubscriptionNotExists(String topic, String subId) {
+        try {
+            service.getSubscription(topic, subId);
+            fail("subscription with topic " + topic + " and subId " + subId + " exists, but it shouldn't");
+        } catch (IllegalArgumentException e) {
+            // pass
+        }
+    }
+
     private List<String> getAllTopics() {
         return service.listTopics("", 1000);
+    }
+
+    private void sleepSeconds(int seconds) throws Exception {
+        Thread.sleep(1000L * seconds);
     }
 
 }
