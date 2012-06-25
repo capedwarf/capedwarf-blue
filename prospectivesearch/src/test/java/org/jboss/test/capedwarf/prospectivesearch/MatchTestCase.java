@@ -23,12 +23,14 @@
 package org.jboss.test.capedwarf.prospectivesearch;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.prospectivesearch.FieldType;
 import com.google.appengine.api.prospectivesearch.Subscription;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -197,6 +199,51 @@ public class MatchTestCase extends AbstractTestCase {
         waitForJMSToKickIn();
         assertServletWasInvoked();
         assertNull("servlet should not have received document", MatchResponseServlet.getLastInvocationData().getDocument());
+    }
+
+    @Test
+    public void testMatchOnStringField() throws Exception {
+        service.subscribe(TOPIC, "foo", 0, "title:happy", createSchema("title", FieldType.STRING));
+
+        Entity entity = new Entity("article");
+        entity.setProperty("title", "happy feet");
+        service.match(entity, TOPIC);
+
+        assertServletWasInvokedWith(entity);
+    }
+
+    @Test
+    public void testMatchOnStringListField() throws Exception {
+        service.subscribe(TOPIC, "foo", 0, "title:sad", createSchema("title", FieldType.STRING));
+
+        Entity entity = new Entity("article");
+        entity.setProperty("title", Arrays.asList("happy feet", "sad head"));
+        service.match(entity, TOPIC);
+
+        assertServletWasInvokedWith(entity);
+    }
+
+    @Test
+    public void testMatchOnTextField() throws Exception {
+        service.subscribe(TOPIC, "foo", 0, "title:happy", createSchema("title", FieldType.TEXT));
+
+        Entity entity = new Entity("article");
+        entity.setProperty("title", new Text("happy feet"));
+        service.match(entity, TOPIC);
+
+        assertServletWasInvokedWith(entity);
+    }
+
+    @Ignore("TODO - use proper analyzer")
+    @Test
+    public void testMatchOnIntegerField() throws Exception {
+        service.subscribe(TOPIC, "foo", 0, "length=500", createSchema("length", FieldType.INT32));
+
+        Entity entity = new Entity("article");
+        entity.setProperty("length", 500);
+        service.match(entity, TOPIC);
+
+        assertServletWasInvokedWith(entity);
     }
 
     private void assertServletWasInvoked() {
