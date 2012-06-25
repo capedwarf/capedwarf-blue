@@ -43,7 +43,7 @@ import org.apache.lucene.util.Version;
  */
 public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
 
-    public static final Version LUCENE_VERSION = Version.LUCENE_35;
+    public static final Version LUCENE_VERSION = Version.LUCENE_36;
 
     public void visitSequence(QueryTreeWalker<Context> walker, Tree tree, Context context) {
         visitConjunction(walker, tree, context); // "author:bob author:alice" is equivalent to "author:bob AND author:alice"

@@ -22,13 +22,13 @@
 
 package org.jboss.capedwarf.search;
 
+import java.io.Reader;
+
 import com.google.appengine.api.search.Field;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.hibernate.search.util.impl.PassThroughAnalyzer;
-
-import java.io.Reader;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -39,7 +39,7 @@ public class DocumentFieldAnalyzer extends Analyzer {
 
     private StandardHtmlAnalyzer standardHtmlAnalyzer = new StandardHtmlAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
     private StandardAnalyzer standardAnalyzer = new StandardAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
-    private PassThroughAnalyzer passThroughAnalyzer = new PassThroughAnalyzer();
+    private PassThroughAnalyzer passThroughAnalyzer = new PassThroughAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
 
     @Override
     public TokenStream tokenStream(String fieldName, Reader reader) {
