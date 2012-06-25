@@ -45,9 +45,13 @@ import java.util.logging.Logger;
 public class PrintServlet extends HttpServlet {
     private Logger log = Logger.getLogger(PrintServlet.class.getName());
 
+    private static ServletRequest lastRequest;
+
     public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
         log.info("Ping - " + req);
-        
+
+        lastRequest = req;
+
         final DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
         try {
             Entity entity = new Entity("Qwert");
@@ -68,5 +72,13 @@ public class PrintServlet extends HttpServlet {
         } catch (Exception e) {
             throw new IOException(e);
         }
+    }
+
+    public static ServletRequest getLastRequest() {
+        return lastRequest;
+    }
+
+    public static void reset() {
+        lastRequest = null;
     }
 }

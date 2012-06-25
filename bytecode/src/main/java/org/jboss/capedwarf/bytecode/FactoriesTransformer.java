@@ -43,6 +43,7 @@ public class FactoriesTransformer extends MultipleTransformer {
         register("com.google.appengine.api.log.LogServiceFactory", new LogServiceFactoryTransformer());
         register("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
         register("com.google.appengine.api.memcache.MemcacheServiceFactory", new MemcacheServiceFactoryTransformer());
+        register("com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory", new ProspectiveSearchServiceFactoryTransformer());
         register("com.google.appengine.api.search.SearchServiceFactory", new SearchServiceFactoryTransformer());
         register("com.google.appengine.api.oauth.OAuthServiceFactory", new OAuthServiceFactoryTransformer());
         register("com.google.appengine.api.taskqueue.QueueFactory", new QueueFactoryTransformer());
