@@ -21,6 +21,7 @@ memcache/target/
 multitenancy/target/
 oauth/target/
 openshift/target/
+prospectivesearch/target/
 search/target/
 tasks/target/
 testsuite/target/
