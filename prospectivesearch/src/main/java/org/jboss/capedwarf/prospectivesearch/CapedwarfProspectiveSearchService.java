@@ -22,6 +22,16 @@
 
 package org.jboss.capedwarf.prospectivesearch;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityTranslator;
 import com.google.appengine.api.prospectivesearch.FieldType;
@@ -33,11 +43,8 @@ import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.appengine.repackaged.com.google.common.util.Base64;
 import com.google.appengine.repackaged.com.google.common.util.Base64DecoderException;
-import org.apache.lucene.analysis.miscellaneous.PatternAnalyzer;
 import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.util.Version;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.Cache;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
@@ -49,16 +56,6 @@ import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.ConfigurationCallbacks;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.search.QueryConverter;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

@@ -22,21 +22,18 @@
 
 package org.jboss.capedwarf.prospectivesearch;
 
-import com.google.appengine.api.prospectivesearch.Subscription;
-import org.infinispan.distexec.mapreduce.Reducer;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.appengine.api.prospectivesearch.Subscription;
+import org.infinispan.distexec.mapreduce.Reducer;
+
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
 */
-class MatchReducer implements Reducer {
+class MatchReducer implements Reducer<String, List<Subscription>> {
 
-    public Object reduce(Object reducedKey, Iterator iter) {
-        return reduce((String) reducedKey, (Iterator<List<Subscription>>) iter);
-    }
     public List<Subscription> reduce(String reducedKey, Iterator<List<Subscription>> iter) {
         List<Subscription> list = new ArrayList<Subscription>();
         while (iter.hasNext()) {

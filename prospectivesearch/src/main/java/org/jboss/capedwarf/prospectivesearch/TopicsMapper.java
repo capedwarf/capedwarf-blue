@@ -22,11 +22,11 @@
 
 package org.jboss.capedwarf.prospectivesearch;
 
-import org.infinispan.distexec.mapreduce.Collector;
-import org.infinispan.distexec.mapreduce.Mapper;
-
 import java.util.Collections;
 import java.util.Set;
+
+import org.infinispan.distexec.mapreduce.Collector;
+import org.infinispan.distexec.mapreduce.Mapper;
 
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -37,6 +37,7 @@ class TopicsMapper implements Mapper {
 
     public void map(Object key, Object value, Collector collector) {
         if (key instanceof TopicAndSubId && value instanceof SubscriptionHolder) {
+            //noinspection unchecked
             map((TopicAndSubId) key, (SubscriptionHolder) value, (Collector<String, Set<String>>) collector);
         }
     }

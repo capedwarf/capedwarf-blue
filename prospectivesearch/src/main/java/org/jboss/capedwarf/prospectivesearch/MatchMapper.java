@@ -22,6 +22,10 @@
 
 package org.jboss.capedwarf.prospectivesearch;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.prospectivesearch.Subscription;
 import org.apache.lucene.analysis.miscellaneous.PatternAnalyzer;
@@ -29,23 +33,17 @@ import org.apache.lucene.index.memory.MemoryIndex;
 import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distexec.mapreduce.Mapper;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
 */
 class MatchMapper implements Mapper {
     private final String topic;
-    private final Entity entity;
 
     public static final String KEY = "result";
     private final MemoryIndex memoryIndex;
 
     public MatchMapper(String topic, Entity entity) {
         this.topic = topic;
-        this.entity = entity;
 
         memoryIndex = new MemoryIndex();
         for (Map.Entry<String, Object> entry : entity.getProperties().entrySet()) {
@@ -55,6 +53,7 @@ class MatchMapper implements Mapper {
 
     public void map(Object key, Object value, Collector collector) {
         if (key instanceof TopicAndSubId && value instanceof SubscriptionHolder) {
+            //noinspection unchecked
             map((TopicAndSubId) key, (SubscriptionHolder) value, (Collector<String, List<Subscription>>) collector);
         }
     }

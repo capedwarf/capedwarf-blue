@@ -22,20 +22,16 @@
 
 package org.jboss.capedwarf.prospectivesearch;
 
-import org.infinispan.distexec.mapreduce.Reducer;
-
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.infinispan.distexec.mapreduce.Reducer;
+
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
 */
-class TopicsReducer implements Reducer {
-    public Object reduce(Object reducedKey, Iterator iter) {
-        return reduce((String) reducedKey, (Iterator<Set<String>>) iter);
-    }
-
+class TopicsReducer implements Reducer<String, Set<String>> {
     public Set<String> reduce(String reducedKey, Iterator<Set<String>> iter) {
         Set<String> allTopics = new TreeSet<String>();
         while (iter.hasNext()) {
