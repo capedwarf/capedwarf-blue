@@ -52,6 +52,7 @@ import org.jgroups.JChannel;
 public class InfinispanUtils {
     private static String[] defaultJndiNames = {"java:jboss/infinispan/container/capedwarf"};
     private static final String MUX_GEN  = "mux_gen";
+    private static final int INDEXING_CACHES = 4;
 
     private static volatile int cacheManagerUsers;
     private static EmbeddedCacheManager cacheManager;
@@ -114,8 +115,7 @@ public class InfinispanUtils {
         indexing.setProperty(JGroupsChannelProvider.CHANNEL_INJECT, channel);
         indexing.setProperty(JGroupsChannelProvider.CLASSLOADER, InfinispanUtils.class.getClassLoader());
 
-        int prefix = (CacheName.DEFAULT.equals(config) ? 1 : -1);
-        short muxId = (short) (prefix * getMuxId(appId));
+        short muxId = (short) ((INDEXING_CACHES / 2) * getMuxId(appId) * ci.getPrefix() + ci.getOffset());
         indexing.setProperty(JGroupsChannelProvider.MUX_ID, muxId);
 
         return mapping;

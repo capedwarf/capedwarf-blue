@@ -22,22 +22,24 @@
 
 package org.jboss.test.capedwarf.prospectivesearch;
 
-import com.google.appengine.api.prospectivesearch.FieldType;
-import com.google.appengine.api.prospectivesearch.ProspectiveSearchService;
-import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
-import com.google.appengine.api.prospectivesearch.Subscription;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.capedwarf.prospectivesearch.CapedwarfProspectiveSearchService;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Test;
-
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
+import com.google.appengine.api.prospectivesearch.FieldType;
+import com.google.appengine.api.prospectivesearch.ProspectiveSearchService;
+import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
+import com.google.appengine.api.prospectivesearch.Subscription;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.capedwarf.prospectivesearch.CapedwarfProspectiveSearchService;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -47,12 +49,13 @@ import static org.junit.Assert.fail;
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class BasicTestCase extends AbstractTestCase {
+@RunWith(Arquillian.class)
+public class BasicTestCase extends AbstractTest {
 
     @Deployment
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
-            .addClass(AbstractTestCase.class)
+            .addClass(AbstractTest.class)
             .setWebXML(new StringAsset("<web/>"))
             .addAsWebInfResource("appengine-web.xml");
     }

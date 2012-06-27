@@ -33,7 +33,13 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CacheIndexing {
+    private int prefix;
+    private int offset;
     private Set<Class<?>> classes = new CopyOnWriteArraySet<Class<?>>();
+
+    public CacheIndexing(int prefix) {
+        this.prefix = prefix;
+    }
 
     public CacheIndexing addClass(Class<?> clazz) {
         classes.add(clazz);
@@ -47,5 +53,18 @@ public class CacheIndexing {
 
     public Iterable<Class<?>> getClasses() {
         return classes;
+    }
+
+    public int getPrefix() {
+        return prefix;
+    }
+
+    public CacheIndexing setOffset(int offset) {
+        this.offset = offset;
+        return this;
+    }
+
+    public int getOffset() {
+        return offset;
     }
 }

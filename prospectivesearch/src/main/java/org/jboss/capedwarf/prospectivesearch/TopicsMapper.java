@@ -31,16 +31,9 @@ import org.infinispan.distexec.mapreduce.Mapper;
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
 */
-class TopicsMapper implements Mapper {
+class TopicsMapper implements Mapper<TopicAndSubId, SubscriptionHolder, String, Set<String>> {
 
     public static final String KEY = "topics";
-
-    public void map(Object key, Object value, Collector collector) {
-        if (key instanceof TopicAndSubId && value instanceof SubscriptionHolder) {
-            //noinspection unchecked
-            map((TopicAndSubId) key, (SubscriptionHolder) value, (Collector<String, Set<String>>) collector);
-        }
-    }
 
     public void map(TopicAndSubId key, SubscriptionHolder value, Collector<String, Set<String>> collector) {
         collector.emit(KEY, Collections.singleton(value.getTopic()));

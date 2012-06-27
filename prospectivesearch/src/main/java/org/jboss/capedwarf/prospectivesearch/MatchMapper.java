@@ -36,7 +36,7 @@ import org.infinispan.distexec.mapreduce.Mapper;
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
 */
-class MatchMapper implements Mapper {
+class MatchMapper implements Mapper<TopicAndSubId, SubscriptionHolder, String, List<Subscription>> {
     private final String topic;
 
     public static final String KEY = "result";
@@ -48,13 +48,6 @@ class MatchMapper implements Mapper {
         memoryIndex = new MemoryIndex();
         for (Map.Entry<String, Object> entry : entity.getProperties().entrySet()) {
             memoryIndex.addField(entry.getKey(), String.valueOf(entry.getValue()), PatternAnalyzer.DEFAULT_ANALYZER);
-        }
-    }
-
-    public void map(Object key, Object value, Collector collector) {
-        if (key instanceof TopicAndSubId && value instanceof SubscriptionHolder) {
-            //noinspection unchecked
-            map((TopicAndSubId) key, (SubscriptionHolder) value, (Collector<String, List<Subscription>>) collector);
         }
     }
 

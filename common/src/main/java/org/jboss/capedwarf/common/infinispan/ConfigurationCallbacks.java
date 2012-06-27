@@ -32,18 +32,31 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public final class ConfigurationCallbacks {
+
+    private static ConfigurationCallback createCallback(final CacheName name) {
+        return new ConfigurationCallback() {
+            public ConfigurationBuilder configure(EmbeddedCacheManager manager) {
+                Configuration c = InfinispanUtils.getConfiguration(name);
+
+                ConfigurationBuilder builder = new ConfigurationBuilder();
+                builder.read(c);
+
+                InfinispanUtils.applyIndexing(name, builder);
+                return builder;
+            }
+        };
+    }
+
     /**
      * Default cache's callback.
      */
-    public static final ConfigurationCallback DEFAULT_CALLBACK = new ConfigurationCallback() {
-        public ConfigurationBuilder configure(EmbeddedCacheManager manager) {
-            Configuration c = InfinispanUtils.getConfiguration(CacheName.DEFAULT);
-
-            ConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.read(c);
-
-            InfinispanUtils.applyIndexing(CacheName.DEFAULT, builder);
-            return builder;
-        }
-    };
+    public static final ConfigurationCallback DEFAULT_CALLBACK = createCallback(CacheName.DEFAULT);
+    /**
+     * Search cache's callback.
+     */
+    public static final ConfigurationCallback SEARCH_CALLBACK = createCallback(CacheName.SEARCH);
+    /**
+     * Prospective search cache's callback.
+     */
+    public static final ConfigurationCallback PROSPECTIVE_SEARCH_CALLBACK = createCallback(CacheName.PROSPECTIVE_SEARCH);
 }

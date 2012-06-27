@@ -22,25 +22,28 @@
 
 package org.jboss.test.capedwarf.prospectivesearch;
 
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Text;
-import com.google.appengine.api.prospectivesearch.FieldType;
-import com.google.appengine.api.prospectivesearch.Subscription;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.google.appengine.api.prospectivesearch.ProspectiveSearchService.*;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Text;
+import com.google.appengine.api.prospectivesearch.FieldType;
+import com.google.appengine.api.prospectivesearch.Subscription;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static com.google.appengine.api.prospectivesearch.ProspectiveSearchService.DEFAULT_RESULT_BATCH_SIZE;
+import static com.google.appengine.api.prospectivesearch.ProspectiveSearchService.DEFAULT_RESULT_RELATIVE_URL;
+import static com.google.appengine.api.prospectivesearch.ProspectiveSearchService.DEFAULT_RESULT_TASK_QUEUE_NAME;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -48,7 +51,8 @@ import static org.junit.Assert.fail;
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class MatchTestCase extends AbstractTestCase {
+@RunWith(Arquillian.class)
+public class MatchTestCase extends AbstractTest {
 
     private static final String SPECIAL_RESULT_RELATIVE_URI = "/_ah/prospective_search_special";
     private static final String TOPIC = "myTopic";
@@ -56,7 +60,7 @@ public class MatchTestCase extends AbstractTestCase {
     @Deployment
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
-            .addClasses(AbstractTestCase.class, MatchResponseServlet.class, SpecialMatchResponseServlet.class)
+            .addClasses(AbstractTest.class, MatchResponseServlet.class, SpecialMatchResponseServlet.class)
             .addAsWebInfResource("web.xml")
             .addAsWebInfResource("appengine-web.xml");
     }

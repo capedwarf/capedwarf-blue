@@ -22,8 +22,6 @@
 
 package org.jboss.capedwarf.channel.manager;
 
-import com.google.appengine.api.channel.ChannelServiceFactory;
-import org.jboss.capedwarf.channel.JBossChannelService;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 
 import java.util.HashMap;

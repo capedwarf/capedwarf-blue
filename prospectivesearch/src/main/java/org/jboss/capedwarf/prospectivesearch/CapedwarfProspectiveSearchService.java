@@ -59,6 +59,7 @@ import org.jboss.capedwarf.search.QueryConverter;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfProspectiveSearchService implements ProspectiveSearchService {
 
@@ -74,7 +75,7 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
     }
 
     private Cache<TopicAndSubId, SubscriptionHolder> createStore() {
-        return InfinispanUtils.getCache(CacheName.DEFAULT, ConfigurationCallbacks.DEFAULT_CALLBACK);
+        return InfinispanUtils.getCache(CacheName.PROSPECTIVE_SEARCH, ConfigurationCallbacks.PROSPECTIVE_SEARCH_CALLBACK);
     }
 
     public void subscribe(String topic, String subId, long leaseDurationSeconds, String query, Map<String, FieldType> schema) {

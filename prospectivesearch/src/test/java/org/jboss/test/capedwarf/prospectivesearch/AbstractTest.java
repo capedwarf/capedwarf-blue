@@ -22,27 +22,24 @@
 
 package org.jboss.test.capedwarf.prospectivesearch;
 
-import com.google.appengine.api.prospectivesearch.FieldType;
-import com.google.appengine.api.prospectivesearch.ProspectiveSearchService;
-import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
-import com.google.appengine.api.prospectivesearch.Subscription;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.prospectivesearch.CapedwarfProspectiveSearchService;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.appengine.api.prospectivesearch.FieldType;
+import com.google.appengine.api.prospectivesearch.ProspectiveSearchService;
+import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
+import com.google.appengine.api.prospectivesearch.Subscription;
+import org.jboss.capedwarf.prospectivesearch.CapedwarfProspectiveSearchService;
+import org.junit.After;
+import org.junit.Before;
+
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-@RunWith(Arquillian.class)
-public abstract class AbstractTestCase {
+public abstract class AbstractTest {
 
     protected ProspectiveSearchService service;
 
