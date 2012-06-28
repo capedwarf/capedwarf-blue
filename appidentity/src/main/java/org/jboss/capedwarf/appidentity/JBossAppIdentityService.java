@@ -22,17 +22,6 @@
 
 package org.jboss.capedwarf.appidentity;
 
-import com.google.appengine.api.appidentity.AppIdentityService;
-import com.google.appengine.api.appidentity.AppIdentityServiceFailureException;
-import com.google.appengine.api.appidentity.PublicCertificate;
-import com.google.appengine.api.memcache.Expiration;
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemWriter;
-import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.environment.EnvironmentFactory;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.InvalidKeyException;
@@ -48,6 +37,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+
+import com.google.appengine.api.appidentity.AppIdentityService;
+import com.google.appengine.api.appidentity.AppIdentityServiceFailureException;
+import com.google.appengine.api.appidentity.PublicCertificate;
+import com.google.appengine.api.memcache.Expiration;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.environment.EnvironmentFactory;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -159,6 +160,17 @@ public class JBossAppIdentityService implements AppIdentityService {
             cache.put(key, result, Expiration.onDate(expDate));
         }
         return result;
+    }
+
+    public ParsedAppId parseFullAppId(String fullAppId) {
+        final String partition = null; // TODO
+        final String domain = EnvironmentFactory.getEnvironment().getDomain();
+        final String appId = Application.getAppId();
+        return ReflectionUtils.newInstance(
+                ParsedAppId.class,
+                new Class[]{String.class, String.class, String.class},
+                new Object[]{partition, domain, appId}
+        );
     }
 
     protected static String toKey(final Iterable<String> scopes) {

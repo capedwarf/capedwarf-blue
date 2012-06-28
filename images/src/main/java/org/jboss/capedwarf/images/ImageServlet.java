@@ -109,7 +109,12 @@ public class ImageServlet extends HttpServlet {
     }
 
     public static String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
-        return getServingUrl(blobKey, secureUrl) + ImageRequest.SIZE_TOKEN + imageSize + (crop ? ImageRequest.CROP_TOKEN : "");
+        final StringBuilder builder = new StringBuilder(getServingUrl(blobKey, secureUrl));
+        if (imageSize > 0)
+            builder.append(ImageRequest.SIZE_TOKEN).append(imageSize);
+        if (crop)
+            builder.append(ImageRequest.CROP_TOKEN);
+        return builder.toString();
     }
 
     private static String getServletUrl(boolean secureUrl) {

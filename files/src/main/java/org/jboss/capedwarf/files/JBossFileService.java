@@ -233,7 +233,7 @@ public class JBossFileService implements FileService {
         return adapter.getBlobKey();
     }
 
-    public AppEngineFile getBlobFile(BlobKey blobKey) throws FileNotFoundException {
+    public AppEngineFile getBlobFile(BlobKey blobKey) {
         return new AppEngineFile(blobKey.getKeyString());
     }
 

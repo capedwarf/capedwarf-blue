@@ -36,7 +36,9 @@ import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.InputSettings;
 import com.google.appengine.api.images.OutputSettings;
+import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.images.Transform;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.images.transform.JBossTransform;
 import org.jboss.capedwarf.images.transform.JBossTransformFactory;
@@ -139,6 +141,14 @@ public class JBossImagesService implements ImagesService {
 
     public String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
         return ImageServlet.getServingUrl(blobKey, imageSize, crop, secureUrl);
+    }
+
+    public String getServingUrl(ServingUrlOptions options) {
+        final BlobKey blobKey = (BlobKey) ReflectionUtils.invokeInstanceMethod(options, "getBlobKey");
+        Integer imageSize = (Integer) ReflectionUtils.invokeInstanceMethod(options, "getImageSize");
+        Boolean crop = (Boolean) ReflectionUtils.invokeInstanceMethod(options, "getCrop");
+        Boolean secureUrl = (Boolean) ReflectionUtils.invokeInstanceMethod(options, "getSecureUrl");
+        return getServingUrl(blobKey, imageSize != null ? imageSize : -1, crop != null && crop, secureUrl != null && secureUrl);
     }
 
     private byte[] getByteArray(BufferedImage bufferedImage, OutputSettings outputSettings) {
