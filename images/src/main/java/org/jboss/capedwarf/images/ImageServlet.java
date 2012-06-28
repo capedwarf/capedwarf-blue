@@ -101,6 +101,9 @@ public class ImageServlet extends HttpServlet {
     }
 
     public static String getServingUrl(BlobKey blobKey, boolean secureUrl) {
+        if (blobKey == null)
+            throw new IllegalArgumentException("Null blob key!");
+
         return getServletUrl(secureUrl) + "/" + blobKey.getKeyString() + "/";
     }
 
