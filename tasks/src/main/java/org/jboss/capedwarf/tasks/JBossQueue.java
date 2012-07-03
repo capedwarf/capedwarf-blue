@@ -74,7 +74,7 @@ public class JBossQueue implements Queue {
     static final TargetInvocation<String> getTaskName = ReflectionUtils.cacheInvocation(TaskOptions.class, "getTaskName");
     static final TargetInvocation<Long> getEtaMillis = ReflectionUtils.cacheInvocation(TaskOptions.class, "getEtaMillis");
     static final TargetInvocation<RetryOptions> getRetryOptions = ReflectionUtils.cacheInvocation(TaskOptions.class, "getRetryOptions");
-    static final TargetInvocation<Integer> getTaskRetryLimit = ReflectionUtils.cacheInvocation(TaskOptions.class, "getTaskRetryLimit");
+    static final TargetInvocation<Integer> getTaskRetryLimit = ReflectionUtils.cacheInvocation(RetryOptions.class, "getTaskRetryLimit");
 
     private final ConfigurationCallback CALLBACK = new ConfigurationCallback() {
         public ConfigurationBuilder configure(EmbeddedCacheManager manager) {
