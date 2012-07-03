@@ -146,6 +146,9 @@ public class TasksMessageCreator implements MessageCreator {
     }
 
     private <T> T invoke(TargetInvocation<T> invocation, Object target) {
+        if (target == null)
+            return null;
+
         try {
             return invocation.invoke(target);
         } catch (Exception e) {
