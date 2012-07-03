@@ -22,15 +22,6 @@
 
 package org.jboss.capedwarf.tasks;
 
-import org.jboss.capedwarf.common.jms.ServletRequestCreator;
-import org.jboss.capedwarf.common.servlet.AbstractHttpServletRequest;
-
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -39,6 +30,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import javax.jms.BytesMessage;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+
+import org.jboss.capedwarf.common.jms.ServletRequestCreator;
+import org.jboss.capedwarf.common.servlet.AbstractHttpServletRequest;
 
 /**
  * Tasks servlet request creator.
@@ -118,7 +119,9 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
             final String value = msg.getStringProperty(name);
             if (name.startsWith(prefix) && name.endsWith(COPY) == false) {
                 final String property = msg.getStringProperty(name + COPY);
-                map.put(value, new HashSet<String>(Arrays.asList(property.split(regexSafeDelimiter))));
+                if (property != null) {
+                    map.put(value, new HashSet<String>(Arrays.asList(property.split(regexSafeDelimiter))));
+                }
             }
         }
         return map;
