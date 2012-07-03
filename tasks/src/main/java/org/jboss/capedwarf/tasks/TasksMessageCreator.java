@@ -22,18 +22,19 @@
 
 package org.jboss.capedwarf.tasks;
 
-import com.google.appengine.api.taskqueue.TaskOptions;
-import org.jboss.capedwarf.common.jms.MessageCreator;
-import org.jboss.capedwarf.common.jms.ServletRequestCreator;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import com.google.appengine.api.taskqueue.TaskOptions;
+import org.jboss.capedwarf.common.jms.MessageCreator;
+import org.jboss.capedwarf.common.jms.ServletRequestCreator;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
  * Tasks message creator.
@@ -42,11 +43,18 @@ import java.util.Map;
  */
 public class TasksMessageCreator implements MessageCreator {
 
-    private TaskOptions taskOptions;
+    private static final String QUEUE_NAME_HEADER = "X-AppEngine-QueueName";
 
-    public TasksMessageCreator(TaskOptions taskOptions) {
+    private final String queueName;
+    private final TaskOptions taskOptions;
+
+    public TasksMessageCreator(String queueName, TaskOptions taskOptions) {
+        if (queueName == null)
+            throw new IllegalArgumentException("Null queue name");
         if (taskOptions == null)
             throw new IllegalArgumentException("Null task options");
+
+        this.queueName = queueName;
         this.taskOptions = taskOptions;
     }
 
@@ -93,8 +101,8 @@ public class TasksMessageCreator implements MessageCreator {
     @SuppressWarnings("unchecked")
     private void addHeaders(Message message) throws JMSException {
         final Map<String, List<String>> headers = (Map<String, List<String>>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getHeaders");
+        final Map<String, String> map = new HashMap<String, String>();
         if (headers != null && headers.size() > 0) {
-            final Map<String, String> map = new HashMap<String, String>();
             for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
                 final StringBuilder builder = new StringBuilder();
                 final List<String> list = entry.getValue();
@@ -107,8 +115,9 @@ public class TasksMessageCreator implements MessageCreator {
                 final String key = entry.getKey();
                 map.put(key, builder.toString());
             }
-            TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
         }
+        map.put(QUEUE_NAME_HEADER, queueName);
+        TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
     }
 
     public String getPath() {

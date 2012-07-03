@@ -119,8 +119,8 @@ public class JBossQueue implements Queue {
         return tasks;
     }
 
-    protected static MessageCreator createMessageCreator(final TaskOptions taskOptions) {
-        return new TasksMessageCreator(taskOptions);
+    protected MessageCreator createMessageCreator(final TaskOptions taskOptions) {
+        return new TasksMessageCreator(queueName, taskOptions);
     }
 
     protected static Transaction getCurrentTransaction() {
