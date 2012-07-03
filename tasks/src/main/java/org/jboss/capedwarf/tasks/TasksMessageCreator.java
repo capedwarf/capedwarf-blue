@@ -35,6 +35,7 @@ import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletRequestCreator;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.common.reflection.TargetInvocation;
 
 /**
  * Tasks message creator.
@@ -44,6 +45,10 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 public class TasksMessageCreator implements MessageCreator {
 
     private static final String QUEUE_NAME_HEADER = "X-AppEngine-QueueName";
+    private static final String TASK_NAME_HEADER = "X-AppEngine-TaskName";
+    private static final String TASK_RETRY_COUNT = "X-AppEngine-TaskRetryCount";
+    private static final String TASK_ETA = "X-AppEngine-TaskETA";
+    private static final String FAIL_FAST = "X-AppEngine-FailFast";
 
     private final String queueName;
     private final TaskOptions taskOptions;
@@ -117,6 +122,10 @@ public class TasksMessageCreator implements MessageCreator {
             }
         }
         map.put(QUEUE_NAME_HEADER, queueName);
+        map.put(TASK_NAME_HEADER, toHeaderValue(invoke(JBossQueue.getTaskName)));
+        map.put(TASK_RETRY_COUNT, toHeaderValue(invoke(JBossQueue.getTaskRetryLimit, invoke(JBossQueue.getRetryOptions))));
+        map.put(TASK_ETA, toHeaderValue(invoke(JBossQueue.getEtaMillis)));
+        map.put(FAIL_FAST, Boolean.FALSE.toString()); // TODO?
         TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
     }
 
@@ -126,5 +135,21 @@ public class TasksMessageCreator implements MessageCreator {
 
     public Class<? extends ServletRequestCreator> getServletRequestCreator() {
         return TasksServletRequestCreator.class;
+    }
+
+    private static String toHeaderValue(Object value) {
+        return (value != null) ? value.toString() : null;
+    }
+
+    private <T> T invoke(TargetInvocation<T> invocation) {
+        return invoke(invocation, taskOptions);
+    }
+
+    private <T> T invoke(TargetInvocation<T> invocation, Object target) {
+        try {
+            return invocation.invoke(target);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
