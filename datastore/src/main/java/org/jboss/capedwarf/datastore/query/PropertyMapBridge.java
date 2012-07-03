@@ -24,10 +24,14 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.Date;
+import java.util.Map;
+
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Category;
 import com.google.appengine.api.datastore.Email;
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.IMHandle;
 import com.google.appengine.api.datastore.Key;
@@ -43,12 +47,11 @@ import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.LuceneOptions;
 import org.hibernate.search.bridge.TwoWayFieldBridge;
 import org.hibernate.search.bridge.impl.BridgeFactory;
-
-import java.util.Date;
-import java.util.Map;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class PropertyMapBridge implements FieldBridge {
     public static final TwoWayFieldBridge TEXT_BRIDGE = new TextBridge();
@@ -125,6 +128,13 @@ public class PropertyMapBridge implements FieldBridge {
             return BLOB_BRIDGE.objectToString(value);
         } else if (value instanceof ShortBlob) {
             return SHORT_BLOB_BRIDGE.objectToString(value);
+        }
+
+        // check UnindexedValue from Entity
+        final String className = value.getClass().getName();
+        if (className.equals(Entity.class.getName() + "$UnindexedValue")) {
+            Object innerValue = ReflectionUtils.invokeInstanceMethod(value, "getValue");
+            return convertToString(innerValue);
         }
 
         throw new IllegalArgumentException("Cannot convert value to string. Value was " + value);
