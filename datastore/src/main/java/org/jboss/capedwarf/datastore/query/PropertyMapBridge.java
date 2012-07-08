@@ -24,6 +24,7 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
@@ -68,6 +69,7 @@ public class PropertyMapBridge implements FieldBridge {
     public static final TwoWayFieldBridge BLOB_KEY_BRIDGE = new BlobKeyBridge();
     public static final TwoWayFieldBridge BLOB_BRIDGE = new BlobBridge();
     public static final TwoWayFieldBridge SHORT_BLOB_BRIDGE = new ShortBlobBridge();
+    public static final TwoWayFieldBridge COLLECTION_BRIDGE = new CollectionBridge();
 
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         Map<String, ?> entityProperties = (Map<String, ?>) value;
@@ -99,7 +101,6 @@ public class PropertyMapBridge implements FieldBridge {
             return BridgeFactory.DOUBLE.objectToString(value);
         } else if (value instanceof Date) {
             return BridgeFactory.DATE_MILLISECOND.objectToString(value);
-
         } else if (value instanceof Text) {
             return TEXT_BRIDGE.objectToString(value);
         } else if (value instanceof PhoneNumber) {
@@ -128,6 +129,8 @@ public class PropertyMapBridge implements FieldBridge {
             return BLOB_BRIDGE.objectToString(value);
         } else if (value instanceof ShortBlob) {
             return SHORT_BLOB_BRIDGE.objectToString(value);
+        } else if (value instanceof Collection) {
+            return COLLECTION_BRIDGE.objectToString(value);
         }
 
         // check UnindexedValue from Entity
@@ -229,6 +232,12 @@ public class PropertyMapBridge implements FieldBridge {
         public String objectToString(Object object) {
             byte[] bytes = ((ShortBlob) object).getBytes();
             return bytesToString(bytes);
+        }
+    }
+
+    private static class CollectionBridge extends ObjectToStringFieldBridge {
+        public String objectToString(Object object) {
+            return object.toString();
         }
     }
 
