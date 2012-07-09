@@ -69,7 +69,6 @@ public class PropertyMapBridge implements FieldBridge {
     public static final TwoWayFieldBridge BLOB_KEY_BRIDGE = new BlobKeyBridge();
     public static final TwoWayFieldBridge BLOB_BRIDGE = new BlobBridge();
     public static final TwoWayFieldBridge SHORT_BLOB_BRIDGE = new ShortBlobBridge();
-    public static final TwoWayFieldBridge COLLECTION_BRIDGE = new CollectionBridge();
 
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         Map<String, ?> entityProperties = (Map<String, ?>) value;
@@ -79,7 +78,7 @@ public class PropertyMapBridge implements FieldBridge {
     }
 
     public String convertToString(Object value) {
-        if (value == null) {
+        if (value == null || value instanceof Collection) {
             return null;
         }
         if (value instanceof String) {
@@ -129,8 +128,6 @@ public class PropertyMapBridge implements FieldBridge {
             return BLOB_BRIDGE.objectToString(value);
         } else if (value instanceof ShortBlob) {
             return SHORT_BLOB_BRIDGE.objectToString(value);
-        } else if (value instanceof Collection) {
-            return COLLECTION_BRIDGE.objectToString(value);
         }
 
         // check UnindexedValue from Entity
@@ -232,12 +229,6 @@ public class PropertyMapBridge implements FieldBridge {
         public String objectToString(Object object) {
             byte[] bytes = ((ShortBlob) object).getBytes();
             return bytesToString(bytes);
-        }
-    }
-
-    private static class CollectionBridge extends ObjectToStringFieldBridge {
-        public String objectToString(Object object) {
-            return object.toString();
         }
     }
 

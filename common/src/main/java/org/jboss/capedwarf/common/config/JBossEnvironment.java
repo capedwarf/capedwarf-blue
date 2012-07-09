@@ -24,6 +24,7 @@
 
 package org.jboss.capedwarf.common.config;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +39,7 @@ public class JBossEnvironment implements ApiProxy.Environment {
 
     private static final ThreadLocal<JBossEnvironment> threadLocalInstance = new ThreadLocal<JBossEnvironment>();
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
+    public static final String REQUEST_END_LISTENERS = "com.google.appengine.tools.development.request_end_listeners";
 
     private static final String HTTPS = "https";
     private static final String DELIMITER = "://";
@@ -51,6 +53,11 @@ public class JBossEnvironment implements ApiProxy.Environment {
     private AppEngineWebXml appEngineWebXml;
     private String baseApplicationUrl;
     private String secureBaseApplicationUrl;
+
+    public JBossEnvironment() {
+        // a bit of a workaround for LocalServiceTestHelper::tearDown NPE
+        attributes.put(REQUEST_END_LISTENERS, new ArrayList());
+    }
 
     public String getAppId() {
         assertInitialized();
