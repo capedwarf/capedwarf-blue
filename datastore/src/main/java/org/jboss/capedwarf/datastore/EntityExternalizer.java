@@ -39,8 +39,6 @@ public class EntityExternalizer implements Externalizer<Entity> {
 
     public void writeObject(ObjectOutput out, Entity entity) throws IOException {
         out.writeUTF(KeyFactory.keyToString(entity.getKey()));
-        out.writeUTF(entity.getAppId());
-        out.writeUTF(entity.getNamespace());
         out.writeInt(entity.getProperties().size());
         for (Map.Entry<String, Object> entry : entity.getProperties().entrySet()) {
             out.writeUTF(entry.getKey());
