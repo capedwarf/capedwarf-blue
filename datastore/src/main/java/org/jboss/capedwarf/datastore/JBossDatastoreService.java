@@ -118,7 +118,10 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     /**
-     * GAE modifies Integer,Short,Byte with Long.
+     * GAE does some funky stuff to certain property types:
+     *     - Integer, Short, Byte types are stored as Long
+     *     - empty collections are stored as null
+     *     - elements of collections that are of type Integer, Short or Byte are also stored as Long
      *
      * @param original the original entity
      * @return fixed clone
@@ -129,31 +132,42 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             final String name = entry.getKey();
             final Object v = entry.getValue();
+            boolean unindexed = original.isUnindexedProperty(name);
             if (v instanceof Integer || v instanceof Short || v instanceof Byte) {
                 Number number = (Number) v;
-                clone.setProperty(name, number.longValue());
+                setProperty(clone, name, number.longValue(), unindexed);
             } else if (v instanceof Collection) {
                 Collection<?> collection = (Collection<?>) v;
                 if (collection.isEmpty()) {
                     clone.setProperty(name, null);
                 } else {
                     if (collection instanceof Set) {
-                        replaceCollection(clone, name, collection, new HashSet());
+                        replaceCollection(clone, name, unindexed, collection, new HashSet());
                     } else if (collection instanceof List) {
-                        replaceCollection(clone, name, collection, new ArrayList(collection.size()));
+                        replaceCollection(clone, name, unindexed, collection, new ArrayList(collection.size()));
                     }
                 }
+            } else if (unindexed) {
+                clone.setUnindexedProperty(name, v);
             }
         }
         return clone;
     }
 
+    private void setProperty(Entity clone, String name, Object convertedValue, boolean unindexed) {
+        if (unindexed) {
+            clone.setUnindexedProperty(name, convertedValue);
+        } else {
+            clone.setProperty(name, convertedValue);
+        }
+    }
+
     @SuppressWarnings("unchecked")
-    private void replaceCollection(Entity entity, String propertyName, Collection collection, Collection convertedCollection) {
+    private void replaceCollection(Entity entity, String propertyName, boolean unindexed, Collection collection, Collection convertedCollection) {
         for (Object o : collection) {
             convertedCollection.add(convert(o));
         }
-        entity.setProperty(propertyName, convertedCollection);
+        setProperty(entity, propertyName, convertedCollection, unindexed);
     }
 
     private Object convert(Object o) {
