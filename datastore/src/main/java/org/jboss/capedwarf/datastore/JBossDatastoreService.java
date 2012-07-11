@@ -24,6 +24,7 @@ package org.jboss.capedwarf.datastore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -128,6 +129,8 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             if (v instanceof Integer || v instanceof Short || v instanceof Byte) {
                 Number number = (Number) v;
                 clone.setProperty(entry.getKey() , number.longValue());
+            } else if (v instanceof Collection && Collection.class.cast(v).isEmpty()) {
+                clone.removeProperty(entry.getKey());
             }
         }
         return clone;
