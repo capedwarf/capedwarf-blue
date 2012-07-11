@@ -22,18 +22,19 @@
 
 package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
-import org.infinispan.marshall.Externalizer;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Map;
 
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import org.infinispan.marshall.Externalizer;
+
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class EntityExternalizer implements Externalizer<Entity> {
 
@@ -46,22 +47,20 @@ public class EntityExternalizer implements Externalizer<Entity> {
         }
     }
 
-    private Object convertPropertyValue(Object propertyValue) {
-        if (propertyValue instanceof Integer) {
-            Integer value = (Integer) propertyValue;
-            return (long)value;
-        } else if (propertyValue instanceof Short) {
-            Short value = (Short) propertyValue;
-            return (long)value;
+    private Object convertPropertyValue(Object v) {
+        if (v instanceof Integer || v instanceof Short || v instanceof Byte) {
+            Number number = (Number) v;
+            return number.longValue();
+        } else {
+            return v;
         }
-        return propertyValue;
     }
 
     public Entity readObject(ObjectInput in) throws IOException, ClassNotFoundException {
         Key key = KeyFactory.stringToKey(in.readUTF());
         Entity entity = new Entity(key);
         int numberOfProperties = in.readInt();
-        for (int i=0; i<numberOfProperties; i++) {
+        for (int i = 0; i < numberOfProperties; i++) {
             String propertyName = in.readUTF();
             Object propertyValue = in.readObject();
             entity.setProperty(propertyName, propertyValue);
