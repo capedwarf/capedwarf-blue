@@ -97,7 +97,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                     long id = KeyGenerator.generateKeyId(key);
                     ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
                 }
-                store.put(key, entity);
+                store.put(key, modify(entity));
                 list.add(key);
             }
             
@@ -112,6 +112,25 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                 tx.rollback();
             throw new RuntimeException(t);
         }
+    }
+
+    /**
+     * GAE modifies Integer,Short,Byte with Long.
+     *
+     * @param original the original entity
+     * @return fixed clone
+     */
+    protected Entity modify(Entity original) {
+        final Entity clone = original.clone();
+        final Map<String, Object> properties = original.getProperties();
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            final Object v = entry.getValue();
+            if (v instanceof Integer || v instanceof Short || v instanceof Byte) {
+                Number number = (Number) v;
+                clone.setProperty(entry.getKey() , number.longValue());
+            }
+        }
+        return clone;
     }
 
     public void delete(Key... keys) {

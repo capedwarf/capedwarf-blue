@@ -26,11 +26,8 @@ package org.jboss.capedwarf.bytecode;
 
 import com.google.appengine.api.datastore.Entity;
 import javassist.CtClass;
-import javassist.bytecode.annotation.Annotation;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.ProvidedId;
-import org.infinispan.marshall.SerializeWith;
-import org.jboss.capedwarf.datastore.EntityExternalizer;
 import org.jboss.capedwarf.datastore.query.EntityKeyBridge;
 import org.jboss.capedwarf.datastore.query.PropertyMapBridge;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
@@ -52,17 +49,11 @@ public class EntityTransformer extends JavassistTransformer {
 
         @Override
         public void addAnnotations() throws Exception {
+            //noinspection unchecked
             addAnnotationsToClass(ProvidedId.class, Indexed.class);
-            addAnnotationsToClass(createSerializeWithAnnotation());
             addAnnotationsToMethod("getKind", createFieldAnnotation(QueryConverter.KIND_PROPERTY_KEY));
             addAnnotationsToMethod("getKey", createFieldAnnotation(Entity.KEY_RESERVED_PROPERTY), createFieldBridgeAnnotation(EntityKeyBridge.class));
             addAnnotationsToMethod("getPropertyMap", createFieldAnnotation(), createFieldBridgeAnnotation(PropertyMapBridge.class));
-        }
-
-        private Annotation createSerializeWithAnnotation() {
-            Annotation annotation = createAnnotation(SerializeWith.class);
-            annotation.addMemberValue("value", createClassMemberValue(EntityExternalizer.class));
-            return annotation;
         }
     }
 }
