@@ -27,8 +27,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
@@ -89,7 +91,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         boolean newTx = (tx == null);
         if (newTx)
             tx = beginTransaction();
-        
+
         try {
             List<Key> list = new ArrayList<Key>();
             for (Entity entity : entityIterable) {
@@ -101,12 +103,12 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                 store.put(key, modify(entity));
                 list.add(key);
             }
-            
+
             if (newTx) {
                 newTx = false;
                 tx.commit();
             }
-            
+
             return list;
         } catch (Throwable t) {
             if (newTx)
@@ -125,15 +127,42 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         final Entity clone = original.clone();
         final Map<String, Object> properties = original.getProperties();
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            final String name = entry.getKey();
             final Object v = entry.getValue();
             if (v instanceof Integer || v instanceof Short || v instanceof Byte) {
                 Number number = (Number) v;
-                clone.setProperty(entry.getKey() , number.longValue());
-            } else if (v instanceof Collection && Collection.class.cast(v).isEmpty()) {
-                clone.removeProperty(entry.getKey());
+                clone.setProperty(name, number.longValue());
+            } else if (v instanceof Collection) {
+                Collection<?> collection = (Collection<?>) v;
+                if (collection.isEmpty()) {
+                    clone.setProperty(name, null);
+                } else {
+                    if (collection instanceof Set) {
+                        replaceCollection(clone, name, collection, new HashSet());
+                    } else if (collection instanceof List) {
+                        replaceCollection(clone, name, collection, new ArrayList(collection.size()));
+                    }
+                }
             }
         }
         return clone;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void replaceCollection(Entity entity, String propertyName, Collection collection, Collection convertedCollection) {
+        for (Object o : collection) {
+            convertedCollection.add(convert(o));
+        }
+        entity.setProperty(propertyName, convertedCollection);
+    }
+
+    private Object convert(Object o) {
+        if (o instanceof Integer || o instanceof Short || o instanceof Byte) {
+            Number number = (Number) o;
+            return number.longValue();
+        } else {
+            return o;
+        }
     }
 
     public void delete(Key... keys) {
@@ -156,7 +185,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         try {
             for (Key key : keyIterable)
                 store.remove(key);
-            
+
             if (newTx) {
                 newTx = false;
                 tx.commit();
@@ -164,7 +193,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         } catch (Throwable t) {
             if (newTx)
                 tx.rollback();
-            throw new RuntimeException(t);                        
+            throw new RuntimeException(t);
         }
     }
 
