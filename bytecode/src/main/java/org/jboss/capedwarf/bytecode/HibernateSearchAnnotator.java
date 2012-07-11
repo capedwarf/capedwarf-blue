@@ -86,7 +86,7 @@ public abstract class HibernateSearchAnnotator {
 
     protected Annotation createFieldAnnotation(Index index, Analyze analyze, Store store) {
         constPool.addClassInfo(Field.class.getName());
-        Annotation annotation = new Annotation(Field.class.getName(), constPool);
+        Annotation annotation = createAnnotation(Field.class);
         annotation.addMemberValue("index", createEnumMemberValue(index));
         annotation.addMemberValue("analyze", createEnumMemberValue(analyze));
         annotation.addMemberValue("store", createEnumMemberValue(store));
@@ -100,13 +100,21 @@ public abstract class HibernateSearchAnnotator {
     }
 
     protected Annotation createFieldBridgeAnnotation(Class<? extends org.hibernate.search.bridge.FieldBridge> implClass) {
-        Annotation fieldBridge = new Annotation(FieldBridge.class.getName(), constPool);
-        fieldBridge.addMemberValue("impl", new ClassMemberValue(implClass.getName(), constPool));
+        Annotation fieldBridge = createAnnotation(FieldBridge.class);
+        fieldBridge.addMemberValue("impl", createClassMemberValue(implClass));
         return fieldBridge;
     }
 
+    protected ClassMemberValue createClassMemberValue(Class<?> clazz) {
+        return new ClassMemberValue(clazz.getName(), constPool);
+    }
+
     protected void addAnnotationsToClass(Class<? extends java.lang.annotation.Annotation>... annotationClasses) {
-        classFile.addAttribute(createAnnotationAttribute(createAnnotations(annotationClasses)));
+        addAnnotationsToClass(createAnnotations(annotationClasses));
+    }
+
+    protected void addAnnotationsToClass(Annotation... annotations) {
+        classFile.addAttribute(createAnnotationAttribute(annotations));
     }
 
     protected void addAnnotationsToMethod(String methodName, Annotation... annotations) throws NotFoundException {
@@ -120,9 +128,13 @@ public abstract class HibernateSearchAnnotator {
     private Annotation[] createAnnotations(Class<? extends java.lang.annotation.Annotation>[] annotationClasses) {
         List<Annotation> annotationList = new LinkedList<Annotation>();
         for (Class<? extends java.lang.annotation.Annotation> annotationClass : annotationClasses) {
-            annotationList.add(new Annotation(annotationClass.getName(), constPool));
+            annotationList.add(createAnnotation(annotationClass));
         }
         return annotationList.toArray(new Annotation[annotationList.size()]);
+    }
+
+    protected Annotation createAnnotation(Class<? extends java.lang.annotation.Annotation> annotationClass) {
+        return new Annotation(annotationClass.getName(), constPool);
     }
 
     private AnnotationsAttribute createAnnotationAttribute(Annotation... annotations) {
