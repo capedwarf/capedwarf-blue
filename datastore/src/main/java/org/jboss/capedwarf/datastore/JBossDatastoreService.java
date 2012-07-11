@@ -159,15 +159,15 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public KeyRange allocateIds(String kind, long num) {
-        return null;  // TODO
+        return allocateIds(null, kind, num);
     }
 
     public KeyRange allocateIds(Key parent, String kind, long num) {
-        return null;  // TODO
+        return KeyGenerator.generateRange(parent, kind, num);
     }
 
     public KeyRangeState allocateIdRange(KeyRange keyRange) {
-        return null;  // TODO
+        return KeyGenerator.checkRange(keyRange);
     }
 
     public DatastoreAttributes getDatastoreAttributes() {

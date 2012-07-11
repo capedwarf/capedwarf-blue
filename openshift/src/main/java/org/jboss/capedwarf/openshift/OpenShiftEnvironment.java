@@ -24,7 +24,9 @@ package org.jboss.capedwarf.openshift;
 
 import com.google.appengine.api.capabilities.Capability;
 import com.google.appengine.api.capabilities.CapabilityState;
+import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyRange;
 import org.jboss.capedwarf.environment.Environment;
 import org.kohsuke.MetaInfServices;
 
@@ -44,6 +46,14 @@ public class OpenShiftEnvironment implements Environment {
     }
 
     public Long getUniqueId(Key key) {
+        return null; // TODO
+    }
+
+    public KeyRange getRange(Key parent, String kind, long num) {
+        return null; // TODO
+    }
+
+    public DatastoreService.KeyRangeState checkRange(KeyRange keyRange) {
         return null; // TODO
     }
 }

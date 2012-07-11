@@ -22,11 +22,13 @@
 
 package org.jboss.capedwarf.environment;
 
-import com.google.appengine.api.datastore.Key;
-
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
+
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyRange;
 
 /**
  * Env factory.
@@ -64,14 +66,26 @@ public final class EnvironmentFactory {
     }
 
     private static class NoopEnv extends AbstractEnvironment {
-        private AtomicLong counter = new AtomicLong();
+        private AtomicLong nextId = new AtomicLong(1);
 
         public String getDomain() {
             return "dummy";
         }
 
         public Long getUniqueId(Key key) {
-            return counter.incrementAndGet();
+            return nextId.getAndIncrement();
+        }
+
+        public KeyRange getRange(Key parent, String kind, long num) {
+            long start = nextId.getAndAdd(num);
+            return new KeyRange(parent, kind, start, start + num - 1);
+        }
+
+        public DatastoreService.KeyRangeState checkRange(KeyRange keyRange) {
+            long start = keyRange.getStart().getId();
+            long next = nextId.get();
+            // no support for empty atm
+            return start < next ? DatastoreService.KeyRangeState.COLLISION : DatastoreService.KeyRangeState.CONTENTION;
         }
     }
 }

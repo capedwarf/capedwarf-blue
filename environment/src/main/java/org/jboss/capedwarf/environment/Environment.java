@@ -24,7 +24,9 @@ package org.jboss.capedwarf.environment;
 
 import com.google.appengine.api.capabilities.Capability;
 import com.google.appengine.api.capabilities.CapabilityState;
+import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyRange;
 
 /**
  * Environment info.
@@ -56,4 +58,22 @@ public interface Environment {
      * @return unique id
      */
     Long getUniqueId(Key key);
+
+    /**
+     * Get range.
+     *
+     * @param parent the parent
+     * @param kind the kind
+     * @param num the size of range
+     * @return new key range
+     */
+    KeyRange getRange(Key parent, String kind, long num);
+
+    /**
+     * Check key range.
+     *
+     * @param keyRange the key range
+     * @return key range state
+     */
+    DatastoreService.KeyRangeState checkRange(KeyRange keyRange);
 }

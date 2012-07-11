@@ -22,7 +22,9 @@
 
 package org.jboss.capedwarf.datastore;
 
+import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyRange;
 import org.jboss.capedwarf.environment.EnvironmentFactory;
 
 /**
@@ -36,4 +38,11 @@ class KeyGenerator {
         return EnvironmentFactory.getEnvironment().getUniqueId(key);
     }
 
+    static KeyRange generateRange(Key parent, String kind, long num) {
+        return EnvironmentFactory.getEnvironment().getRange(parent, kind, num);
+    }
+
+    static DatastoreService.KeyRangeState checkRange(KeyRange keyRange) {
+        return EnvironmentFactory.getEnvironment().checkRange(keyRange);
+    }
 }

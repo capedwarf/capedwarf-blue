@@ -23,34 +23,38 @@
 package org.jboss.capedwarf.cluster;
 
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyRange;
 import org.infinispan.AdvancedCache;
 import org.jboss.capedwarf.common.infinispan.BaseTxTask;
 
 /**
- * Entity key id generator taks.
+ * Key range task.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class KeyGeneratorTask extends BaseTxTask<String, Long, Long> {
-    private Key key;
+public class KeyRangeTask extends BaseTxTask<String, Long, KeyRange> {
+    private final Key parent;
+    private final String kind;
+    private final long num;
 
-    public KeyGeneratorTask(Key key) {
-        this.key = key;
+    public KeyRangeTask(Key parent, String kind, long num) {
+        this.parent = parent;
+        this.kind = kind;
+        this.num = num;
     }
 
-    protected Long callInTx() throws Exception {
+    protected KeyRange callInTx() throws Exception {
         final AdvancedCache<String, Long> ac = getCache().getAdvancedCache();
-        final String cacheKey = key.getKind();
-        
-        if (ac.lock(cacheKey) == false)
-            throw new IllegalArgumentException("Cannot get a lock on id generator for " + cacheKey);
 
-        Long nextId = ac.get(cacheKey);
+        if (ac.lock(kind) == false)
+            throw new IllegalArgumentException("Cannot get a lock on id generator for " + kind);
+
+        Long nextId = ac.get(kind);
         if (nextId == null)
             nextId = 1L;
 
-        ac.put(cacheKey, nextId + 1);
+        ac.put(kind, nextId + num);
 
-        return nextId;
+        return new KeyRange(parent, kind, nextId, nextId + num - 1);
     }
 }

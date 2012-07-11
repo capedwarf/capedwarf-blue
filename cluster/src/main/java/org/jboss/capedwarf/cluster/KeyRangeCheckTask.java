@@ -22,25 +22,28 @@
 
 package org.jboss.capedwarf.cluster;
 
+import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyRange;
 import org.infinispan.AdvancedCache;
 import org.jboss.capedwarf.common.infinispan.BaseTxTask;
 
 /**
- * Entity key id generator taks.
+ * Key range check task.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class KeyGeneratorTask extends BaseTxTask<String, Long, Long> {
-    private Key key;
+public class KeyRangeCheckTask extends BaseTxTask<String, Long, DatastoreService.KeyRangeState> {
+    private final KeyRange keyRange;
 
-    public KeyGeneratorTask(Key key) {
-        this.key = key;
+    public KeyRangeCheckTask(KeyRange keyRange) {
+        this.keyRange = keyRange;
     }
 
-    protected Long callInTx() throws Exception {
+    protected DatastoreService.KeyRangeState callInTx() throws Exception {
         final AdvancedCache<String, Long> ac = getCache().getAdvancedCache();
-        final String cacheKey = key.getKind();
+        final Key start = keyRange.getStart();
+        final String cacheKey = start.getKind();
         
         if (ac.lock(cacheKey) == false)
             throw new IllegalArgumentException("Cannot get a lock on id generator for " + cacheKey);
@@ -49,8 +52,7 @@ public class KeyGeneratorTask extends BaseTxTask<String, Long, Long> {
         if (nextId == null)
             nextId = 1L;
 
-        ac.put(cacheKey, nextId + 1);
-
-        return nextId;
+        // Empty is unsupported here
+        return start.getId() < nextId ? DatastoreService.KeyRangeState.COLLISION : DatastoreService.KeyRangeState.CONTENTION;
     }
 }
