@@ -88,7 +88,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         boolean newTx = (tx == null);
         if (newTx)
             tx = beginTransaction();
-        
+
         try {
             List<Key> list = new ArrayList<Key>();
             for (Entity entity : entityIterable) {
@@ -97,20 +97,40 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                     long id = KeyGenerator.generateKeyId(key);
                     ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
                 }
-                store.put(key, entity);
+                store.put(key, getEntityWithConvertedProperties(entity));
                 list.add(key);
             }
-            
+
             if (newTx) {
                 newTx = false;
                 tx.commit();
             }
-            
+
             return list;
         } catch (Throwable t) {
             if (newTx)
                 tx.rollback();
             throw new RuntimeException(t);
+        }
+    }
+
+    private Entity getEntityWithConvertedProperties(Entity entity) {
+        Entity entity2 = new Entity(entity.getKey());
+        for (Map.Entry<String, Object> entry : entity.getProperties().entrySet()) {
+            entity2.setProperty(entry.getKey(), convertPropertyValue(entry.getValue()));
+        }
+        return entity2;
+    }
+
+    private Object convertPropertyValue(Object value) {
+        if (value instanceof Integer) {
+            Integer anInteger = (Integer) value;
+            return (long)anInteger;
+        } else if (value instanceof Short) {
+            Short aShort = (Short) value;
+            return (long)aShort;
+        } else {
+            return value;
         }
     }
 
@@ -134,7 +154,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         try {
             for (Key key : keyIterable)
                 store.remove(key);
-            
+
             if (newTx) {
                 newTx = false;
                 tx.commit();
@@ -142,7 +162,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         } catch (Throwable t) {
             if (newTx)
                 tx.rollback();
-            throw new RuntimeException(t);                        
+            throw new RuntimeException(t);
         }
     }
 
