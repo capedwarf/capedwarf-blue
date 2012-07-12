@@ -43,6 +43,7 @@ class EntityGroupTracker implements Synchronization {
     private static Map<Transaction, EntityGroupTracker> trackers = new ConcurrentHashMap<Transaction, EntityGroupTracker>();
 
     private final Transaction tx;
+    private int roots;
     private final Set<Key> keys;
 
     private EntityGroupTracker(Transaction tx) {
@@ -63,21 +64,28 @@ class EntityGroupTracker implements Synchronization {
     }
 
     private void trackEntity(Entity entity) {
-        keys.add(entity.getKey());
+        final Key key = entity.getKey();
+        if (key.getParent() == null)
+            roots++;
+
+        if (roots > 1)
+            throw new IllegalArgumentException("Too many roots!");
+
+        keys.add(key);
     }
 
     private void check() {
         if (keys.size() < 2)
             return;
 
-        int roots = 0;
+        int counter = 0;
         for (Key k : keys) {
             Key parent = k.getParent();
             if (parent == null || keys.contains(parent) == false) {
-                roots++;
+                counter++;
             }
-            if (roots > 1)
-                throw new IllegalArgumentException("Too many roots / entity groups!");
+            if (counter > 1)
+                throw new IllegalArgumentException("Too many different entity groups!");
         }
     }
 
