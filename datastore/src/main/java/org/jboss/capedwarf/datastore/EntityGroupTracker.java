@@ -57,6 +57,7 @@ class EntityGroupTracker implements Synchronization {
         if (egt == null) {
             egt = new EntityGroupTracker(transaction);
             transaction.registerSynchronization(egt);
+            trackers.put(transaction, egt);
         }
         egt.trackEntity(entity);
     }
