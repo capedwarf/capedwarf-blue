@@ -114,7 +114,11 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         } catch (Throwable t) {
             if (newTx)
                 tx.rollback();
-            throw new RuntimeException(t);
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException)t;
+            } else {
+                throw new RuntimeException(t);
+            }
         }
     }
 
