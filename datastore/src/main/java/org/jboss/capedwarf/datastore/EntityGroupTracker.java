@@ -69,7 +69,7 @@ class EntityGroupTracker implements Synchronization {
             roots++;
 
         if (roots > 1)
-            throw new IllegalArgumentException("Too many roots!");
+            throw new IllegalArgumentException("can't operate on multiple entity groups in a single transaction.");
 
         keys.add(key);
     }

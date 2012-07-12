@@ -107,6 +107,26 @@ public class TransactionsTestCase extends AbstractTest {
         assertTxs();
     }
 
+    @Test
+    public void testMultipleEntityGroupsInSingleTransactionAreNotAllowed() {
+        Transaction tx = service.beginTransaction();
+        try {
+            Entity person = new Entity("Person", "tom");
+            service.put(person);
+
+            try {
+                Entity photoNotAChild = new Entity("Photo");
+                photoNotAChild.setProperty("photoUrl", "http://domain.com/path/to/photo.jpg");
+                service.put(photoNotAChild);
+                Assert.fail("put should have thrown IllegalArgumentException");
+            } catch (IllegalArgumentException ex) {
+                // pass
+            }
+        } finally {
+            tx.rollback();
+        }
+    }
+
     protected void assertTxs(Transaction... txs) {
         Collection<Transaction> transactions = service.getActiveTransactions();
         Assert.assertNotNull(txs);
