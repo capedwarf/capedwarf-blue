@@ -22,15 +22,6 @@
 
 package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.DatastoreFailureException;
-import com.google.appengine.api.datastore.Transaction;
-import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.threads.ExecutorFactory;
-import org.jboss.capedwarf.common.tx.TxUtils;
-
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.TransactionManager;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Stack;
@@ -40,6 +31,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.transaction.Status;
+import javax.transaction.SystemException;
+import javax.transaction.TransactionManager;
+
+import com.google.appengine.api.datastore.DatastoreFailureException;
+import com.google.appengine.api.datastore.Transaction;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.common.tx.TxUtils;
 
 /**
  * JBoss GAE transaction.
@@ -81,7 +82,7 @@ public class JBossTransaction implements Transaction {
         return tx;
     }
 
-    private javax.transaction.Transaction getTx() {
+    javax.transaction.Transaction getTx() {
         try {
             return tm.getTransaction();
         } catch (SystemException e) {

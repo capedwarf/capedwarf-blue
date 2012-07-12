@@ -100,6 +100,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                     long id = KeyGenerator.generateKeyId(key);
                     ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
                 }
+                EntityGroupTracker.trackEntity(tx, entity);
                 store.put(key, modify(entity));
                 list.add(key);
             }
