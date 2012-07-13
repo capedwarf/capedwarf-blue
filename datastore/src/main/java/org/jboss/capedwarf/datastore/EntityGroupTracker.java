@@ -30,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.transaction.Synchronization;
 import javax.transaction.Transaction;
 
-import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 
 /**
@@ -51,7 +50,7 @@ class EntityGroupTracker implements Synchronization {
         this.keys = new HashSet<Key>();
     }
 
-    static void trackEntity(com.google.appengine.api.datastore.Transaction tx, Entity entity) throws Exception {
+    static void trackKey(com.google.appengine.api.datastore.Transaction tx, Key key) throws Exception {
         final JBossTransaction jtx = (JBossTransaction) tx;
         final Transaction transaction = jtx.getTx();
         EntityGroupTracker egt = trackers.get(transaction);
@@ -60,12 +59,10 @@ class EntityGroupTracker implements Synchronization {
             transaction.registerSynchronization(egt);
             trackers.put(transaction, egt);
         }
-        egt.trackEntity(entity);
+        egt.trackKey(key);
     }
 
-    private void trackEntity(Entity entity) {
-        final Key key = entity.getKey();
-
+    private void trackKey(Key key) {
         if (key.getParent() == null)
             roots++;
 

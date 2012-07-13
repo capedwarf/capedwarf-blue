@@ -95,12 +95,12 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         try {
             List<Key> list = new ArrayList<Key>();
             for (Entity entity : entityIterable) {
-                Key key = entity.getKey();
+                final Key key = entity.getKey();
                 if (key.isComplete() == false) {
                     long id = KeyGenerator.generateKeyId(key);
                     ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
                 }
-                EntityGroupTracker.trackEntity(tx, entity);
+                EntityGroupTracker.trackKey(tx, key);
                 store.put(key, modify(entity));
                 list.add(key);
             }
@@ -202,8 +202,10 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             tx = beginTransaction();
 
         try {
-            for (Key key : keyIterable)
+            for (Key key : keyIterable) {
+                EntityGroupTracker.trackKey(tx, key);
                 store.remove(key);
+            }
 
             if (newTx) {
                 newTx = false;

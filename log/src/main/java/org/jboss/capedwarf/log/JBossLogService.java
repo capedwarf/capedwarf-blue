@@ -25,7 +25,6 @@ package org.jboss.capedwarf.log;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -34,6 +33,7 @@ import java.util.logging.LogRecord;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -137,7 +137,7 @@ public class JBossLogService implements LogService {
         List<Entity> entities = DatastoreServiceFactory.getDatastoreService().prepare(query).asList(fetchOptions);
         for (Entity entity : entities) {
             AppLogLine logLine = new AppLogLine();
-            logLine.setLogLevel(LogLevel.values()[(Integer) entity.getProperty(LOG_LINE_LEVEL)]);
+            logLine.setLogLevel(LogLevel.values()[((Number) entity.getProperty(LOG_LINE_LEVEL)).intValue()]);
             logLine.setLogMessage((String) entity.getProperty(LOG_LINE_MESSAGE));
             logLine.setTimeUsec((Long) entity.getProperty(LOG_LINE_MILLIS));
 
@@ -182,7 +182,7 @@ public class JBossLogService implements LogService {
         entity.setProperty(LOG_LINE_THROWN, record.getThrown());
         entity.setProperty(LOG_LINE_MESSAGE, record.getMessage()); // TODO: format message
         entity.setProperty(LOG_LINE_REQUEST_KEY, getRequestEntityKey(request));
-        DatastoreServiceFactory.getDatastoreService().put(entity);
+        DatastoreServiceFactory.getDatastoreService().put(entity); // TODO -- async
     }
 
     private LogLevel getLogLevel(LogRecord record) {
@@ -235,12 +235,11 @@ public class JBossLogService implements LogService {
     }
 
     public void clearLog() {
+        final DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
         Query query = new Query(LOG_LINE_ENTITY_KIND);
-        Iterable<Entity> entities = DatastoreServiceFactory.getDatastoreService().prepare(query).asIterable();
-        List<Key> keys = new LinkedList<Key>();
+        Iterable<Entity> entities = ds.prepare(query).asIterable();
         for (Entity entity : entities) {
-            keys.add(entity.getKey());
+            ds.delete(entity.getKey());
         }
-        DatastoreServiceFactory.getDatastoreService().delete(keys);
     }
 }

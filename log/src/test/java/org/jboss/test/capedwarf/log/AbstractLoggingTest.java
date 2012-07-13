@@ -22,15 +22,15 @@
 
 package org.jboss.test.capedwarf.log;
 
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+
 import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.log.RequestLogs;
 import org.jboss.capedwarf.log.JBossLogService;
 import org.junit.Before;
-
-import java.util.logging.Handler;
-import java.util.logging.Logger;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

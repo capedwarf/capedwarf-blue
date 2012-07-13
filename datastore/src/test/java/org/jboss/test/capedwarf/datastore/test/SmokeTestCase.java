@@ -22,6 +22,9 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.Collection;
+import java.util.List;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -32,9 +35,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -53,7 +53,9 @@ public class SmokeTestCase extends AbstractTest {
     @Test
     public void putStoresAllGivenEntities() throws Exception {
         Collection<Entity> entities = createTestEntities();
-        service.put(entities);
+        for (Entity e : entities) {
+            service.put(e);
+        }
         assertStoreContainsAll(entities);
     }
 
@@ -77,9 +79,13 @@ public class SmokeTestCase extends AbstractTest {
     public void deleteRemovesAllGivenEntities() throws Exception {
         Collection<Entity> entities = createTestEntities();
         Collection<Key> keys = extractKeys(entities);
-        service.put(entities);
+        for (Entity e : entities) {
+            service.put(e);
+        }
 
-        service.delete(keys);
+        for (Key k : keys) {
+            service.delete(k);
+        }
         assertStoreDoesNotContain(keys);
     }
 

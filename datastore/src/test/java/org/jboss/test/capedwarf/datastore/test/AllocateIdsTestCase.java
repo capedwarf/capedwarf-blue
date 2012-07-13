@@ -40,10 +40,12 @@ public class AllocateIdsTestCase extends AbstractTest {
     public void testAllocateId() throws Exception {
         KeyRange keys = service.allocateIds("SomeKind", 10L);
         Assert.assertNotNull(keys);
+
         Key start = keys.getStart();
         Assert.assertNotNull(start);
         Assert.assertEquals(1, start.getId());
-        Key end = keys.getStart();
+
+        Key end = keys.getEnd();
         Assert.assertNotNull(end);
         Assert.assertEquals(10, end.getId());
     }
@@ -61,7 +63,7 @@ public class AllocateIdsTestCase extends AbstractTest {
         KeyRange kr3 = new KeyRange(null, "OtherKind", 2, 5);
         DatastoreService.KeyRangeState state2 = service.allocateIdRange(kr3);
         Assert.assertNotNull(state2);
-        Assert.assertSame(DatastoreService.KeyRangeState.COLLISION, state1);
+        Assert.assertSame(DatastoreService.KeyRangeState.COLLISION, state2);
     }
 
 }
