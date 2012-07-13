@@ -22,7 +22,9 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,6 +45,7 @@ class EntityGroupTracker implements Synchronization {
 
     private final Transaction tx;
     private int roots;
+    private List<Key> parents;
     private final Set<Key> keys;
 
     private EntityGroupTracker(Transaction tx) {
@@ -50,46 +53,62 @@ class EntityGroupTracker implements Synchronization {
         this.keys = new HashSet<Key>();
     }
 
-    static void trackKey(com.google.appengine.api.datastore.Transaction tx, Key key) throws Exception {
-        final JBossTransaction jtx = (JBossTransaction) tx;
-        final Transaction transaction = jtx.getTx();
+    static void trackKey(Key key) throws Exception {
+        final Transaction transaction = JBossTransaction.getTx();
+        if (transaction == null)
+            return; // do not track w/o Tx
+
         EntityGroupTracker egt = trackers.get(transaction);
         if (egt == null) {
             egt = new EntityGroupTracker(transaction);
             transaction.registerSynchronization(egt);
             trackers.put(transaction, egt);
         }
-        egt.trackKey(key);
+        egt.checkKey(key);
     }
 
-    private void trackKey(Key key) {
-        if (key.getParent() == null)
+    private void checkKey(Key key) {
+        boolean illegalKey = false;
+
+        Key p = key.getParent();
+        if (p == null) {
             roots++;
+        } else {
+            if (parents == null) {
+                parents = parents(p);
+            } else {
+                final List<Key> keys = parents(p);
+                int N = parents.size();
+                int k = keys.size();
+                for (int i = 0; i < Math.min(N, k); i++) {
+                    if (parents.get(i).equals(keys.get(i)) == false) {
+                        illegalKey = true;
+                        break;
+                    }
+                }
+                if (illegalKey == false && k > N) {
+                    parents = keys; // save longer parents
+                }
+            }
+        }
 
         keys.add(key);
 
-        if (roots > 1)
+        if (roots > 1 || illegalKey)
             throw new IllegalArgumentException("can't operate on multiple entity groups in a single transaction. found: " + keys);
     }
 
-    private void check() {
-        if (keys.size() < 2)
-            return;
-
-        int counter = 0;
-        for (Key k : keys) {
-            Key parent = k.getParent();
-            if (parent == null || keys.contains(parent) == false) {
-                counter++;
-            }
-            if (counter > 1)
-                throw new IllegalArgumentException("can't operate on multiple entity groups in a single transaction. found: " + keys);
+    private List<Key> parents(Key p) {
+        final List<Key> keys = new ArrayList<Key>();
+        while (p != null) {
+            keys.add(0, p);
+            p = p.getParent();
         }
+        return keys;
     }
 
     public void beforeCompletion() {
         trackers.remove(tx);
-        check();
     }
 
     public void afterCompletion(int status) {

@@ -88,10 +88,6 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public List<Key> put(Transaction tx, Iterable<Entity> entityIterable) {
-        boolean newTx = (tx == null);
-        if (newTx)
-            tx = beginTransaction();
-
         try {
             List<Key> list = new ArrayList<Key>();
             for (Entity entity : entityIterable) {
@@ -100,20 +96,22 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                     long id = KeyGenerator.generateKeyId(key);
                     ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
                 }
-                EntityGroupTracker.trackKey(tx, key);
+                EntityGroupTracker.trackKey(key);
                 store.put(key, modify(entity));
                 list.add(key);
             }
 
-            if (newTx) {
-                newTx = false;
-                tx.commit();
+            if (tx != null) {
+                Transaction tmp = tx;
+                tx = null;
+                tmp.commit();
             }
 
             return list;
         } catch (Throwable t) {
-            if (newTx)
+            if (tx != null)
                 tx.rollback();
+
             if (t instanceof RuntimeException) {
                 throw (RuntimeException)t;
             } else {
@@ -197,24 +195,26 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public void delete(Transaction tx, Iterable<Key> keyIterable) {
-        boolean newTx = (tx == null);
-        if (newTx)
-            tx = beginTransaction();
-
         try {
             for (Key key : keyIterable) {
-                EntityGroupTracker.trackKey(tx, key);
+                EntityGroupTracker.trackKey(key);
                 store.remove(key);
             }
 
-            if (newTx) {
-                newTx = false;
-                tx.commit();
+            if (tx != null) {
+                Transaction tmp = tx;
+                tx = null;
+                tmp.commit();
             }
         } catch (Throwable t) {
-            if (newTx)
+            if (tx != null)
                 tx.rollback();
-            throw new RuntimeException(t);
+
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            } else {
+                throw new RuntimeException(t);
+            }
         }
     }
 

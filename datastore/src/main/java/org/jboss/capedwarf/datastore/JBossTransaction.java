@@ -82,7 +82,7 @@ public class JBossTransaction implements Transaction {
         return tx;
     }
 
-    javax.transaction.Transaction getTx() {
+    static javax.transaction.Transaction getTx() {
         try {
             return tm.getTransaction();
         } catch (SystemException e) {
