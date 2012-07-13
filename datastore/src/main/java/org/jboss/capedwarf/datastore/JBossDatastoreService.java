@@ -100,18 +100,9 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                 store.put(key, modify(entity));
                 list.add(key);
             }
-
-            if (tx != null) {
-                Transaction tmp = tx;
-                tx = null;
-                tmp.commit();
-            }
-
             return list;
         } catch (Throwable t) {
-            if (tx != null)
-                tx.rollback();
-
+            // TODO -- mark tx as rollback?
             if (t instanceof RuntimeException) {
                 throw (RuntimeException)t;
             } else {
@@ -200,16 +191,8 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                 EntityGroupTracker.trackKey(key);
                 store.remove(key);
             }
-
-            if (tx != null) {
-                Transaction tmp = tx;
-                tx = null;
-                tmp.commit();
-            }
         } catch (Throwable t) {
-            if (tx != null)
-                tx.rollback();
-
+            // TODO -- mark tx as rollback?
             if (t instanceof RuntimeException) {
                 throw (RuntimeException) t;
             } else {
