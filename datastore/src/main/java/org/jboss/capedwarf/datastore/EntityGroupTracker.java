@@ -22,9 +22,7 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,8 +42,7 @@ class EntityGroupTracker implements Synchronization {
     private static Map<Transaction, EntityGroupTracker> trackers = new ConcurrentHashMap<Transaction, EntityGroupTracker>();
 
     private final Transaction tx;
-    private int roots;
-    private List<Key> parents;
+    private Key top;
     private final Set<Key> keys;
 
     private EntityGroupTracker(Transaction tx) {
@@ -68,46 +65,19 @@ class EntityGroupTracker implements Synchronization {
     }
 
     private void checkKey(Key key) {
-        boolean illegalKey = false;
-
-        Key p = key.getParent();
-        if (p == null) {
-            // we can get dup calls for same key
-            if (keys.contains(key) == false) {
-                roots++;
-            }
-        } else {
-            if (parents == null) {
-                parents = parents(p);
-            } else {
-                final List<Key> keys = parents(p);
-                int N = parents.size();
-                int k = keys.size();
-                for (int i = 0; i < Math.min(N, k); i++) {
-                    if (parents.get(i).equals(keys.get(i)) == false) {
-                        illegalKey = true;
-                        break;
-                    }
-                }
-                if (illegalKey == false && k > N) {
-                    parents = keys; // save longer parents
-                }
-            }
-        }
-
         keys.add(key);
 
-        if (roots > 1 || illegalKey)
-            throw new IllegalArgumentException("can't operate on multiple entity groups in a single transaction. found: " + keys);
-    }
-
-    private List<Key> parents(Key p) {
-        final List<Key> keys = new ArrayList<Key>();
-        while (p != null) {
-            keys.add(0, p);
-            p = p.getParent();
+        Key currentTop = key;
+        while (currentTop.getParent() != null) {
+            currentTop = currentTop.getParent();
         }
-        return keys;
+
+        if ((top != null && top.equals(currentTop) == false))
+            throw new IllegalArgumentException("can't operate on multiple entity groups in a single transaction. found: " + keys);
+
+        if (top == null) {
+            top = currentTop;
+        }
     }
 
     public void beforeCompletion() {
