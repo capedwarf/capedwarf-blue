@@ -72,7 +72,10 @@ class EntityGroupTracker implements Synchronization {
 
         Key p = key.getParent();
         if (p == null) {
-            roots++;
+            // we can get dup calls for same key
+            if (keys.contains(key) == false) {
+                roots++;
+            }
         } else {
             if (parents == null) {
                 parents = parents(p);
