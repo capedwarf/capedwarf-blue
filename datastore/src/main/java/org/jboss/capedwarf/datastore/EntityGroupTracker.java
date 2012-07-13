@@ -65,13 +65,14 @@ class EntityGroupTracker implements Synchronization {
 
     private void trackEntity(Entity entity) {
         final Key key = entity.getKey();
+
         if (key.getParent() == null)
             roots++;
 
+        keys.add(key);
+
         if (roots > 1)
             throw new IllegalArgumentException("can't operate on multiple entity groups in a single transaction. found: " + keys);
-
-        keys.add(key);
     }
 
     private void check() {
