@@ -25,6 +25,7 @@ package org.jboss.test.capedwarf.datastore.test;
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Text;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -57,10 +59,10 @@ public class UnindexedPropertiesTestCase extends AbstractTest {
     @Test
     public void testUnindexedProperties() throws Exception {
         Entity entity = new Entity("test");
-        entity.setUnindexedProperty("unindexedString", "string");
-        entity.setUnindexedProperty("unindexedList", new ArrayList<String>(Arrays.asList("a", "b", "c")));
-        entity.setUnindexedProperty("unindexedText", new Text("text"));
-        entity.setUnindexedProperty("unindexedBlob", new Blob("blob".getBytes()));
+        entity.setUnindexedProperty("unindexedString", "unindexedString");
+        entity.setUnindexedProperty("unindexedList", new ArrayList<String>(Arrays.asList("listElement1", "listElement2", "listElement3")));
+        entity.setUnindexedProperty("unindexedText", new Text("unindexedText"));
+        entity.setUnindexedProperty("unindexedBlob", new Blob("unindexedBlob".getBytes()));
         entity.setProperty("text", new Text("text"));
         entity.setProperty("blob", new Blob("blob".getBytes()));
 
@@ -73,6 +75,19 @@ public class UnindexedPropertiesTestCase extends AbstractTest {
         assertTrue(isUnindexed(getRawProperty(entity2, "unindexedBlob")));
         assertTrue(isUnindexed(getRawProperty(entity2, "text")));
         assertTrue(isUnindexed(getRawProperty(entity2, "blob")));
+
+        assertNull(getResult(new Query("test").addFilter("unindexedString", Query.FilterOperator.EQUAL, "unindexedString")));
+        assertNull(getResult(new Query("test").addFilter("unindexedList", Query.FilterOperator.EQUAL, "listElement1")));
+        assertNull(getResult(new Query("test").addFilter("unindexedText", Query.FilterOperator.EQUAL, "unindexedText")));
+        assertNull(getResult(new Query("test").addFilter("unindexedText", Query.FilterOperator.EQUAL, new Text("unindexedText"))));
+        assertNull(getResult(new Query("test").addFilter("unindexedBlob", Query.FilterOperator.EQUAL, new Blob("unindexedBlob".getBytes()))));
+        assertNull(getResult(new Query("test").addFilter("text", Query.FilterOperator.EQUAL, "text")));
+        assertNull(getResult(new Query("test").addFilter("text", Query.FilterOperator.EQUAL, new Text("text"))));
+        assertNull(getResult(new Query("test").addFilter("blob", Query.FilterOperator.EQUAL, new Blob("blob".getBytes()))));
+    }
+
+    private Entity getResult(Query query) {
+        return service.prepare(query).asSingleEntity();
     }
 
     private boolean isUnindexed(Object rawProperty) {

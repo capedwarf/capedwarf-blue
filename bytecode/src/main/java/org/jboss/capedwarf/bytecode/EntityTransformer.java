@@ -53,7 +53,7 @@ public class EntityTransformer extends JavassistTransformer {
             addAnnotationsToClass(ProvidedId.class, Indexed.class);
             addAnnotationsToMethod("getKind", createFieldAnnotation(QueryConverter.KIND_PROPERTY_KEY));
             addAnnotationsToMethod("getKey", createFieldAnnotation(Entity.KEY_RESERVED_PROPERTY), createFieldBridgeAnnotation(EntityKeyBridge.class));
-            addAnnotationsToMethod("getPropertyMap", createFieldAnnotation(), createFieldBridgeAnnotation(PropertyMapBridge.class));
+            addAnnotationsToField("propertyMap", createFieldAnnotation(), createFieldBridgeAnnotation(PropertyMapBridge.class));
         }
     }
 }
