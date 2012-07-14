@@ -77,12 +77,6 @@ public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTestCase {
     }
 
     @Test
-    public void testTextProperty() {
-        testEqualityQueries(new Text("foo"), new Text("bar"));
-        testInequalityQueries(new Text("aaa"), new Text("bbb"), new Text("ccc"));
-    }
-
-    @Test
     public void testPhoneNumberProperty() {
         testEqualityQueries(new PhoneNumber("foo"), new PhoneNumber("bar"));
         testInequalityQueries(new PhoneNumber("111"), new PhoneNumber("222"), new PhoneNumber("333"));
@@ -144,11 +138,6 @@ public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTestCase {
     @Test
     public void testShortBlobProperty() {
         testEqualityQueries(new ShortBlob("foo".getBytes()), new ShortBlob("bar".getBytes()));
-    }
-
-    @Test
-    public void testBlobProperty() {
-        testEqualityQueries(new Blob("foo".getBytes()), new Blob("bar".getBytes()));
     }
 
     @Test

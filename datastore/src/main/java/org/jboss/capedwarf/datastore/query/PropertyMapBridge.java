@@ -48,7 +48,6 @@ import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.LuceneOptions;
 import org.hibernate.search.bridge.TwoWayFieldBridge;
 import org.hibernate.search.bridge.impl.BridgeFactory;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -70,11 +69,19 @@ public class PropertyMapBridge implements FieldBridge {
     public static final TwoWayFieldBridge BLOB_BRIDGE = new BlobBridge();
     public static final TwoWayFieldBridge SHORT_BLOB_BRIDGE = new ShortBlobBridge();
 
+    public static final String UNINDEXED_VALUE_CLASS_NAME = Entity.class.getName() + "$UnindexedValue";
+
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         Map<String, ?> entityProperties = (Map<String, ?>) value;
         for (Map.Entry<String, ?> entry : entityProperties.entrySet()) {
-            luceneOptions.addFieldToDocument(entry.getKey(), convertToString(entry.getValue()), document);
+            if (!isUnindexedProperty(entry.getValue())) {
+                luceneOptions.addFieldToDocument(entry.getKey(), convertToString(entry.getValue()), document);
+            }
         }
+    }
+
+    private boolean isUnindexedProperty(Object value) {
+        return value != null && UNINDEXED_VALUE_CLASS_NAME.equals(value.getClass().getName());
     }
 
     public String convertToString(Object value) {
@@ -83,7 +90,6 @@ public class PropertyMapBridge implements FieldBridge {
         }
         if (value instanceof String) {
             return String.valueOf(value);
-//            return BridgeFactory.STRING.objectToString(value);
         } else if (value instanceof Boolean) {
             return BridgeFactory.BOOLEAN.objectToString(value);
         } else if (value instanceof Integer) {
@@ -129,14 +135,6 @@ public class PropertyMapBridge implements FieldBridge {
         } else if (value instanceof ShortBlob) {
             return SHORT_BLOB_BRIDGE.objectToString(value);
         }
-
-        // check UnindexedValue from Entity
-        final String className = value.getClass().getName();
-        if (className.equals(Entity.class.getName() + "$UnindexedValue")) {
-            Object innerValue = ReflectionUtils.invokeInstanceMethod(value, "getValue");
-            return convertToString(innerValue);
-        }
-
         throw new IllegalArgumentException("Cannot convert value to string. Value was " + value);
     }
 
