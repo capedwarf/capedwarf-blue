@@ -41,6 +41,7 @@ import com.google.appengine.api.datastore.Transaction;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.common.tx.TxUtils;
+import org.jboss.capedwarf.environment.EnvironmentFactory;
 
 /**
  * JBoss GAE transaction.
@@ -198,7 +199,7 @@ public class JBossTransaction implements Transaction {
     }
 
     public String getId() {
-        return null; // TODO - global id
+        return EnvironmentFactory.getEnvironment().getTransactionId();
     }
 
     public String getApp() {

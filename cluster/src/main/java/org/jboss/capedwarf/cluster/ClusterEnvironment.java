@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.cluster;
 
+import java.util.UUID;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
@@ -38,12 +40,14 @@ import org.kohsuke.MetaInfServices;
  */
 @MetaInfServices(Environment.class)
 public class ClusterEnvironment extends AbstractEnvironment {
+    private final static String TX_KIND = "__CapeDwarf_Tx__";
+
     public String getDomain() {
         return "cluster-mode"; // TODO - per node?
     }
 
     public Long getUniqueId(Key key) {
-        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(key), key.getKind());
+        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(key.getKind()), key.getKind());
     }
 
     public KeyRange getRange(Key parent, String kind, long num) {
@@ -52,5 +56,9 @@ public class ClusterEnvironment extends AbstractEnvironment {
 
     public DatastoreService.KeyRangeState checkRange(KeyRange keyRange) {
         return InfinispanUtils.submit(CacheName.DIST, new KeyRangeCheckTask(keyRange), keyRange.getStart().getKind());
+    }
+
+    public String getTransactionId() {
+        return UUID.randomUUID().toString();
     }
 }

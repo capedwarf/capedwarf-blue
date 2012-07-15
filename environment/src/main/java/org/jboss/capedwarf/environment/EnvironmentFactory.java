@@ -67,6 +67,7 @@ public final class EnvironmentFactory {
 
     private static class NoopEnv extends AbstractEnvironment {
         private AtomicLong nextId = new AtomicLong(1);
+        private AtomicLong txId = new AtomicLong(Long.MIN_VALUE);
 
         public String getDomain() {
             return "dummy";
@@ -86,6 +87,10 @@ public final class EnvironmentFactory {
             long next = nextId.get();
             // no support for empty atm
             return start < next ? DatastoreService.KeyRangeState.COLLISION : DatastoreService.KeyRangeState.CONTENTION;
+        }
+
+        public String getTransactionId() {
+            return String.valueOf(txId.getAndIncrement());
         }
     }
 }

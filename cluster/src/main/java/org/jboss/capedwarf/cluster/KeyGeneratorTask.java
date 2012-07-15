@@ -22,7 +22,6 @@
 
 package org.jboss.capedwarf.cluster;
 
-import com.google.appengine.api.datastore.Key;
 import org.infinispan.AdvancedCache;
 import org.jboss.capedwarf.common.infinispan.BaseTxTask;
 
@@ -32,22 +31,28 @@ import org.jboss.capedwarf.common.infinispan.BaseTxTask;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class KeyGeneratorTask extends BaseTxTask<String, Long, Long> {
-    private Key key;
+    private String kind;
+    private long initialValue;
 
-    public KeyGeneratorTask(Key key) {
-        this.key = key;
+    public KeyGeneratorTask(String kind) {
+        this(kind, 1L);
+    }
+
+    public KeyGeneratorTask(String kind, long initialValue) {
+        this.kind = kind;
+        this.initialValue = initialValue;
     }
 
     protected Long callInTx() throws Exception {
         final AdvancedCache<String, Long> ac = getCache().getAdvancedCache();
-        final String cacheKey = key.getKind();
+        final String cacheKey = kind;
         
         if (ac.lock(cacheKey) == false)
             throw new IllegalArgumentException("Cannot get a lock on id generator for " + cacheKey);
 
         Long nextId = ac.get(cacheKey);
         if (nextId == null)
-            nextId = 1L;
+            nextId = initialValue;
 
         ac.put(cacheKey, nextId + 1);
 

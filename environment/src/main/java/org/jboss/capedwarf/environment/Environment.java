@@ -76,4 +76,11 @@ public interface Environment {
      * @return key range state
      */
     DatastoreService.KeyRangeState checkRange(KeyRange keyRange);
+
+    /**
+     * Get transaction id.
+     *
+     * @return the tx id
+     */
+    String getTransactionId();
 }

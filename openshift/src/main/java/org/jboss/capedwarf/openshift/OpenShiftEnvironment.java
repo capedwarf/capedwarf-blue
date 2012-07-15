@@ -56,4 +56,8 @@ public class OpenShiftEnvironment implements Environment {
     public DatastoreService.KeyRangeState checkRange(KeyRange keyRange) {
         return null; // TODO
     }
+
+    public String getTransactionId() {
+        return null; // TODO
+    }
 }
