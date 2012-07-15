@@ -53,26 +53,36 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     private DatastoreAttributes datastoreAttributes;
 
     public Entity get(Key key) throws EntityNotFoundException {
-        Entity entity = store.get(key);
-        if (entity == null)
-            throw new EntityNotFoundException(key);
-        else
-            return entity;
+        return get(getCurrentTransaction(null), key);
     }
 
-    public Entity get(Transaction transaction, Key key) throws EntityNotFoundException {
-        return get(key);
+    public Entity get(Transaction tx, Key key) throws EntityNotFoundException {
+        final javax.transaction.Transaction transaction = beforeTx(tx);
+        try {
+            Entity entity = store.get(key);
+            if (entity == null)
+                throw new EntityNotFoundException(key);
+            else
+                return entity;
+        } finally {
+            afterTx(transaction);
+        }
     }
 
     public Map<Key, Entity> get(Iterable<Key> keyIterable) {
-        Map<Key, Entity> result = new HashMap<Key, Entity>();
-        for (Key key : keyIterable)
-            result.put(key, store.get(key));
-        return result;
+        return get(getCurrentTransaction(null), keyIterable);
     }
 
-    public Map<Key, Entity> get(Transaction transaction, Iterable<Key> keyIterable) {
-        return get(keyIterable);
+    public Map<Key, Entity> get(Transaction tx, Iterable<Key> keyIterable) {
+        final javax.transaction.Transaction transaction = beforeTx(tx);
+        try {
+            Map<Key, Entity> result = new HashMap<Key, Entity>();
+            for (Key key : keyIterable)
+                result.put(key, store.get(key));
+            return result;
+        } finally {
+            afterTx(transaction);
+        }
     }
 
     public Key put(Entity entity) {
@@ -88,6 +98,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public List<Key> put(Transaction tx, Iterable<Entity> entityIterable) {
+        final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             List<Key> list = new ArrayList<Key>();
             for (Entity entity : entityIterable) {
@@ -108,6 +119,8 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             } else {
                 throw new RuntimeException(t);
             }
+        } finally {
+            afterTx(transaction);
         }
     }
 
@@ -186,6 +199,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public void delete(Transaction tx, Iterable<Key> keyIterable) {
+        final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             for (Key key : keyIterable) {
                 EntityGroupTracker.trackKey(key);
@@ -198,6 +212,19 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             } else {
                 throw new RuntimeException(t);
             }
+        } finally {
+            afterTx(transaction);
+        }
+    }
+
+    private javax.transaction.Transaction beforeTx(Transaction tx) {
+        // if tx is null, explicitly suspend current tx
+        return (tx == null) ? JBossTransaction.suspendTx() : null;
+    }
+
+    private void afterTx(javax.transaction.Transaction transaction) {
+        if (transaction != null) {
+            JBossTransaction.resumeTx(transaction);
         }
     }
 

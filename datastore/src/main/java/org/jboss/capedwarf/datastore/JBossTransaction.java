@@ -91,6 +91,22 @@ public class JBossTransaction implements Transaction {
         }
     }
 
+    static javax.transaction.Transaction suspendTx() {
+        try {
+            return tm.suspend();
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    static void resumeTx(javax.transaction.Transaction transaction) {
+        try {
+            tm.resume(transaction);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     private void checkIfCurrent() {
         if (transaction != null)
             throw new IllegalStateException("Not current transaction -- other tx in progress!");
