@@ -51,11 +51,40 @@ public class FilterPredicateConverter {
         if (filterPredicates.isEmpty()) {
             return queryBuilder.all().createQuery();
         }
+        checkForInequalityFiltersOnMultipleProperties(filterPredicates);
         BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
         for (com.google.appengine.api.datastore.Query.FilterPredicate filterPredicate : filterPredicates) {
             bool.must(convert(filterPredicate));
         }
         return bool.createQuery();
+    }
+
+    private void checkForInequalityFiltersOnMultipleProperties(Collection<com.google.appengine.api.datastore.Query.FilterPredicate> filterPredicates) {
+        String propertyWithInequalityFilter = null;
+        for (com.google.appengine.api.datastore.Query.FilterPredicate predicate : filterPredicates) {
+            if (isInequalityOperator(predicate.getOperator())) {
+                if (propertyWithInequalityFilter == null) {
+                    propertyWithInequalityFilter = predicate.getPropertyName();
+                } else {
+                    if (!propertyWithInequalityFilter.equals(predicate.getPropertyName())) {
+                        throw new IllegalArgumentException("Only one inequality filter per query is supported.  Encountered both " + propertyWithInequalityFilter + " and " + predicate.getPropertyName());
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isInequalityOperator(com.google.appengine.api.datastore.Query.FilterOperator operator) {
+        switch (operator) {
+            case GREATER_THAN:
+            case GREATER_THAN_OR_EQUAL:
+            case LESS_THAN:
+            case LESS_THAN_OR_EQUAL:
+            case NOT_EQUAL:
+                return true;
+            default:
+                return false;
+        }
     }
 
     public Query convert(com.google.appengine.api.datastore.Query.FilterPredicate filterPredicate) {

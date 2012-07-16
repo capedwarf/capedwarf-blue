@@ -39,9 +39,11 @@ import java.util.HashSet;
 import java.util.List;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
+import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Datastore querying basic tests.
@@ -165,6 +167,20 @@ public class QueryBasicsTestCase extends QueryTestCase {
 
         list = service.prepare(new Query("foo", barKey)).asList(FetchOptions.Builder.withDefaults());
         assertEquals(asSet(Arrays.asList(foo)), asSet(list));
+    }
+
+    @Test
+    public void testQueryWithInequalityFiltersOnMultiplePropertiesThrowsIllegalArgumentException() throws Exception {
+        Query query = createQuery()
+            .addFilter("weight", GREATER_THAN, 3)
+            .addFilter("size", GREATER_THAN, 5);
+
+        try {
+            service.prepare(query).asSingleEntity();
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException ex) {
+            // pass
+        }
     }
 
     private HashSet<Entity> asSet(List<Entity> collection) {
