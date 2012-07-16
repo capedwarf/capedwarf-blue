@@ -24,9 +24,14 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import com.google.appengine.api.datastore.Entity;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
+import static com.google.appengine.api.datastore.Query.FilterOperator.LESS_THAN_OR_EQUAL;
+import static org.junit.Assert.assertThat;
 
 /**
  * Datastore querying tests.
@@ -42,39 +47,57 @@ public class QueryFilteringByBasicPropertyTypesTestCase extends QueryTestCase {
     }
 
     @Test
+    public void testInequalityFilterWithNegativeInteger() {
+        Entity minus2 = createTestEntity().withProperty("prop", -2).store();
+        Entity minus1 = createTestEntity().withProperty("prop", -1).store();
+        Entity zero = createTestEntity().withProperty("prop", 0).store();
+        Entity plus1 = createTestEntity().withProperty("prop", 1).store();
+        Entity plus2 = createTestEntity().withProperty("prop", 2).store();
+
+        assertThat(whenFilteringBy(GREATER_THAN, -1), queryReturns(zero, plus1, plus2));
+        assertThat(whenFilteringBy(LESS_THAN_OR_EQUAL, -1), queryReturns(minus2, minus1));
+    }
+
+    @Test
     public void testIntegerProperty() {
         testEqualityQueries(1, 2);
-        testInequalityQueries(1, 2, 3);
+        testInequalityQueries(2, 10, 30);
+        testInequalityQueries(-3, -2, -1);
     }
 
     @Test
     public void testByteProperty() {
         testEqualityQueries((byte) 1, (byte) 2);
-        testInequalityQueries((byte) 1, (byte) 2, (byte) 3);
+        testInequalityQueries((byte) 2, (byte) 10, (byte) 30);
+        testInequalityQueries((byte) -3, (byte) -2, (byte) -1);
     }
 
     @Test
     public void testShortProperty() {
         testEqualityQueries((short) 1, (short) 2);
-        testInequalityQueries((short) 1, (short) 2, (short) 3);
+        testInequalityQueries((short) 2, (short) 10, (short) 30);
+        testInequalityQueries((short) -3, (short) -2, (short) -1);
     }
 
     @Test
     public void testLongProperty() {
         testEqualityQueries(1L, 2L);
-        testInequalityQueries(1L, 2L, 3L);
+        testInequalityQueries(2L, 10L, 30L);
+        testInequalityQueries(-3L, -2L, -1L);
     }
 
     @Test
     public void testFloatProperty() {
         testEqualityQueries(1f, 2f);
-        testInequalityQueries(1f, 2f, 3f);
+        testInequalityQueries(2f, 10f, 30f);
+        testInequalityQueries(-3f, -2f, -1f);
     }
 
     @Test
     public void testDoubleProperty() {
         testEqualityQueries(1.0, 2.0);
-        testInequalityQueries(1.0, 2.0, 3.0);
+        testInequalityQueries(2.0, 10.0, 30.0);
+        testInequalityQueries(-3.0, -2.0, -1.0);
     }
 
 }

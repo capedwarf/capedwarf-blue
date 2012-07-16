@@ -71,6 +71,8 @@ public class PropertyMapBridge implements FieldBridge {
     public static final TwoWayFieldBridge BLOB_KEY_BRIDGE = new BlobKeyBridge();
     public static final TwoWayFieldBridge BLOB_BRIDGE = new BlobBridge();
     public static final TwoWayFieldBridge SHORT_BLOB_BRIDGE = new ShortBlobBridge();
+    public static final LongBridge LONG_BRIDGE = new LongBridge();
+    public static final DoubleBridge DOUBLE_BRIDGE = new DoubleBridge();
 
     public static final String UNINDEXED_VALUE_CLASS_NAME = Entity.class.getName() + "$UnindexedValue";
 
@@ -105,18 +107,10 @@ public class PropertyMapBridge implements FieldBridge {
             return String.valueOf(value);
         } else if (value instanceof Boolean) {
             return BridgeFactory.BOOLEAN.objectToString(value);
-        } else if (value instanceof Integer) {
-            return BridgeFactory.INTEGER.objectToString(value);
-        } else if (value instanceof Byte) {
-            return BridgeFactory.INTEGER.objectToString(value);
-        } else if (value instanceof Short) {
-            return BridgeFactory.INTEGER.objectToString(value);
-        } else if (value instanceof Long) {
-            return BridgeFactory.LONG.objectToString(value);
-        } else if (value instanceof Float) {
-            return BridgeFactory.FLOAT.objectToString(value);
-        } else if (value instanceof Double) {
-            return BridgeFactory.DOUBLE.objectToString(value);
+        } else if (value instanceof Float || value instanceof Double) {
+            return DOUBLE_BRIDGE.objectToString(value);
+        } else if (value instanceof Number) {
+            return LONG_BRIDGE.objectToString(value);
         } else if (value instanceof Date) {
             return BridgeFactory.DATE_MILLISECOND.objectToString(value);
         } else if (value instanceof Text) {
@@ -149,6 +143,100 @@ public class PropertyMapBridge implements FieldBridge {
             return SHORT_BLOB_BRIDGE.objectToString(value);
         }
         throw new IllegalArgumentException("Cannot convert value to string. Value was " + value);
+    }
+
+
+    private static class DoubleBridge extends ObjectToStringFieldBridge {
+        public String objectToString(Object object) {
+            return double2sortableStr(((Number)object).doubleValue());
+        }
+
+        public static String double2sortableStr(double val) {
+            long f = Double.doubleToRawLongBits(val);
+            if (f<0) f ^= 0x7fffffffffffffffL;
+            return long2sortableStr(f);
+        }
+
+        public static String long2sortableStr(long val) {
+            char[] arr = new char[5];
+            long2sortableStr(val,arr,0);
+            return new String(arr,0,5);
+        }
+
+        // uses binary representation of an int to build a string of
+        // chars that will sort correctly.  Only char ranges
+        // less than 0xd800 will be used to avoid UCS-16 surrogates.
+        // we can use the lowest 15 bits of a char, (or a mask of 0x7fff)
+        public static int long2sortableStr(long val, char[] out, int offset) {
+            val += Long.MIN_VALUE;
+            out[offset++] = (char)(val >>>60);
+            out[offset++] = (char)(val >>>45 & 0x7fff);
+            out[offset++] = (char)(val >>>30 & 0x7fff);
+            out[offset++] = (char)(val >>>15 & 0x7fff);
+            out[offset] = (char)(val & 0x7fff);
+            return 5;
+        }
+    }
+
+
+    private static class LongBridge extends ObjectToStringFieldBridge {
+
+        private static final int RADIX = 36;
+
+        private static final char NEGATIVE_PREFIX = '-';
+
+        // NB: NEGATIVE_PREFIX must be < POSITIVE_PREFIX
+        private static final char POSITIVE_PREFIX = '0';
+
+        //NB: this must be less than
+        /**
+         * Equivalent to longToString(Long.MIN_VALUE)
+         */
+        public static final String MIN_STRING_VALUE = NEGATIVE_PREFIX + "0000000000000";
+        /**
+         * Equivalent to longToString(Long.MAX_VALUE)
+         */
+        public static final String MAX_STRING_VALUE = POSITIVE_PREFIX + "1y2p0ij32e8e7";
+
+        /**
+         * the length of (all) strings returned by [EMAIL PROTECTED] #longToString}
+         */
+        public static final int STR_SIZE = MIN_STRING_VALUE.length();
+
+        public String objectToString(Object object) {
+            long num = ((Number) object).longValue();
+            return longToString(num);
+        }
+
+        /**
+         * Converts a long to a String suitable for indexing.
+         */
+        public static String longToString(long num) {
+
+            if (num == Long.MIN_VALUE) {
+                // special case, because long is not symetric around zero
+                return MIN_STRING_VALUE;
+            }
+
+            StringBuilder buf = new StringBuilder(STR_SIZE);
+
+            if (num < 0) {
+                buf.append(NEGATIVE_PREFIX);
+                num = Long.MAX_VALUE + num + 1;
+            } else {
+                buf.append(POSITIVE_PREFIX);
+            }
+            String numStr = Long.toString(num, RADIX);
+
+            int padLen = STR_SIZE - numStr.length() - buf.length();
+            while (padLen-- > 0) {
+                buf.append('0');
+            }
+            buf.append(numStr);
+
+            return buf.toString();
+        }
+
     }
 
     private static class TextBridge extends ObjectToStringFieldBridge {
