@@ -52,12 +52,13 @@ public interface Environment {
     CapabilityState getState(Capability capability);
 
     /**
-     * Get unique id for key param.
+     * Get unique id for the kind.
      *
-     * @param key the key
+     * @param kind the kind
+     * @param allocationSize the allocation size
      * @return unique id
      */
-    Long getUniqueId(Key key);
+    Long getUniqueId(String kind, int allocationSize);
 
     /**
      * Get range.

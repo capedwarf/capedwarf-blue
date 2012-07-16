@@ -40,14 +40,12 @@ import org.kohsuke.MetaInfServices;
  */
 @MetaInfServices(Environment.class)
 public class ClusterEnvironment extends AbstractEnvironment {
-    private final static String TX_KIND = "__CapeDwarf_Tx__";
-
     public String getDomain() {
         return "cluster-mode"; // TODO - per node?
     }
 
-    public Long getUniqueId(Key key) {
-        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(key.getKind()), key.getKind());
+    public Long getUniqueId(String kind, int allocationSize) {
+        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(kind, allocationSize), kind);
     }
 
     public KeyRange getRange(Key parent, String kind, long num) {

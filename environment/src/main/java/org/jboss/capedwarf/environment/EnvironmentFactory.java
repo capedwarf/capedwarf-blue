@@ -73,8 +73,8 @@ public final class EnvironmentFactory {
             return "dummy";
         }
 
-        public Long getUniqueId(Key key) {
-            return nextId.getAndIncrement();
+        public Long getUniqueId(String kind, int allocationSize) {
+            return nextId.getAndAdd(allocationSize);
         }
 
         public KeyRange getRange(Key parent, String kind, long num) {

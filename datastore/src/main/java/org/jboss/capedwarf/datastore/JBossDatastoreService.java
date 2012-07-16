@@ -71,6 +71,11 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         return allocationsMap;
     }
 
+    protected int getAllocationSize(String kind) {
+        final Integer as = getAllocationsMap().get(kind);
+        return (as != null) ? as : 1;
+    }
+
     public Entity get(Key key) throws EntityNotFoundException {
         return get(getCurrentTransaction(null), key);
     }
@@ -123,7 +128,8 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             for (Entity entity : entityIterable) {
                 final Key key = entity.getKey();
                 if (key.isComplete() == false) {
-                    long id = KeyGenerator.generateKeyId(key);
+                    String kind = key.getKind();
+                    long id = KeyGenerator.generateKeyId(kind, getAllocationSize(kind));
                     ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
                 }
                 EntityGroupTracker.trackKey(key);
@@ -264,8 +270,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public KeyRange allocateIds(Key parent, String kind, long num) {
-        final Integer value = getAllocationsMap().get(kind);
-        final int allocationSize = (value != null) ? value : 1;
+        final int allocationSize = getAllocationSize(kind);
         return KeyGenerator.generateRange(parent, kind, num * allocationSize);
     }
 

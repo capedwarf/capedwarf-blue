@@ -34,8 +34,8 @@ import org.jboss.capedwarf.environment.EnvironmentFactory;
  */
 class KeyGenerator {
 
-    static long generateKeyId(Key key) {
-        return EnvironmentFactory.getEnvironment().getUniqueId(key);
+    static long generateKeyId(String kind, int allocationSize) {
+        return EnvironmentFactory.getEnvironment().getUniqueId(kind, allocationSize);
     }
 
     static KeyRange generateRange(Key parent, String kind, long num) {

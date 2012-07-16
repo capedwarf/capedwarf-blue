@@ -45,7 +45,7 @@ public class OpenShiftEnvironment implements Environment {
         return null; // TODO
     }
 
-    public Long getUniqueId(Key key) {
+    public Long getUniqueId(String kind, int allocationSize) {
         return null; // TODO
     }
 

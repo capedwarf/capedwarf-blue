@@ -31,15 +31,21 @@ import org.jboss.capedwarf.common.infinispan.BaseTxTask;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class KeyGeneratorTask extends BaseTxTask<String, Long, Long> {
-    private String kind;
-    private long initialValue;
+    private final String kind;
+    private final int allocationSize;
+    private final long initialValue;
 
     public KeyGeneratorTask(String kind) {
-        this(kind, 1L);
+        this(kind, 1);
     }
 
-    public KeyGeneratorTask(String kind, long initialValue) {
+    public KeyGeneratorTask(String kind, int allocationSize) {
+        this(kind, allocationSize, 1L);
+    }
+
+    public KeyGeneratorTask(String kind, int allocationSize, long initialValue) {
         this.kind = kind;
+        this.allocationSize = allocationSize;
         this.initialValue = initialValue;
     }
 
@@ -54,7 +60,7 @@ public class KeyGeneratorTask extends BaseTxTask<String, Long, Long> {
         if (nextId == null)
             nextId = initialValue;
 
-        ac.put(cacheKey, nextId + 1);
+        ac.put(cacheKey, nextId + allocationSize);
 
         return nextId;
     }
