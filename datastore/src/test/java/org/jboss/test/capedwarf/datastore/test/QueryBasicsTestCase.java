@@ -40,7 +40,10 @@ import java.util.List;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
+import static com.google.appengine.api.datastore.Query.FilterOperator.IN;
+import static com.google.appengine.api.datastore.Query.FilterOperator.NOT_EQUAL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -128,13 +131,42 @@ public class QueryBasicsTestCase extends QueryTestCase {
 
     @Test
     public void testNullPropertyValue() throws Exception {
-        Entity entity = createEntity("Entry", 1)
-                .withProperty("user", null)
-                .store();
+        createEntity("Entry", 1)
+            .withProperty("user", null)
+            .store();
 
-        PreparedQuery preparedQuery = service.prepare(new Query("Entry"));
-        Entity entity2 = preparedQuery.asSingleEntity();
-        assertNull(entity2.getProperty("user"));
+        Entity entity = service.prepare(new Query("Entry")).asSingleEntity();
+        assertNull(entity.getProperty("user"));
+    }
+
+    @Test
+    public void testFilterEqualNull() throws Exception {
+        createEntity("Entry", 1)
+            .withProperty("user", null)
+            .store();
+
+        Query query = new Query("Entry").addFilter("user", EQUAL, null);
+        assertNotNull(service.prepare(query).asSingleEntity());
+    }
+
+    @Test
+    public void testFilterNotEqualNull() throws Exception {
+        createEntity("Entry", 1)
+            .withProperty("user", "joe")
+            .store();
+
+        Query query = new Query("Entry").addFilter("user", NOT_EQUAL, null);
+        assertNotNull(service.prepare(query).asSingleEntity());
+    }
+
+    @Test
+    public void testFilterInNull() throws Exception {
+        createEntity("Entry", 1)
+            .withProperty("user", null)
+            .store();
+
+        Query query = new Query("Entry").addFilter("user", IN, Arrays.asList(null, "foo"));
+        assertNotNull(service.prepare(query).asSingleEntity());
     }
 
     @Test
