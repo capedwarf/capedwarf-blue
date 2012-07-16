@@ -58,7 +58,7 @@
 
         <dependency>
             <groupId>org.datanucleus</groupId>
-            <artifactId>datanucleus-jpa</artifactId>
+            <artifactId>datanucleus-api-jpa</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.geronimo.specs</groupId>
@@ -76,7 +76,7 @@
 
         <dependency>
             <groupId>javax.jdo</groupId>
-            <artifactId>jdo2-api</artifactId>
+            <artifactId>jdo-api</artifactId>
             <scope>test</scope>
         </dependency>
 
