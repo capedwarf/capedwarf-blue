@@ -54,6 +54,9 @@ import org.hibernate.search.bridge.impl.BridgeFactory;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class PropertyMapBridge implements FieldBridge {
+
+    private static final String NULL_TOKEN = "__capedwarf___NULL___";
+
     public static final TwoWayFieldBridge TEXT_BRIDGE = new TextBridge();
     public static final TwoWayFieldBridge PHONE_NUMBER_BRIDGE = new PhoneNumberBridge();
     public static final TwoWayFieldBridge POSTAL_ADDRESS_BRIDGE = new PostalAddressBridge();
@@ -85,9 +88,14 @@ public class PropertyMapBridge implements FieldBridge {
     }
 
     public String convertToString(Object value) {
-        if (value == null || value instanceof Collection) {
+        if (value == null) {
+            return NULL_TOKEN;
+        }
+
+        if (value instanceof Collection) {
             return null;
         }
+
         if (value instanceof String) {
             return String.valueOf(value);
         } else if (value instanceof Boolean) {
