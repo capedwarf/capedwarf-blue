@@ -73,13 +73,8 @@ public final class EnvironmentFactory {
             return "dummy";
         }
 
-        public Long getUniqueId(String kind, int allocationSize) {
-            return nextId.getAndAdd(allocationSize);
-        }
-
-        public KeyRange getRange(Key parent, String kind, long num) {
-            long start = nextId.getAndAdd(num);
-            return new KeyRange(parent, kind, start, start + num - 1);
+        public Long getRange(Key parent, String sequenceName, long num) {
+            return nextId.getAndAdd(num);
         }
 
         public DatastoreService.KeyRangeState checkRange(KeyRange keyRange) {

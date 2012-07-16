@@ -55,6 +55,8 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     private DatastoreAttributes datastoreAttributes;
     private volatile Map<String, Integer> allocationsMap;
 
+    private static final String SEQUENCE_POSTFIX = "_SEQUENCE__"; // GAE's SequenceGenerator impl detail
+
     protected Map<String, Integer> getAllocationsMap() {
         if (allocationsMap == null) {
             synchronized (this) {
@@ -71,9 +73,14 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         return allocationsMap;
     }
 
-    protected int getAllocationSize(String kind) {
-        final Integer as = getAllocationsMap().get(kind);
-        return (as != null) ? as : 1;
+    protected long getRangeStart(Key parent, String kind) {
+        Integer allocationSize = getAllocationsMap().get(kind);
+        if (allocationSize != null) {
+            kind = kind + SEQUENCE_POSTFIX;
+        } else {
+            allocationSize = 1;
+        }
+        return KeyGenerator.generateRange(parent, kind, allocationSize);
     }
 
     public Entity get(Key key) throws EntityNotFoundException {
@@ -128,8 +135,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             for (Entity entity : entityIterable) {
                 final Key key = entity.getKey();
                 if (key.isComplete() == false) {
-                    String kind = key.getKind();
-                    long id = KeyGenerator.generateKeyId(kind, getAllocationSize(kind));
+                    long id = getRangeStart(key.getParent(), key.getKind());
                     ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
                 }
                 EntityGroupTracker.trackKey(key);
@@ -270,8 +276,12 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public KeyRange allocateIds(Key parent, String kind, long num) {
-        final int allocationSize = getAllocationSize(kind);
-        return KeyGenerator.generateRange(parent, kind, num * allocationSize);
+        final int p = kind.lastIndexOf(SEQUENCE_POSTFIX);
+        if (p > 0) {
+            kind = kind.substring(0 , p);
+        }
+        long start = getRangeStart(parent, kind);
+        return new KeyRange(parent, kind, start, start + num - 1);
     }
 
     public KeyRangeState allocateIdRange(KeyRange keyRange) {

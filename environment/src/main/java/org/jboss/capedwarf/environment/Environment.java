@@ -52,23 +52,14 @@ public interface Environment {
     CapabilityState getState(Capability capability);
 
     /**
-     * Get unique id for the kind.
-     *
-     * @param kind the kind
-     * @param allocationSize the allocation size
-     * @return unique id
-     */
-    Long getUniqueId(String kind, int allocationSize);
-
-    /**
      * Get range.
      *
      * @param parent the parent
-     * @param kind the kind
+     * @param sequenceName the sequenceName
      * @param num the size of range
-     * @return new key range
+     * @return key range start
      */
-    KeyRange getRange(Key parent, String kind, long num);
+    Long getRange(Key parent, String sequenceName, long num);
 
     /**
      * Check key range.

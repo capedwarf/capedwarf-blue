@@ -45,11 +45,7 @@ public class OpenShiftEnvironment implements Environment {
         return null; // TODO
     }
 
-    public Long getUniqueId(String kind, int allocationSize) {
-        return null; // TODO
-    }
-
-    public KeyRange getRange(Key parent, String kind, long num) {
+    public Long getRange(Key parent, String kind, long num) {
         return null; // TODO
     }
 

@@ -32,18 +32,18 @@ import org.jboss.capedwarf.common.infinispan.BaseTxTask;
  */
 public class KeyGeneratorTask extends BaseTxTask<String, Long, Long> {
     private final String kind;
-    private final int allocationSize;
+    private final long allocationSize;
     private final long initialValue;
 
     public KeyGeneratorTask(String kind) {
         this(kind, 1);
     }
 
-    public KeyGeneratorTask(String kind, int allocationSize) {
+    public KeyGeneratorTask(String kind, long allocationSize) {
         this(kind, allocationSize, 1L);
     }
 
-    public KeyGeneratorTask(String kind, int allocationSize, long initialValue) {
+    public KeyGeneratorTask(String kind, long allocationSize, long initialValue) {
         this.kind = kind;
         this.allocationSize = allocationSize;
         this.initialValue = initialValue;

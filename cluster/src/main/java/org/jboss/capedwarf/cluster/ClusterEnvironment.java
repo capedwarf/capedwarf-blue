@@ -44,12 +44,8 @@ public class ClusterEnvironment extends AbstractEnvironment {
         return "cluster-mode"; // TODO - per node?
     }
 
-    public Long getUniqueId(String kind, int allocationSize) {
-        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(kind, allocationSize), kind);
-    }
-
-    public KeyRange getRange(Key parent, String kind, long num) {
-        return InfinispanUtils.submit(CacheName.DIST, new KeyRangeTask(parent, kind, num), kind);
+    public Long getRange(Key parent, String sequenceName, long num) {
+        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(sequenceName, num), sequenceName);
     }
 
     public DatastoreService.KeyRangeState checkRange(KeyRange keyRange) {

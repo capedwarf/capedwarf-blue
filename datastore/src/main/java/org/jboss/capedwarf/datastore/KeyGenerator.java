@@ -33,12 +33,7 @@ import org.jboss.capedwarf.environment.EnvironmentFactory;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class KeyGenerator {
-
-    static long generateKeyId(String kind, int allocationSize) {
-        return EnvironmentFactory.getEnvironment().getUniqueId(kind, allocationSize);
-    }
-
-    static KeyRange generateRange(Key parent, String kind, long num) {
+    static Long generateRange(Key parent, String kind, long num) {
         return EnvironmentFactory.getEnvironment().getRange(parent, kind, num);
     }
 
