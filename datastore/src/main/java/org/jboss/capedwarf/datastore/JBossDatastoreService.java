@@ -41,6 +41,8 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
@@ -51,6 +53,23 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  */
 public class JBossDatastoreService extends AbstractDatastoreService implements DatastoreService {
     private DatastoreAttributes datastoreAttributes;
+    private volatile Map<String, Integer> allocationsMap;
+
+    protected Map<String, Integer> getAllocationsMap() {
+        if (allocationsMap == null) {
+            synchronized (this) {
+                if (allocationsMap == null) {
+                    //noinspection unchecked
+                    allocationsMap = JndiLookupUtils.lookup(
+                            "jndi.persistence.allocationsMap",
+                            Map.class,
+                            "java:jboss/capedwarf/persistence/allocationsMap/" + Application.getAppId()
+                    );
+                }
+            }
+        }
+        return allocationsMap;
+    }
 
     public Entity get(Key key) throws EntityNotFoundException {
         return get(getCurrentTransaction(null), key);
@@ -245,7 +264,9 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public KeyRange allocateIds(Key parent, String kind, long num) {
-        return KeyGenerator.generateRange(parent, kind, num);
+        final Integer value = getAllocationsMap().get(kind);
+        final int allocationSize = (value != null) ? value : 1;
+        return KeyGenerator.generateRange(parent, kind, num * allocationSize);
     }
 
     public KeyRangeState allocateIdRange(KeyRange keyRange) {
