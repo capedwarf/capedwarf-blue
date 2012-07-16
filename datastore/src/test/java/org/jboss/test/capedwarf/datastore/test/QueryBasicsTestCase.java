@@ -170,6 +170,16 @@ public class QueryBasicsTestCase extends QueryTestCase {
     }
 
     @Test
+    public void testFilterOnMultiValuedProperty() throws Exception {
+        createEntity("Entry", 1)
+            .withProperty("letters", Arrays.asList("a", "b", "c"))
+            .store();
+
+        Query query = new Query("Entry").addFilter("letters", EQUAL, "a");
+        assertNotNull(service.prepare(query).asSingleEntity());
+    }
+
+    @Test
     public void testFilteringByKind() throws Exception {
         Entity foo = createEntity("foo", 1).store();
         Entity bar = createEntity("bar", 2).store();

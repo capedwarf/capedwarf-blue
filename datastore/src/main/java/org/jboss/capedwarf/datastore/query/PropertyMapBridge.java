@@ -77,8 +77,17 @@ public class PropertyMapBridge implements FieldBridge {
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         Map<String, ?> entityProperties = (Map<String, ?>) value;
         for (Map.Entry<String, ?> entry : entityProperties.entrySet()) {
-            if (!isUnindexedProperty(entry.getValue())) {
-                luceneOptions.addFieldToDocument(entry.getKey(), convertToString(entry.getValue()), document);
+            String propertyName = entry.getKey();
+            Object propertyValue = entry.getValue();
+            if (!isUnindexedProperty(propertyValue)) {
+                if (propertyValue instanceof Collection) {
+                    Collection collection = (Collection) propertyValue;
+                    for (Object element : collection) {
+                        luceneOptions.addFieldToDocument(propertyName, convertToString(element), document);
+                    }
+                } else {
+                    luceneOptions.addFieldToDocument(propertyName, convertToString(propertyValue), document);
+                }
             }
         }
     }
@@ -90,10 +99,6 @@ public class PropertyMapBridge implements FieldBridge {
     public String convertToString(Object value) {
         if (value == null) {
             return NULL_TOKEN;
-        }
-
-        if (value instanceof Collection) {
-            return null;
         }
 
         if (value instanceof String) {
