@@ -58,7 +58,7 @@ class QueryResultListImpl<E> extends ArrayList<E> implements QueryResultList<E> 
 
     @Override
     public E get(int index) {
-        current.addAndGet(index + 1);
+        current.set(index + 1);
         return super.get(index);
     }
 
