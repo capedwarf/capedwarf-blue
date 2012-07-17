@@ -24,22 +24,26 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.QueryResultIterator;
 
-import java.util.Iterator;
-import java.util.List;
-
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class QueryResultIteratorImpl<E> implements QueryResultIterator<E> {
 
     private Iterator<E> delegate;
+    private AtomicInteger current;
 
     public QueryResultIteratorImpl(Iterator<E> iterator) {
         this.delegate = iterator;
+        this.current = new AtomicInteger();
     }
 
     public boolean hasNext() {
@@ -47,15 +51,17 @@ class QueryResultIteratorImpl<E> implements QueryResultIterator<E> {
     }
 
     public E next() {
+        current.incrementAndGet();
         return delegate.next();
     }
 
     public void remove() {
+        current.decrementAndGet();
         delegate.remove();
     }
 
     public Cursor getCursor() {
-        return null;  // TODO
+        return JBossCursorHelper.createCursor(current);
     }
 
     public List<Index> getIndexList() {

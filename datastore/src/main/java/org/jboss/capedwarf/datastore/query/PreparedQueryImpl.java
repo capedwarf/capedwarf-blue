@@ -3,6 +3,7 @@ package org.jboss.capedwarf.datastore.query;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -18,6 +19,7 @@ import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaul
  * JBoss GAE PreparedQuery
  *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class PreparedQueryImpl implements PreparedQuery {
 
@@ -92,11 +94,21 @@ public class PreparedQueryImpl implements PreparedQuery {
     }
 
     private void apply(FetchOptions fetchOptions, CacheQuery cacheQuery) {
-        if (fetchOptions.getOffset() != null) {
-            cacheQuery.firstResult(fetchOptions.getOffset());
+        final Integer offset = fetchOptions.getOffset();
+        if (offset != null) {
+            cacheQuery.firstResult(offset);
         }
-        if (fetchOptions.getLimit() != null) {
-            cacheQuery.maxResults(fetchOptions.getLimit());
+        final Integer limit = fetchOptions.getLimit();
+        if (limit != null) {
+            cacheQuery.maxResults(limit);
+        }
+        final Cursor start = fetchOptions.getStartCursor();
+        if (start != null) {
+            JBossCursorHelper.applyStartCursor(start, cacheQuery);
+        }
+        final Cursor end = fetchOptions.getEndCursor();
+        if (end != null) {
+            JBossCursorHelper.applyEndCursor(end, cacheQuery, start);
         }
     }
 

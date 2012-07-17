@@ -28,11 +28,9 @@ import javassist.CtMethod;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class FileServiceFactoryTransformer extends JavassistTransformer
-{
-   protected void transform(CtClass clazz) throws Exception
-   {
-      CtMethod method = clazz.getDeclaredMethod("getFileService");
-      method.setBody("return new org.jboss.capedwarf.files.JBossFileService();");
-   }
+public class FileServiceFactoryTransformer extends JavassistTransformer {
+    protected void transform(CtClass clazz) throws Exception {
+        CtMethod method = clazz.getDeclaredMethod("getFileService");
+        method.setBody("return new org.jboss.capedwarf.files.JBossFileService();");
+    }
 }

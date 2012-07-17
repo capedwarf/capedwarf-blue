@@ -35,6 +35,7 @@ public class FactoriesTransformer extends MultipleTransformer {
         register("com.google.appengine.api.blobstore.BlobstoreServiceFactory", new BlobstoreServiceFactoryTransformer());
         register("com.google.appengine.api.capabilities.CapabilitiesServiceFactory", new CapabilitiesServiceFactoryTransformer());
         register("com.google.appengine.api.channel.ChannelServiceFactory", new ChannelServiceFactoryTransformer());
+        register("com.google.appengine.api.datastore.Cursor", new CursorTransformer());
         register("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreServiceFactoryTransformer());
         register("com.google.appengine.api.datastore.Entity", new EntityTransformer());
         register("com.google.appengine.api.datastore.Key", new KeyTransformer());

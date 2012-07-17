@@ -22,15 +22,15 @@
 
 package org.jboss.capedwarf.bytecode.datanucleus;
 
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtMethod;
-import org.jboss.capedwarf.bytecode.JavassistTransformer;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
+import org.jboss.capedwarf.bytecode.JavassistTransformer;
 
 /**
  * Fix VFS3 usage.
@@ -40,24 +40,20 @@ import java.util.logging.Logger;
 public class NonManagedPluginRegistryTransformer extends JavassistTransformer {
 
     private static final String VFS3_FIX = "final java.net.URL vfs3fix = " + NonManagedPluginRegistryTransformer.class.getName() + ".fixVFS3($1);" +
-                                           "if (vfs3fix != null) return vfs3fix;";
+            "if (vfs3fix != null) return vfs3fix;";
 
     protected void transform(CtClass clazz) throws Exception {
         final ClassPool pool = clazz.getClassPool();
         final CtMethod method = clazz.getDeclaredMethod("getManifestURL", new CtClass[]{pool.get(URL.class.getName())});
         method.insertBefore(VFS3_FIX);
     }
-    
+
     public static URL fixVFS3(final URL pluginURL) {
-        if (pluginURL != null && pluginURL.toString().startsWith("vfs:"))
-        {
+        if (pluginURL != null && pluginURL.toString().startsWith("vfs:")) {
             String urlStr = pluginURL.toString().replace("plugin.xml", "META-INF/MANIFEST.MF");
-            try
-            {
+            try {
                 return new URL(urlStr);
-            }
-            catch (MalformedURLException e)
-            {
+            } catch (MalformedURLException e) {
                 Logger.getLogger(NonManagedPluginRegistryTransformer.class.getName()).log(Level.WARNING, "Error while applying VFS3 fix.", e);
             }
         }

@@ -43,6 +43,7 @@ public class CapedwarfTransformerMojo {
                 "(([.]*ApiProxy*)" +
                         "|([.]*ServiceFactory*)" +
                         "|([.]*.taskqueue.QueueFactory)" +
+                        "|([.]*datastore.Cursor*)" +
                         "|([.]*datastore.Entity*)" +
                         "|([.]*datastore.Key*))"};
 

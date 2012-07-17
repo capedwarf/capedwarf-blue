@@ -24,28 +24,119 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.QueryResultList;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class QueryResultListImpl<E> extends ArrayList<E> implements QueryResultList<E> {
+    private AtomicInteger current = new AtomicInteger();
 
     public QueryResultListImpl(Collection<? extends E> c) {
         super(c);
     }
 
     public Cursor getCursor() {
-        return null; // TODO
+        return JBossCursorHelper.createCursor(current);
     }
 
     public List<Index> getIndexList() {
         return null;  // TODO -- null is OK, as we don't know; as per spec
+    }
+
+    @Override
+    public E get(int index) {
+        current.addAndGet(index + 1);
+        return super.get(index);
+    }
+
+    @Override
+    public void add(int index, E element) {
+        current.set(index);
+        super.add(index, element);
+    }
+
+    @Override
+    public E remove(int index) {
+        current.set(index);
+        return super.remove(index);
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+        final Iterator<E> delegate = super.iterator();
+        return new Iterator<E>() {
+            public boolean hasNext() {
+                return delegate.hasNext();
+            }
+
+            public E next() {
+                current.incrementAndGet();
+                return delegate.next();
+            }
+
+            public void remove() {
+                current.decrementAndGet();
+                delegate.remove();
+            }
+        };
+    }
+
+    @Override
+    public ListIterator<E> listIterator(int index) {
+        current.set(index);
+        final ListIterator<E> delegate = super.listIterator(index);
+        return new ListIterator<E>() {
+            public boolean hasNext() {
+                return delegate.hasNext();
+            }
+
+            public E next() {
+                current.incrementAndGet();
+                return delegate.next();
+            }
+
+            public boolean hasPrevious() {
+                return delegate.hasPrevious();
+            }
+
+            public E previous() {
+                current.decrementAndGet();
+                return delegate.previous();
+            }
+
+            public int nextIndex() {
+                current.incrementAndGet();
+                return delegate.nextIndex();
+            }
+
+            public int previousIndex() {
+                current.decrementAndGet();
+                return delegate.previousIndex();
+            }
+
+            public void remove() {
+                current.decrementAndGet();
+                delegate.remove();
+            }
+
+            public void set(E e) {
+                delegate.set(e);
+            }
+
+            public void add(E e) {
+                delegate.add(e);
+            }
+        };
     }
 }

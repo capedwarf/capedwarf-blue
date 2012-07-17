@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import javassist.CtClass;
 import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
@@ -36,9 +39,6 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Store;
-
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Helper superclass for annotation classes with hibernate-search annotations (to make the class indexable).
