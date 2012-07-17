@@ -46,8 +46,10 @@ class QueryResultListImpl<E> extends ArrayList<E> implements QueryResultList<E> 
         super(c);
     }
 
-    public Cursor getCursor() {
-        return JBossCursorHelper.createCursor(current);
+    public synchronized Cursor getCursor() {
+        final Cursor cursor = JBossCursorHelper.createCursor(current);
+        current = new AtomicInteger(current.get());
+        return cursor;
     }
 
     public List<Index> getIndexList() {

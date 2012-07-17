@@ -60,8 +60,10 @@ class QueryResultIteratorImpl<E> implements QueryResultIterator<E> {
         delegate.remove();
     }
 
-    public Cursor getCursor() {
-        return JBossCursorHelper.createCursor(current);
+    public synchronized Cursor getCursor() {
+        final Cursor cursor = JBossCursorHelper.createCursor(current);
+        current = new AtomicInteger(current.get());
+        return cursor;
     }
 
     public List<Index> getIndexList() {
