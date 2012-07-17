@@ -26,7 +26,6 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,6 +33,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -56,7 +57,7 @@ public class TransactionsTestCase extends AbstractTest {
     }
 
     @Test
-    public void testRollback() throws Exception {
+    public void testRollbackWhenPuttingEntity() throws Exception {
         Entity entity = createTestEntity("ROLLBACK", 1);
         Transaction tx = service.beginTransaction();
         service.put(tx, entity);
@@ -66,10 +67,25 @@ public class TransactionsTestCase extends AbstractTest {
     }
 
     @Test
+    public void testRollbackWhenModifyingEntity() throws Exception {
+        Entity entity = new Entity("test");
+        entity.setProperty("name", "original");
+        Key key = service.put(entity);
+
+        Transaction tx = service.beginTransaction();
+        Entity entity2 = service.get(key);
+        entity2.setProperty("name", "modified");
+        tx.rollback();
+
+        Entity entity3 = service.get(key);
+        assertEquals("original", entity3.getProperty("name"));
+    }
+
+    @Test
     public void testNoIdKey() throws Exception {
         Entity entity = new Entity("NO_ID");
         Key key = service.put(entity);
-        Assert.assertTrue(key.isComplete());
+        assertTrue(key.isComplete());
     }
 
     @Test
@@ -83,21 +99,21 @@ public class TransactionsTestCase extends AbstractTest {
         assertStoreContains(e1);
 
         assertTxs(t1);
-        Assert.assertTrue(t1.isActive());
+        assertTrue(t1.isActive());
 
         Transaction t2 = service.beginTransaction();
         Entity e2 = createTestEntity("DUMMY", 2);
         service.put(e2);
 
         assertTxs(t1, t2);
-        Assert.assertTrue(t1.isActive());
-        Assert.assertTrue(t2.isActive());
+        assertTrue(t1.isActive());
+        assertTrue(t2.isActive());
 
         assertStoreContains(e2);
         t2.rollback();
 
         assertTxs(t1);
-        Assert.assertTrue(t1.isActive());
+        assertTrue(t1.isActive());
 
         // should not be there due to rollback
         assertStoreDoesNotContain(e2);
@@ -118,7 +134,7 @@ public class TransactionsTestCase extends AbstractTest {
                 Entity photoNotAChild = new Entity("Photo");
                 photoNotAChild.setProperty("photoUrl", "http://domain.com/path/to/photo.jpg");
                 service.put(photoNotAChild);
-                Assert.fail("put should have thrown IllegalArgumentException");
+                fail("put should have thrown IllegalArgumentException");
             } catch (IllegalArgumentException ex) {
                 // pass
             }
@@ -129,9 +145,9 @@ public class TransactionsTestCase extends AbstractTest {
 
     protected void assertTxs(Transaction... txs) {
         Collection<Transaction> transactions = service.getActiveTransactions();
-        Assert.assertNotNull(txs);
+        assertNotNull(txs);
         Set<Transaction> expected = new HashSet<Transaction>(transactions);
         Set<Transaction> existing = new HashSet<Transaction>(Arrays.asList(txs));
-        Assert.assertEquals(expected, existing);
+        assertEquals(expected, existing);
     }
 }
