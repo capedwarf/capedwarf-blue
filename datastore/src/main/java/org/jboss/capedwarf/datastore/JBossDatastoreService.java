@@ -74,13 +74,29 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     protected long getRangeStart(Key parent, String kind) {
-        Integer allocationSize = getAllocationsMap().get(kind);
+        final String key;
+        final int p = kind.lastIndexOf(SEQUENCE_POSTFIX);
+        if (p > 0) {
+            key = kind.substring(0 , p);
+        } else {
+            key = kind;
+        }
+        // search w/o _SEQUENCE__, to find explicit ones
+        Integer allocationSize = getAllocationsMap().get(key);
+        final String sequenceName;
         if (allocationSize != null) {
-            kind = kind + SEQUENCE_POSTFIX;
+            // impl detail, on how to diff default vs. explicit seq names
+            if (allocationSize > 0) {
+                sequenceName = key + SEQUENCE_POSTFIX; // by default add _SEQUENCE__
+            } else {
+                allocationSize = (-1) * allocationSize;
+                sequenceName = key; // use explicit sequence name
+            }
         } else {
             allocationSize = 1;
+            sequenceName = key + SEQUENCE_POSTFIX; // by default add _SEQUENCE__
         }
-        return KeyGenerator.generateRange(parent, kind, allocationSize);
+        return KeyGenerator.generateRange(parent, sequenceName, allocationSize);
     }
 
     public Entity get(Key key) throws EntityNotFoundException {
@@ -276,11 +292,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public KeyRange allocateIds(Key parent, String kind, long num) {
-        final int p = kind.lastIndexOf(SEQUENCE_POSTFIX);
-        if (p > 0) {
-            kind = kind.substring(0 , p);
-        }
-        long start = getRangeStart(parent, kind);
+        final long start = getRangeStart(parent, kind);
         return new KeyRange(parent, kind, start, start + num - 1);
     }
 
