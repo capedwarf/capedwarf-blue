@@ -110,7 +110,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             if (entity == null)
                 throw new EntityNotFoundException(key);
             else
-                return entity;
+                return entity.clone();
         } finally {
             afterTx(transaction);
         }
@@ -124,8 +124,10 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             Map<Key, Entity> result = new HashMap<Key, Entity>();
-            for (Key key : keyIterable)
-                result.put(key, store.get(key));
+            for (Key key : keyIterable) {
+                Entity entity = store.get(key);
+                result.put(key, entity == null ? null : entity.clone());
+            }
             return result;
         } finally {
             afterTx(transaction);
