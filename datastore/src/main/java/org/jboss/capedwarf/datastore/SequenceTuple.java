@@ -20,40 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.openshift;
-
-import com.google.appengine.api.capabilities.Capability;
-import com.google.appengine.api.capabilities.CapabilityState;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyRange;
-import org.jboss.capedwarf.environment.Environment;
-import org.kohsuke.MetaInfServices;
+package org.jboss.capedwarf.datastore;
 
 /**
- * OpenShift environment.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@MetaInfServices
-public class OpenShiftEnvironment implements Environment {
-    public String getDomain() {
-        return null; // TODO
+class SequenceTuple {
+    private String sequenceName;
+    private int allocationSize;
+
+    SequenceTuple(String sequenceName, int allocationSize) {
+        this.sequenceName = sequenceName;
+        this.allocationSize = allocationSize;
     }
 
-    public CapabilityState getState(Capability capability) {
-        return null; // TODO
+    String getSequenceName() {
+        return sequenceName;
     }
 
-    public Long getRange(Key parent, String kind, long num) {
-        return null; // TODO
-    }
-
-    public DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String sequenceName) {
-        return null; // TODO
-    }
-
-    public String getTransactionId() {
-        return null; // TODO
+    int getAllocationSize() {
+        return allocationSize;
     }
 }

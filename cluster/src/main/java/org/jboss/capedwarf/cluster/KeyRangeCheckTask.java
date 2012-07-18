@@ -35,15 +35,16 @@ import org.jboss.capedwarf.common.infinispan.BaseTxTask;
  */
 public class KeyRangeCheckTask extends BaseTxTask<String, Long, DatastoreService.KeyRangeState> {
     private final KeyRange keyRange;
+    private final String sequenceName;
 
-    public KeyRangeCheckTask(KeyRange keyRange) {
+    public KeyRangeCheckTask(KeyRange keyRange, String sequenceName) {
         this.keyRange = keyRange;
+        this.sequenceName = sequenceName;
     }
 
     protected DatastoreService.KeyRangeState callInTx() throws Exception {
         final AdvancedCache<String, Long> ac = getCache().getAdvancedCache();
-        final Key start = keyRange.getStart();
-        final String cacheKey = start.getKind();
+        final String cacheKey = sequenceName;
         
         if (ac.lock(cacheKey) == false)
             throw new IllegalArgumentException("Cannot get a lock on id generator for " + cacheKey);
@@ -52,6 +53,7 @@ public class KeyRangeCheckTask extends BaseTxTask<String, Long, DatastoreService
         if (nextId == null)
             nextId = 1L;
 
+        final Key start = keyRange.getStart();
         // Empty is unsupported here
         return start.getId() < nextId ? DatastoreService.KeyRangeState.COLLISION : DatastoreService.KeyRangeState.CONTENTION;
     }

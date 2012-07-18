@@ -77,7 +77,7 @@ public final class EnvironmentFactory {
             return nextId.getAndAdd(num);
         }
 
-        public DatastoreService.KeyRangeState checkRange(KeyRange keyRange) {
+        public DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String sequenceName) {
             long start = keyRange.getStart().getId();
             long next = nextId.get();
             // no support for empty atm

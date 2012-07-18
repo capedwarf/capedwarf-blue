@@ -37,7 +37,7 @@ class KeyGenerator {
         return EnvironmentFactory.getEnvironment().getRange(parent, kind, num);
     }
 
-    static DatastoreService.KeyRangeState checkRange(KeyRange keyRange) {
-        return EnvironmentFactory.getEnvironment().checkRange(keyRange);
+    static DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String seqName) {
+        return EnvironmentFactory.getEnvironment().checkRange(keyRange, seqName);
     }
 }

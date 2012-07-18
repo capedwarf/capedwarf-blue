@@ -73,7 +73,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         return allocationsMap;
     }
 
-    protected long getRangeStart(Key parent, String kind) {
+    protected SequenceTuple getSequenceTuple(String kind) {
         final String key;
         final int p = kind.lastIndexOf(SEQUENCE_POSTFIX);
         if (p > 0) {
@@ -96,7 +96,12 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             allocationSize = 1;
             sequenceName = key + SEQUENCE_POSTFIX; // by default add _SEQUENCE__
         }
-        return KeyGenerator.generateRange(parent, sequenceName, allocationSize);
+        return new SequenceTuple(sequenceName, allocationSize);
+    }
+
+    protected long getRangeStart(Key parent, String kind) {
+        final SequenceTuple st = getSequenceTuple(kind);
+        return KeyGenerator.generateRange(parent, st.getSequenceName(), st.getAllocationSize());
     }
 
     public Entity get(Key key) throws EntityNotFoundException {
@@ -299,7 +304,9 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public KeyRangeState allocateIdRange(KeyRange keyRange) {
-        return KeyGenerator.checkRange(keyRange);
+        final String kind = keyRange.getStart().getKind();
+        final SequenceTuple st = getSequenceTuple(kind);
+        return KeyGenerator.checkRange(keyRange, st.getSequenceName());
     }
 
     public DatastoreAttributes getDatastoreAttributes() {

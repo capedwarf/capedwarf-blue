@@ -48,8 +48,8 @@ public class ClusterEnvironment extends AbstractEnvironment {
         return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(sequenceName, num), sequenceName);
     }
 
-    public DatastoreService.KeyRangeState checkRange(KeyRange keyRange) {
-        return InfinispanUtils.submit(CacheName.DIST, new KeyRangeCheckTask(keyRange), keyRange.getStart().getKind());
+    public DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String sequenceName) {
+        return InfinispanUtils.submit(CacheName.DIST, new KeyRangeCheckTask(keyRange, sequenceName), sequenceName);
     }
 
     public String getTransactionId() {

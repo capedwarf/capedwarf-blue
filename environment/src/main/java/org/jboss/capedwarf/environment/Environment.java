@@ -65,9 +65,10 @@ public interface Environment {
      * Check key range.
      *
      * @param keyRange the key range
+     * @param sequenceName the sequence name
      * @return key range state
      */
-    DatastoreService.KeyRangeState checkRange(KeyRange keyRange);
+    DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String sequenceName);
 
     /**
      * Get transaction id.
