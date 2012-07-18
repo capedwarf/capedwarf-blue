@@ -138,10 +138,19 @@ public abstract class QueryTestCase {
         return new IsEqual<Set<Entity>>(new HashSet<Entity>(Arrays.asList(entities)));
     }
 
+    protected Matcher<List<Entity>> containsResultsInOrder(Entity... entities) {
+        return new IsEqual<List<Entity>>(Arrays.asList(entities));
+    }
+
     protected Set<Entity> whenFilteringBy(Query.FilterOperator operator, Object value) {
         Query query = createQuery(operator, value);
         List<Entity> results = service.prepare(query).asList(withDefaults());
         return new HashSet<Entity>(results);
+    }
+
+    protected List<Entity> listReturnedWhenFilteringBy(Query.FilterOperator operator, Object value) {
+        Query query = createQuery(operator, value);
+        return service.prepare(query).asList(withDefaults());
     }
 
     /**

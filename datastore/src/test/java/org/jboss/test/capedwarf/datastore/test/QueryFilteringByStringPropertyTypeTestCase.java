@@ -3,6 +3,7 @@ package org.jboss.test.capedwarf.datastore.test;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,6 +41,19 @@ public class QueryFilteringByStringPropertyTypeTestCase extends QueryTestCase {
         Entity ashley = storeTestEntityWithSingleProperty("Ashley");
 
         assertThat(whenFilteringBy(IN, Arrays.asList("Kate", "Ashley")), queryReturns(kate, ashley));
+    }
+
+    @Ignore("todo")
+    @Test
+    public void testOrderOfReturnedResultsIsSameAsOrderOfElementsInInStatement() throws Exception {
+        Entity a = storeTestEntityWithSingleProperty("a");
+        Entity b = storeTestEntityWithSingleProperty("b");
+        Entity c = storeTestEntityWithSingleProperty("c");
+
+        assertThat(listReturnedWhenFilteringBy(IN, Arrays.asList("a", "b")), containsResultsInOrder(a, b));
+        assertThat(listReturnedWhenFilteringBy(IN, Arrays.asList("b", "a")), containsResultsInOrder(b, a));
+        assertThat(listReturnedWhenFilteringBy(IN, Arrays.asList("c", "a", "b")), containsResultsInOrder(c, a, b));
+        assertThat(listReturnedWhenFilteringBy(IN, Arrays.asList("b", "c", "c", "b")), containsResultsInOrder(b, c));
     }
 
 }
