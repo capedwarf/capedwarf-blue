@@ -111,6 +111,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     public Entity get(Transaction tx, Key key) throws EntityNotFoundException {
         final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
+            trackKey(key);
             Entity entity = store.get(key);
             if (entity == null)
                 throw new EntityNotFoundException(key);
@@ -130,6 +131,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         try {
             Map<Key, Entity> result = new HashMap<Key, Entity>();
             for (Key key : keyIterable) {
+                trackKey(key);
                 Entity entity = store.get(key);
                 if (entity != null) {
                     result.put(key, entity.clone());
@@ -163,18 +165,11 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                     long id = getRangeStart(key.getParent(), key.getKind());
                     ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
                 }
-                EntityGroupTracker.trackKey(key);
+                trackKey(key);
                 store.put(key, modify(entity));
                 list.add(key);
             }
             return list;
-        } catch (Throwable t) {
-            // TODO -- mark tx as rollback?
-            if (t instanceof RuntimeException) {
-                throw (RuntimeException)t;
-            } else {
-                throw new RuntimeException(t);
-            }
         } finally {
             afterTx(transaction);
         }
@@ -258,15 +253,8 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             for (Key key : keyIterable) {
-                EntityGroupTracker.trackKey(key);
+                trackKey(key);
                 store.remove(key);
-            }
-        } catch (Throwable t) {
-            // TODO -- mark tx as rollback?
-            if (t instanceof RuntimeException) {
-                throw (RuntimeException) t;
-            } else {
-                throw new RuntimeException(t);
             }
         } finally {
             afterTx(transaction);
@@ -331,11 +319,11 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             if (key != null) {
                 EntityGroupTracker.trackKey(key);
             }
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
+        } catch (Throwable t) {
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
             } else {
-                throw new RuntimeException(e);
+                throw new RuntimeException(t);
             }
         }
     }
