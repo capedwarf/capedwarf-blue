@@ -218,11 +218,35 @@ public class QueryBasicsTestCase extends QueryTestCase {
             .addFilter("size", GREATER_THAN, 5);
 
         try {
-            service.prepare(query).asSingleEntity();
+            service.prepare(query).asList(FetchOptions.Builder.withDefaults());
             fail("Expected IllegalArgumentException");
         } catch (IllegalArgumentException ex) {
             // pass
         }
+    }
+
+    @Test
+    public void testQueryWithInequalityFilterAndFirstSortOnDifferentPropertyThrowsIllegalArgumentException() throws Exception {
+        Query query = createQuery()
+            .addFilter("foo", GREATER_THAN, 3)
+            .addSort("bar");
+
+        try {
+            service.prepare(query).asList(FetchOptions.Builder.withDefaults());
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException ex) {
+            // pass
+        }
+    }
+
+    @Test
+    public void testQueryWithInequalityFilterAndFirstSortOnSamePropertyIsAllowed() throws Exception {
+        Query query = createQuery()
+            .addFilter("foo", GREATER_THAN, 3)
+            .addSort("foo")
+            .addSort("bar");
+
+        service.prepare(query).asList(FetchOptions.Builder.withDefaults());
     }
 
     private HashSet<Entity> asSet(List<Entity> collection) {
