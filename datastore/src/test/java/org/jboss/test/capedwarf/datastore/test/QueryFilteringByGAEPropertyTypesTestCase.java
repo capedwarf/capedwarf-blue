@@ -25,7 +25,6 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Category;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -40,7 +39,6 @@ import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Rating;
 import com.google.appengine.api.datastore.ShortBlob;
-import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.User;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
@@ -49,6 +47,7 @@ import org.junit.runner.RunWith;
 import java.util.List;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
+import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -74,6 +73,20 @@ public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTestCase {
 
         assertEquals(1, results.size());
         assertEquals(fooEntity, results.get(0));
+    }
+
+    @Test
+    public void testEntityKeyInequalityFilter() {
+        Entity entity1 = new Entity("foo");
+        service.put(entity1);
+
+        Entity entity2 = new Entity("foo");
+        service.put(entity2);
+
+        Query query = new Query("foo").addFilter(Entity.KEY_RESERVED_PROPERTY, GREATER_THAN, KeyFactory.keyToString(entity1.getKey()));
+        List<Entity> list = service.prepare(query).asList(FetchOptions.Builder.withDefaults());
+        assertEquals(1, list.size());
+        assertEquals(entity2.getKey(), list.get(0).getKey());
     }
 
     @Test
