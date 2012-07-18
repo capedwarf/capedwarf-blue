@@ -320,4 +320,23 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     public void clearCache() {
         store.clear();
     }
+
+    /**
+     * Not to be abused. ;-)
+     *
+     * @param key the key to track
+     */
+    public static void trackKey(Key key) {
+        try {
+            if (key != null) {
+                EntityGroupTracker.trackKey(key);
+            }
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }

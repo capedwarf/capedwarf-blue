@@ -12,6 +12,7 @@ import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.datastore.QueryResultList;
 import org.infinispan.query.CacheQuery;
+import org.jboss.capedwarf.datastore.JBossDatastoreService;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 
@@ -23,8 +24,8 @@ import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaul
  */
 public class PreparedQueryImpl implements PreparedQuery {
 
-    private Query gaeQuery;     // currently here only for debugging purposes
-    private CacheQuery cacheQuery;
+    private final Query gaeQuery;
+    private final CacheQuery cacheQuery;
 
     public PreparedQueryImpl(Query gaeQuery, CacheQuery cacheQuery) {
         this.gaeQuery = gaeQuery;
@@ -37,7 +38,7 @@ public class PreparedQueryImpl implements PreparedQuery {
 
     @SuppressWarnings("unchecked")
     public QueryResultList<Entity> asQueryResultList(FetchOptions fetchOptions) {
-        apply(fetchOptions, cacheQuery);
+        apply(fetchOptions);
         List<?> objects = cacheQuery.list();
         return new QueryResultListImpl<Entity>((List<Entity>) objects, JBossCursorHelper.createListCursor(fetchOptions));
     }
@@ -89,11 +90,14 @@ public class PreparedQueryImpl implements PreparedQuery {
     }
 
     public int countEntities(FetchOptions fetchOptions) {
-        apply(fetchOptions, cacheQuery);
+        apply(fetchOptions);
         return cacheQuery.getResultSize();
     }
 
-    private void apply(FetchOptions fetchOptions, CacheQuery cacheQuery) {
+    private void apply(FetchOptions fetchOptions) {
+        // track ancestor key if it exists
+        JBossDatastoreService.trackKey(gaeQuery.getAncestor());
+
         final Integer offset = fetchOptions.getOffset();
         if (offset != null) {
             cacheQuery.firstResult(offset);
@@ -113,7 +117,7 @@ public class PreparedQueryImpl implements PreparedQuery {
     }
 
     private Iterator createQueryIterator(FetchOptions fetchOptions) {
-        apply(fetchOptions, cacheQuery);
+        apply(fetchOptions);
 
         Integer chunkSize = fetchOptions.getChunkSize();
         if (chunkSize == null) {
