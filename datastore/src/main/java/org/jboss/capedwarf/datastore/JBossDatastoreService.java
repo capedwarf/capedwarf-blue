@@ -131,7 +131,9 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             Map<Key, Entity> result = new HashMap<Key, Entity>();
             for (Key key : keyIterable) {
                 Entity entity = store.get(key);
-                result.put(key, entity == null ? null : entity.clone());
+                if (entity != null) {
+                    result.put(key, entity.clone());
+                }
             }
             return result;
         } finally {
