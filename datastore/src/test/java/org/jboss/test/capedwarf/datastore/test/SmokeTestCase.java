@@ -22,8 +22,10 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -35,6 +37,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -63,6 +67,18 @@ public class SmokeTestCase extends AbstractTest {
     public void getThrowsNotFoundExceptionWhenKeyIsNotFound() throws Exception {
         Key nonExistingKey = KeyFactory.createKey("NonExistingKey", 1);
         service.get(nonExistingKey);
+    }
+
+    @Test
+    public void batchGetReturnsOnlyExistingKeysInMap() throws Exception {
+        Key existingKey = KeyFactory.createKey("batch", "existing");
+        Key nonExistingKey = KeyFactory.createKey("batch", "nonExisting");
+        service.put(new Entity(existingKey));
+
+        Map<Key,Entity> map = service.get(Arrays.asList(existingKey, nonExistingKey));
+
+        assertEquals(1, map.size());
+        assertTrue(map.containsKey(existingKey));
     }
 
     @Test
@@ -98,7 +114,7 @@ public class SmokeTestCase extends AbstractTest {
         service.delete(key);
 
         List<Entity> entities = service.prepare(new Query("KIND")).asList(FetchOptions.Builder.withDefaults());
-        Assert.assertEquals(0, entities.size());
+        assertEquals(0, entities.size());
     }
 
 
