@@ -60,6 +60,9 @@ public class CursorTransformer extends JavassistTransformer {
 
         // override other methods
 
+        CtConstructor cloneCtor = clazz.getDeclaredConstructor(new CtClass[]{clazz});
+        cloneCtor.setBody("this($1.index);");
+
         CtMethod writeObject = clazz.getDeclaredMethod("writeObject", new CtClass[]{pool.get(ObjectOutputStream.class.getName())});
         writeObject.setBody("$1.writeInt(getIndex());");
 
