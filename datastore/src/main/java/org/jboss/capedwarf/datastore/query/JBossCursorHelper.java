@@ -25,6 +25,7 @@ package org.jboss.capedwarf.datastore.query;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.appengine.api.datastore.Cursor;
+import com.google.appengine.api.datastore.FetchOptions;
 import org.infinispan.query.CacheQuery;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.reflection.TargetInvocation;
@@ -40,6 +41,32 @@ final class JBossCursorHelper {
 
     static Cursor createCursor(final AtomicInteger index) {
         return ReflectionUtils.newInstance(Cursor.class, new Class[]{AtomicInteger.class}, new Object[]{index});
+    }
+
+    static Cursor createListCursor(FetchOptions fetchOptions) {
+        if (fetchOptions == null)
+            return null;
+
+        final Cursor end = fetchOptions.getEndCursor();
+        if (end != null)
+            return end;
+
+        final Integer limit = fetchOptions.getLimit();
+        if (limit != null) {
+            int offset = 0;
+            final Cursor start = fetchOptions.getStartCursor();
+            if (start != null) {
+                offset = readIndex(start);
+            } else {
+                final Integer x = fetchOptions.getOffset();
+                if (x != null) {
+                    offset = x;
+                }
+            }
+            return createCursor(new AtomicInteger(offset + limit));
+        } else {
+            return null; // cannot determine cursor
+        }
     }
 
     static void applyStartCursor(Cursor start, CacheQuery cacheQuery) {

@@ -39,7 +39,7 @@ public class PreparedQueryImpl implements PreparedQuery {
     public QueryResultList<Entity> asQueryResultList(FetchOptions fetchOptions) {
         apply(fetchOptions, cacheQuery);
         List<?> objects = cacheQuery.list();
-        return new QueryResultListImpl<Entity>((List<Entity>) objects);
+        return new QueryResultListImpl<Entity>((List<Entity>) objects, JBossCursorHelper.createListCursor(fetchOptions));
     }
 
     public Iterable<Entity> asIterable() {
