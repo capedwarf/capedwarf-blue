@@ -92,12 +92,15 @@ class EntityGroupTracker implements Synchronization {
 
     private Key addKey(Key key) {
         Key currentRoot = getRoot(key);
-        if (root == null) {
-            root = currentRoot;
-        } else if (root.equals(currentRoot) == false){
-            invalid = true;
-        }
         keys.put(key, currentRoot);
+        // do not check if already known that it's invalid
+        if (invalid == false) {
+            if (root == null) {
+                root = currentRoot;
+            } else if (root.equals(currentRoot) == false){
+                invalid = true;
+            }
+        }
         return currentRoot;
     }
 
