@@ -76,7 +76,8 @@ public class PreparedQueryImpl implements PreparedQuery {
 
     @SuppressWarnings("unchecked")
     public QueryResultIterator<Entity> asQueryResultIterator(FetchOptions fetchOptions) {
-        return new QueryResultIteratorImpl<Entity>(createQueryIterator(fetchOptions));
+        QueryResultIterator<Entity> iterator = new QueryResultIteratorImpl<Entity>(createQueryIterator(fetchOptions));
+        return new LazyQueryResultIterator<Entity>(iterator, gaeQuery.getAncestor(), inTx);
     }
 
     public Entity asSingleEntity() throws TooManyResultsException {
@@ -126,6 +127,4 @@ public class PreparedQueryImpl implements PreparedQuery {
             return cacheQuery.iterator(chunkSize);
         }
     }
-
-
 }
