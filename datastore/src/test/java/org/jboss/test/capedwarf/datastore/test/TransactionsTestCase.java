@@ -24,6 +24,8 @@ package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
@@ -32,6 +34,7 @@ import org.junit.runner.RunWith;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -136,6 +139,70 @@ public class TransactionsTestCase extends AbstractTest {
                 service.put(photoNotAChild);
                 fail("put should have thrown IllegalArgumentException");
             } catch (IllegalArgumentException ex) {
+                // pass
+            }
+        } finally {
+            tx.rollback();
+        }
+    }
+
+    @Test
+    public void testAncestorIsMandatoryInQueriesInsideTransaction() {
+        Transaction tx = service.beginTransaction();
+        try {
+
+            service.prepare(new Query("test"));         // no tx, ancestor not necessary
+            service.prepare(null, new Query("test"));   // no tx, ancestor not necessary
+            service.prepare(tx, new Query("test").setAncestor(KeyFactory.createKey("some_kind", "some_id"))); // tx + ancestor
+
+            try {
+                service.prepare(tx, new Query("test")); // tx, but no ancestor
+                fail("Expected IllegalArgumentException");
+            } catch (IllegalArgumentException e) {
+                // pass
+            }
+        } finally {
+            tx.rollback();
+        }
+    }
+
+    @Test
+    public void testGetWithDifferentAncestorsInsideSameTransactionAreNotAllowed() {
+        service.put(new Entity("foo", "1"));
+        service.put(new Entity("foo", "2"));
+
+        Transaction tx = service.beginTransaction();
+        try {
+            service.get(Arrays.asList(KeyFactory.createKey("foo", "1")));
+
+            try {
+                service.get(Arrays.asList(KeyFactory.createKey("foo", "2")));
+                fail("Expected IllegalArgumentException");
+            } catch (IllegalArgumentException e) {
+                // pass
+            }
+        } finally {
+            tx.rollback();
+        }
+    }
+
+    @Test
+    public void testQueriesWithDifferentAncestorsInsideSameTransactionAreNotAllowed() {
+        Transaction tx = service.beginTransaction();
+        try {
+
+            Iterator<Entity> iterator1 = service.prepare(tx, new Query("foo").setAncestor(KeyFactory.createKey("foo", "1"))).asIterator();
+            iterator1.hasNext();
+
+            Iterator<Entity> iterator2 = service.prepare(tx, new Query("foo").setAncestor(KeyFactory.createKey("foo", "1"))).asIterator();
+            iterator2.hasNext();
+
+            try {
+                Iterator<Entity> iterator3 = service.prepare(tx, new Query("foo").setAncestor(KeyFactory.createKey("foo", "2"))).asIterator();
+                iterator3.hasNext();
+
+                fail("Expected IllegalArgumentException");
+            } catch (IllegalArgumentException e) {
                 // pass
             }
         } finally {
