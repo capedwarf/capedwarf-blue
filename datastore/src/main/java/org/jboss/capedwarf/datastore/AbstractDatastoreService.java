@@ -67,12 +67,17 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     public PreparedQuery prepare(Query query) {
-        return prepare(getCurrentTransaction(null), query);
+        return prepare(null, query);
     }
 
-    public PreparedQuery prepare(Transaction transaction, Query query) {
-        CacheQuery cacheQuery = queryConverter.convert(query);
-        return new PreparedQueryImpl(query, cacheQuery);
+    public PreparedQuery prepare(Transaction tx, Query query) {
+        javax.transaction.Transaction transaction = beforeTx(tx);
+        try {
+            CacheQuery cacheQuery = queryConverter.convert(query);
+            return new PreparedQueryImpl(query, cacheQuery);
+        } finally {
+            afterTx(transaction);
+        }
     }
 
     public Transaction getCurrentTransaction() {
@@ -90,5 +95,16 @@ public class AbstractDatastoreService implements BaseDatastoreService {
 
     public Collection<Transaction> getActiveTransactions() {
         return JBossTransaction.getTransactions();
+    }
+
+    static javax.transaction.Transaction beforeTx(Transaction tx) {
+        // if tx is null, explicitly suspend current tx
+        return (tx == null) ? JBossTransaction.suspendTx() : null;
+    }
+
+    static void afterTx(javax.transaction.Transaction transaction) {
+        if (transaction != null) {
+            JBossTransaction.resumeTx(transaction);
+        }
     }
 }

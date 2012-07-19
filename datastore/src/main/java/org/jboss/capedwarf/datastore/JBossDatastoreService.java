@@ -261,17 +261,6 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         }
     }
 
-    private javax.transaction.Transaction beforeTx(Transaction tx) {
-        // if tx is null, explicitly suspend current tx
-        return (tx == null) ? JBossTransaction.suspendTx() : null;
-    }
-
-    private void afterTx(javax.transaction.Transaction transaction) {
-        if (transaction != null) {
-            JBossTransaction.resumeTx(transaction);
-        }
-    }
-
     public Transaction beginTransaction() {
         return beginTransaction(TransactionOptions.Builder.withDefaults());
     }
