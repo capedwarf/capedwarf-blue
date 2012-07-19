@@ -93,37 +93,39 @@ public class TransactionsTestCase extends AbstractTest {
 
     @Test
     public void testNested() throws Exception {
-        assertTxs();
+        assertNoActiveTransactions();
 
-        Entity e1 = createTestEntity("DUMMY", 1);
+        Entity e1;
+        Entity e2;
+
         Transaction t1 = service.beginTransaction();
-        service.put(t1, e1);
+        try {
+            e1 = createTestEntity("DUMMY", 1);
+            service.put(t1, e1);
+            assertStoreContains(e1);
+
+            assertActiveTransactions(t1);
+
+            Transaction t2 = service.beginTransaction();
+            try {
+                e2 = createTestEntity("DUMMY", 2);
+                service.put(e2);
+
+                assertActiveTransactions(t1, t2);
+                assertStoreContains(e2);
+            } finally {
+                t2.rollback();
+            }
+
+            assertActiveTransactions(t1);
+//            assertStoreDoesNotContain(e2);  // should not be there due to rollback
+        } finally {
+            t1.commit();
+        }
 
         assertStoreContains(e1);
-
-        assertTxs(t1);
-        assertTrue(t1.isActive());
-
-        Transaction t2 = service.beginTransaction();
-        Entity e2 = createTestEntity("DUMMY", 2);
-        service.put(e2);
-
-        assertTxs(t1, t2);
-        assertTrue(t1.isActive());
-        assertTrue(t2.isActive());
-
-        assertStoreContains(e2);
-        t2.rollback();
-
-        assertTxs(t1);
-        assertTrue(t1.isActive());
-
-        // should not be there due to rollback
-        assertStoreDoesNotContain(e2);
-        t1.commit();
-        assertStoreContains(e1);
-
-        assertTxs();
+        assertStoreDoesNotContain(e2);  // should not be there due to rollback
+        assertNoActiveTransactions();
     }
 
     @Test
@@ -191,14 +193,16 @@ public class TransactionsTestCase extends AbstractTest {
         Transaction tx = service.beginTransaction();
         try {
 
-            Iterator<Entity> iterator1 = service.prepare(tx, new Query("foo").setAncestor(KeyFactory.createKey("foo", "1"))).asIterator();
+            Key someAncestor = KeyFactory.createKey("foo", "1");
+            Iterator<Entity> iterator1 = service.prepare(tx, new Query("foo").setAncestor(someAncestor)).asIterator();
             iterator1.hasNext();
 
-            Iterator<Entity> iterator2 = service.prepare(tx, new Query("foo").setAncestor(KeyFactory.createKey("foo", "1"))).asIterator();
+            Iterator<Entity> iterator2 = service.prepare(tx, new Query("foo").setAncestor(someAncestor)).asIterator();
             iterator2.hasNext();
 
             try {
-                Iterator<Entity> iterator3 = service.prepare(tx, new Query("foo").setAncestor(KeyFactory.createKey("foo", "2"))).asIterator();
+                Key otherAncestor = KeyFactory.createKey("foo", "2");
+                Iterator<Entity> iterator3 = service.prepare(tx, new Query("foo").setAncestor(otherAncestor)).asIterator();
                 iterator3.hasNext();
 
                 fail("Expected IllegalArgumentException");
@@ -210,11 +214,19 @@ public class TransactionsTestCase extends AbstractTest {
         }
     }
 
-    protected void assertTxs(Transaction... txs) {
+    private void assertNoActiveTransactions() {
+        assertActiveTransactions();
+    }
+
+    protected void assertActiveTransactions(Transaction... txs) {
         Collection<Transaction> transactions = service.getActiveTransactions();
         assertNotNull(txs);
         Set<Transaction> expected = new HashSet<Transaction>(transactions);
         Set<Transaction> existing = new HashSet<Transaction>(Arrays.asList(txs));
         assertEquals(expected, existing);
+
+        for (Transaction tx : txs) {
+            assertTrue(tx.isActive());
+        }
     }
 }
