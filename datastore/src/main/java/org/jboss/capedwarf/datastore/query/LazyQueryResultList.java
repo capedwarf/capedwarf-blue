@@ -27,7 +27,7 @@ import java.util.List;
 
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Index;
-import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.QueryResultList;
 
 /**
@@ -36,8 +36,8 @@ import com.google.appengine.api.datastore.QueryResultList;
 class LazyQueryResultList<E> extends LazyList<E> implements QueryResultList<E> {
     private final QueryResultList<E> delegate;
 
-    LazyQueryResultList(QueryResultList<E> delegate, Key ancestor, boolean inTx) {
-        super(delegate, ancestor, inTx);
+    LazyQueryResultList(QueryResultList<E> delegate, Query query, boolean inTx) {
+        super(delegate, query, inTx);
         this.delegate = delegate;
     }
 

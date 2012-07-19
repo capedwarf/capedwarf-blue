@@ -39,42 +39,10 @@ public class QueryConverter {
     }
 
     public CacheQuery convert(Query gaeQuery) {
-        checkInequalityConstraints(gaeQuery);
         CacheQuery cacheQuery = getCacheQuery(createLuceneQuery(gaeQuery));
         addSortToQuery(cacheQuery, gaeQuery);
         return cacheQuery;
     }
-
-    private void checkInequalityConstraints(Query query) {
-        String inequalityFilterProperty = null;
-        for (Query.FilterPredicate predicate : query.getFilterPredicates()) {
-            if (isInequalityOperator(predicate.getOperator())) {
-                if (inequalityFilterProperty == null) {
-                    inequalityFilterProperty = predicate.getPropertyName();
-                } else {
-                    if (!inequalityFilterProperty.equals(predicate.getPropertyName())) {
-                        throw new IllegalArgumentException("Only one inequality filter per query is supported.  " +
-                            "Encountered both " + inequalityFilterProperty + " and " + predicate.getPropertyName());
-                    }
-                }
-            }
-        }
-
-        if (inequalityFilterProperty != null && !query.getSortPredicates().isEmpty()) {
-            Query.SortPredicate firstSortPredicate = query.getSortPredicates().get(0);
-            String firstSortProperty = firstSortPredicate.getPropertyName();
-            if (!firstSortProperty.equals(inequalityFilterProperty)) {
-                throw new IllegalArgumentException("The first sort property must be the same as the property to which the " +
-                    "inequality filter is applied.  In your query the first sort property is " + firstSortProperty + " " +
-                    "but the inequality filter is on " + inequalityFilterProperty);
-            }
-        }
-    }
-
-    private boolean isInequalityOperator(Query.FilterOperator operator) {
-        return operator != Query.FilterOperator.EQUAL && operator != Query.FilterOperator.IN;
-    }
-
 
     private void addSortToQuery(CacheQuery cacheQuery, Query gaeQuery) {
         List<Query.SortPredicate> sortPredicates = gaeQuery.getSortPredicates();

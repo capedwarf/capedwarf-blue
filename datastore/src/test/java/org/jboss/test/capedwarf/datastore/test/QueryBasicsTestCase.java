@@ -25,7 +25,6 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -47,7 +46,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Datastore querying basic tests.
@@ -218,12 +216,7 @@ public class QueryBasicsTestCase extends QueryTestCase {
             .addFilter("weight", GREATER_THAN, 3)
             .addFilter("size", GREATER_THAN, 5);
 
-        try {
-            service.prepare(query).asList(withDefaults());
-            fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException ex) {
-            // pass
-        }
+        assertIAEWhenAccessingResult(service.prepare(query));
     }
 
     @Test
@@ -232,12 +225,7 @@ public class QueryBasicsTestCase extends QueryTestCase {
             .addFilter("foo", GREATER_THAN, 3)
             .addSort("bar");
 
-        try {
-            service.prepare(query).asList(withDefaults());
-            fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException ex) {
-            // pass
-        }
+        assertIAEWhenAccessingResult(service.prepare(query));
     }
 
     @Test

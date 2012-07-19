@@ -42,7 +42,7 @@ public class PreparedQueryImpl implements PreparedQuery {
         apply(fetchOptions);
         List<?> objects = cacheQuery.list();
         QueryResultList<Entity> list = new QueryResultListImpl<Entity>((List<Entity>) objects, JBossCursorHelper.createListCursor(fetchOptions));
-        return new LazyQueryResultList<Entity>(list, gaeQuery.getAncestor(), inTx);
+        return new LazyQueryResultList<Entity>(list, gaeQuery, inTx);
     }
 
     public Iterable<Entity> asIterable() {
@@ -59,7 +59,7 @@ public class PreparedQueryImpl implements PreparedQuery {
 
     public QueryResultIterable<Entity> asQueryResultIterable(FetchOptions fetchOptions) {
         QueryResultIterable<Entity> iterable = new QueryResultIterableImpl<Entity>(asQueryResultIterator(fetchOptions));
-        return new LazyQueryResultIterable<Entity>(iterable, gaeQuery.getAncestor(), inTx);
+        return new LazyQueryResultIterable<Entity>(iterable, gaeQuery, inTx);
     }
 
     public Iterator<Entity> asIterator() {
@@ -77,7 +77,7 @@ public class PreparedQueryImpl implements PreparedQuery {
     @SuppressWarnings("unchecked")
     public QueryResultIterator<Entity> asQueryResultIterator(FetchOptions fetchOptions) {
         QueryResultIterator<Entity> iterator = new QueryResultIteratorImpl<Entity>(createQueryIterator(fetchOptions));
-        return new LazyQueryResultIterator<Entity>(iterator, gaeQuery.getAncestor(), inTx);
+        return new LazyQueryResultIterator<Entity>(iterator, gaeQuery, inTx);
     }
 
     public Entity asSingleEntity() throws TooManyResultsException {

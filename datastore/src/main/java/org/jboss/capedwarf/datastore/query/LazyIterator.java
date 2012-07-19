@@ -24,7 +24,7 @@ package org.jboss.capedwarf.datastore.query;
 
 import java.util.Iterator;
 
-import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Query;
 import org.jboss.capedwarf.datastore.LazyChecker;
 
 /**
@@ -33,8 +33,8 @@ import org.jboss.capedwarf.datastore.LazyChecker;
 class LazyIterator<E> extends LazyChecker implements Iterator<E> {
     private final Iterator<E> delegate;
 
-    public LazyIterator(Iterator<E> iterator, Key ancestor, boolean inTx) {
-        super(ancestor, inTx);
+    public LazyIterator(Iterator<E> iterator, Query query, boolean inTx) {
+        super(query, inTx);
         this.delegate = iterator;
     }
 
