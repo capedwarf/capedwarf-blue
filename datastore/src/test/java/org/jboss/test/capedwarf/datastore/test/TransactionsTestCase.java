@@ -23,7 +23,6 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -36,8 +35,6 @@ import org.junit.runner.RunWith;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -207,34 +204,11 @@ public class TransactionsTestCase extends AbstractTest {
     public void testQueriesWithDifferentAncestorsInsideSameTransactionThrowIllegalArgumentException() {
         Transaction tx = service.beginTransaction();
         try {
-
             Key someAncestor = KeyFactory.createKey("ancestor", "1");
             prepareQueryWithAncestor(tx, someAncestor).asIterator();
 
             Key otherAncestor = KeyFactory.createKey("ancestor", "2");
-            Iterator<Entity> iterator = prepareQueryWithAncestor(tx, otherAncestor).asIterator();  // shouldn't throw ex yet
-            try {
-                iterator.hasNext();    // exception should only be thrown here (not earlier)
-                fail("Expected IllegalArgumentException");
-            } catch (IllegalArgumentException e) {
-                // pass
-            }
-
-            List<Entity> list = prepareQueryWithAncestor(tx, otherAncestor).asList(FetchOptions.Builder.withDefaults());
-            try {
-                list.size();            // exception should only be thrown here (not earlier)
-                fail("Expected IllegalArgumentException");
-            } catch (IllegalArgumentException e) {
-                // pass
-            }
-
-            try {
-                prepareQueryWithAncestor(tx, otherAncestor).asSingleEntity();
-                fail("Expected IllegalArgumentException");
-            } catch (IllegalArgumentException e) {
-                // pass
-            }
-
+            assertIAEWhenAccessingResult(prepareQueryWithAncestor(tx, otherAncestor));
         } finally {
             tx.rollback();
         }
