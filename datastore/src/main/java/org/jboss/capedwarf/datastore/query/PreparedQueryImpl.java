@@ -26,10 +26,12 @@ public class PreparedQueryImpl implements PreparedQuery {
 
     private final Query gaeQuery;
     private final CacheQuery cacheQuery;
+    private final boolean inTx;
 
-    public PreparedQueryImpl(Query gaeQuery, CacheQuery cacheQuery) {
+    public PreparedQueryImpl(Query gaeQuery, CacheQuery cacheQuery, boolean inTx) {
         this.gaeQuery = gaeQuery;
         this.cacheQuery = cacheQuery;
+        this.inTx = inTx;
     }
 
     public List<Entity> asList(FetchOptions fetchOptions) {
@@ -95,8 +97,10 @@ public class PreparedQueryImpl implements PreparedQuery {
     }
 
     private void apply(FetchOptions fetchOptions) {
-        // track ancestor key if it exists
-        JBossDatastoreService.trackKey(gaeQuery.getAncestor());
+        if (inTx) {
+            // track ancestor key if it exists
+            JBossDatastoreService.trackKey(gaeQuery.getAncestor());
+        }
 
         final Integer offset = fetchOptions.getOffset();
         if (offset != null) {

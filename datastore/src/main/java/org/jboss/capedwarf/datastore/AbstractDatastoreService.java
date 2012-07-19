@@ -74,7 +74,7 @@ public class AbstractDatastoreService implements BaseDatastoreService {
         javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             CacheQuery cacheQuery = queryConverter.convert(query);
-            return new PreparedQueryImpl(query, cacheQuery);
+            return new PreparedQueryImpl(query, cacheQuery, tx != null);
         } finally {
             afterTx(transaction);
         }
