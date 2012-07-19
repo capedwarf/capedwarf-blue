@@ -23,8 +23,10 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.junit.Arquillian;
@@ -35,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -189,29 +192,56 @@ public class TransactionsTestCase extends AbstractTest {
     }
 
     @Test
-    public void testQueriesWithDifferentAncestorsInsideSameTransactionAreNotAllowed() {
+    public void testMultipleQueriesWithSameAncestorInsideSameTransactionAreAllowed() {
+        Transaction tx = service.beginTransaction();
+        try {
+            Key ancestor = KeyFactory.createKey("ancestor", "1");
+            prepareQueryWithAncestor(tx, ancestor).asIterator().hasNext();
+            prepareQueryWithAncestor(tx, ancestor).asIterator().hasNext();
+        } finally {
+            tx.rollback();
+        }
+    }
+
+    @Test
+    public void testQueriesWithDifferentAncestorsInsideSameTransactionThrowIllegalArgumentException() {
         Transaction tx = service.beginTransaction();
         try {
 
-            Key someAncestor = KeyFactory.createKey("foo", "1");
-            Iterator<Entity> iterator1 = service.prepare(tx, new Query("foo").setAncestor(someAncestor)).asIterator();
-            iterator1.hasNext();
+            Key someAncestor = KeyFactory.createKey("ancestor", "1");
+            prepareQueryWithAncestor(tx, someAncestor).asIterator();
 
-            Iterator<Entity> iterator2 = service.prepare(tx, new Query("foo").setAncestor(someAncestor)).asIterator();
-            iterator2.hasNext();
-
+            Key otherAncestor = KeyFactory.createKey("ancestor", "2");
+            Iterator<Entity> iterator = prepareQueryWithAncestor(tx, otherAncestor).asIterator();  // shouldn't throw ex yet
             try {
-                Key otherAncestor = KeyFactory.createKey("foo", "2");
-                Iterator<Entity> iterator3 = service.prepare(tx, new Query("foo").setAncestor(otherAncestor)).asIterator();
-                iterator3.hasNext();
-
+                iterator.hasNext();    // exception should only be thrown here (not earlier)
                 fail("Expected IllegalArgumentException");
             } catch (IllegalArgumentException e) {
                 // pass
             }
+
+            List<Entity> list = prepareQueryWithAncestor(tx, otherAncestor).asList(FetchOptions.Builder.withDefaults());
+            try {
+                list.size();            // exception should only be thrown here (not earlier)
+                fail("Expected IllegalArgumentException");
+            } catch (IllegalArgumentException e) {
+                // pass
+            }
+
+            try {
+                prepareQueryWithAncestor(tx, otherAncestor).asSingleEntity();
+                fail("Expected IllegalArgumentException");
+            } catch (IllegalArgumentException e) {
+                // pass
+            }
+
         } finally {
             tx.rollback();
         }
+    }
+
+    private PreparedQuery prepareQueryWithAncestor(Transaction tx, Key someAncestor) {
+        return service.prepare(tx, new Query("foo").setAncestor(someAncestor));
     }
 
     private void assertNoActiveTransactions() {
