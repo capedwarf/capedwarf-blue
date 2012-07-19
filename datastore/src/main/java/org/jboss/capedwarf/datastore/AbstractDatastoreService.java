@@ -71,6 +71,9 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     public PreparedQuery prepare(Transaction tx, Query query) {
+        if (tx != null && query.getAncestor() == null) {
+            throw new IllegalArgumentException("Only ancestor queries are allowed inside transactions.");
+        }
         javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             CacheQuery cacheQuery = queryConverter.convert(query);

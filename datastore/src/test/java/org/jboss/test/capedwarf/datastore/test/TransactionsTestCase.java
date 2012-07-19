@@ -23,7 +23,11 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
@@ -32,6 +36,8 @@ import org.junit.runner.RunWith;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -90,37 +96,39 @@ public class TransactionsTestCase extends AbstractTest {
 
     @Test
     public void testNested() throws Exception {
-        assertTxs();
+        assertNoActiveTransactions();
 
-        Entity e1 = createTestEntity("DUMMY", 1);
+        Entity e1;
+        Entity e2;
+
         Transaction t1 = service.beginTransaction();
-        service.put(t1, e1);
+        try {
+            e1 = createTestEntity("DUMMY", 1);
+            service.put(t1, e1);
+            assertStoreContains(e1);
+
+            assertActiveTransactions(t1);
+
+            Transaction t2 = service.beginTransaction();
+            try {
+                e2 = createTestEntity("DUMMY", 2);
+                service.put(e2);
+
+                assertActiveTransactions(t1, t2);
+                assertStoreContains(e2);
+            } finally {
+                t2.rollback();
+            }
+
+            assertActiveTransactions(t1);
+//            assertStoreDoesNotContain(e2);  // should not be there due to rollback
+        } finally {
+            t1.commit();
+        }
 
         assertStoreContains(e1);
-
-        assertTxs(t1);
-        assertTrue(t1.isActive());
-
-        Transaction t2 = service.beginTransaction();
-        Entity e2 = createTestEntity("DUMMY", 2);
-        service.put(e2);
-
-        assertTxs(t1, t2);
-        assertTrue(t1.isActive());
-        assertTrue(t2.isActive());
-
-        assertStoreContains(e2);
-        t2.rollback();
-
-        assertTxs(t1);
-        assertTrue(t1.isActive());
-
-        // should not be there due to rollback
-        assertStoreDoesNotContain(e2);
-        t1.commit();
-        assertStoreContains(e1);
-
-        assertTxs();
+        assertStoreDoesNotContain(e2);  // should not be there due to rollback
+        assertNoActiveTransactions();
     }
 
     @Test
@@ -143,11 +151,112 @@ public class TransactionsTestCase extends AbstractTest {
         }
     }
 
-    protected void assertTxs(Transaction... txs) {
+    @Test
+    public void testAncestorIsMandatoryInQueriesInsideTransaction() {
+        Transaction tx = service.beginTransaction();
+        try {
+
+            service.prepare(new Query("test"));         // no tx, ancestor not necessary
+            service.prepare(null, new Query("test"));   // no tx, ancestor not necessary
+            service.prepare(tx, new Query("test").setAncestor(KeyFactory.createKey("some_kind", "some_id"))); // tx + ancestor
+
+            try {
+                service.prepare(tx, new Query("test")); // tx, but no ancestor
+                fail("Expected IllegalArgumentException");
+            } catch (IllegalArgumentException e) {
+                // pass
+            }
+        } finally {
+            tx.rollback();
+        }
+    }
+
+    @Test
+    public void testGetWithDifferentAncestorsInsideSameTransactionAreNotAllowed() {
+        service.put(new Entity("foo", "1"));
+        service.put(new Entity("foo", "2"));
+
+        Transaction tx = service.beginTransaction();
+        try {
+            service.get(Arrays.asList(KeyFactory.createKey("foo", "1")));
+
+            try {
+                service.get(Arrays.asList(KeyFactory.createKey("foo", "2")));
+                fail("Expected IllegalArgumentException");
+            } catch (IllegalArgumentException e) {
+                // pass
+            }
+        } finally {
+            tx.rollback();
+        }
+    }
+
+    @Test
+    public void testMultipleQueriesWithSameAncestorInsideSameTransactionAreAllowed() {
+        Transaction tx = service.beginTransaction();
+        try {
+            Key ancestor = KeyFactory.createKey("ancestor", "1");
+            prepareQueryWithAncestor(tx, ancestor).asIterator().hasNext();
+            prepareQueryWithAncestor(tx, ancestor).asIterator().hasNext();
+        } finally {
+            tx.rollback();
+        }
+    }
+
+    @Test
+    public void testQueriesWithDifferentAncestorsInsideSameTransactionThrowIllegalArgumentException() {
+        Transaction tx = service.beginTransaction();
+        try {
+
+            Key someAncestor = KeyFactory.createKey("ancestor", "1");
+            prepareQueryWithAncestor(tx, someAncestor).asIterator();
+
+            Key otherAncestor = KeyFactory.createKey("ancestor", "2");
+            Iterator<Entity> iterator = prepareQueryWithAncestor(tx, otherAncestor).asIterator();  // shouldn't throw ex yet
+            try {
+                iterator.hasNext();    // exception should only be thrown here (not earlier)
+                fail("Expected IllegalArgumentException");
+            } catch (IllegalArgumentException e) {
+                // pass
+            }
+
+            List<Entity> list = prepareQueryWithAncestor(tx, otherAncestor).asList(FetchOptions.Builder.withDefaults());
+            try {
+                list.size();            // exception should only be thrown here (not earlier)
+                fail("Expected IllegalArgumentException");
+            } catch (IllegalArgumentException e) {
+                // pass
+            }
+
+            try {
+                prepareQueryWithAncestor(tx, otherAncestor).asSingleEntity();
+                fail("Expected IllegalArgumentException");
+            } catch (IllegalArgumentException e) {
+                // pass
+            }
+
+        } finally {
+            tx.rollback();
+        }
+    }
+
+    private PreparedQuery prepareQueryWithAncestor(Transaction tx, Key someAncestor) {
+        return service.prepare(tx, new Query("foo").setAncestor(someAncestor));
+    }
+
+    private void assertNoActiveTransactions() {
+        assertActiveTransactions();
+    }
+
+    protected void assertActiveTransactions(Transaction... txs) {
         Collection<Transaction> transactions = service.getActiveTransactions();
         assertNotNull(txs);
         Set<Transaction> expected = new HashSet<Transaction>(transactions);
         Set<Transaction> existing = new HashSet<Transaction>(Arrays.asList(txs));
         assertEquals(expected, existing);
+
+        for (Transaction tx : txs) {
+            assertTrue(tx.isActive());
+        }
     }
 }
