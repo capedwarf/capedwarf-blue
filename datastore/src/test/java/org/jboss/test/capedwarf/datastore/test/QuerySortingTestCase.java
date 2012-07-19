@@ -71,7 +71,6 @@ public class QuerySortingTestCase extends QueryTestCase {
         assertThat(whenSortingByTheSingleProperty(DESCENDING), queryReturnsList(three, two, one));
     }
 
-    @Ignore("Doesn't work, since sorting is still only lexicographic")
     @Test
     public void testSortingByFloatProperty() throws Exception {
         Entity thirty = storeTestEntityWithSingleProperty(30f);
@@ -82,7 +81,6 @@ public class QuerySortingTestCase extends QueryTestCase {
         assertThat(whenSortingByTheSingleProperty(DESCENDING), queryReturnsList(hundred, thirty, two));
     }
 
-    @Ignore("Doesn't work, since sorting is still only lexicographic")
     @Test
     public void testIntegerPropertySortingIsNotLexicographic() throws Exception {
         Entity ten = storeTestEntityWithSingleProperty(10);
