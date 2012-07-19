@@ -71,7 +71,6 @@ class LazyQueryResultList<E> extends LazyChecker implements QueryResultList<E> {
     }
 
     public Iterator<E> iterator() {
-        check();
         Iterator<E> iterator = delegate.iterator();
         return new LazyIterator<E>(iterator, ancestor, inTx);
     }
@@ -157,13 +156,11 @@ class LazyQueryResultList<E> extends LazyChecker implements QueryResultList<E> {
     }
 
     public ListIterator<E> listIterator() {
-        check();
         ListIterator<E> iterator = delegate.listIterator();
         return new LazyListIterator<E>(iterator, ancestor, inTx);
     }
 
     public ListIterator<E> listIterator(int index) {
-        check();
         ListIterator<E> iterator = delegate.listIterator(index);
         return new LazyListIterator<E>(iterator, ancestor, inTx);
     }
