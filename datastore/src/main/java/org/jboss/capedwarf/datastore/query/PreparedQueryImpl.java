@@ -12,7 +12,6 @@ import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.datastore.QueryResultList;
 import org.infinispan.query.CacheQuery;
-import org.jboss.capedwarf.datastore.JBossDatastoreService;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 
@@ -42,7 +41,8 @@ public class PreparedQueryImpl implements PreparedQuery {
     public QueryResultList<Entity> asQueryResultList(FetchOptions fetchOptions) {
         apply(fetchOptions);
         List<?> objects = cacheQuery.list();
-        return new QueryResultListImpl<Entity>((List<Entity>) objects, JBossCursorHelper.createListCursor(fetchOptions));
+        QueryResultList<Entity> list = new QueryResultListImpl<Entity>((List<Entity>) objects, JBossCursorHelper.createListCursor(fetchOptions));
+        return new LazyQueryResultList<Entity>(list, gaeQuery.getAncestor(), inTx);
     }
 
     public Iterable<Entity> asIterable() {
@@ -58,7 +58,8 @@ public class PreparedQueryImpl implements PreparedQuery {
     }
 
     public QueryResultIterable<Entity> asQueryResultIterable(FetchOptions fetchOptions) {
-        return new QueryResultIterableImpl<Entity>(asQueryResultIterator(fetchOptions));
+        QueryResultIterable<Entity> iterable = new QueryResultIterableImpl<Entity>(asQueryResultIterator(fetchOptions));
+        return new LazyQueryResultIterable<Entity>(iterable, gaeQuery.getAncestor(), inTx);
     }
 
     public Iterator<Entity> asIterator() {
@@ -97,11 +98,6 @@ public class PreparedQueryImpl implements PreparedQuery {
     }
 
     private void apply(FetchOptions fetchOptions) {
-        if (inTx) {
-            // track ancestor key if it exists
-            JBossDatastoreService.trackKey(gaeQuery.getAncestor());
-        }
-
         final Integer offset = fetchOptions.getOffset();
         if (offset != null) {
             cacheQuery.firstResult(offset);

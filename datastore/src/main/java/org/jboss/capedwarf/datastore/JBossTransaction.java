@@ -91,6 +91,14 @@ public class JBossTransaction implements Transaction {
         }
     }
 
+    static int getTxStatus() {
+        try {
+            return tm.getStatus();
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     static javax.transaction.Transaction suspendTx() {
         try {
             return tm.suspend();

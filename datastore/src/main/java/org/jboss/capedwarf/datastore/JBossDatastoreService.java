@@ -303,7 +303,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
      *
      * @param key the key to track
      */
-    public static void trackKey(Key key) {
+    static void trackKey(Key key) {
         try {
             if (key != null) {
                 EntityGroupTracker.trackKey(key);
