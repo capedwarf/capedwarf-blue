@@ -299,7 +299,26 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     /**
-     * Not to be abused. ;-)
+     * Register key.
+     *
+     * @param key the key to track
+     */
+    static void registerKey(Key key) {
+        try {
+            if (key != null) {
+                EntityGroupTracker.registerKey(key);
+            }
+        } catch (Throwable t) {
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            } else {
+                throw new RuntimeException(t);
+            }
+        }
+    }
+
+    /**
+     * Track key.
      *
      * @param key the key to track
      */
@@ -315,5 +334,12 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                 throw new RuntimeException(t);
             }
         }
+    }
+
+    /**
+     * Check keys.
+     */
+    static void checkKeys() {
+        EntityGroupTracker.check();
     }
 }

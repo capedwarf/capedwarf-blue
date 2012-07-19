@@ -36,6 +36,13 @@ public abstract class LazyChecker {
     protected LazyChecker(Key ancestor, boolean inTx) {
         this.ancestor = ancestor;
         this.inTx = inTx;
+        register();
+    }
+
+    protected void register() {
+        if (inTx) {
+            JBossDatastoreService.registerKey(ancestor);
+        }
     }
 
     protected void check() {
@@ -44,7 +51,7 @@ public abstract class LazyChecker {
                 throw new IllegalStateException("Transaction with which this operation is associated is not active.");
             }
 
-            JBossDatastoreService.trackKey(ancestor);
+            JBossDatastoreService.checkKeys();
         }
     }
 }

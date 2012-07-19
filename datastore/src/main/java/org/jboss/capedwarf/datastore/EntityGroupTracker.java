@@ -22,9 +22,7 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.transaction.Synchronization;
@@ -46,22 +44,23 @@ class EntityGroupTracker implements Synchronization {
     private static final String LOG_LINE_ENTITY_KIND = "__org.jboss.capedwarf.LogLine__";
 
     private final Transaction tx;
-    private Key top;
-    private final Set<Key> keys;
+    private Key root;
+    private boolean invalid;
+    private final Map<Key, Key> keys;
 
     private EntityGroupTracker(Transaction tx) {
         this.tx = tx;
-        this.keys = new HashSet<Key>();
+        this.keys = new ConcurrentHashMap<Key, Key>();
     }
 
-    static void trackKey(Key key) throws Exception {
+    static EntityGroupTracker registerKey(Key key) throws Exception {
         final Transaction transaction = JBossTransaction.getTx();
         if (transaction == null)
-            return; // do not track w/o Tx
+            return null; // do not track w/o Tx
 
         final String kind = key.getKind();
         if (LOG_LINE_ENTITY_KIND.equals(kind) || LOG_REQUEST_ENTITY_KIND.equals(kind))
-            return; // TODO - hack, do not count logs
+            return null; // TODO - hack, do not count logs
 
         EntityGroupTracker egt = trackers.get(transaction);
         if (egt == null) {
@@ -69,23 +68,51 @@ class EntityGroupTracker implements Synchronization {
             transaction.registerSynchronization(egt);
             trackers.put(transaction, egt);
         }
-        egt.checkKey(key);
+        egt.addKey(key);
+        return egt;
     }
 
-    private void checkKey(Key key) {
-        keys.add(key);
-
-        Key currentTop = key;
-        while (currentTop.getParent() != null) {
-            currentTop = currentTop.getParent();
+    static void trackKey(Key key) throws Exception {
+        final EntityGroupTracker egt = registerKey(key);
+        if (egt != null) {
+            egt.checkRoot();
         }
+    }
 
-        if ((top != null && top.equals(currentTop) == false))
-            throw new IllegalArgumentException("can't operate on multiple entity groups in a single transaction. found: " + keys);
+    static void check() {
+        final Transaction transaction = JBossTransaction.getTx();
+        if (transaction == null)
+            return; // nothing to check
 
-        if (top == null) {
-            top = currentTop;
+        EntityGroupTracker egt = trackers.get(transaction);
+        if (egt != null) {
+            egt.checkRoot();
         }
+    }
+
+    private Key addKey(Key key) {
+        Key currentRoot = getRoot(key);
+        if (root == null) {
+            root = currentRoot;
+        } else if (root.equals(currentRoot) == false){
+            invalid = true;
+        }
+        keys.put(key, currentRoot);
+        return currentRoot;
+    }
+
+    private void checkRoot() {
+        if (invalid) {
+            throw new IllegalArgumentException("can't operate on multiple entity groups in a single transaction. found: " + keys.keySet());
+        }
+    }
+
+    private static Key getRoot(Key key) {
+        Key currentRoot = key;
+        while (currentRoot.getParent() != null) {
+            currentRoot = currentRoot.getParent();
+        }
+        return currentRoot;
     }
 
     public void beforeCompletion() {
