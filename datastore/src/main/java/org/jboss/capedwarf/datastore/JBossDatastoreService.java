@@ -99,9 +99,11 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         return new SequenceTuple(sequenceName, allocationSize);
     }
 
-    protected long getRangeStart(Key parent, String kind) {
+    protected AllocationTuple getRangeStart(Key parent, String kind, long num) {
         final SequenceTuple st = getSequenceTuple(kind);
-        return KeyGenerator.generateRange(parent, st.getSequenceName(), st.getAllocationSize());
+        long asNum = st.getAllocationSize() * num;
+        long start = KeyGenerator.generateRange(parent, st.getSequenceName(), asNum);
+        return new AllocationTuple(start, asNum);
     }
 
     public Entity get(Key key) throws EntityNotFoundException {
@@ -162,7 +164,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             for (Entity entity : entityIterable) {
                 final Key key = entity.getKey();
                 if (key.isComplete() == false) {
-                    long id = getRangeStart(key.getParent(), key.getKind());
+                    long id = getRangeStart(key.getParent(), key.getKind(), 1).getStart();
                     ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
                 }
                 trackKey(key);
@@ -278,8 +280,9 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public KeyRange allocateIds(Key parent, String kind, long num) {
-        final long start = getRangeStart(parent, kind);
-        return new KeyRange(parent, kind, start, start + num - 1);
+        final AllocationTuple at = getRangeStart(parent, kind, num);
+        final long start = at.getStart();
+        return new KeyRange(parent, kind, start, start + at.getNum() - 1);
     }
 
     public KeyRangeState allocateIdRange(KeyRange keyRange) {
