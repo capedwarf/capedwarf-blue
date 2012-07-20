@@ -48,11 +48,11 @@ public class QueryFilteringByBasicPropertyTypesTestCase extends QueryTestCase {
 
     @Test
     public void testInequalityFilterWithNegativeInteger() {
-        Entity minus2 = createTestEntity().withProperty("prop", -2).store();
-        Entity minus1 = createTestEntity().withProperty("prop", -1).store();
-        Entity zero = createTestEntity().withProperty("prop", 0).store();
-        Entity plus1 = createTestEntity().withProperty("prop", 1).store();
-        Entity plus2 = createTestEntity().withProperty("prop", 2).store();
+        Entity minus2 = buildTestEntity().withProperty("prop", -2).store();
+        Entity minus1 = buildTestEntity().withProperty("prop", -1).store();
+        Entity zero = buildTestEntity().withProperty("prop", 0).store();
+        Entity plus1 = buildTestEntity().withProperty("prop", 1).store();
+        Entity plus2 = buildTestEntity().withProperty("prop", 2).store();
 
         assertThat(whenFilteringBy(GREATER_THAN, -1), queryReturns(zero, plus1, plus2));
         assertThat(whenFilteringBy(LESS_THAN_OR_EQUAL, -1), queryReturns(minus2, minus1));

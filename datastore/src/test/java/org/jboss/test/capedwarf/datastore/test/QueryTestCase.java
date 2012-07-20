@@ -24,8 +24,6 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -33,19 +31,14 @@ import com.google.appengine.api.datastore.Query;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsEqual;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.capedwarf.datastore.JBossDatastoreService;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -53,41 +46,28 @@ import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaul
 import static com.google.appengine.api.datastore.Query.FilterOperator.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public abstract class QueryTestCase {
+public abstract class QueryTestCase extends AbstractTest {
 
     protected static final String TEST_ENTITY_KIND = "test";
     protected static final String SINGLE_PROPERTY_NAME = "prop";
 
-    protected DatastoreService service;
-
     private int idSequence;
 
     @Deployment
-    public static Archive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-                .addClass(QueryTestCase.class)
-                .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web.xml");
+    public static WebArchive getDeployment() {
+        return AbstractTest.getDeployment()
+            .addClass(QueryTestCase.class);
     }
 
     protected static Date createDate(int year, int month, int day) {
         Calendar cal = Calendar.getInstance();
         cal.set(year, month + 1, day);
         return cal.getTime();
-    }
-
-    @Before
-    public void setUp() {
-        service = DatastoreServiceFactory.getDatastoreService();
-    }
-
-    @After
-    public void tearDown() {
-        ((JBossDatastoreService) service).clearCache();
     }
 
     protected void assertSingleResult(Entity expectedEntity, Query query) {
@@ -103,7 +83,7 @@ public abstract class QueryTestCase {
         Assert.assertEquals("number of results", 0, preparedQuery.countEntities());
     }
 
-    protected TestEntityBuilder createTestEntity() {
+    protected TestEntityBuilder buildTestEntity() {
         return createEntity(TEST_ENTITY_KIND, ++idSequence);
     }
 
@@ -120,7 +100,7 @@ public abstract class QueryTestCase {
     }
 
     protected Entity storeTestEntityWithSingleProperty(Object value) {
-        return createTestEntity()
+        return buildTestEntity()
                 .withProperty(SINGLE_PROPERTY_NAME, value)
                 .store();
     }

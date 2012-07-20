@@ -25,7 +25,6 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -38,6 +37,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import static com.google.appengine.api.datastore.FetchOptions.Builder.*;
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
 import static com.google.appengine.api.datastore.Query.FilterOperator.IN;
@@ -46,7 +46,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Datastore querying basic tests.
@@ -65,9 +64,9 @@ public class QueryBasicsTestCase extends QueryTestCase {
         service.put(address);
 
         PreparedQuery preparedQuery = service.prepare(new Query());
-        assertTrue(preparedQuery.countEntities(FetchOptions.Builder.withDefaults()) >= 2);
+        assertTrue(preparedQuery.countEntities(withDefaults()) >= 2);
 
-        List<Entity> results = preparedQuery.asList(FetchOptions.Builder.withDefaults());
+        List<Entity> results = preparedQuery.asList(withDefaults());
         assertTrue(results.containsAll(Arrays.asList(person, address)));
     }
 
@@ -185,7 +184,7 @@ public class QueryBasicsTestCase extends QueryTestCase {
         Entity bar = createEntity("bar", 2).store();
 
         PreparedQuery preparedQuery = service.prepare(new Query("foo"));
-        List<Entity> results = preparedQuery.asList(FetchOptions.Builder.withDefaults());
+        List<Entity> results = preparedQuery.asList(withDefaults());
         assertEquals(1, results.size());
         assertEquals(foo, results.get(0));
     }
@@ -201,13 +200,13 @@ public class QueryBasicsTestCase extends QueryTestCase {
         Key fooKey = KeyFactory.createKey(barKey, "foo", 20);
         Entity foo = createEntity(fooKey).store();
 
-        List<Entity> list = service.prepare(new Query("foo", rootKey)).asList(FetchOptions.Builder.withDefaults());
+        List<Entity> list = service.prepare(new Query("foo", rootKey)).asList(withDefaults());
         assertEquals(asSet(Arrays.asList(root, foo)), asSet(list));
 
-        list = service.prepare(new Query(rootKey)).asList(FetchOptions.Builder.withDefaults());
+        list = service.prepare(new Query(rootKey)).asList(withDefaults());
         assertEquals(asSet(Arrays.asList(root, foo, bar)), asSet(list));
 
-        list = service.prepare(new Query("foo", barKey)).asList(FetchOptions.Builder.withDefaults());
+        list = service.prepare(new Query("foo", barKey)).asList(withDefaults());
         assertEquals(asSet(Arrays.asList(foo)), asSet(list));
     }
 
@@ -217,12 +216,7 @@ public class QueryBasicsTestCase extends QueryTestCase {
             .addFilter("weight", GREATER_THAN, 3)
             .addFilter("size", GREATER_THAN, 5);
 
-        try {
-            service.prepare(query).asList(FetchOptions.Builder.withDefaults());
-            fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException ex) {
-            // pass
-        }
+        assertIAEWhenAccessingResult(service.prepare(query));
     }
 
     @Test
@@ -231,12 +225,7 @@ public class QueryBasicsTestCase extends QueryTestCase {
             .addFilter("foo", GREATER_THAN, 3)
             .addSort("bar");
 
-        try {
-            service.prepare(query).asList(FetchOptions.Builder.withDefaults());
-            fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException ex) {
-            // pass
-        }
+        assertIAEWhenAccessingResult(service.prepare(query));
     }
 
     @Test
@@ -246,7 +235,7 @@ public class QueryBasicsTestCase extends QueryTestCase {
             .addSort("foo")
             .addSort("bar");
 
-        service.prepare(query).asList(FetchOptions.Builder.withDefaults());
+        service.prepare(query).asList(withDefaults());
     }
 
     private HashSet<Entity> asSet(List<Entity> collection) {

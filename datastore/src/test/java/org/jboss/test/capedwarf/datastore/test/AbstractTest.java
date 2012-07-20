@@ -28,6 +28,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.capedwarf.datastore.JBossDatastoreService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -40,7 +41,11 @@ import org.junit.Before;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+
+import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
+import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -126,4 +131,49 @@ public class AbstractTest {
         return entity;
     }
 
+    protected void assertIAEWhenAccessingResult(PreparedQuery preparedQuery) {
+        assertIAEWhenAccessingList(preparedQuery);
+        assertIAEWhenAccessingIterator(preparedQuery);
+        assertIAEWhenAccessingIterable(preparedQuery);
+        assertIAEWhenGettingSingleEntity(preparedQuery);
+    }
+
+    private void assertIAEWhenAccessingList(PreparedQuery preparedQuery) {
+        List<Entity> list = preparedQuery.asList(withDefaults());
+        try {
+            list.size();
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException ex) {
+            // pass
+        }
+    }
+
+    private void assertIAEWhenAccessingIterator(PreparedQuery preparedQuery) {
+        Iterator<Entity> iterator = preparedQuery.asIterator();
+        try {
+            iterator.hasNext();
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException ex) {
+            // pass
+        }
+    }
+
+    private void assertIAEWhenAccessingIterable(PreparedQuery preparedQuery) {
+        Iterator<Entity> iterator2 = preparedQuery.asIterable().iterator();
+        try {
+            iterator2.hasNext();
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException ex) {
+            // pass
+        }
+    }
+
+    private void assertIAEWhenGettingSingleEntity(PreparedQuery preparedQuery) {
+        try {
+            preparedQuery.asSingleEntity();
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException ex) {
+            // pass
+        }
+    }
 }

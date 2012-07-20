@@ -24,7 +24,7 @@ package org.jboss.capedwarf.datastore.query;
 
 import java.util.ListIterator;
 
-import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Query;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -32,8 +32,8 @@ import com.google.appengine.api.datastore.Key;
 class LazyListIterator<E> extends LazyIterator<E> implements ListIterator<E> {
     private final ListIterator<E> delegate;
 
-    public LazyListIterator(ListIterator<E> iterator, Key ancestor, boolean inTx) {
-        super(iterator, ancestor, inTx);
+    public LazyListIterator(ListIterator<E> iterator, Query query, boolean inTx) {
+        super(iterator, query, inTx);
         this.delegate = iterator;
     }
 

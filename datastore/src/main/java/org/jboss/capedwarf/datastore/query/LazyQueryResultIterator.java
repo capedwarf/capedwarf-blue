@@ -26,7 +26,7 @@ import java.util.List;
 
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Index;
-import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import org.jboss.capedwarf.datastore.LazyChecker;
 
@@ -36,8 +36,8 @@ import org.jboss.capedwarf.datastore.LazyChecker;
 class LazyQueryResultIterator<E> extends LazyChecker implements QueryResultIterator<E> {
     private final QueryResultIterator<E> delegate;
 
-    public LazyQueryResultIterator(QueryResultIterator<E> iterator, Key ancestor, boolean inTx) {
-        super(ancestor, inTx);
+    public LazyQueryResultIterator(QueryResultIterator<E> iterator, Query query, boolean inTx) {
+        super(query, inTx);
         this.delegate = iterator;
     }
 

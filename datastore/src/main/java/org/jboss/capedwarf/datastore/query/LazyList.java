@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Query;
 import org.jboss.capedwarf.datastore.LazyChecker;
 
 /**
@@ -37,8 +37,8 @@ import org.jboss.capedwarf.datastore.LazyChecker;
 class LazyList<E> extends LazyChecker implements List<E> {
     private final List<E> delegate;
 
-    LazyList(List<E> delegate, Key ancestor, boolean inTx) {
-        super(ancestor, inTx);
+    LazyList(List<E> delegate, Query query, boolean inTx) {
+        super(query, inTx);
         this.delegate = delegate;
     }
 
@@ -59,7 +59,7 @@ class LazyList<E> extends LazyChecker implements List<E> {
 
     public Iterator<E> iterator() {
         Iterator<E> iterator = delegate.iterator();
-        return new LazyIterator<E>(iterator, ancestor, inTx);
+        return new LazyIterator<E>(iterator, query, inTx);
     }
 
     public Object[] toArray() {
@@ -144,16 +144,16 @@ class LazyList<E> extends LazyChecker implements List<E> {
 
     public ListIterator<E> listIterator() {
         ListIterator<E> iterator = delegate.listIterator();
-        return new LazyListIterator<E>(iterator, ancestor, inTx);
+        return new LazyListIterator<E>(iterator, query, inTx);
     }
 
     public ListIterator<E> listIterator(int index) {
         ListIterator<E> iterator = delegate.listIterator(index);
-        return new LazyListIterator<E>(iterator, ancestor, inTx);
+        return new LazyListIterator<E>(iterator, query, inTx);
     }
 
     public List<E> subList(int fromIndex, int toIndex) {
         List<E> list = delegate.subList(fromIndex, toIndex);
-        return new LazyList<E>(list, ancestor, inTx);
+        return new LazyList<E>(list, query, inTx);
     }
 }
