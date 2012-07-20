@@ -32,9 +32,9 @@ public class TestUtils {
         // default JPA libs
         war.addAsLibraries(getResolver().artifact("com.google.appengine:appengine-api-1.0-sdk").resolveAsFiles());
         war.addAsLibraries(getResolver().artifact("org.datanucleus:datanucleus-core").resolveAsFiles());
-        war.addAsLibraries(getResolver().artifact("org.datanucleus:datanucleus-jpa").resolveAsFiles());
+        war.addAsLibraries(getResolver().artifact("org.datanucleus:datanucleus-api-jpa").resolveAsFiles());
         war.addAsLibraries(getResolver().artifact("com.google.appengine.orm:datanucleus-appengine").resolveAsFiles());
-        war.addAsLibraries(getResolver().artifact("javax.jdo:jdo2-api").resolveAsFiles());
+        war.addAsLibraries(getResolver().artifact("javax.jdo:jdo-api").resolveAsFiles());
         war.addAsLibraries(getResolver().artifact("org.apache.geronimo.specs:geronimo-jta_1.1_spec").resolveAsFiles());
     }
 

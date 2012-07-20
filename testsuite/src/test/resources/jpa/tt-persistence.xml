@@ -5,7 +5,7 @@
         http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd" version="1.0">
 
     <persistence-unit name="test">
-        <provider>org.datanucleus.store.appengine.jpa.DatastorePersistenceProvider</provider>
+        <provider>org.datanucleus.api.jpa.PersistenceProviderImpl</provider>
         <class>org.jboss.capedwarf.testsuite.jpa.AbstractEntity</class>
         <class>org.jboss.capedwarf.testsuite.jpa.TimestampedEntity</class>
         <class>org.jboss.capedwarf.testsuite.jpa.Client</class>
