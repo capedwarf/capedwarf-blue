@@ -38,21 +38,25 @@ public class AllocateIdsTestCase extends AbstractTest {
 
     @Test
     public void testAllocateId() throws Exception {
+        long initialValue = getInitialValue("SomeKind");
+
         KeyRange keys = service.allocateIds("SomeKind", 10L);
         Assert.assertNotNull(keys);
 
         Key start = keys.getStart();
         Assert.assertNotNull(start);
-        Assert.assertEquals(1, start.getId());
+        Assert.assertEquals(1 + initialValue, start.getId());
 
         Key end = keys.getEnd();
         Assert.assertNotNull(end);
-        Assert.assertEquals(10, end.getId());
+        Assert.assertEquals(10 + initialValue, end.getId());
     }
 
     @Test
     public void testCheckKeyRange() throws Exception {
-        KeyRange kr1 = new KeyRange(null, "OtherKind", 1, 5);
+        long initialValue = getInitialValue("OtherKind");
+
+        KeyRange kr1 = new KeyRange(null, "OtherKind", 1 + initialValue, 5 + initialValue);
         DatastoreService.KeyRangeState state1 = service.allocateIdRange(kr1);
         Assert.assertNotNull(state1);
         Assert.assertSame(DatastoreService.KeyRangeState.CONTENTION, state1);
@@ -60,10 +64,13 @@ public class AllocateIdsTestCase extends AbstractTest {
         KeyRange kr2 = service.allocateIds("OtherKind", 6);
         Assert.assertNotNull(kr2);
 
-        KeyRange kr3 = new KeyRange(null, "OtherKind", 2, 5);
+        KeyRange kr3 = new KeyRange(null, "OtherKind", 2 + initialValue, 5 + initialValue);
         DatastoreService.KeyRangeState state2 = service.allocateIdRange(kr3);
         Assert.assertNotNull(state2);
         Assert.assertSame(DatastoreService.KeyRangeState.COLLISION, state2);
     }
 
+    private long getInitialValue(String kind) {
+        return service.allocateIds(kind, 1L).getStart().getId();
+    }
 }
