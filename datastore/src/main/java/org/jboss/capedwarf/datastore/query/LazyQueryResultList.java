@@ -26,28 +26,41 @@ package org.jboss.capedwarf.datastore.query;
 import java.util.List;
 
 import com.google.appengine.api.datastore.Cursor;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Index;
-import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.QueryResultList;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class LazyQueryResultList<E> extends LazyList<E> implements QueryResultList<E> {
-    private final QueryResultList<E> delegate;
+    private volatile QueryResultList<E> delegate;
 
-    LazyQueryResultList(QueryResultList<E> delegate, Query query, boolean inTx) {
-        super(delegate, query, inTx);
-        this.delegate = delegate;
+    LazyQueryResultList(QueryHolder holder, FetchOptions fetchOptions) {
+        super(holder, fetchOptions);
+    }
+
+    protected QueryResultList<E> getDelegate() {
+        if (delegate == null) {
+            synchronized (this) {
+                if (delegate == null) {
+                    apply();
+                    List objects = holder.getCacheQuery().list();
+                    //noinspection unchecked
+                    delegate = new QueryResultListImpl<E>(objects, JBossCursorHelper.createListCursor(fetchOptions));
+                }
+            }
+        }
+        return delegate;
     }
 
     public List<Index> getIndexList() {
         check();
-        return delegate.getIndexList();
+        return getDelegate().getIndexList();
     }
 
     public Cursor getCursor() {
         check();
-        return delegate.getCursor();
+        return getDelegate().getCursor();
     }
 }

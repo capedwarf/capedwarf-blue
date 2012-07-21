@@ -20,44 +20,56 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore;
+package org.jboss.capedwarf.datastore.query;
 
-import javax.transaction.Status;
-
+import com.google.appengine.api.datastore.Cursor;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
+import org.infinispan.query.CacheQuery;
+import org.jboss.capedwarf.datastore.LazyKeyChecker;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class LazyChecker {
-    protected final Query query;
-    protected final boolean inTx;
+public class LazyChecker extends LazyKeyChecker {
+    protected final QueryHolder holder;
+    protected final FetchOptions fetchOptions;
 
-    protected LazyChecker(Query query, boolean inTx) {
-        this.query = query;
-        this.inTx = inTx;
-        register();
+    public LazyChecker(QueryHolder holder, FetchOptions fetchOptions) {
+        super(holder.getQuery().getAncestor(), holder.isInTx());
+        this.holder = holder;
+        this.fetchOptions = fetchOptions;
     }
 
-    protected void register() {
-        if (inTx) {
-            JBossDatastoreService.registerKey(query.getAncestor());
+    protected void apply() {
+        final CacheQuery cacheQuery = holder.getCacheQuery();
+        final Integer offset = fetchOptions.getOffset();
+        if (offset != null) {
+            cacheQuery.firstResult(offset);
+        }
+        final Integer limit = fetchOptions.getLimit();
+        if (limit != null) {
+            cacheQuery.maxResults(limit);
+        }
+        final Cursor start = fetchOptions.getStartCursor();
+        if (start != null) {
+            JBossCursorHelper.applyStartCursor(start, cacheQuery);
+        }
+        final Cursor end = fetchOptions.getEndCursor();
+        if (end != null) {
+            JBossCursorHelper.applyEndCursor(end, cacheQuery, start);
         }
     }
 
+    @Override
     protected void check() {
-        checkInequalityConstraints(query);
-
-        if (inTx) {
-            if (JBossTransaction.getTxStatus() != Status.STATUS_ACTIVE) {
-                throw new IllegalStateException("Transaction with which this operation is associated is not active.");
-            }
-
-            JBossDatastoreService.checkKeys();
-        }
+        checkInequalityConstraints();
+        super.check();
     }
 
-    private void checkInequalityConstraints(Query query) {
+    @SuppressWarnings("deprecation")
+    private void checkInequalityConstraints() {
+        final Query query = holder.getQuery();
         String inequalityFilterProperty = null;
         for (Query.FilterPredicate predicate : query.getFilterPredicates()) {
             if (isInequalityOperator(predicate.getOperator())) {
@@ -66,7 +78,7 @@ public abstract class LazyChecker {
                 } else {
                     if (!inequalityFilterProperty.equals(predicate.getPropertyName())) {
                         throw new IllegalArgumentException("Only one inequality filter per query is supported.  " +
-                            "Encountered both " + inequalityFilterProperty + " and " + predicate.getPropertyName());
+                                "Encountered both " + inequalityFilterProperty + " and " + predicate.getPropertyName());
                     }
                 }
             }
@@ -77,8 +89,8 @@ public abstract class LazyChecker {
             String firstSortProperty = firstSortPredicate.getPropertyName();
             if (!firstSortProperty.equals(inequalityFilterProperty)) {
                 throw new IllegalArgumentException("The first sort property must be the same as the property to which the " +
-                    "inequality filter is applied.  In your query the first sort property is " + firstSortProperty + " " +
-                    "but the inequality filter is on " + inequalityFilterProperty);
+                        "inequality filter is applied.  In your query the first sort property is " + firstSortProperty + " " +
+                        "but the inequality filter is on " + inequalityFilterProperty);
             }
         }
     }
@@ -86,5 +98,4 @@ public abstract class LazyChecker {
     private boolean isInequalityOperator(Query.FilterOperator operator) {
         return operator != Query.FilterOperator.EQUAL && operator != Query.FilterOperator.IN;
     }
-
 }

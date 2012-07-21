@@ -28,132 +28,136 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.google.appengine.api.datastore.Query;
-import org.jboss.capedwarf.datastore.LazyChecker;
+import com.google.appengine.api.datastore.FetchOptions;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class LazyList<E> extends LazyChecker implements List<E> {
-    private final List<E> delegate;
+    private List<E> delegate;
 
-    LazyList(List<E> delegate, Query query, boolean inTx) {
-        super(query, inTx);
+    LazyList(QueryHolder holder, FetchOptions fetchOptions) {
+        super(holder, fetchOptions);
+    }
+
+    LazyList(QueryHolder holder, FetchOptions fetchOptions, List<E> delegate) {
+        super(holder, fetchOptions);
         this.delegate = delegate;
+    }
+
+    protected List<E> getDelegate() {
+        return delegate;
     }
 
     public int size() {
         check();
-        return delegate.size();
+        return getDelegate().size();
     }
 
     public boolean isEmpty() {
         check();
-        return delegate.isEmpty();
+        return getDelegate().isEmpty();
     }
 
     public boolean contains(Object o) {
         check();
-        return delegate.contains(o);
+        return getDelegate().contains(o);
     }
 
     public Iterator<E> iterator() {
-        Iterator<E> iterator = delegate.iterator();
-        return new LazyIterator<E>(iterator, query, inTx);
+        return new LazyIterator<E>(this);
     }
 
     public Object[] toArray() {
         check();
-        return delegate.toArray();
+        return getDelegate().toArray();
     }
 
     public <T> T[] toArray(T[] a) {
         check();
-        return delegate.toArray(a);
+        return getDelegate().toArray(a);
     }
 
     public boolean add(E e) {
         check();
-        return delegate.add(e);
+        return getDelegate().add(e);
     }
 
     public boolean remove(Object o) {
         check();
-        return delegate.remove(o);
+        return getDelegate().remove(o);
     }
 
     public boolean containsAll(Collection<?> c) {
         check();
-        return delegate.containsAll(c);
+        return getDelegate().containsAll(c);
     }
 
     public boolean addAll(Collection<? extends E> c) {
         check();
-        return delegate.addAll(c);
+        return getDelegate().addAll(c);
     }
 
     public boolean addAll(int index, Collection<? extends E> c) {
         check();
-        return delegate.addAll(index, c);
+        return getDelegate().addAll(index, c);
     }
 
     public boolean removeAll(Collection<?> c) {
         check();
-        return delegate.removeAll(c);
+        return getDelegate().removeAll(c);
     }
 
     public boolean retainAll(Collection<?> c) {
         check();
-        return delegate.retainAll(c);
+        return getDelegate().retainAll(c);
     }
 
     public void clear() {
         check();
-        delegate.clear();
+        getDelegate().clear();
     }
 
     public E get(int index) {
         check();
-        return delegate.get(index);
+        return getDelegate().get(index);
     }
 
     public E set(int index, E element) {
         check();
-        return delegate.set(index, element);
+        return getDelegate().set(index, element);
     }
 
     public void add(int index, E element) {
         check();
-        delegate.add(index, element);
+        getDelegate().add(index, element);
     }
 
     public E remove(int index) {
         check();
-        return delegate.remove(index);
+        return getDelegate().remove(index);
     }
 
     public int indexOf(Object o) {
         check();
-        return delegate.indexOf(o);
+        return getDelegate().indexOf(o);
     }
 
     public int lastIndexOf(Object o) {
         check();
-        return delegate.lastIndexOf(o);
+        return getDelegate().lastIndexOf(o);
     }
 
     public ListIterator<E> listIterator() {
-        ListIterator<E> iterator = delegate.listIterator();
-        return new LazyListIterator<E>(iterator, query, inTx);
+        return new LazyListIterator<E>(this);
     }
 
     public ListIterator<E> listIterator(int index) {
-        ListIterator<E> iterator = delegate.listIterator(index);
-        return new LazyListIterator<E>(iterator, query, inTx);
+        return new LazyListIterator<E>(this, index);
     }
 
     public List<E> subList(int fromIndex, int toIndex) {
-        List<E> list = delegate.subList(fromIndex, toIndex);
-        return new LazyList<E>(list, query, inTx);
+        List<E> list = getDelegate().subList(fromIndex, toIndex);
+        return new LazyList<E>(holder, fetchOptions, list);
     }
 }

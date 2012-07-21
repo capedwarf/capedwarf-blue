@@ -39,7 +39,7 @@ import com.google.appengine.api.datastore.QueryResultList;
 class QueryResultListImpl<E> extends ArrayList<E> implements QueryResultList<E> {
     private final Cursor cursor;
 
-    public QueryResultListImpl(Collection<? extends E> c, Cursor cursor) {
+    public QueryResultListImpl(Collection<E> c, Cursor cursor) {
         super(c);
         this.cursor = cursor;
     }

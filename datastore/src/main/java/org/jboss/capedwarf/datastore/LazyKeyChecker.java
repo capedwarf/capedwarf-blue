@@ -20,56 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore;
 
-import java.util.ListIterator;
+import javax.transaction.Status;
+
+import com.google.appengine.api.datastore.Key;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class LazyListIterator<E> extends LazyIterator<E> implements ListIterator<E> {
-    private final int index;
+public abstract class LazyKeyChecker {
+    protected final Key ancestor;
+    protected final boolean inTx;
 
-    public LazyListIterator(LazyList<E> lazyList) {
-        this(lazyList, 0);
+    protected LazyKeyChecker(Key ancestor, boolean inTx) {
+        this.ancestor = ancestor;
+        this.inTx = inTx;
+        register();
     }
 
-    public LazyListIterator(LazyList<E> lazyList, int index) {
-        super(lazyList);
-        this.index = index;
+    protected void register() {
+        if (inTx) {
+            JBossDatastoreService.registerKey(ancestor);
+        }
     }
 
-    protected ListIterator<E> getDelegate() {
-        return lazyList.getDelegate().listIterator(index);
-    }
+    protected void check() {
+        if (inTx) {
+            if (JBossTransaction.getTxStatus() != Status.STATUS_ACTIVE) {
+                throw new IllegalStateException("Transaction with which this operation is associated is not active.");
+            }
 
-    public boolean hasPrevious() {
-        check();
-        return getDelegate().hasPrevious();
-    }
-
-    public E previous() {
-        check();
-        return getDelegate().previous();
-    }
-
-    public int nextIndex() {
-        check();
-        return getDelegate().nextIndex();
-    }
-
-    public int previousIndex() {
-        check();
-        return getDelegate().previousIndex();
-    }
-
-    public void set(E e) {
-        check();
-        getDelegate().set(e);
-    }
-
-    public void add(E e) {
-        check();
-        getDelegate().add(e);
+            JBossDatastoreService.checkKeys();
+        }
     }
 }

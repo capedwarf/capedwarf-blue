@@ -22,24 +22,19 @@
 
 package org.jboss.capedwarf.datastore.query;
 
-import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultIterator;
-import org.jboss.capedwarf.datastore.LazyChecker;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class LazyQueryResultIterable<E> extends LazyChecker implements QueryResultIterable<E> {
-    private final QueryResultIterable<E> delegate;
-
-    public LazyQueryResultIterable(QueryResultIterable<E> iterator, Query query, boolean inTx) {
-        super(query, inTx);
-        this.delegate = iterator;
+    public LazyQueryResultIterable(QueryHolder holder, FetchOptions fetchOptions) {
+        super(holder, fetchOptions);
     }
 
     public QueryResultIterator<E> iterator() {
-        QueryResultIterator<E> iterator = delegate.iterator();
-        return new LazyQueryResultIterator<E>(iterator, query, inTx);
+        return new LazyQueryResultIterator<E>(holder, fetchOptions);
     }
 }

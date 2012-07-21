@@ -22,54 +22,14 @@
 
 package org.jboss.capedwarf.datastore.query;
 
-import java.util.ListIterator;
+import com.google.appengine.api.datastore.Query;
+import org.infinispan.query.CacheQuery;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class LazyListIterator<E> extends LazyIterator<E> implements ListIterator<E> {
-    private final int index;
-
-    public LazyListIterator(LazyList<E> lazyList) {
-        this(lazyList, 0);
-    }
-
-    public LazyListIterator(LazyList<E> lazyList, int index) {
-        super(lazyList);
-        this.index = index;
-    }
-
-    protected ListIterator<E> getDelegate() {
-        return lazyList.getDelegate().listIterator(index);
-    }
-
-    public boolean hasPrevious() {
-        check();
-        return getDelegate().hasPrevious();
-    }
-
-    public E previous() {
-        check();
-        return getDelegate().previous();
-    }
-
-    public int nextIndex() {
-        check();
-        return getDelegate().nextIndex();
-    }
-
-    public int previousIndex() {
-        check();
-        return getDelegate().previousIndex();
-    }
-
-    public void set(E e) {
-        check();
-        getDelegate().set(e);
-    }
-
-    public void add(E e) {
-        check();
-        getDelegate().add(e);
-    }
+public abstract class QueryHolder {
+    abstract Query getQuery();
+    abstract CacheQuery getCacheQuery();
+    abstract boolean isInTx();
 }

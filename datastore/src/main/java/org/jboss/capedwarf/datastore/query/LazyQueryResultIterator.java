@@ -22,47 +22,70 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.appengine.api.datastore.Cursor;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Index;
-import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.QueryResultIterator;
-import org.jboss.capedwarf.datastore.LazyChecker;
+import org.infinispan.query.CacheQuery;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class LazyQueryResultIterator<E> extends LazyChecker implements QueryResultIterator<E> {
-    private final QueryResultIterator<E> delegate;
+    private volatile QueryResultIterator<E> delegate;
 
-    public LazyQueryResultIterator(QueryResultIterator<E> iterator, Query query, boolean inTx) {
-        super(query, inTx);
-        this.delegate = iterator;
+    public LazyQueryResultIterator(QueryHolder holder, FetchOptions fetchOptions) {
+        super(holder, fetchOptions);
+    }
+
+    protected QueryResultIterator<E> getDelegate() {
+        if (delegate == null) {
+            synchronized (this) {
+                if (delegate == null) {
+                    apply();
+                    //noinspection unchecked
+                    delegate = new QueryResultIteratorImpl<E>(createQueryIterator());
+                }
+            }
+        }
+        return delegate;
+    }
+
+    private Iterator createQueryIterator() {
+        final CacheQuery cacheQuery = holder.getCacheQuery();
+        final Integer chunkSize = fetchOptions.getChunkSize();
+        if (chunkSize == null) {
+            return cacheQuery.iterator();
+        } else {
+            return cacheQuery.iterator(chunkSize);
+        }
     }
 
     public List<Index> getIndexList() {
         check();
-        return delegate.getIndexList();
+        return getDelegate().getIndexList();
     }
 
     public Cursor getCursor() {
         check();
-        return delegate.getCursor();
+        return getDelegate().getCursor();
     }
 
     public boolean hasNext() {
         check();
-        return delegate.hasNext();
+        return getDelegate().hasNext();
     }
 
     public E next() {
         check();
-        return delegate.next();
+        return getDelegate().next();
     }
 
     public void remove() {
         check();
-        delegate.remove();
+        getDelegate().remove();
     }
 }

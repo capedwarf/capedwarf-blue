@@ -3,7 +3,6 @@ package org.jboss.capedwarf.datastore.query;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -21,8 +20,7 @@ import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaul
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class PreparedQueryImpl implements PreparedQuery {
-
+public class PreparedQueryImpl extends QueryHolder implements PreparedQuery {
     private final Query gaeQuery;
     private final CacheQuery cacheQuery;
     private final boolean inTx;
@@ -33,16 +31,25 @@ public class PreparedQueryImpl implements PreparedQuery {
         this.inTx = inTx;
     }
 
+    Query getQuery() {
+        return gaeQuery;
+    }
+
+    CacheQuery getCacheQuery() {
+        return cacheQuery;
+    }
+
+    boolean isInTx() {
+        return inTx;
+    }
+
     public List<Entity> asList(FetchOptions fetchOptions) {
         return asQueryResultList(fetchOptions);
     }
 
     @SuppressWarnings("unchecked")
     public QueryResultList<Entity> asQueryResultList(FetchOptions fetchOptions) {
-        apply(fetchOptions);
-        List<?> objects = cacheQuery.list();
-        QueryResultList<Entity> list = new QueryResultListImpl<Entity>((List<Entity>) objects, JBossCursorHelper.createListCursor(fetchOptions));
-        return new LazyQueryResultList<Entity>(list, gaeQuery, inTx);
+        return new LazyQueryResultList<Entity>(this, fetchOptions);
     }
 
     public Iterable<Entity> asIterable() {
@@ -58,8 +65,7 @@ public class PreparedQueryImpl implements PreparedQuery {
     }
 
     public QueryResultIterable<Entity> asQueryResultIterable(FetchOptions fetchOptions) {
-        QueryResultIterable<Entity> iterable = new QueryResultIterableImpl<Entity>(asQueryResultIterator(fetchOptions));
-        return new LazyQueryResultIterable<Entity>(iterable, gaeQuery, inTx);
+        return new LazyQueryResultIterable<Entity>(this, fetchOptions);
     }
 
     public Iterator<Entity> asIterator() {
@@ -76,8 +82,7 @@ public class PreparedQueryImpl implements PreparedQuery {
 
     @SuppressWarnings("unchecked")
     public QueryResultIterator<Entity> asQueryResultIterator(FetchOptions fetchOptions) {
-        QueryResultIterator<Entity> iterator = new QueryResultIteratorImpl<Entity>(createQueryIterator(fetchOptions));
-        return new LazyQueryResultIterator<Entity>(iterator, gaeQuery, inTx);
+        return new LazyQueryResultIterator<Entity>(this, fetchOptions);
     }
 
     public Entity asSingleEntity() throws TooManyResultsException {
@@ -94,37 +99,18 @@ public class PreparedQueryImpl implements PreparedQuery {
     }
 
     public int countEntities(FetchOptions fetchOptions) {
-        apply(fetchOptions);
-        return cacheQuery.getResultSize();
+        return new CountEntities(this, fetchOptions).count();
     }
 
-    private void apply(FetchOptions fetchOptions) {
-        final Integer offset = fetchOptions.getOffset();
-        if (offset != null) {
-            cacheQuery.firstResult(offset);
+    private static class CountEntities extends LazyChecker {
+        private CountEntities(QueryHolder holder, FetchOptions fetchOptions) {
+            super(holder, fetchOptions);
         }
-        final Integer limit = fetchOptions.getLimit();
-        if (limit != null) {
-            cacheQuery.maxResults(limit);
-        }
-        final Cursor start = fetchOptions.getStartCursor();
-        if (start != null) {
-            JBossCursorHelper.applyStartCursor(start, cacheQuery);
-        }
-        final Cursor end = fetchOptions.getEndCursor();
-        if (end != null) {
-            JBossCursorHelper.applyEndCursor(end, cacheQuery, start);
-        }
-    }
 
-    private Iterator createQueryIterator(FetchOptions fetchOptions) {
-        apply(fetchOptions);
-
-        Integer chunkSize = fetchOptions.getChunkSize();
-        if (chunkSize == null) {
-            return cacheQuery.iterator();
-        } else {
-            return cacheQuery.iterator(chunkSize);
+        private int count() {
+            check();
+            apply();
+            return holder.getCacheQuery().getResultSize();
         }
     }
 }
