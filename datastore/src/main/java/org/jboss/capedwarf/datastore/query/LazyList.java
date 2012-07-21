@@ -40,7 +40,7 @@ class LazyList<E> extends LazyChecker implements List<E> {
         super(holder, fetchOptions);
     }
 
-    LazyList(QueryHolder holder, FetchOptions fetchOptions, List<E> delegate) {
+    private LazyList(QueryHolder holder, FetchOptions fetchOptions, List<E> delegate) {
         super(holder, fetchOptions);
         this.delegate = delegate;
     }

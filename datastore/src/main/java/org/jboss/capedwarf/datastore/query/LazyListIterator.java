@@ -29,6 +29,7 @@ import java.util.ListIterator;
  */
 class LazyListIterator<E> extends LazyIterator<E> implements ListIterator<E> {
     private final int index;
+    private ListIterator<E> delegate;
 
     public LazyListIterator(LazyList<E> lazyList) {
         this(lazyList, 0);
@@ -40,7 +41,14 @@ class LazyListIterator<E> extends LazyIterator<E> implements ListIterator<E> {
     }
 
     protected ListIterator<E> getDelegate() {
-        return lazyList.getDelegate().listIterator(index);
+        if (delegate == null) {
+            synchronized (this) {
+                if (delegate == null) {
+                    delegate = lazyList.getDelegate().listIterator(index);
+                }
+            }
+        }
+        return delegate;
     }
 
     public boolean hasPrevious() {

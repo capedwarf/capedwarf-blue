@@ -24,19 +24,25 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
-import com.google.appengine.api.datastore.*;
+import java.util.Iterator;
+import java.util.List;
+
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.QueryResultIterable;
+import com.google.appengine.api.datastore.QueryResultIterator;
+import com.google.appengine.api.datastore.QueryResultList;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests all the PreparedQuery methods.
@@ -116,7 +122,8 @@ public class PreparedQueryTestCase extends QueryTestCase {
     public void testAsList() throws Exception {
         List<Entity> list = preparedQuery.asList(withDefaults());
         assertNotNull(list);
-        assertEquals(Collections.singletonList(john), list);
+        assertEquals(1, list.size());
+        assertEquals(john, list.get(0));
     }
 
     @Test
@@ -157,7 +164,8 @@ public class PreparedQueryTestCase extends QueryTestCase {
     public void testAsQueryResultList() throws Exception {
         QueryResultList<Entity> list = preparedQuery.asQueryResultList(withDefaults());
         assertNotNull(list);
-        assertEquals(Collections.singletonList(john), list);
+        assertEquals(1, list.size());
+        assertEquals(john, list.get(0));
     }
 
 

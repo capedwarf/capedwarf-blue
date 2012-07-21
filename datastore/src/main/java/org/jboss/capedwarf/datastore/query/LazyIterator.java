@@ -29,6 +29,7 @@ import java.util.Iterator;
  */
 class LazyIterator<E> extends LazyChecker implements Iterator<E> {
     protected final LazyList<E> lazyList;
+    private volatile Iterator<E> delegate;
 
     public LazyIterator(LazyList<E> lazyList) {
         super(lazyList.holder, lazyList.fetchOptions);
@@ -36,7 +37,14 @@ class LazyIterator<E> extends LazyChecker implements Iterator<E> {
     }
 
     protected Iterator<E> getDelegate() {
-        return lazyList.getDelegate().iterator();
+        if (delegate == null) {
+            synchronized (this) {
+                if (delegate == null) {
+                    delegate = lazyList.getDelegate().iterator();
+                }
+            }
+        }
+        return delegate;
     }
 
     public boolean hasNext() {
