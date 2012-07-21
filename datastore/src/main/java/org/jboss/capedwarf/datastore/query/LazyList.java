@@ -160,4 +160,19 @@ class LazyList<E> extends LazyChecker implements List<E> {
         List<E> list = getDelegate().subList(fromIndex, toIndex);
         return new LazyList<E>(holder, fetchOptions, list);
     }
+
+    @Override
+    public int hashCode() {
+        return getDelegate().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return getDelegate().equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return getDelegate().toString();
+    }
 }
