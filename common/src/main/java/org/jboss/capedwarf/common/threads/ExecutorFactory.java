@@ -29,18 +29,32 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ExecutorFactory {
+    private static String[] defaultJndiNames = {"java:jboss/threads/executor/capedwarf"};
+    private static volatile Executor executor;
 
-    private static Executor executor;
-
-    // TODO -- try getting env (JBossAS7) Executor instance
+    /**
+     * Get Executor instance.
+     * First lookup JNDI, then use default if none found.
+     *
+     * @return the Executor instance
+     */
     public static Executor getInstance() {
-        if (executor == null)
-            executor = new ThreadPoolExecutor(1, 2, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(2));
+        if (executor == null) {
+            synchronized (ExecutorFactory.class) {
+                if (executor == null) {
+                    final Executor tmp = doJndiLookup();
+                    executor = (tmp != null) ? tmp : createDefaultExecutor();
+                }
+            }
+        }
         return executor;
     }
 
@@ -55,5 +69,18 @@ public class ExecutorFactory {
         final Executor executor = getInstance();
         executor.execute(task);
         return task;
+    }
+
+    protected static Executor doJndiLookup() {
+        try {
+            return JndiLookupUtils.lookup("jndi.executor", Executor.class, defaultJndiNames);
+        } catch (Throwable t) {
+            Logger.getLogger(Executor.class.getName()).fine("No Executor found in JNDI: " + t.getMessage());
+            return null;
+        }
+    }
+
+    protected static Executor createDefaultExecutor() {
+        return new ThreadPoolExecutor(1, 3, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3));
     }
 }
