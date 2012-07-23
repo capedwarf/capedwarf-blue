@@ -40,13 +40,14 @@ class LazyQueryResultList<E> extends LazyList<E> implements QueryResultList<E> {
         super(holder, fetchOptions);
     }
 
+    @SuppressWarnings("unchecked")
     protected QueryResultList<E> getDelegate() {
         if (delegate == null) {
             synchronized (this) {
                 if (delegate == null) {
                     apply();
                     List objects = holder.getCacheQuery().list();
-                    //noinspection unchecked
+                    objects = new QueryResultProcessor().process(holder.getQuery(), objects);
                     delegate = new QueryResultListImpl<E>(objects, JBossCursorHelper.createListCursor(fetchOptions));
                 }
             }
