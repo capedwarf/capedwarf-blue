@@ -43,7 +43,6 @@ public class QueryFilteringByStringPropertyTypeTestCase extends QueryTestCase {
         assertThat(whenFilteringBy(IN, Arrays.asList("Kate", "Ashley")), queryReturns(kate, ashley));
     }
 
-    @Ignore("todo")
     @Test
     public void testOrderOfReturnedResultsIsSameAsOrderOfElementsInInStatement() throws Exception {
         Entity a = storeTestEntityWithSingleProperty("a");
