@@ -63,8 +63,8 @@
         <version.javax.jpa2>1.0.0.Final</version.javax.jpa2>
         <version.javax.mail>1.4.4</version.javax.mail>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
-        <version.org.datanucleus.core>3.1.0-m5</version.org.datanucleus.core>
-        <version.org.datanucleus.jpa>3.1.0-m3</version.org.datanucleus.jpa>
+        <version.org.datanucleus.core>3.1.0-release</version.org.datanucleus.core>
+        <version.org.datanucleus.jpa>3.1.0-release</version.org.datanucleus.jpa>
         <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
         <version.org.datanucleus.gae>2.1.0-final</version.org.datanucleus.gae>
         <version.org.datanucleus.jdo>3.0</version.org.datanucleus.jdo>
