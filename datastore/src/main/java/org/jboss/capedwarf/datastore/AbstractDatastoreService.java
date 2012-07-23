@@ -24,6 +24,7 @@ package org.jboss.capedwarf.datastore;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.datastore.BaseDatastoreService;
@@ -33,6 +34,8 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
+import com.google.apphosting.api.ApiProxy;
+import org.hibernate.search.query.engine.spi.TimeoutExceptionFactory;
 import org.infinispan.Cache;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
@@ -66,6 +69,12 @@ public class AbstractDatastoreService implements BaseDatastoreService {
         ClassLoader classLoader = Application.getAppClassloader();
         this.store = createStore().getAdvancedCache().with(classLoader);
         this.searchManager = Search.getSearchManager(store);
+        this.searchManager.setTimeoutExceptionFactory(new TimeoutExceptionFactory() {
+            public RuntimeException createTimeoutException(String message, org.apache.lucene.search.Query query) {
+                return new ApiProxy.ApiDeadlineExceededException("datastore", "RunQuery");
+            }
+        });
+
         this.queryConverter = new QueryConverter(searchManager);
     }
 
@@ -84,6 +93,13 @@ public class AbstractDatastoreService implements BaseDatastoreService {
         javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             CacheQuery cacheQuery = queryConverter.convert(query);
+
+            Double deadlineSeconds = getConfig().getDeadline();
+            if (deadlineSeconds != null) {
+                long deadlineMicroseconds = (long) (deadlineSeconds * 1000000);
+                cacheQuery.timeout(deadlineMicroseconds, TimeUnit.MICROSECONDS);
+            }
+
             return new PreparedQueryImpl(query, cacheQuery, tx != null);
         } finally {
             afterTx(transaction);
@@ -119,6 +135,6 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     public DatastoreServiceConfig getConfig() {
-        return config;
+        return config == null ? DatastoreServiceConfig.Builder.withDefaults() : config;
     }
 }
