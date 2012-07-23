@@ -27,10 +27,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.google.appengine.api.datastore.DatastoreConfig;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceConfig;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -38,9 +34,6 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.datastore.JBossAsyncDatastoreService;
-import org.jboss.capedwarf.datastore.JBossDatastoreService;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,23 +45,6 @@ import static org.junit.Assert.*;
  */
 @RunWith(Arquillian.class)
 public class SmokeTestCase extends AbstractTest {
-
-    @Test
-    public void testFactoryPassesConfigToDatastoreServiceInstance() throws Exception {
-        DatastoreServiceConfig config = DatastoreServiceConfig.Builder.withDefaults();
-        JBossDatastoreService service = (JBossDatastoreService) DatastoreServiceFactory.getDatastoreService(config);
-        assertEquals(config, service.getConfig());
-
-        JBossAsyncDatastoreService asyncService = (JBossAsyncDatastoreService) DatastoreServiceFactory.getAsyncDatastoreService(config);
-        assertEquals(config, asyncService.getConfig());
-    }
-
-    @Test
-    public void testFactorySupportsDeprecatedMethods() throws Exception {
-        DatastoreConfig oldConfig = DatastoreServiceFactory.getDefaultDatastoreConfig();
-        DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService(oldConfig);
-        assertTrue(datastoreService instanceof JBossDatastoreService);
-    }
 
     @Test
     public void putStoresEntity() throws Exception {
