@@ -27,6 +27,7 @@ import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.datastore.BaseDatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -54,8 +55,14 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     protected final Cache<Key, Entity> store;
     protected final SearchManager searchManager;
     private final QueryConverter queryConverter;
+    private DatastoreServiceConfig config;
 
     public AbstractDatastoreService() {
+        this(null);
+    }
+
+    public AbstractDatastoreService(DatastoreServiceConfig config) {
+        this.config = config;
         ClassLoader classLoader = Application.getAppClassloader();
         this.store = createStore().getAdvancedCache().with(classLoader);
         this.searchManager = Search.getSearchManager(store);
@@ -109,5 +116,9 @@ public class AbstractDatastoreService implements BaseDatastoreService {
         if (transaction != null) {
             JBossTransaction.resumeTx(transaction);
         }
+    }
+
+    public DatastoreServiceConfig getConfig() {
+        return config;
     }
 }

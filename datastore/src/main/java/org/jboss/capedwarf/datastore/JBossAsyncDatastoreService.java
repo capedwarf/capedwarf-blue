@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
 import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.Key;
@@ -48,13 +49,18 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     private final DatastoreService datastoreService;
 
     public JBossAsyncDatastoreService() {
+        this(null);
+    }
+
+    public JBossAsyncDatastoreService(DatastoreServiceConfig config) {
+        super(config);
         datastoreService = new JBossDatastoreService();
     }
 
     protected <T> Future<T> wrap(final Callable<T> callable) {
         return ExecutorFactory.wrap(callable);
     }
-    
+
     public Future<Transaction> beginTransaction() {
         return wrap(new Callable<Transaction>() {
             public Transaction call() throws Exception {

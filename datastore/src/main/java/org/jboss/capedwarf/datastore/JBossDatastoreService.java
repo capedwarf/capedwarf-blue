@@ -36,6 +36,7 @@ import javax.transaction.Synchronization;
 
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Index;
@@ -58,6 +59,13 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     private volatile Map<String, Integer> allocationsMap;
 
     private static final String SEQUENCE_POSTFIX = "_SEQUENCE__"; // GAE's SequenceGenerator impl detail
+
+    public JBossDatastoreService() {
+    }
+
+    public JBossDatastoreService(DatastoreServiceConfig config) {
+        super(config);
+    }
 
     protected Map<String, Integer> getAllocationsMap() {
         if (allocationsMap == null) {
