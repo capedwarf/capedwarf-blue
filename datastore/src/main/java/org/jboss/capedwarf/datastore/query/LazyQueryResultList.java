@@ -47,7 +47,7 @@ class LazyQueryResultList<E> extends LazyList<E> implements QueryResultList<E> {
                 if (delegate == null) {
                     apply();
                     List objects = holder.getCacheQuery().list();
-                    objects = new QueryResultProcessor().process(holder.getQuery(), objects);
+                    objects = new QueryResultProcessor(holder.getQuery()).process(objects);
                     delegate = new QueryResultListImpl<E>(objects, JBossCursorHelper.createListCursor(fetchOptions));
                 }
             }

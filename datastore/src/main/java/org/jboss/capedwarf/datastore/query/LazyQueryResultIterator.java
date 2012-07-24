@@ -41,13 +41,15 @@ class LazyQueryResultIterator<E> extends LazyChecker implements QueryResultItera
         super(holder, fetchOptions);
     }
 
+    @SuppressWarnings("unchecked")
     protected QueryResultIterator<E> getDelegate() {
         if (delegate == null) {
             synchronized (this) {
                 if (delegate == null) {
                     apply();
-                    //noinspection unchecked
-                    delegate = new QueryResultIteratorImpl<E>(createQueryIterator());
+                    Iterator iterator = createQueryIterator();
+                    iterator = new QueryResultProcessor(holder.getQuery()).process(iterator);
+                    delegate = new QueryResultIteratorImpl<E>(iterator);
                 }
             }
         }

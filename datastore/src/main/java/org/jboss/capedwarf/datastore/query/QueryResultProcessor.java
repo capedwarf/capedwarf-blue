@@ -25,8 +25,10 @@ package org.jboss.capedwarf.datastore.query;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,13 +37,42 @@ import java.util.List;
  */
 public class QueryResultProcessor {
 
-    public List<Entity> process(Query query, List<Entity> list) {
-        List<Query.FilterPredicate> inPredicates = getInPredicates(query);
-        if (!inPredicates.isEmpty() && query.getSortPredicates().isEmpty()) {
-            return sort(list, inPredicates);
+    private final Query query;
+    private List<Query.FilterPredicate> inPredicates;
+
+    public QueryResultProcessor(Query query) {
+        this.query = query;
+        this.inPredicates = getInPredicates(query);
+    }
+
+    public List<Entity> process(List<Entity> list) {
+        if (processingNeeded()) {
+            return sort(list);
         } else {
             return list;
         }
+    }
+
+    public Iterator<Entity> process(Iterator<Entity> iterator) {
+        if (processingNeeded()) {
+            List<Entity> list = toList(iterator);
+            return sort(list).iterator();
+        } else {
+            return iterator;
+        }
+    }
+
+    private boolean processingNeeded() {
+        return !inPredicates.isEmpty() && query.getSortPredicates().isEmpty();
+    }
+
+    private List<Entity> toList(Iterator<Entity> iterator) {
+        List<Entity> list = new ArrayList<Entity>();
+        while (iterator.hasNext()) {
+            Entity entity = iterator.next();
+            list.add(entity);
+        }
+        return list;
     }
 
     /*
@@ -60,7 +91,7 @@ public class QueryResultProcessor {
                 a=2 b=bla
 
      */
-    private List<Entity> sort(List<Entity> list, final List<Query.FilterPredicate> inPredicates) {
+    private List<Entity> sort(List<Entity> list) {
         Collections.sort(list, new Comparator<Entity>() {
             public int compare(Entity e1, Entity e2) {
                 for (Query.FilterPredicate inPredicate : inPredicates) {
