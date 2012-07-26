@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.datanucleus.metadata.MetaDataScanner;
 import org.datanucleus.metadata.PersistenceUnitMetaData;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
@@ -38,7 +37,14 @@ import org.jboss.vfs.VisitorAttributes;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JBossMetaDataScanner implements MetaDataScanner {
+public class JBossMetaDataScanner extends AbstractMetaDataScanner {
+    public JBossMetaDataScanner() {
+    }
+
+    public JBossMetaDataScanner(String appId) {
+        super(appId);
+    }
+
     public Set<String> scanForPersistableClasses(PersistenceUnitMetaData pumd) {
         try {
             final Set<String> classes = new HashSet<String>();

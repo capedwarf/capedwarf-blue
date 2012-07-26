@@ -30,6 +30,13 @@ import org.jboss.vfs.VirtualFile;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class TestJBossMetaDataScanner extends JBossMetaDataScanner {
+    public TestJBossMetaDataScanner() {
+    }
+
+    public TestJBossMetaDataScanner(String appId) {
+        super(appId);
+    }
+
     @Override
     protected boolean accept(VirtualFile file) {
         return super.accept(file) && file.getName().contains("Test") == false;

@@ -22,46 +22,28 @@
 
 package org.jboss.capedwarf.datastore.datancleus;
 
-import java.util.Set;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
-import org.datanucleus.metadata.PersistenceUnitMetaData;
+import org.datanucleus.metadata.MetaDataScanner;
+import org.jboss.capedwarf.common.app.Application;
 
 /**
- * Uses prepared Jandex based JNDI metadata scanner.
+ * Abstract metadata scanner.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JndiMetaDataScanner extends AbstractMetaDataScanner {
-    private Set<String> entities;
+public abstract class AbstractMetaDataScanner implements MetaDataScanner {
+    private String appId;
 
-    public JndiMetaDataScanner() {
+    protected AbstractMetaDataScanner() {
     }
 
-    public JndiMetaDataScanner(String appId) {
-        super(appId);
+    public AbstractMetaDataScanner(String appId) {
+        this.appId = appId;
     }
 
-    public JndiMetaDataScanner(Set<String> entities) {
-        this.entities = entities;
-    }
-
-    public synchronized Set<String> scanForPersistableClasses(PersistenceUnitMetaData pumd) {
-        if (entities == null) {
-            try {
-                final Context context = new InitialContext();
-                try {
-                    //noinspection unchecked
-                    entities = (Set<String>) context.lookup("java:jboss/capedwarf/persistence/entities/" + getAppId());
-                } finally {
-                    context.close();
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+    public synchronized String getAppId() {
+        if (appId == null) {
+            appId = Application.getAppId();
         }
-        return entities;
+        return appId;
     }
 }
