@@ -73,8 +73,10 @@
         <version.net.jcip>1.0</version.net.jcip>
         <version.junit>4.10</version.junit>
         <version.arquillian>1.0.0.Final</version.arquillian>
+        <version.arquillian.gae>1.0.0.Alpha2</version.arquillian.gae>
         <version.jboss.as7>7.2.0.Alpha1-SNAPSHOT</version.jboss.as7>
-        <version.jboss.maven.transformer>1.0.0.Beta2</version.jboss.maven.transformer>
+        <version.jboss.maven.transformer>1.0.0.Beta3</version.jboss.maven.transformer>
+        <version.jboss.maven.arquillian>1.0.0.Alpha1</version.jboss.maven.arquillian>
         <version.metainf>1.1</version.metainf>
         <version.org.apache.httpcomponents>4.1.1</version.org.apache.httpcomponents>
     </properties>
@@ -517,7 +519,6 @@
                 <groupId>org.jboss.arquillian.junit</groupId>
                 <artifactId>arquillian-junit-container</artifactId>
                 <version>${version.arquillian}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>
@@ -525,6 +526,19 @@
                 <artifactId>jboss-as-arquillian-container-remote</artifactId>
                 <version>${version.jboss.as7}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-gae-local</artifactId>
+                <version>${version.arquillian.gae}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.maven.plugins</groupId>
+                <artifactId>arquillian-transformer</artifactId>
+                <version>${version.jboss.maven.arquillian}</version>
             </dependency>
 
             <dependency>

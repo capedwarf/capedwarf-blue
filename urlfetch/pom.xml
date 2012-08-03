@@ -38,18 +38,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-container-remote</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.arquillian.protocol</groupId>
             <artifactId>arquillian-protocol-servlet</artifactId>
             <scope>test</scope>
@@ -62,5 +50,77 @@
         </dependency>
 
     </dependencies>
+
+    <profiles>
+        <!-- default -->
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>default</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.arquillian.junit</groupId>
+                    <artifactId>arquillian-junit-container</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-arquillian-container-remote</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- GAE -->
+        <profile>
+            <id>gae</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>gae</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                       <groupId>org.jboss.maven.plugins</groupId>
+                       <artifactId>maven-transformer-plugin</artifactId>
+                       <version>${version.jboss.maven.transformer}</version>
+                       <executions>
+                           <execution>
+                               <phase>process-test-classes</phase>
+                               <goals>
+                                   <goal>bytecode</goal>
+                               </goals>
+                           </execution>
+                       </executions>
+                       <configuration>
+                           <filterPattern>(.+)TestCase.class$</filterPattern>
+                           <transformerClassName>org.jboss.maven.arquillian.transformer.CapeDwarfJUnitTransformer</transformerClassName>
+                           <output>test</output>
+                       </configuration>
+                   </plugin>
+                </plugins>
+            </build>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.arquillian.junit</groupId>
+                    <artifactId>arquillian-junit-container</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.maven.plugins</groupId>
+                    <artifactId>arquillian-transformer</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>arquillian-gae-local</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
 </project>
