@@ -22,11 +22,9 @@
 
 package org.jboss.test.capedwarf.users.test;
 
-import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.users.JBossUserService;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -34,7 +32,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -51,13 +48,7 @@ public class UsersTestCase {
     }
 
     @Test
-    public void testFactoryReturnsJBossImpl() throws Exception {
-        UserService service = UserServiceFactory.getUserService();
-        assertEquals(JBossUserService.class, service.getClass());
-    }
-
-    @Test
-    public void test() throws Exception {
+    public void testSimple() throws Exception {
         String destinationURL = UserServiceFactory.getUserService().createLoginURL("destinationURL");
         assertNotNull(destinationURL);
     }

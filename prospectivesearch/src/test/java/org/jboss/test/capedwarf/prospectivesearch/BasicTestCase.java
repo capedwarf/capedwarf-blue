@@ -29,12 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.google.appengine.api.prospectivesearch.FieldType;
-import com.google.appengine.api.prospectivesearch.ProspectiveSearchService;
-import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
 import com.google.appengine.api.prospectivesearch.Subscription;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.prospectivesearch.CapedwarfProspectiveSearchService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -58,12 +55,6 @@ public class BasicTestCase extends AbstractTest {
             .addClass(AbstractTest.class)
             .setWebXML(new StringAsset("<web/>"))
             .addAsWebInfResource("appengine-web.xml");
-    }
-
-    @Test
-    public void testFactoryReturnsCapedwarfImplementation() {
-        ProspectiveSearchService service = ProspectiveSearchServiceFactory.getProspectiveSearchService();
-        assertEquals(CapedwarfProspectiveSearchService.class, service.getClass());
     }
 
     @Test

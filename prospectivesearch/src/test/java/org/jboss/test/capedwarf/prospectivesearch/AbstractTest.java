@@ -22,6 +22,7 @@
 
 package org.jboss.test.capedwarf.prospectivesearch;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -32,7 +33,6 @@ import com.google.appengine.api.prospectivesearch.FieldType;
 import com.google.appengine.api.prospectivesearch.ProspectiveSearchService;
 import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
 import com.google.appengine.api.prospectivesearch.Subscription;
-import org.jboss.capedwarf.prospectivesearch.CapedwarfProspectiveSearchService;
 import org.junit.After;
 import org.junit.Before;
 
@@ -50,7 +50,19 @@ public abstract class AbstractTest {
 
     @After
     public void tearDown() throws Exception {
-        ((CapedwarfProspectiveSearchService)service).clear();
+        clear();
+    }
+
+    protected void clear() {
+        final Class<? extends ProspectiveSearchService> clazz = service.getClass();
+        if (clazz.getName().contains("CapedwarfProspectiveSearchService")) {
+            try {
+                Method clear = clazz.getMethod("clear");
+                clear.invoke(service);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     protected void sortBySubId(List<Subscription> subscriptions) {

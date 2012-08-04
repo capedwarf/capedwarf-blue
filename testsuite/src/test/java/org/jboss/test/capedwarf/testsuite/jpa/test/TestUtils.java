@@ -36,6 +36,7 @@ public class TestUtils {
         war.addAsLibraries(getResolver().artifact("com.google.appengine.orm:datanucleus-appengine").resolveAsFiles());
         war.addAsLibraries(getResolver().artifact("javax.jdo:jdo-api").resolveAsFiles());
         war.addAsLibraries(getResolver().artifact("org.apache.geronimo.specs:geronimo-jta_1.1_spec").resolveAsFiles());
+        war.addAsLibraries(getResolver().artifact("org.hibernate.javax.persistence:hibernate-jpa-2.0-api").resolveAsFiles());
     }
 
     public static void addPersistenceXml(WebArchive war, String resource) {

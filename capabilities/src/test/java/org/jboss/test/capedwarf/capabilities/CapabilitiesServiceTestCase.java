@@ -24,6 +24,9 @@
 
 package org.jboss.test.capedwarf.capabilities;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.google.appengine.api.capabilities.CapabilitiesService;
 import com.google.appengine.api.capabilities.CapabilitiesServiceFactory;
 import com.google.appengine.api.capabilities.Capability;
@@ -31,7 +34,6 @@ import com.google.appengine.api.capabilities.CapabilityState;
 import com.google.appengine.api.capabilities.CapabilityStatus;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.capabilities.JBossCapabilitiesService;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -39,11 +41,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -64,16 +62,8 @@ public class CapabilitiesServiceTestCase {
     }
 
     @Test
-    public void testFactoryReturnsJBossImpl() {
-        CapabilitiesService service = CapabilitiesServiceFactory.getCapabilitiesService();
-        assertNotNull(service);
-        assertEquals(JBossCapabilitiesService.class, service.getClass());
-    }
-
-    @Test
     public void testServiceReturnsEnabledStatusAndNullScheduledDateForAllKnownCapabilities() {
         CapabilitiesService service = CapabilitiesServiceFactory.getCapabilitiesService();
-
         for (Capability capability : KNOWN_CAPABILITIES) {
             CapabilityState status = service.getStatus(capability);
             assertEquals(capability, status.getCapability());

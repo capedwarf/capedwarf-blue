@@ -38,15 +38,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class SearchTestCase extends AbstractTestCase {
+public class SearchTestCase extends AbstractTest {
 
 
     @Test

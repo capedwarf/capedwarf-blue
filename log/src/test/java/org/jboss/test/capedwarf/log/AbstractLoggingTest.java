@@ -22,14 +22,15 @@
 
 package org.jboss.test.capedwarf.log;
 
+import java.lang.reflect.Method;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogQuery;
+import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.log.RequestLogs;
-import org.jboss.capedwarf.log.JBossLogService;
 import org.junit.Before;
 
 import static org.junit.Assert.assertFalse;
@@ -43,7 +44,19 @@ public class AbstractLoggingTest {
 
     @Before
     public void clearLog() {
-        ((JBossLogService) LogServiceFactory.getLogService()).clearLog();
+        clear(LogServiceFactory.getLogService());
+    }
+
+    protected void clear(LogService service) {
+        final Class<? extends LogService> clazz = service.getClass();
+        if (clazz.getName().contains("JBossLogService")) {
+            try {
+                Method clearLog = clazz.getMethod("clearLog");
+                clearLog.invoke(service);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     protected void flush(Logger log) {

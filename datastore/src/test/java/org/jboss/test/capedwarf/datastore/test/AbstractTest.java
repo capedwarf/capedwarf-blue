@@ -22,6 +22,13 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -30,19 +37,12 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.capedwarf.datastore.JBossDatastoreService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static org.junit.Assert.fail;
@@ -70,7 +70,15 @@ public class AbstractTest {
 
     @After
     public void tearDown() {
-        ((JBossDatastoreService) service).clearCache();
+        final Class<? extends DatastoreService> clazz = service.getClass();
+        if (clazz.getName().contains("JBossDatastoreService")) {
+            try {
+                Method clearCache = clazz.getMethod("clearCache");
+                clearCache.invoke(service);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     protected Collection<Key> extractKeys(Collection<Entity> entities) {

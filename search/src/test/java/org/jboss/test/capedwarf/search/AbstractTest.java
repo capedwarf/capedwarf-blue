@@ -22,6 +22,11 @@
 
 package org.jboss.test.capedwarf.search;
 
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
@@ -32,47 +37,52 @@ import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.search.CapedwarfSearchService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
-import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public abstract class AbstractTestCase {
+public abstract class AbstractTest {
     protected SearchService service;
 
     @Deployment
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
-            .addClass(AbstractTestCase.class)
+            .addClass(AbstractTest.class)
             .setWebXML(new StringAsset("<web/>"))
             .addAsWebInfResource("appengine-web.xml");
+    }
+
+    protected void clear() {
+        final Class<? extends SearchService> clazz = service.getClass();
+        if (clazz.getName().contains("CapedwarfSearchService")) {
+            try {
+                Method clear = clazz.getMethod("clear");
+                clear.invoke(service);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @Before
     public void setUp() throws Exception {
         service = SearchServiceFactory.getSearchService();
-        ((CapedwarfSearchService) service).clear();
+        clear();
     }
 
     @After
     public void tearDown() throws Exception {
-        ((CapedwarfSearchService) service).clear();
+        clear();
     }
 
 

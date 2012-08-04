@@ -22,6 +22,13 @@
 
 package org.jboss.test.capedwarf.search;
 
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
@@ -30,38 +37,21 @@ import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.ListRequest;
 import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
-import org.jboss.capedwarf.search.CapedwarfSearchService;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
 
 import static com.google.appengine.api.search.Field.FieldType.TEXT;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class BasicTestCase extends AbstractTestCase {
-
-    @Test
-    public void testGetSearchService() {
-        assertTrue(service instanceof CapedwarfSearchService);
-        // TODO: check namespace
-    }
+public class BasicTestCase extends AbstractTest {
 
     @Test
     public void testGetSearchServiceWithNamespace() {
         SearchService service = SearchServiceFactory.getSearchService("foo");
-        assertTrue(service instanceof CapedwarfSearchService);
         assertEquals("foo", service.getNamespace());
     }
 

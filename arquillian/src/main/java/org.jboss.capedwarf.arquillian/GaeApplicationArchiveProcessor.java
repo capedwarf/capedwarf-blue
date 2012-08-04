@@ -34,13 +34,14 @@ import org.jboss.shrinkwrap.resolver.api.maven.MavenDependencyResolver;
  */
 public class GaeApplicationArchiveProcessor implements ApplicationArchiveProcessor {
     public void process(Archive<?> archive, TestClass testClass) {
-        if (testClass.getName().contains(".testsuite."))
+        final String className = testClass.getName();
+        if (className.contains(".testsuite.") && className.contains("JPA"))
             return; // ignoring testsuite test classes, they already contain GAE API jar
 
         if (archive instanceof WebArchive) {
             WebArchive war = (WebArchive) archive;
             MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class).loadMetadataFromPom("pom.xml");
-            war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-1.0-sdk").resolveAsFiles());
+            war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-1.0-sdk:1.7.0").resolveAsFiles());
         }
     }
 }

@@ -22,14 +22,15 @@
 
 package org.jboss.test.capedwarf.images;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import com.google.appengine.api.images.Image;
-import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.common.io.IOUtils;
-import org.jboss.capedwarf.images.JBossImagesService;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -37,10 +38,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -60,12 +57,6 @@ public class IntegrationTestCase {
     }
 
     @Test
-    public void factoryReturnsJBossImplementation() {
-        ImagesService imagesService = ImagesServiceFactory.getImagesService();
-        assertEquals(JBossImagesService.class, imagesService.getClass());
-    }
-
-    @Test
     public void testMakeImage() {
         Image image = loadTestImage();
         assertNotNull(image);
@@ -74,7 +65,7 @@ public class IntegrationTestCase {
     private Image loadTestImage() {
         try {
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream(TEST_IMAGE_RESOURCE);
-            byte[] byteArray = IOUtils.toBytes(inputStream, true);
+            byte[] byteArray = toBytes(inputStream, 0, Long.MAX_VALUE, true);
             return ImagesServiceFactory.makeImage(byteArray);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -91,5 +82,25 @@ public class IntegrationTestCase {
         assertNotNull(flippedImage);
     }
 
+    protected static byte[] toBytes(InputStream is, long start, long end, boolean closeStream) throws IOException {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            int b;
+            while ((b = is.read()) != -1 && end > 0) {
+                if (start > 0)
+                    continue;
 
+                baos.write(b);
+                start--;
+                end--;
+            }
+            return baos.toByteArray();
+        } finally {
+            if (closeStream)
+                try {
+                    is.close();
+                } catch (IOException ignored) {
+                }
+        }
+    }
 }

@@ -22,6 +22,13 @@
 
 package org.jboss.test.capedwarf.appidentity;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.security.Signature;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+
 import com.google.appengine.api.appidentity.AppIdentityService;
 import com.google.appengine.api.appidentity.AppIdentityServiceFactory;
 import com.google.appengine.api.appidentity.PublicCertificate;
@@ -37,15 +44,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.ByteArrayInputStream;
-import java.io.StringReader;
-import java.security.Signature;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-
 /**
- *
+ * @author Marko Luksa
  */
 @RunWith(Arquillian.class)
 public class AppIdentityTestCase {
@@ -96,4 +96,5 @@ public class AppIdentityTestCase {
             throw new RuntimeException("Cannot verify signature", e);
         }
     }
+
 }
