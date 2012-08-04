@@ -34,6 +34,9 @@ import org.jboss.shrinkwrap.resolver.api.maven.MavenDependencyResolver;
  */
 public class GaeApplicationArchiveProcessor implements ApplicationArchiveProcessor {
     public void process(Archive<?> archive, TestClass testClass) {
+        if (testClass.getName().contains(".testsuite."))
+            return; // ignoring testsuite test classes, they already contain GAE API jar
+
         if (archive instanceof WebArchive) {
             WebArchive war = (WebArchive) archive;
             MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class).loadMetadataFromPom("pom.xml");
