@@ -18,6 +18,7 @@
     <modules>
         <module>admin</module>
         <module>appidentity</module>
+        <module>arquillian</module>
         <module>bytecode</module>
         <module>common</module>
         <module>blobstore</module>
@@ -73,10 +74,12 @@
         <version.net.jcip>1.0</version.net.jcip>
         <version.junit>4.10</version.junit>
         <version.arquillian>1.0.0.Final</version.arquillian>
+        <version.shrinkwrap>1.0.0</version.shrinkwrap>
         <version.arquillian.gae>1.0.0.Alpha2</version.arquillian.gae>
         <version.jboss.as7>7.2.0.Alpha1-SNAPSHOT</version.jboss.as7>
         <version.jboss.maven.transformer>1.0.0.Beta3</version.jboss.maven.transformer>
         <version.jboss.maven.arquillian>1.0.0.Alpha1</version.jboss.maven.arquillian>
+        <version.shrinkwrap.maven-resolver>1.0.0-beta-5</version.shrinkwrap.maven-resolver>
         <version.metainf>1.1</version.metainf>
         <version.org.apache.httpcomponents>4.1.1</version.org.apache.httpcomponents>
     </properties>
@@ -171,6 +174,12 @@
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-appidentity</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-arquillian</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -506,6 +515,24 @@
                 </exclusions>
             </dependency>
 
+            <dependency>
+                <groupId>org.jboss.shrinkwrap</groupId>
+                <artifactId>shrinkwrap-api</artifactId>
+                <version>${version.shrinkwrap}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-api-maven</artifactId>
+                <version>${version.shrinkwrap.maven-resolver}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+                <version>${version.shrinkwrap.maven-resolver}</version>
+            </dependency>
+
             <!-- Testing -->
 
             <dependency>
@@ -513,6 +540,18 @@
                 <artifactId>junit</artifactId>
                 <version>${version.junit}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.core</groupId>
+                <artifactId>arquillian-core-spi</artifactId>
+                <version>${version.arquillian}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-container-test-spi</artifactId>
+                <version>${version.arquillian}</version>
             </dependency>
 
             <dependency>
