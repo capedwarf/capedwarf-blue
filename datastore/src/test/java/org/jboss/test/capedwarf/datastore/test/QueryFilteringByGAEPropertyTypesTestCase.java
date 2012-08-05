@@ -83,7 +83,7 @@ public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTestCase {
         Entity entity2 = new Entity("foo");
         service.put(entity2);
 
-        Query query = new Query("foo").addFilter(Entity.KEY_RESERVED_PROPERTY, GREATER_THAN, KeyFactory.keyToString(entity1.getKey()));
+        Query query = new Query("foo").addFilter(Entity.KEY_RESERVED_PROPERTY, GREATER_THAN, entity1.getKey());
         List<Entity> list = service.prepare(query).asList(FetchOptions.Builder.withDefaults());
         assertEquals(1, list.size());
         assertEquals(entity2.getKey(), list.get(0).getKey());
