@@ -71,26 +71,6 @@ public class DatastoreMultitenancyTestCase extends AbstractTest {
     }
 
     @Test
-    public void testKeyTransformerCorrectlyHandlesNamespaces() throws Exception {
-        GAEKeyTransformer transformer = new GAEKeyTransformer();
-
-        NamespaceManager.set("one");
-        Key key1 = KeyFactory.createKey("Test", 1);
-        String string = transformer.toString(key1);
-
-        NamespaceManager.set("two");
-        Object transformedKey1 = transformer.fromString(string);
-
-        assertEquals(key1, transformedKey1);
-
-        Key key2 = KeyFactory.createKey("Test", 1);
-        Object transformedKey2 = transformer.fromString(transformer.toString(key2));
-
-        assertEquals(key2, transformedKey2);
-        assertFalse(key1.equals(key2));
-    }
-
-    @Test
     public void testTwoEntitiesWithSameKeyButDifferentNamespaceDontOverwriteEachOther() throws EntityNotFoundException {
         NamespaceManager.set("one");
         Key key1 = KeyFactory.createKey("Test", 1);

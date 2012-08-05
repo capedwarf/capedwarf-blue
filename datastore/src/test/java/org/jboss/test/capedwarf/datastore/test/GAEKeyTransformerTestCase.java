@@ -24,17 +24,16 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.datastore.query.GAEKeyTransformer;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -42,16 +41,13 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@RunWith(Arquillian.class)
 public class GAEKeyTransformerTestCase {
 
     private GAEKeyTransformer transformer = new GAEKeyTransformer();
 
-    @Deployment
-    public static Archive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-                .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web.xml");
+    @Before
+    public void setUp() throws Exception {
+        ApiProxy.setEnvironmentForCurrentThread(new MockEnvironment());
     }
 
     @Test
@@ -81,5 +77,66 @@ public class GAEKeyTransformerTestCase {
         Key parent = KeyFactory.createKey("Parent", 1);
         Key key = KeyFactory.createKey(parent, "Test", "name");
         assertEquals(key, transformer.fromString(transformer.toString(key)));
+    }
+
+    @Test
+    public void testKeyTransformerCorrectlyHandlesNamespaces() throws Exception {
+        GAEKeyTransformer transformer = new GAEKeyTransformer();
+
+        NamespaceManager.set("one");
+        Key key1 = KeyFactory.createKey("Test", 1);
+        String string = transformer.toString(key1);
+
+        NamespaceManager.set("two");
+        Object transformedKey1 = transformer.fromString(string);
+
+        assertEquals(key1, transformedKey1);
+
+        Key key2 = KeyFactory.createKey("Test", 1);
+        Object transformedKey2 = transformer.fromString(transformer.toString(key2));
+
+        assertEquals(key2, transformedKey2);
+        assertFalse(key1.equals(key2));
+    }
+
+    private static class MockEnvironment implements ApiProxy.Environment {
+
+        private HashMap<String,Object> attributes = new HashMap<String, Object>();
+
+        public String getAppId() {
+            return "test";
+        }
+
+        public String getVersionId() {
+            return "1";
+        }
+
+        public String getEmail() {
+            return null;
+        }
+
+        public boolean isLoggedIn() {
+            return false;
+        }
+
+        public boolean isAdmin() {
+            return false;
+        }
+
+        public String getAuthDomain() {
+            return null;
+        }
+
+        public String getRequestNamespace() {
+            return null;
+        }
+
+        public Map<String, Object> getAttributes() {
+            return attributes;
+        }
+
+        public long getRemainingMillis() {
+            return 0;
+        }
     }
 }

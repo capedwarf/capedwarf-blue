@@ -22,7 +22,6 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,6 +35,7 @@ import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -70,14 +70,9 @@ public class AbstractTest {
 
     @After
     public void tearDown() {
-        final Class<? extends DatastoreService> clazz = service.getClass();
-        if (clazz.getName().contains("JBossDatastoreService")) {
-            try {
-                Method clearCache = clazz.getMethod("clearCache");
-                clearCache.invoke(service);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        List<Entity> entities = service.prepare(new Query().setKeysOnly()).asList(withDefaults());
+        for (Entity entity : entities) {
+            service.delete(entity.getKey());
         }
     }
 

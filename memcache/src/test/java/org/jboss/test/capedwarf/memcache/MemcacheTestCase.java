@@ -273,11 +273,52 @@ public class MemcacheTestCase {
     @Test
     public void testIncrement() {
         long x = service.increment("increment-key", 5, 0L);
-        assertEquals(0L, x);
+        assertEquals(5L, x);
+        assertEquals(5L, service.get("increment-key"));
+
         x = service.increment("increment-key", 15);
-        assertEquals(15L, x);
+        assertEquals(20L, x);
+        assertEquals(20L, service.get("increment-key"));
+
         x = service.increment("increment-key", 6);
-        assertEquals(21L, x);
+        assertEquals(26L, x);
+        assertEquals(26L, service.get("increment-key"));
+    }
+
+    @Test
+    public void testNegativeIncrementNeverGoesBelowZero() {
+        service.put("negative-increment-key", 3L);
+        long x = service.increment("negative-increment-key", -5);
+        assertEquals(0L, x);
+        assertEquals(0L, service.get("negative-increment-key"));
+    }
+
+    @Test
+    public void testIncrementRetainsValueType() {
+        service.put("string-key", "15");
+        long x = service.increment("string-key", 5);
+        assertEquals(20L, x);
+        assertEquals("20", service.get("string-key"));
+
+        service.put("byte-key", (byte)15);
+        x = service.increment("byte-key", 5);
+        assertEquals(20L, x);
+        assertEquals((byte)20, service.get("byte-key"));
+
+        service.put("short-key", (short)15);
+        x = service.increment("short-key", 5);
+        assertEquals(20L, x);
+        assertEquals((short)20, service.get("short-key"));
+
+        service.put("integer-key", 15);
+        x = service.increment("integer-key", 5);
+        assertEquals(20L, x);
+        assertEquals(20, service.get("integer-key"));
+
+        service.put("long-key", 15L);
+        x = service.increment("long-key", 5);
+        assertEquals(20L, x);
+        assertEquals(20L, service.get("long-key"));
     }
 
     private void sleep(int millis) {
