@@ -239,7 +239,7 @@ public class FilesTestCase {
         ByteBuffer buffer = ByteBuffer.allocate(length);
         int bytesRead = channel.read(buffer);
 
-        byte[] bytes = new byte[bytesRead];
+        byte[] bytes = new byte[bytesRead == -1 ? 0 : bytesRead];
         buffer.flip();
         buffer.get(bytes);
 
