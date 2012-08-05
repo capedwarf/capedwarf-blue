@@ -233,11 +233,17 @@ public class InfinispanMemcacheService implements MemcacheService {
     }
 
     protected long castToLong(Object value) {
-        if (value instanceof Long) {
-            return (Long) value;
-        } else {
-            throw new InvalidValueException("Cannot increment. Value was " + value);
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        } else if (value instanceof String) {
+            String string = (String) value;
+            try {
+                return Long.parseLong(string);
+            } catch (NumberFormatException e) {
+                throw new InvalidValueException("Cannot increment. Value was " + value);
+            }
         }
+        throw new InvalidValueException("Cannot increment. Value was " + value);
     }
 
     private Long incrementInternal(final Object key, final long delta, final Long initialValue) {
@@ -246,15 +252,29 @@ public class InfinispanMemcacheService implements MemcacheService {
         if (value == null) {
             if (initialValue == null) {
                 return null;
-            } else {
-                put(key, initialValue);
-                return initialValue;
             }
-        } else {
-            long newValue = castToLong(value) + delta;
-            put(key, newValue);
-            return newValue;
+            value = initialValue;
         }
+
+        long newValue = castToLong(value) + delta;
+        if (newValue < 0) {
+            newValue = 0;
+        }
+
+        if (value instanceof String) {
+            put(key, String.valueOf(newValue));
+        } else if (value instanceof Byte) {
+            put(key, ((Number)newValue).byteValue());
+        } else if (value instanceof Short) {
+            put(key, ((Number)newValue).shortValue());
+        } else if (value instanceof Integer) {
+            put(key, ((Number)newValue).intValue());
+        } else if (value instanceof Long) {
+            put(key, ((Number)newValue).longValue());
+        } else {
+            throw new IllegalArgumentException("Unsupported value type: " + value.getClass());
+        }
+        return newValue;
     }
 
     public Long increment(Object key, long delta) {
