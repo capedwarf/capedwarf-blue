@@ -4,6 +4,7 @@
 *.iws
 admin/target/
 appidentity/target/
+arquillian/target/
 blobstore/target/
 bytecode/target/
 capabilities/target/
