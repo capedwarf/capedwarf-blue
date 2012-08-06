@@ -66,7 +66,7 @@ public class AbstractLoggingTest {
     }
 
     protected boolean logContains(String text) {
-        Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery());
+        Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery().includeAppLogs(true));
         for (RequestLogs logs : iterable) {
             for (AppLogLine logLine : logs.getAppLogLines()) {
                 if (logLine.getLogMessage().contains(text)) {
