@@ -24,6 +24,10 @@ package org.jboss.test.capedwarf.log;
 
 import java.util.logging.Logger;
 
+import com.google.appengine.api.log.LogQuery;
+import com.google.appengine.api.log.LogService;
+import com.google.appengine.api.log.LogServiceFactory;
+import com.google.appengine.api.log.RequestLogs;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -32,6 +36,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Marko Luksa
@@ -56,5 +62,26 @@ public class LoggingTestCase extends AbstractLoggingTest {
         flush(log);
 
         assertLogContains("hello");
+    }
+
+    @Test
+    public void testLogLinesAreReturnedOnlyWhenRequested() {
+        Logger log = Logger.getLogger(LoggingTestCase.class.getName());
+        log.info("hello");
+        flush(log);
+
+        LogService logService = LogServiceFactory.getLogService();
+
+        for (RequestLogs logs : logService.fetch(new LogQuery().includeAppLogs(false))) {
+            assertTrue("AppLogLines should be empty", logs.getAppLogLines().isEmpty());
+        }
+
+        for (RequestLogs logs : logService.fetch(new LogQuery().includeAppLogs(true))) {
+            if (!logs.getAppLogLines().isEmpty()) {
+                // if we've found at least one appLogLine, the test passed
+                return;
+            }
+        }
+        fail("Should have found at least one appLogLine, but didn't find any");
     }
 }

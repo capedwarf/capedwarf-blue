@@ -72,7 +72,9 @@ public class JBossLogService implements LogService {
         List<RequestLogs> list = new ArrayList<RequestLogs>();
 
         Map<Key, RequestLogs> map = fetchRequestLogs(logQuery, list);
-        fetchAppLogLines(logQuery, map);
+        if (logQuery.getIncludeAppLogs()) {
+            fetchAppLogLines(logQuery, map);
+        }
         if (logQuery.getMinLogLevel() != null) {
             removeRequestsWithNoLogLines(list);
         }
