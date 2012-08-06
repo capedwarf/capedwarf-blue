@@ -33,6 +33,7 @@ import javassist.CtClass;
 import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.CtMethod;
+import javassist.NotFoundException;
 
 /**
  * Hack Cursor class.
@@ -41,6 +42,10 @@ import javassist.CtMethod;
  */
 public class CursorTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
+        // allow for multiple bytecode runs
+        if (isAlreadyModified(clazz))
+            return;
+
         final ClassPool pool = clazz.getClassPool();
         CtClass intClass = pool.get(int.class.getName());
 
@@ -92,5 +97,13 @@ public class CursorTransformer extends JavassistTransformer {
 
         CtMethod toString = clazz.getDeclaredMethod("toString");
         toString.setBody("return \"Cursor:\" + index;");
+    }
+
+    protected boolean isAlreadyModified(CtClass clazz) {
+        try {
+            return clazz.getDeclaredField("index") != null;
+        } catch (NotFoundException e) {
+            return false;
+        }
     }
 }
