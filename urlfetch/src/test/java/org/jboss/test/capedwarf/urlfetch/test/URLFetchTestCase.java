@@ -25,6 +25,7 @@ package org.jboss.test.capedwarf.urlfetch.test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -55,12 +56,12 @@ public class URLFetchTestCase {
     }
 
     /**
-     * Dummy check if we're online.
+     * Dummy check if we're available.
      *
      * @param url the url to check against
-     * @return true if online, false otherwise
+     * @return true if available, false otherwise
      */
-    private static boolean online(URL url) {
+    private static boolean available(URL url) {
         InputStream stream = null;
         try {
             stream = url.openStream();
@@ -79,16 +80,25 @@ public class URLFetchTestCase {
         }
     }
 
+    private static URL findAvailableUrl(String... urls) throws Exception {
+        for (String s : urls) {
+            URL url = new URL(s);
+            if (available(url))
+                return url;
+        }
+        throw new IllegalArgumentException("No available url: " + Arrays.toString(urls));
+    }
+
     @Test
     public void testBasicOps() throws Exception {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
 
-        URL adminConsole = new URL("http://localhost:9990");
+        URL adminConsole = findAvailableUrl("http://localhost:9990", "http://localhost:8080/_ah/admin", "http://capedwarf-test.appspot.com/index.html");
         HTTPResponse response = service.fetch(adminConsole);
         printResponse(response);
 
         URL jbossOrg = new URL("http://www.jboss.org");
-        if (online(jbossOrg)) {
+        if (available(jbossOrg)) {
             response = service.fetch(jbossOrg);
             printResponse(response);
         }
@@ -98,12 +108,12 @@ public class URLFetchTestCase {
     public void testAsyncOps() throws Exception {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
 
-        URL adminConsole = new URL("http://localhost:9990");
+        URL adminConsole = findAvailableUrl("http://localhost:9990", "http://localhost:8080/_ah/admin", "http://capedwarf-test.appspot.com/index.html");
         Future<HTTPResponse> response = service.fetchAsync(adminConsole);
         printResponse(response.get(5, TimeUnit.SECONDS));
 
         URL jbossOrg = new URL("http://www.jboss.org");
-        if (online(jbossOrg)) {
+        if (available(jbossOrg)) {
             response = service.fetchAsync(jbossOrg);
             printResponse(response.get(30, TimeUnit.SECONDS));
         }
