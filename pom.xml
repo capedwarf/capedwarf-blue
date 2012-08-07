@@ -73,9 +73,9 @@
         <version.org.infinispan>5.2.0.ALPHA1</version.org.infinispan>
         <version.net.jcip>1.0</version.net.jcip>
         <version.junit>4.10</version.junit>
-        <version.arquillian>1.0.0.Final</version.arquillian>
+        <version.arquillian>1.0.1.Final</version.arquillian>
         <version.shrinkwrap>1.0.0</version.shrinkwrap>
-        <version.arquillian.gae>1.0.0.Alpha2</version.arquillian.gae>
+        <version.arquillian.gae>1.0.0.Alpha3</version.arquillian.gae>
         <version.jboss.as7>7.2.0.Alpha1-SNAPSHOT</version.jboss.as7>
         <version.jboss.maven.transformer>1.0.0.Beta3</version.jboss.maven.transformer>
         <version.jboss.maven.arquillian>1.0.0.Alpha1</version.jboss.maven.arquillian>
@@ -543,20 +543,10 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.arquillian.core</groupId>
-                <artifactId>arquillian-core-spi</artifactId>
-                <version>${version.arquillian}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-container-test-spi</artifactId>
-                <version>${version.arquillian}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.arquillian.junit</groupId>
-                <artifactId>arquillian-junit-container</artifactId>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <type>pom</type>
+                <scope>import</scope>
                 <version>${version.arquillian}</version>
             </dependency>
 
@@ -570,6 +560,13 @@
             <dependency>
                 <groupId>org.jboss.arquillian.container</groupId>
                 <artifactId>arquillian-gae-local</artifactId>
+                <version>${version.arquillian.gae}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-gae-remote</artifactId>
                 <version>${version.arquillian.gae}</version>
                 <scope>test</scope>
             </dependency>
