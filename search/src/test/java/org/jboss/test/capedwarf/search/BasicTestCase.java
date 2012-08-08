@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
+import com.google.appengine.api.search.AddResponse;
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
@@ -43,6 +44,7 @@ import static com.google.appengine.api.search.Field.FieldType.TEXT;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -91,13 +93,13 @@ public class BasicTestCase extends AbstractTest {
         Document doc = newEmptyDocument();   // id-less document
 
         Index index = getTestIndex();
-        index.add(doc);
+        AddResponse addResponse = index.add(doc);
 
-        assertNotNull(doc.getId()); // TODO: check if document is really supposed to get the id (perhaps it must stay null)
+        assertNull(doc.getId()); // id must stay null
 
         List<Document> documents = getAllDocumentsIn(index);
         assertEquals(1, documents.size());
-        assertEquals(doc, documents.get(0));
+        assertEquals(addResponse.getIds().get(0), documents.get(0).getId());
         assertNotNull(documents.get(0).getId());
     }
 
