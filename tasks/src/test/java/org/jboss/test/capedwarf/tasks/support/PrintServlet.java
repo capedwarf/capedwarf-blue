@@ -22,6 +22,15 @@
 
 package org.jboss.test.capedwarf.tasks.support;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServlet;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -30,14 +39,6 @@ import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileService;
 import com.google.appengine.api.files.FileServiceFactory;
 import com.google.appengine.api.files.FileWriteChannel;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServlet;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -74,8 +75,17 @@ public class PrintServlet extends HttpServlet {
         }
     }
 
+    public static ServletRequest getLastRequest(final boolean reset) {
+        try {
+            return lastRequest;
+        } finally {
+            if (reset)
+                reset();
+        }
+    }
+
     public static ServletRequest getLastRequest() {
-        return lastRequest;
+        return getLastRequest(true);
     }
 
     public static void reset() {

@@ -1,0 +1,9 @@
+<queue-entries>
+    <queue>
+        <name>pull-queue</name>
+        <mode>pull</mode>
+        <retry-parameters>
+            <task-retry-limit>7</task-retry-limit>
+        </retry-parameters>
+    </queue>
+</queue-entries>

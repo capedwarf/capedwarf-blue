@@ -49,13 +49,28 @@ public class PullTestCase {
     public static Archive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
                 .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web.xml");
+                .addAsWebInfResource("appengine-web.xml")
+                .addAsWebInfResource("queue.xml");
     }
 
     @Test
-    public void testPull() throws Exception {
-        final Queue queue = QueueFactory.getQueue("default");
-        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).param("foo", "bar").payload("foobar").etaMillis(15000));
+    public void testPullParams() throws Exception {
+        final Queue queue = QueueFactory.getQueue("pull-queue");
+        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).param("foo", "bar").etaMillis(15000));
+        try {
+            List<TaskHandle> handles = queue.leaseTasks(30, TimeUnit.MINUTES, 100);
+            Assert.assertFalse(handles.isEmpty());
+            TaskHandle lh = handles.get(0);
+            Assert.assertEquals(th.getName(), lh.getName());
+        } finally {
+            queue.deleteTask(th);
+        }
+    }
+
+    @Test
+    public void testPullPayload() throws Exception {
+        final Queue queue = QueueFactory.getQueue("pull-queue");
+        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).payload("foobar").etaMillis(15000));
         try {
             List<TaskHandle> handles = queue.leaseTasks(30, TimeUnit.MINUTES, 100);
             Assert.assertFalse(handles.isEmpty());
@@ -68,8 +83,8 @@ public class PullTestCase {
 
     @Test
     public void testPullWithTag() throws Exception {
-        final Queue queue = QueueFactory.getQueue("default");
-        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo1").payload("foobar").etaMillis(15000));
+        final Queue queue = QueueFactory.getQueue("pull-queue");
+        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo1").etaMillis(15000));
         try {
             List<TaskHandle> handles = queue.leaseTasksByTag(30, TimeUnit.MINUTES, 100, "barfoo1");
             Assert.assertFalse(handles.isEmpty());
@@ -82,7 +97,7 @@ public class PullTestCase {
 
     @Test
     public void testPullMultipleWithSameTag() throws Exception {
-        final Queue queue = QueueFactory.getQueue("default");
+        final Queue queue = QueueFactory.getQueue("pull-queue");
         TaskHandle th1 = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo2").payload("foobar").etaMillis(15000));
         TaskHandle th2 = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo2").payload("foofoo").etaMillis(10000));
         try {
@@ -98,7 +113,7 @@ public class PullTestCase {
 
     @Test
     public void testPullMultipleWithDiffTag() throws Exception {
-        final Queue queue = QueueFactory.getQueue("default");
+        final Queue queue = QueueFactory.getQueue("pull-queue");
         TaskHandle th1 = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo3").payload("foobar").etaMillis(15000));
         TaskHandle th2 = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("qwerty").payload("foofoo").etaMillis(10000));
         TaskHandle th3 = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo3").payload("foofoo").etaMillis(10000));
@@ -120,7 +135,7 @@ public class PullTestCase {
 
     @Test
     public void testPullWithGroupTag() throws Exception {
-        final Queue queue = QueueFactory.getQueue("default");
+        final Queue queue = QueueFactory.getQueue("pull-queue");
         TaskHandle th1 = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo3").payload("foobar").etaMillis(15000));
         TaskHandle th2 = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("qwerty").payload("foofoo").etaMillis(11000));
         TaskHandle th3 = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).tag("barfoo3").payload("foofoo").etaMillis(10000));

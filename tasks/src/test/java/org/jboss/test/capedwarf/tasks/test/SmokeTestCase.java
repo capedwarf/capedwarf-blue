@@ -48,13 +48,14 @@ public class SmokeTestCase {
     public static Archive getDeployment() {
         return ShrinkWrap.create(WebArchive.class)
                 .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web.xml");
+                .addAsWebInfResource("appengine-web.xml")
+                .addAsWebInfResource("queue.xml");
     }
 
     @Test
     public void testBasics() throws Exception {
-        final Queue queue = QueueFactory.getQueue("default");
-        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).param("foo", "bar").payload("foobar").etaMillis(15000));
+        final Queue queue = QueueFactory.getQueue("pull-queue");
+        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).param("foo", "bar").etaMillis(15000));
         try {
             List<TaskHandle> handles = queue.leaseTasks(30, TimeUnit.MINUTES, 100);
             Assert.assertFalse(handles.isEmpty());

@@ -22,10 +22,15 @@
 
 package org.jboss.test.capedwarf.tasks.test;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
-import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -38,13 +43,8 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-
-import java.util.Arrays;
-import java.util.HashSet;
-
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -77,7 +77,8 @@ public class TasksTestCase {
         return ShrinkWrap.create(WebArchive.class)
             .addClasses(PrintServlet.class, PrintListener.class)
             .setWebXML(new StringAsset(WEB_XML))
-            .addAsWebInfResource("appengine-web.xml");
+            .addAsWebInfResource("appengine-web.xml")
+            .addAsWebInfResource("queue-tasks.xml", "queue.xml");
     }
 
     @After
@@ -87,23 +88,22 @@ public class TasksTestCase {
 
     @Test
     public void testSmoke() throws Exception {
-        final Queue queue = QueueFactory.getQueue("default");
+        final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(TaskOptions.Builder.withUrl(URL));
         sleep();
-
         assertNotNull(PrintServlet.getLastRequest());
     }
 
     @Test
     public void testPayload() throws Exception {
-        final Queue queue = QueueFactory.getQueue("default");
+        final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(TaskOptions.Builder.withPayload("payload").url(URL));
         sleep();
     }
 
     @Test
     public void testHeaders() throws Exception {
-        final Queue queue = QueueFactory.getQueue("default");
+        final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(TaskOptions.Builder.withHeader("header_key", "header_value").url(URL));
         sleep();
 
@@ -113,7 +113,7 @@ public class TasksTestCase {
 
     @Test
     public void testParams() throws Exception {
-        final Queue queue = QueueFactory.getQueue("default");
+        final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(TaskOptions.Builder.withParam("single_value", "param_value").url(URL));
         sleep();
 
@@ -123,7 +123,7 @@ public class TasksTestCase {
 
     @Test
     public void testMultiValueParams() throws Exception {
-        final Queue queue = QueueFactory.getQueue("default");
+        final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(
             TaskOptions.Builder
                 .withParam("multi_value", "param_value1")
@@ -132,8 +132,10 @@ public class TasksTestCase {
         sleep();
 
         ServletRequest request = PrintServlet.getLastRequest();
+        String[] multi_values = request.getParameterValues("multi_value");
+        assertNotNull(multi_values);
         assertEquals(
             new HashSet<String>(Arrays.asList("param_value1", "param_value2")),
-            new HashSet<String>(Arrays.asList(request.getParameterValues("multi_value"))));
+            new HashSet<String>(Arrays.asList(multi_values)));
     }
 }
