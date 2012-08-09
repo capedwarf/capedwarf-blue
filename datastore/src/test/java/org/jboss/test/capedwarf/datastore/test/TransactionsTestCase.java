@@ -51,11 +51,12 @@ public class TransactionsTestCase extends AbstractTest {
         Transaction tx = service.beginTransaction();
         try {
             service.put(tx, entity);
-            assertStoreContains(entity);
+            assertStoreDoesNotContain(entity);
             tx.commit();
             assertStoreContains(entity);
         } catch (Exception e) {
             tx.rollback();
+            throw e;
         }
     }
 
@@ -102,7 +103,7 @@ public class TransactionsTestCase extends AbstractTest {
         try {
             e1 = createTestEntity("DUMMY", 1);
             service.put(t1, e1);
-            assertStoreContains(e1);
+            assertStoreDoesNotContain(e1);
 
             assertActiveTransactions(t1);
 
@@ -112,7 +113,7 @@ public class TransactionsTestCase extends AbstractTest {
                 service.put(e2);
 
                 assertActiveTransactions(t1, t2);
-                assertStoreContains(e2);
+                assertStoreDoesNotContain(e2);
             } finally {
                 t2.rollback();
             }
