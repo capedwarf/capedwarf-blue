@@ -22,19 +22,23 @@
 
 package org.jboss.test.capedwarf.search;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
+import com.google.appengine.api.search.AddResponse;
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
+import com.google.appengine.api.search.ListIndexesRequest;
+import com.google.appengine.api.search.ListIndexesResponse;
 import com.google.appengine.api.search.ListRequest;
+import com.google.appengine.api.search.ListResponse;
 import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
+import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -63,13 +67,11 @@ public abstract class AbstractTest {
     }
 
     protected void clear() {
-        final Class<? extends SearchService> clazz = service.getClass();
-        if (clazz.getName().contains("CapedwarfSearchService")) {
-            try {
-                Method clear = clazz.getMethod("clear");
-                clear.invoke(service);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        ListIndexesResponse response = service.listIndexes(ListIndexesRequest.newBuilder().build());
+        for (Index index : response.getIndexes()) {
+            ListResponse<Document> documents = index.listDocuments(ListRequest.newBuilder().build());
+            for (Document document : documents.getResults()) {
+                index.remove(document.getId());
             }
         }
     }
@@ -172,13 +174,14 @@ public abstract class AbstractTest {
 
     protected Document addAndRetrieve(Document doc) {
         Index index = getTestIndex();
-        index.add(doc);
+        AddResponse addResponse = index.add(doc);
+        String docId = addResponse.getIds().get(0);
 
         List<Document> results = getAllDocumentsIn(index);
         assertEquals(1, results.size());
 
         Document retrievedDoc = results.get(0);
-        assertEquals(doc, retrievedDoc);
+        assertEquals(docId, retrievedDoc.getId());
         return retrievedDoc;
     }
 
@@ -187,12 +190,30 @@ public abstract class AbstractTest {
     }
 
     protected List<Document> getAllDocumentsIn(Index index) {
+        if (runningInsideDevAppEngine()) {
+            fixListDocumentsBugWhenInvokedOnEmptyIndex(index);
+        }
         return index.listDocuments(defaultListRequest()).getResults();
+    }
+
+    /**
+     * On GAE development server, calling index.listDocuments() throws a ListException (and logs a FileNotFoundException) if
+     * the index hadn't had anything added to it prior to calling listDocuments().
+     *
+     * We work around this bug by storing and immediately removing a document.
+     */
+    private void fixListDocumentsBugWhenInvokedOnEmptyIndex(Index index) {
+        index.add(newEmptyDocument("indexInitializer"));
+        index.remove("indexInitializer");
     }
 
     protected void createEmptyDocuments(int number, Index index) {
         for (int i=0; i<number; i++) {
             index.add(newEmptyDocument());
         }
+    }
+
+    protected boolean runningInsideDevAppEngine() {
+        return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
     }
 }

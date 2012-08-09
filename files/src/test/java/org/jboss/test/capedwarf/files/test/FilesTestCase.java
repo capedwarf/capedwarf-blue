@@ -117,10 +117,11 @@ public class FilesTestCase {
         assertEquals("234", getStringFromChannel(channel, 3));
     }
 
-    @Test(expected = FileNotFoundException.class)
+    @Test(expected = IOException.class)
     public void testFileNotFound() throws Exception {
         AppEngineFile nonExistentFile = new AppEngineFile(AppEngineFile.FileSystem.BLOBSTORE, "nonExistentFile.txt");
-        service.openReadChannel(nonExistentFile, false);
+        FileReadChannel channel = service.openReadChannel(nonExistentFile, false);  // appspot throws IOException here
+        channel.read(ByteBuffer.allocate(1000));                                    // dev appserver throws exception here
     }
 
     @Test(expected = FinalizationException.class)

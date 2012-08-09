@@ -24,13 +24,11 @@ package org.jboss.test.capedwarf.prospectivesearch;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.prospectivesearch.FieldType;
-import com.google.appengine.api.prospectivesearch.Subscription;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -67,19 +65,9 @@ public class MatchTestCase extends AbstractTest {
 
     @After
     public void tearDown() throws Exception {
+        super.tearDown();
         MatchResponseServlet.clear();
         SpecialMatchResponseServlet.clear();
-        unsubscribeAll();
-    }
-
-    private void unsubscribeAll() {
-        List<String> topics = service.listTopics("", 0);
-        for (String topic : topics) {
-            List<Subscription> subscriptions = service.listSubscriptions(topic);
-            for (Subscription subscription : subscriptions) {
-                service.unsubscribe(topic, subscription.getId());
-            }
-        }
     }
 
     @Test
@@ -106,13 +94,13 @@ public class MatchTestCase extends AbstractTest {
     public void testMatchUsesGoogleQuerySyntax() throws Exception {
         service.subscribe(TOPIC, "foo", 0, "title:\"Hello World\" body:article", createSchema("title", FieldType.STRING, "body", FieldType.STRING));
 
-        Entity entity = articleWithTitleAndBody("Hello World", "This is the body of the article.");
+        Entity entity = articleWithTitleAndBody("Hello World", "This is the body of the article");
         service.match(entity, TOPIC);
         assertServletWasInvokedWith(entity);
 
         MatchResponseServlet.clear();
 
-        entity = articleWithTitleAndBody("Hello World", "This body does not contain the word matched by foo subscription.");
+        entity = articleWithTitleAndBody("Hello World", "This body does not contain the word matched by foo subscription");
         service.match(entity, TOPIC);
         assertServletWasNotInvoked();
     }

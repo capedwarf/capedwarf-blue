@@ -22,7 +22,6 @@
 
 package org.jboss.test.capedwarf.prospectivesearch;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -33,6 +32,7 @@ import com.google.appengine.api.prospectivesearch.FieldType;
 import com.google.appengine.api.prospectivesearch.ProspectiveSearchService;
 import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
 import com.google.appengine.api.prospectivesearch.Subscription;
+import com.google.appengine.api.utils.SystemProperty;
 import org.junit.After;
 import org.junit.Before;
 
@@ -50,17 +50,15 @@ public abstract class AbstractTest {
 
     @After
     public void tearDown() throws Exception {
-        clear();
+        removeAllSubscriptions();
     }
 
-    protected void clear() {
-        final Class<? extends ProspectiveSearchService> clazz = service.getClass();
-        if (clazz.getName().contains("CapedwarfProspectiveSearchService")) {
-            try {
-                Method clear = clazz.getMethod("clear");
-                clear.invoke(service);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+    protected void removeAllSubscriptions() {
+        List<String> topics = service.listTopics("", 1000);
+        for (String topic : topics) {
+            List<Subscription> subscriptions = service.listSubscriptions(topic);
+            for (Subscription subscription : subscriptions) {
+                service.unsubscribe(topic, subscription.getId());
             }
         }
     }
@@ -85,4 +83,10 @@ public abstract class AbstractTest {
         schema.put(field2, type2);
         return schema;
     }
+
+    protected boolean runningInsideDevAppEngine() {
+        return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
+    }
+
+
 }
