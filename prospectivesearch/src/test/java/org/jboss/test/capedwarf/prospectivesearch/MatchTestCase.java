@@ -94,13 +94,13 @@ public class MatchTestCase extends AbstractTest {
     public void testMatchUsesGoogleQuerySyntax() throws Exception {
         service.subscribe(TOPIC, "foo", 0, "title:\"Hello World\" body:article", createSchema("title", FieldType.STRING, "body", FieldType.STRING));
 
-        Entity entity = articleWithTitleAndBody("Hello World", "This is the body of the article.");
+        Entity entity = articleWithTitleAndBody("Hello World", "This is the body of the article");
         service.match(entity, TOPIC);
         assertServletWasInvokedWith(entity);
 
         MatchResponseServlet.clear();
 
-        entity = articleWithTitleAndBody("Hello World", "This body does not contain the word matched by foo subscription.");
+        entity = articleWithTitleAndBody("Hello World", "This body does not contain the word matched by foo subscription");
         service.match(entity, TOPIC);
         assertServletWasNotInvoked();
     }

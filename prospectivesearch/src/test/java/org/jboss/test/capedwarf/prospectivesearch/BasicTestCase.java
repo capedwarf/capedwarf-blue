@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.google.appengine.api.prospectivesearch.FieldType;
+import com.google.appengine.api.prospectivesearch.QuerySyntaxException;
 import com.google.appengine.api.prospectivesearch.Subscription;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -74,9 +75,18 @@ public class BasicTestCase extends AbstractTest {
         assertTopicNotExists("myTopic");
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testSubscribeThrowsQuerySyntaxExceptionWhenSchemaIsEmpty() {
-        service.subscribe("foo", "bar", 0, "title:hello", new HashMap<String, FieldType>());
+        if (runningInsideDevAppEngine()) {
+            // we shouldn't test this on dev appserver, since it doesn't throw this exception
+            return;
+        }
+        try {
+            service.subscribe("foo", "bar", 0, "title:hello", new HashMap<String, FieldType>());
+            fail("Expected QuerySyntaxException: Schema is empty");
+        } catch (QuerySyntaxException e) {
+            // pass
+        }
     }
 
     @Test
@@ -130,8 +140,13 @@ public class BasicTestCase extends AbstractTest {
         service.subscribe("myTopic", "mySubscription", 0, "title:hello", createSchema("title", FieldType.STRING));
         Subscription subscription = service.getSubscription("myTopic", "mySubscription");
         long expirationTime = subscription.getExpirationTime();
-        long expected = todayPlusHundredYears().getTime() / 1000;
-        assertTrue("subscription should not expire at least 100 years", expirationTime > expected);
+
+        if (runningInsideDevAppEngine()) {
+            assertEquals(0L, expirationTime);
+        } else {
+            long expected = todayPlusHundredYears().getTime() / 1000;
+            assertTrue("subscription should not expire at least 100 years", expirationTime > expected);
+        }
     }
 
     @Test
