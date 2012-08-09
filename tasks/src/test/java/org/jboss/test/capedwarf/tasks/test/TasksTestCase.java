@@ -48,6 +48,7 @@ import static junit.framework.Assert.assertNotNull;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
 public class TasksTestCase {
@@ -103,26 +104,58 @@ public class TasksTestCase {
 
     @Test
     public void testHeaders() throws Exception {
+
+        class HeaderHandler implements PrintServlet.RequestHandler {
+            private String headerValue;
+
+            public void handleRequest(ServletRequest req) {
+                headerValue = ((HttpServletRequest) req).getHeader("header_key");
+            }
+        }
+
+        HeaderHandler handler = new HeaderHandler();
+        PrintServlet.setRequestHandler(handler);
+
         final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(TaskOptions.Builder.withHeader("header_key", "header_value").url(URL));
         sleep();
 
-        HttpServletRequest request = (HttpServletRequest) PrintServlet.getLastRequest();
-        assertEquals("header_value", request.getHeader("header_key"));
+        assertEquals("header_value", handler.headerValue);
     }
 
     @Test
     public void testParams() throws Exception {
+        class ParamHandler implements PrintServlet.RequestHandler {
+            private String paramValue;
+
+            public void handleRequest(ServletRequest req) {
+                paramValue = req.getParameter("single_value");
+            }
+        }
+
+        ParamHandler handler = new ParamHandler();
+        PrintServlet.setRequestHandler(handler);
+
         final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(TaskOptions.Builder.withParam("single_value", "param_value").url(URL));
         sleep();
 
-        ServletRequest request = PrintServlet.getLastRequest();
-        assertEquals("param_value", request.getParameter("single_value"));
+        assertEquals("param_value", handler.paramValue);
     }
 
     @Test
     public void testMultiValueParams() throws Exception {
+        class ParamHandler implements PrintServlet.RequestHandler {
+            private String[] paramValues;
+
+            public void handleRequest(ServletRequest req) {
+                paramValues = req.getParameterValues("multi_value");
+            }
+        }
+
+        ParamHandler handler = new ParamHandler();
+        PrintServlet.setRequestHandler(handler);
+
         final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(
             TaskOptions.Builder
@@ -131,11 +164,9 @@ public class TasksTestCase {
                 .url(URL));
         sleep();
 
-        ServletRequest request = PrintServlet.getLastRequest();
-        String[] multi_values = request.getParameterValues("multi_value");
-        assertNotNull(multi_values);
+        assertNotNull(handler.paramValues);
         assertEquals(
             new HashSet<String>(Arrays.asList("param_value1", "param_value2")),
-            new HashSet<String>(Arrays.asList(multi_values)));
+            new HashSet<String>(Arrays.asList(handler.paramValues)));
     }
 }

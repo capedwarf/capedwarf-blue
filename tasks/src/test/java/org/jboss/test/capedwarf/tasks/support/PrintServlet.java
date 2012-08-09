@@ -42,14 +42,20 @@ import com.google.appengine.api.files.FileWriteChannel;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class PrintServlet extends HttpServlet {
     private Logger log = Logger.getLogger(PrintServlet.class.getName());
 
+    private static RequestHandler requestHandler;
     private static ServletRequest lastRequest;
 
     public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
         log.info("Ping - " + req);
+
+        if (requestHandler != null) {
+            requestHandler.handleRequest(req);
+        }
 
         lastRequest = req;
 
@@ -90,5 +96,14 @@ public class PrintServlet extends HttpServlet {
 
     public static void reset() {
         lastRequest = null;
+        requestHandler = null;
+    }
+
+    public static void setRequestHandler(RequestHandler requestHandler) {
+        PrintServlet.requestHandler = requestHandler;
+    }
+
+    public static interface RequestHandler {
+        void handleRequest(ServletRequest req);
     }
 }
