@@ -180,7 +180,9 @@ public class BasicTestCase extends AbstractTest {
 
         Document retrievedDoc = addAndRetrieve(doc);
         assertEquals("document id is not persisted", "foo", retrievedDoc.getId());
-        assertEquals("document locale is not persisted", Locale.CANADA, retrievedDoc.getLocale());
+        if (!runningInsideDevAppEngine()) {
+            assertEquals("document locale is not persisted", Locale.CANADA, retrievedDoc.getLocale());
+        }
         assertEquals("document rank is not persisted", 123, retrievedDoc.getRank());
     }
 
