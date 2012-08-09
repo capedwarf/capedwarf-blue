@@ -22,6 +22,11 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
@@ -32,12 +37,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -46,7 +49,7 @@ import static org.junit.Assert.*;
 public class TransactionsTestCase extends AbstractTest {
 
     @Test
-    public void testBasicTxOps() throws Exception {
+    public void testBasicTxPut() throws Exception {
         Entity entity = createTestEntity();
         Transaction tx = service.beginTransaction();
         try {
@@ -58,6 +61,38 @@ public class TransactionsTestCase extends AbstractTest {
             tx.rollback();
             throw e;
         }
+    }
+
+    @Test
+    public void testBasicNoTxPut() throws Exception {
+        Entity entity = createTestEntity("NO_TX_KIND", 1);
+        service.put(null, entity);
+        assertStoreContains(entity);
+    }
+
+    @Test
+    public void testBasicTxDelete() throws Exception {
+        Entity entity = createTestEntity();
+        service.put(entity);
+        Transaction tx = service.beginTransaction();
+        try {
+            service.delete(tx, entity.getKey());
+            assertStoreContains(entity);
+            tx.commit();
+            assertStoreDoesNotContain(entity);
+        } catch (Exception e) {
+            tx.rollback();
+            throw e;
+        }
+    }
+
+    @Test
+    public void testBasicNoTxDelete() throws Exception {
+        Entity entity = createTestEntity("NO_TX_KIND", 2);
+        service.put(null, entity);
+        assertStoreContains(entity);
+        service.delete(entity.getKey());
+        assertStoreDoesNotContain(entity);
     }
 
     @Test

@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.transaction.Synchronization;
+
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
@@ -168,7 +170,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                     ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
                 }
                 trackKey(key);
-                store.put(key, modify(entity));
+                putInTx(key, modify(entity));
                 list.add(key);
             }
             return list;
@@ -256,7 +258,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         try {
             for (Key key : keyIterable) {
                 trackKey(key);
-                store.remove(key);
+                removeInTx(key);
             }
         } finally {
             afterTx(transaction);
@@ -295,6 +297,57 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         if (datastoreAttributes == null)
             datastoreAttributes = ReflectionUtils.newInstance(DatastoreAttributes.class);
         return datastoreAttributes;
+    }
+
+    /**
+     * Delay put if the tx is active.
+     *
+     * @param key the key
+     * @param entity the entity
+     */
+    protected void putInTx(final Key key, final Entity entity) {
+        javax.transaction.Transaction tx = JBossTransaction.getTx();
+        if (tx == null) {
+            store.put(key, entity);
+        } else {
+            try {
+                tx.registerSynchronization(new Synchronization() {
+                    public void beforeCompletion() {
+                        store.put(key, entity);
+                    }
+
+                    public void afterCompletion(int status) {
+                    }
+                });
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     * Delay remove if the tx is active.
+     *
+     * @param key the key
+     */
+    protected void removeInTx(final Key key) {
+        javax.transaction.Transaction tx = JBossTransaction.getTx();
+        if (tx == null) {
+            store.remove(key);
+        } else {
+            try {
+                tx.registerSynchronization(new Synchronization() {
+                    public void beforeCompletion() {
+                        store.remove(key);
+                    }
+
+                    public void afterCompletion(int status) {
+                    }
+                });
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public void clearCache() {
