@@ -22,6 +22,22 @@
 
 package org.jboss.capedwarf.appidentity;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Date;
+
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -42,34 +58,17 @@ import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Date;
-
 /**
  * Generates self-signed X509 certificates and private/public key pairs.
  *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class CertificateGenerator {
-
-    private static CertificateGenerator instance;
+    private static CertificateGenerator instance = new CertificateGenerator();
 
     private static final int KEY_SIZE = 1024;
 
-    public CertificateGenerator() {
+    private CertificateGenerator() {
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
     }
 
@@ -136,9 +135,6 @@ public class CertificateGenerator {
     }
 
     public static CertificateGenerator getInstance() {
-        if (instance == null) {
-            instance = new CertificateGenerator();
-        }
         return instance;
     }
 
