@@ -22,7 +22,10 @@
 
 package org.jboss.test.capedwarf.appidentity;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.security.Signature;
 import java.security.cert.CertificateFactory;
@@ -32,9 +35,8 @@ import java.util.Collection;
 import com.google.appengine.api.appidentity.AppIdentityService;
 import com.google.appengine.api.appidentity.AppIdentityServiceFactory;
 import com.google.appengine.api.appidentity.PublicCertificate;
+import com.google.appengine.repackaged.com.google.common.util.Base64;
 import junit.framework.Assert;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -81,13 +83,13 @@ public class AppIdentityTestCase {
     private boolean isSignedBy(byte[] signature, PublicCertificate certificate) {
         try {
             PemReader pemReader = new PemReader(new StringReader(certificate.getX509CertificateInPemFormat()));
-            PemObject pemObject = pemReader.readPemObject();
+            byte[] content = pemReader.readPemObject();
 
             CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
 
-            X509Certificate cert = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(pemObject.getContent()));
+            X509Certificate cert = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(content));
 
-            Signature verifier = Signature.getInstance("SHA1withRSA", "BC");
+            Signature verifier = Signature.getInstance("SHA256withRSA");
             verifier.initVerify(cert);
             verifier.update("CapeDwarf".getBytes());
             return verifier.verify(signature);
@@ -97,4 +99,52 @@ public class AppIdentityTestCase {
         }
     }
 
+    // Copyright (c) 2000 - 2011 The Legion Of The Bouncy Castle (http://www.bouncycastle.org)
+    private static class PemReader extends BufferedReader {
+        private static final String BEGIN = "-----BEGIN ";
+        private static final String END = "-----END ";
+
+        private PemReader(Reader reader) {
+            super(reader);
+        }
+
+        private byte[] readPemObject() throws Exception {
+            String line = readLine();
+
+            while (line != null && line.startsWith(BEGIN) == false) {
+                line = readLine();
+            }
+
+            if (line != null) {
+                line = line.substring(BEGIN.length());
+                int index = line.indexOf('-');
+                String type = line.substring(0, index);
+
+                if (index > 0) {
+                    String endMarker = END + type;
+                    StringBuilder buf = new StringBuilder();
+
+                    while ((line = readLine()) != null) {
+                        if (line.contains(":")) {
+                            continue;
+                        }
+
+                        if (line.contains(endMarker)) {
+                            break;
+                        }
+
+                        buf.append(line.trim());
+                    }
+
+                    if (line == null) {
+                        throw new IOException(endMarker + " not found");
+                    }
+
+                    return Base64.decode(buf.toString());
+                }
+            }
+
+            return null;
+        }
+    }
 }

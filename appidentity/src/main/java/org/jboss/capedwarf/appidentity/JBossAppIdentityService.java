@@ -107,7 +107,7 @@ public class JBossAppIdentityService implements AppIdentityService {
 
     private byte[] sign(byte[] bytes, PrivateKey privateKey) {
         try {
-            Signature dsa = Signature.getInstance("SHA1WithRSA", "BC");
+            Signature dsa = Signature.getInstance("SHA256WithRSA", "BC");
             dsa.initSign(privateKey);
             dsa.update(bytes);
             return dsa.sign();
