@@ -59,7 +59,8 @@ public class AllocateIdsTestCase extends AbstractTest {
         KeyRange kr1 = new KeyRange(null, "OtherKind", 1 + initialValue, 5 + initialValue);
         DatastoreService.KeyRangeState state1 = service.allocateIdRange(kr1);
         Assert.assertNotNull(state1);
-        Assert.assertSame(DatastoreService.KeyRangeState.CONTENTION, state1);
+        // imo, it could be either -- depending on the impl
+        Assert.assertTrue(DatastoreService.KeyRangeState.CONTENTION == state1 || DatastoreService.KeyRangeState.EMPTY == state1);
 
         KeyRange kr2 = service.allocateIds("OtherKind", 6);
         Assert.assertNotNull(kr2);
