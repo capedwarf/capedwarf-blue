@@ -47,6 +47,11 @@ public abstract class PersistingTest extends AbstractTest {
     @Test
     public void testPersisting() throws Exception {
         DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
+
+        // ignore the test for non JBoss impl
+        if (ds.getClass().getName().contains(".jboss.") == false)
+            return;
+
         final Long id = readMarker();
         if (id != null) {
             Entity entity = ds.get(KeyFactory.createKey("Persisting", id));
