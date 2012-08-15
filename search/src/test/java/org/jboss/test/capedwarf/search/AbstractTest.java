@@ -56,6 +56,9 @@ import static junit.framework.Assert.fail;
  */
 @RunWith(Arquillian.class)
 public abstract class AbstractTest {
+    public static final String FOO_NAMESPACE = "fooNamespace";
+    public static final String BAR_NAMESPACE = "barNamespace";
+
     protected SearchService service;
 
     @Deployment
@@ -67,6 +70,12 @@ public abstract class AbstractTest {
     }
 
     protected void clear() {
+        removeAllDocumentsFrom(service);
+        removeAllDocumentsFrom(SearchServiceFactory.getSearchService(FOO_NAMESPACE));
+        removeAllDocumentsFrom(SearchServiceFactory.getSearchService(BAR_NAMESPACE));
+    }
+
+    private void removeAllDocumentsFrom(SearchService service) {
         ListIndexesResponse response = service.listIndexes(ListIndexesRequest.newBuilder().build());
         for (Index index : response.getIndexes()) {
             ListResponse<Document> documents = index.listDocuments(ListRequest.newBuilder().build());

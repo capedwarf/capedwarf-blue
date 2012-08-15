@@ -40,20 +40,20 @@ public class ListIndexesWithNamespaceTestCase extends AbstractTest {
 
     @Test
     public void testListIndexesWithNamespaceIsIgnored() {
-        Index fooAIndex = createIndexInNamespace("a", "fooNamespace");
-        Index fooBIndex = createIndexInNamespace("b", "fooNamespace");
-        Index barAIndex = createIndexInNamespace("a", "barNamespace");
-        Index barBIndex = createIndexInNamespace("b", "barNamespace");
+        Index fooAIndex = createIndexInNamespace("a", FOO_NAMESPACE);
+        Index fooBIndex = createIndexInNamespace("b", FOO_NAMESPACE);
+        Index barAIndex = createIndexInNamespace("a", BAR_NAMESPACE);
+        Index barBIndex = createIndexInNamespace("b", BAR_NAMESPACE);
 
-        SearchService fooSearchService = SearchServiceFactory.getSearchService("fooNamespace");
+        SearchService fooSearchService = SearchServiceFactory.getSearchService(FOO_NAMESPACE);
 
         ListIndexesResponse response = fooSearchService.listIndexes(ListIndexesRequest.newBuilder().build());
         assertEquals(Arrays.asList(fooAIndex, fooBIndex), response.getIndexes());
 
-        response = fooSearchService.listIndexes(ListIndexesRequest.newBuilder().setNamespace("fooNamespace").build());
+        response = fooSearchService.listIndexes(ListIndexesRequest.newBuilder().setNamespace(FOO_NAMESPACE).build());
         assertEquals(Arrays.asList(fooAIndex, fooBIndex), response.getIndexes());
 
-        response = fooSearchService.listIndexes(ListIndexesRequest.newBuilder().setNamespace("barNamespace").build());
+        response = fooSearchService.listIndexes(ListIndexesRequest.newBuilder().setNamespace(BAR_NAMESPACE).build());
         assertEquals(Arrays.asList(fooAIndex, fooBIndex), response.getIndexes());
     }
 

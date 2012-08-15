@@ -207,10 +207,10 @@ public class SearchTestCase extends AbstractTest {
 
     @Test
     public void testSearchReturnsDocumentsInCorrectNamespace() {
-        Index fooIndex = SearchServiceFactory.getSearchService("fooNamespace").getIndex(getIndexSpec("index", Consistency.GLOBAL));
+        Index fooIndex = SearchServiceFactory.getSearchService(FOO_NAMESPACE).getIndex(getIndexSpec("index", Consistency.GLOBAL));
         fooIndex.add(newDocument("foo", newField("foo").setText("aaa")));
 
-        Index barIndex = SearchServiceFactory.getSearchService("barNamespace").getIndex(getIndexSpec("index", Consistency.GLOBAL));
+        Index barIndex = SearchServiceFactory.getSearchService(BAR_NAMESPACE).getIndex(getIndexSpec("index", Consistency.GLOBAL));
         barIndex.add(newDocument("bar", newField("foo").setText("aaa")));
 
         assertSearchYields(fooIndex, "foo:aaa", "foo");

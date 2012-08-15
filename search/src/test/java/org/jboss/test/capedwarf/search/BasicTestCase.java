@@ -158,8 +158,8 @@ public class BasicTestCase extends AbstractTest {
 
     @Test
     public void testAddedDocumentIsStoredInCorrectNamespace() {
-        SearchService fooService = SearchServiceFactory.getSearchService("fooNamespace");
-        SearchService barService = SearchServiceFactory.getSearchService("barNamespace");
+        SearchService fooService = SearchServiceFactory.getSearchService(FOO_NAMESPACE);
+        SearchService barService = SearchServiceFactory.getSearchService(BAR_NAMESPACE);
 
         Index fooNamespaceIndex = fooService.getIndex(getIndexSpec("index", Consistency.GLOBAL));
         Index barNamespaceIndex = barService.getIndex(getIndexSpec("index", Consistency.GLOBAL));
