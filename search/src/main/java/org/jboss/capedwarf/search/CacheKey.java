@@ -24,11 +24,13 @@ package org.jboss.capedwarf.search;
 
 import org.infinispan.query.Transformable;
 
+import java.io.Serializable;
+
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @Transformable(transformer = CacheKeyTransformer.class)
-public class CacheKey {
+public class CacheKey implements Serializable {
 
     private String indexName;
     private String namespace;
