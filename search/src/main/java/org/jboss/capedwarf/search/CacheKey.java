@@ -22,15 +22,16 @@
 
 package org.jboss.capedwarf.search;
 
-import org.infinispan.query.Transformable;
-
 import java.io.Serializable;
+
+import org.infinispan.query.Transformable;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @Transformable(transformer = CacheKeyTransformer.class)
 public class CacheKey implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private String indexName;
     private String namespace;
@@ -66,7 +67,7 @@ public class CacheKey implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || !getClass().equals(o.getClass())) return false;
 
         CacheKey cacheKey = (CacheKey) o;
 
