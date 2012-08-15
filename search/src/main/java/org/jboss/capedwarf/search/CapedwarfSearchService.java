@@ -22,16 +22,19 @@
 
 package org.jboss.capedwarf.search;
 
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.ListIndexesRequest;
 import com.google.appengine.api.search.ListIndexesResponse;
 import com.google.appengine.api.search.SearchService;
 import org.infinispan.Cache;
+import org.infinispan.distexec.mapreduce.*;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.ConfigurationCallbacks;
@@ -85,7 +88,12 @@ public class CapedwarfSearchService implements SearchService {
     }
 
     public ListIndexesResponse listIndexes(ListIndexesRequest request) {
-        return null;  // TODO
+        ListIndexesMapper mapper = new ListIndexesMapper(request);
+        ListIndexesReducer reducer = new ListIndexesReducer();
+        ListIndexesCollator collator = new ListIndexesCollator(request);
+
+        MapReduceTask<CacheKey, CacheValue, FullIndexSpec, Void> task = new MapReduceTask<CacheKey, CacheValue, FullIndexSpec, Void>(cache);
+        return task.mappedWith(mapper).reducedWith(reducer).execute(collator);
     }
 
     public Future<ListIndexesResponse> listIndexesAsync(final ListIndexesRequest request) {
@@ -102,5 +110,85 @@ public class CapedwarfSearchService implements SearchService {
 
     public boolean isEmpty() {
         return cache.isEmpty();
+    }
+
+
+    class ListIndexesMapper implements Mapper<CacheKey, CacheValue, FullIndexSpec, Void> {
+
+        private final ListIndexesRequest request;
+
+        public ListIndexesMapper(ListIndexesRequest request) {
+            this.request = request;
+        }
+
+        public void map(CacheKey key, CacheValue value, Collector<FullIndexSpec, Void> collector) {
+            if (startIndexNameMatches(key) && indexNamePrefixMatches(key) && namespaceMatches(key)) {
+                FullIndexSpec fullIndexSpec = new FullIndexSpec(key.getNamespace(), key.getIndexName(), Consistency.GLOBAL);
+                collector.emit(fullIndexSpec, null);
+            }
+        }
+
+        private boolean startIndexNameMatches(CacheKey key) {
+            String startIndexName = request.getStartIndexName();
+            if (startIndexName == null) {
+                return true;
+            }
+            String indexName = key.getIndexName();
+            if (request.isIncludeStartIndex()) {
+                return startIndexName.compareTo(indexName) <= 0;
+            } else {
+                return startIndexName.compareTo(indexName) < 0;
+            }
+        }
+
+        private boolean indexNamePrefixMatches(CacheKey key) {
+            return request.getIndexNamePrefix() == null || key.getIndexName().startsWith(request.getIndexNamePrefix());
+        }
+
+        private boolean namespaceMatches(CacheKey key) {
+            return key.getNamespace().equals(resolveNamespace());
+//            return request.getNamespace() == null || key.getNamespace().equals(request.getNamespace());
+        }
+    }
+
+    class ListIndexesReducer implements Reducer<FullIndexSpec, Void> {
+        public Void reduce(FullIndexSpec reducedKey, Iterator<Void> iter) {
+            return null;
+        }
+    }
+
+    class ListIndexesCollator implements Collator<FullIndexSpec, Void, ListIndexesResponse> {
+
+        private final ListIndexesRequest request;
+
+        public ListIndexesCollator(ListIndexesRequest request) {
+            this.request = request;
+        }
+
+        public ListIndexesResponse collate(Map<FullIndexSpec, Void> reducedResults) {
+
+            List<FullIndexSpec> list = new ArrayList<FullIndexSpec>(reducedResults.keySet());
+            Collections.sort(list);
+
+            if (request.getOffset() != null) {
+                list = request.getOffset() < list.size() ? list.subList(request.getOffset(), list.size()) : Collections.<FullIndexSpec>emptyList();
+            }
+            if (request.getLimit() != null) {
+                list = list.subList(0, Math.min(request.getLimit(), list.size()));
+            }
+
+            List<Index> indexes = new ArrayList<Index>();
+            for (FullIndexSpec fullIndexSpec : list) {
+                CapedwarfSearchIndex index = new CapedwarfSearchIndex(
+                    fullIndexSpec.getName(),
+                    fullIndexSpec.getNamespace(),
+                    fullIndexSpec.getConsistency(),
+                    cache);
+                indexes.add(index);
+            }
+
+            return new ListIndexesResponse(indexes) {
+            };
+        }
     }
 }

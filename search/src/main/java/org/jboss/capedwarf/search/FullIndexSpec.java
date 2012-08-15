@@ -22,45 +22,48 @@
 
 package org.jboss.capedwarf.search;
 
-import org.infinispan.query.Transformable;
+import com.google.appengine.api.search.Consistency;
 
 import java.io.Serializable;
 
 /**
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
- */
-@Transformable(transformer = CacheKeyTransformer.class)
-public class CacheKey implements Serializable {
-
-    private String indexName;
+* @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+*/
+public class FullIndexSpec implements Serializable, Comparable<FullIndexSpec> {
     private String namespace;
-    private String documentId;
+    private String name;
+    private Consistency consistency;
 
-    public CacheKey(String indexName, String namespace, String documentId) {
-        this.indexName = indexName;
+    FullIndexSpec(String namespace, String name, Consistency consistency) {
         this.namespace = namespace;
-        this.documentId = documentId;
-    }
-
-    public String getIndexName() {
-        return indexName;
+        this.name = name;
+        this.consistency = consistency;
     }
 
     public String getNamespace() {
         return namespace;
     }
 
-    public String getDocumentId() {
-        return documentId;
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public String toString() {
-        return "CacheKey{" +
-            "indexName='" + indexName + '\'' +
-            ", namespace='" + namespace + '\'' +
-            ", documentId='" + documentId + '\'' +
-            '}';
+    public Consistency getConsistency() {
+        return consistency;
+    }
+
+    public int compareTo(FullIndexSpec o) {
+        int compare = name.compareTo(o.name);
+        if (compare != 0) {
+            return compare;
+        }
+
+        compare = namespace.compareTo(o.namespace);
+        if (compare != 0) {
+            return compare;
+        }
+
+        return consistency.compareTo(o.consistency);
     }
 
     @Override
@@ -68,20 +71,20 @@ public class CacheKey implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        CacheKey cacheKey = (CacheKey) o;
+        FullIndexSpec that = (FullIndexSpec) o;
 
-        if (!documentId.equals(cacheKey.documentId)) return false;
-        if (!indexName.equals(cacheKey.indexName)) return false;
-        if (!namespace.equals(cacheKey.namespace)) return false;
+        if (consistency != that.consistency) return false;
+        if (!name.equals(that.name)) return false;
+        if (namespace != null ? !namespace.equals(that.namespace) : that.namespace != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = indexName.hashCode();
-        result = 31 * result + namespace.hashCode();
-        result = 31 * result + documentId.hashCode();
+        int result = namespace != null ? namespace.hashCode() : 0;
+        result = 31 * result + name.hashCode();
+        result = 31 * result + consistency.hashCode();
         return result;
     }
 }
