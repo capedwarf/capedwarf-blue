@@ -159,6 +159,11 @@ public abstract class AbstractTest {
         return getIndex(name, Consistency.GLOBAL);
     }
 
+    protected Index getIndexInNamespace(String name, String namespace) {
+        IndexSpec indexSpec = getIndexSpec(name, Consistency.GLOBAL);
+        return SearchServiceFactory.getSearchService(namespace).getIndex(indexSpec);
+    }
+
     protected Index getIndex(String name, Consistency consistency) {
         IndexSpec indexSpec = getIndexSpec(name, consistency);
         return service.getIndex(indexSpec);
@@ -216,4 +221,17 @@ public abstract class AbstractTest {
     protected boolean runningInsideDevAppEngine() {
         return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
     }
+
+    protected Index createIndex(String indexName) {
+        Index index = getIndex(indexName);
+        index.add(newEmptyDocument());
+        return index;
+    }
+
+    protected Index createIndexInNamespace(String indexName, String namespace) {
+        Index index = getIndexInNamespace(indexName, namespace);
+        index.add(newEmptyDocument());
+        return index;
+    }
+
 }

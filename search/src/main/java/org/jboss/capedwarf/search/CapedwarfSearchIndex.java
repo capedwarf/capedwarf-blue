@@ -293,4 +293,35 @@ public class CapedwarfSearchIndex implements Index {
     public Schema getSchema() {
         return null;  // TODO
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CapedwarfSearchIndex that = (CapedwarfSearchIndex) o;
+
+        if (consistency != that.consistency) return false;
+        if (!name.equals(that.name)) return false;
+        if (namespace != null ? !namespace.equals(that.namespace) : that.namespace != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + (namespace != null ? namespace.hashCode() : 0);
+        result = 31 * result + consistency.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "CapedwarfSearchIndex{" +
+            "name='" + name + '\'' +
+            ", namespace='" + namespace + '\'' +
+            ", consistency=" + consistency +
+            '}';
+    }
 }
