@@ -160,22 +160,19 @@ public class CapedwarfSearchIndex implements Index {
         List<Document> documentList = new ArrayList<Document>();
         List<String> documentIds = new ArrayList<String>();
         for (Document document : documents) {
-            assignIdIfNeeded(document);
-            cache.put(getCacheKey(document.getId()), getCacheValue(document));
+            Document documentWithId = document;
+            if (document.getId() == null) {
+                documentWithId = createCopyWithId(document, generateId(document));
+            }
+            cache.put(getCacheKey(documentWithId.getId()), getCacheValue(documentWithId));
             documentList.add(document);
-            documentIds.add(document.getId());
+            documentIds.add(documentWithId.getId());
         }
 
         return ReflectionUtils.newInstance(
             AddResponse.class,
             new Class[]{List.class, List.class},
             new Object[]{documentList, documentIds});
-    }
-
-    private void assignIdIfNeeded(Document document) {
-        if (document.getId() == null) {
-            ReflectionUtils.setFieldValue(document, "documentId", generateId(document));
-        }
     }
 
     private String generateId(Document document) {
@@ -220,13 +217,24 @@ public class CapedwarfSearchIndex implements Index {
 
     private ScoredDocument createScoredDocument(Document document) {
         ScoredDocument.Builder builder = ScoredDocument.newBuilder();
+        copyPropertiesToBuilder(document, builder);
+        return builder.build();
+    }
+
+    private Document createCopyWithId(Document document, String id) {
+        Document.Builder builder = Document.newBuilder();
+        builder.setId(id);
+        copyPropertiesToBuilder(document, builder);
+        return builder.build();
+    }
+
+    private void copyPropertiesToBuilder(Document document, Document.Builder builder) {
         builder.setId(document.getId());
         builder.setLocale(document.getLocale());
         builder.setRank(document.getRank());
         for (Field field : document.getFields()) {
             builder.addField(field);
         }
-        return builder.build();
     }
 
     private org.apache.lucene.search.Query createLuceneQuery(Query query) {
