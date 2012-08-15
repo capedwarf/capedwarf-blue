@@ -146,7 +146,7 @@ public class CapedwarfSearchService implements SearchService {
         }
 
         private boolean namespaceMatches(CacheKey key) {
-            return key.getNamespace().equals(namespace);
+            return key.getNamespace().equals(resolveNamespace());
 //            return request.getNamespace() == null || key.getNamespace().equals(request.getNamespace());
         }
     }
