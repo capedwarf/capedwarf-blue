@@ -84,7 +84,7 @@ public class CursorTransformer extends JavassistTransformer {
         toWebSafeString.setBody("return index.toString();");
 
         CtMethod fromWebSafeString = clazz.getDeclaredMethod("fromWebSafeString", new CtClass[]{pool.get(String.class.getName())});
-        fromWebSafeString.setBody("return new com.google.appengine.api.datastore.Cursor(new java.util.concurrent.atomic.AtomicInteger(Integer.parseInt($1)));");
+        fromWebSafeString.setBody("return new com.google.appengine.api.datastore.Cursor(new java.util.concurrent.atomic.AtomicInteger($1 != null && $1.length() > 0 ? Integer.parseInt($1) : 0));");
 
         CtMethod fromByteArray = clazz.getDeclaredMethod("fromByteArray", new CtClass[]{pool.get(byte[].class.getName())});
         fromByteArray.setBody("return fromWebSafeString(new String($1));");
