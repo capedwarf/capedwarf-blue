@@ -293,11 +293,11 @@ public class MemcacheTestCase extends AbstractClusteredTest {
     @OperateOnDeployment("dep1")
     public void testIncrementOnDepA() {
         long x = service.increment("increment-key", 5, 0L);
-        assertEquals(0L, x);
+        assertEquals(5L, x);
         x = service.increment("increment-key", 15);
-        assertEquals(15L, x);
+        assertEquals(20L, x);
         x = service.increment("increment-key", 6);
-        assertEquals(21L, x);
+        assertEquals(26L, x);
     }
 
     @Test
@@ -307,7 +307,7 @@ public class MemcacheTestCase extends AbstractClusteredTest {
         sleep(3000);
         try {
             long x = service.increment("increment-key", 4);
-            assertEquals(25L, x);
+            assertEquals(30L, x);
         } finally {
             assertTrue(service.delete("increment-key"));
         }
