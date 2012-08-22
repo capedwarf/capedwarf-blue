@@ -22,6 +22,8 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import com.google.appengine.api.datastore.AsyncDatastoreService;
+import com.google.appengine.api.datastore.BaseDatastoreService;
 import com.google.appengine.api.datastore.DatastoreConfig;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
@@ -30,8 +32,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.datastore.JBossAsyncDatastoreService;
-import org.jboss.capedwarf.datastore.JBossDatastoreService;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,24 +52,43 @@ public class ConfigTestCase extends QueryTestCase {
 
     @Test
     public void testFactoryPassesConfigToDatastoreServiceInstance() throws Exception {
+        if (runningInsideDevAppEngine()) {
+            return;
+        }
         DatastoreServiceConfig config = DatastoreServiceConfig.Builder.withDefaults();
-        JBossDatastoreService service = (JBossDatastoreService) DatastoreServiceFactory.getDatastoreService(config);
-        assertEquals(config, service.getConfig());
+        DatastoreService service = DatastoreServiceFactory.getDatastoreService(config);
+        assertEquals(config, getConfig(service));
     }
 
     @Test
     public void testFactoryPassesConfigToAsyncDatastoreServiceInstance() throws Exception {
+        if (runningInsideDevAppEngine()) {
+            return;
+        }
         DatastoreServiceConfig config = DatastoreServiceConfig.Builder.withDefaults();
-        JBossAsyncDatastoreService service = (JBossAsyncDatastoreService) DatastoreServiceFactory.getAsyncDatastoreService(config);
-        assertEquals(config, service.getConfig());
+        AsyncDatastoreService service = DatastoreServiceFactory.getAsyncDatastoreService(config);
+        assertEquals(config, getConfig(service));
     }
 
     @Test
     @SuppressWarnings("deprecation")
     public void testFactorySupportsDeprecatedMethods() throws Exception {
+        if (runningInsideDevAppEngine()) {
+            return;
+        }
         DatastoreConfig oldConfig = DatastoreServiceFactory.getDefaultDatastoreConfig();
         DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService(oldConfig);
-        assertTrue(datastoreService instanceof JBossDatastoreService);
+        assertTrue(isJBossDatastoreService(datastoreService));
+    }
+
+    private DatastoreServiceConfig getConfig(BaseDatastoreService service) {
+        assertTrue(isJBossDatastoreService(service));
+        return (DatastoreServiceConfig) ReflectionUtils.invokeInstanceMethod(service, "getConfig", new Class[0], new Object[0]);
+    }
+
+    private boolean isJBossDatastoreService(BaseDatastoreService service) {
+        return service.getClass().getSimpleName().equals("JBossDatastoreService")
+            || service.getClass().getSimpleName().equals("JBossAsyncDatastoreService");
     }
 
     @Test
