@@ -28,20 +28,24 @@ import javassist.CtMethod;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class DatastoreServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         // w/o config
         CtMethod method = clazz.getDeclaredMethod("getDatastoreService");
         method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService();");
+
         method = clazz.getDeclaredMethod("getAsyncDatastoreService");
         method.setBody("return new org.jboss.capedwarf.datastore.JBossAsyncDatastoreService();");
+
         // with config
         final ClassPool pool = clazz.getClassPool();
         final CtClass[] params = {pool.get("com.google.appengine.api.datastore.DatastoreServiceConfig")};
         method = clazz.getDeclaredMethod("getDatastoreService", params);
-        method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService();"); // TODO -- handle config
+        method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService($1);");
+
         method = clazz.getDeclaredMethod("getAsyncDatastoreService", params);
-        method.setBody("return new org.jboss.capedwarf.datastore.JBossAsyncDatastoreService();"); // TODO -- handle config
+        method.setBody("return new org.jboss.capedwarf.datastore.JBossAsyncDatastoreService($1);");
     }
 }
