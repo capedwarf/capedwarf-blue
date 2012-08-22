@@ -36,6 +36,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -178,5 +179,9 @@ public class AbstractTest {
         } catch (IllegalArgumentException ex) {
             // pass
         }
+    }
+
+    protected boolean runningInsideDevAppEngine() {
+        return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
     }
 }
