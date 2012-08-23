@@ -69,7 +69,7 @@ public class QueryConverter {
                 setQuery(booleanQuery);
             }
         };
-        context.setFieldName(allFieldName);
+        context.setField(new Context.SimpleField(allFieldName));
 
         new QueryTreeWalker<Context>(createTreeVisitor()).walk(tree, context);
 

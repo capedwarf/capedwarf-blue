@@ -33,6 +33,7 @@ import com.google.appengine.api.search.AddResponse;
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
+import com.google.appengine.api.search.GeoPoint;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.ListRequest;
@@ -230,6 +231,16 @@ public class BasicTestCase extends AbstractTest {
         Field field = retrievedDoc.getOnlyField("dateField");
         assertEquals(Field.FieldType.DATE, field.getType());
         assertEquals(Field.truncate(today, Calendar.DAY_OF_MONTH), retrievedDoc.getOnlyField("dateField").getDate());
+    }
+
+    @Test
+    public void testDocumentHandlesGeoPointFields() {
+        Document doc = newDocument(newField("geoPointField").setGeoPoint(new GeoPoint(45.0, 15.0)));
+        Document retrievedDoc = addAndRetrieve(doc);
+        Field field = retrievedDoc.getOnlyField("geoPointField");
+        assertEquals(Field.FieldType.GEO_POINT, field.getType());
+        assertEquals(45.0, field.getGeoPoint().getLatitude());
+        assertEquals(15.0, field.getGeoPoint().getLongitude());
     }
 
     @Test

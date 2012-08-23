@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.search;
 
+import com.google.appengine.api.search.GeoPoint;
 import org.apache.lucene.search.Query;
 
 /**
@@ -30,25 +31,25 @@ import org.apache.lucene.search.Query;
 public abstract class Context {
 
     private Query query;
-    private String fieldName;
+    private Field field;
     private Operator operator;
     private boolean onGlobalField;
 
     public Context() {
     }
 
-    public Context(Query query, String fieldName, Operator operator) {
+    public Context(Query query, Field field, Operator operator) {
         this.query = query;
-        this.fieldName = fieldName;
+        this.field = field;
         this.operator = operator;
     }
 
-    public String getFieldName() {
-        return fieldName;
+    public Field getField() {
+        return field;
     }
 
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
+    public void setField(Field field) {
+        this.field = field;
     }
 
     public Query getQuery() {
@@ -77,5 +78,53 @@ public abstract class Context {
 
     public boolean isOnGlobalField() {
         return onGlobalField;
+    }
+
+    public static class Field {
+    }
+
+    public static class SimpleField extends Field {
+        private String name;
+
+        public SimpleField(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    public static class Function extends Field {
+    }
+
+    public static class DistanceFunction extends Function {
+
+        private String fieldName;
+        private GeoPoint geoPoint;
+
+        public DistanceFunction() {
+        }
+
+        public DistanceFunction(String fieldName, GeoPoint geoPoint) {
+            this.fieldName = fieldName;
+            this.geoPoint = geoPoint;
+        }
+
+        public String getFieldName() {
+            return fieldName;
+        }
+
+        public void setFieldName(String fieldName) {
+            this.fieldName = fieldName;
+        }
+
+        public GeoPoint getGeoPoint() {
+            return geoPoint;
+        }
+
+        public void setGeoPoint(GeoPoint geoPoint) {
+            this.geoPoint = geoPoint;
+        }
     }
 }

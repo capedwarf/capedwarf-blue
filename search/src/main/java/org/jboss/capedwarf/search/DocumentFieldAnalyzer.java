@@ -60,6 +60,8 @@ public class DocumentFieldAnalyzer extends Analyzer {
                 return passThroughAnalyzer;
             case DATE:
                 return passThroughAnalyzer;
+            case GEO_POINT:
+                return passThroughAnalyzer;
             default:
                 throw new IllegalArgumentException("Unsupported field type: " + fieldType);
 

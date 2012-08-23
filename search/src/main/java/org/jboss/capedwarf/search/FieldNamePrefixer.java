@@ -29,13 +29,26 @@ import com.google.appengine.api.search.Field;
  */
 public class FieldNamePrefixer {
 
-    public static final String DELIMITER = "_";
+    public static final String DELIMITER = "___";
 
-    public String getPrefixedFieldName(String fieldName, Field.FieldType fieldType) {
-        return fieldType.name() + DELIMITER + fieldName;
+    public Context.Field getPrefixedField(Context.Field field, Field.FieldType fieldType) {
+        if (field instanceof Context.SimpleField) {
+            Context.SimpleField simpleField = (Context.SimpleField) field;
+            return new Context.SimpleField(getPrefixedFieldName(simpleField.getName(), fieldType));
+        } else if (field instanceof Context.DistanceFunction) {
+            Context.DistanceFunction distanceFunction = (Context.DistanceFunction) field;
+            return new Context.DistanceFunction(getPrefixedFieldName(distanceFunction.getFieldName(), fieldType), distanceFunction.getGeoPoint());
+        } else {
+            return field; // TODO
+        }
+    }
+
+    public String getPrefixedFieldName(String name, Field.FieldType fieldType) {
+        return fieldType.name() + DELIMITER + name;
     }
 
     public Field.FieldType getFieldType(String prefixedFieldName) {
-        return Field.FieldType.valueOf(prefixedFieldName.substring(0, prefixedFieldName.indexOf(DELIMITER)));
+        String prefix = prefixedFieldName.substring(0, prefixedFieldName.indexOf(DELIMITER));
+        return Field.FieldType.valueOf(prefix);
     }
 }
