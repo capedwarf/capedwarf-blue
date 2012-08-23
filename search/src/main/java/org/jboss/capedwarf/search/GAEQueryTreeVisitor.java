@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.search;
 
+import com.google.appengine.api.search.GeoPoint;
 import com.google.appengine.api.search.query.QueryLexer;
 import com.google.appengine.api.search.query.QueryTreeVisitor;
 import com.google.appengine.api.search.query.QueryTreeWalker;
@@ -37,6 +38,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.util.Version;
+import org.hibernate.search.spatial.SpatialQueryBuilder;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -52,7 +54,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
     public void visitConjunction(QueryTreeWalker<Context> walker, Tree tree, Context context) {
         BooleanQuery booleanQuery = new BooleanQuery();
         context.addSubQuery(booleanQuery);
-        Context childContext = new Context(booleanQuery, context.getFieldName(), context.getOperator()) {
+        Context childContext = new Context(booleanQuery, context.getField(), context.getOperator()) {
             public void addSubQuery(Query query) {
                 ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST);
             }
@@ -68,7 +70,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
     public void visitDisjunction(QueryTreeWalker<Context> walker, Tree tree, Context context) {
         BooleanQuery booleanQuery = new BooleanQuery();
         context.addSubQuery(booleanQuery);
-        Context childContext = new Context(booleanQuery, context.getFieldName(), context.getOperator()) {
+        Context childContext = new Context(booleanQuery, context.getField(), context.getOperator()) {
             public void addSubQuery(Query query) {
                 ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.SHOULD);
             }
@@ -106,11 +108,18 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
     public void visitRestriction(QueryTreeWalker<Context> walker, Tree tree, final Context context) {
         Context childContext = new ForwardingContext(context);
 
-        if (tree.getChild(0).getType() == QueryLexer.GLOBAL) {
+        Tree firstChild = tree.getChild(0);
+        if (firstChild.getType() == QueryLexer.GLOBAL) {
             childContext.setOnGlobalField(true);
-            childContext.setFieldName(context.getFieldName());
+            childContext.setField(context.getField());
+        } else if (firstChild.getType() == QueryLexer.FUNCTION) {
+            if (firstChild.getChild(0).getText().equals("distance")) {
+                Context.DistanceFunction distanceFunction = new Context.DistanceFunction();
+                new QueryTreeWalker<Context.DistanceFunction>(new DistanceFunctionTreeVisitor()).walk(firstChild, distanceFunction);
+                childContext.setField(distanceFunction);
+            }
         } else {
-            childContext.setFieldName(tree.getChild(0).getText());
+            childContext.setField(new Context.SimpleField(firstChild.getText()));
         }
 
         walker.walk(tree.getChild(1), childContext);
@@ -159,19 +168,42 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
     }
 
     public void visitValue(QueryTreeWalker<Context> walker, Tree tree, Context context) {
-        String field = context.getFieldName();
+        Context.Field field = context.getField();
         Operator operator = context.getOperator();
         Tree type = tree.getChild(0);
         Tree value = tree.getChild(1);
         context.addSubQuery(createQuery(field, operator, type, value));
     }
 
-    protected Query createQuery(String field, Operator operator, Tree type, Tree value) {
+    protected Query createQuery(Context.Field field, Operator operator, Tree type, Tree value) {
         if (type.getType() == QueryLexer.NUMBER) {
-            return createNumericQuery(field, operator, value);
+            if (field instanceof Context.DistanceFunction) {
+                Context.DistanceFunction distanceFunction = (Context.DistanceFunction) field;
+
+                String fieldName = distanceFunction.getFieldName();
+                GeoPoint geoPoint = distanceFunction.getGeoPoint();
+
+                double latitude = geoPoint.getLatitude();
+                double longitude = geoPoint.getLongitude();
+                double radius = Double.parseDouble(value.getText()) / 1000; // need to convert from m to km
+
+                return SpatialQueryBuilder.buildSpatialQueryByGrid(latitude, longitude, radius, fieldName);
+
+            } else {
+                return createNumericQuery(getName(field), operator, value);
+            }
         } else {
             String text = value.getText().toLowerCase();
-            return createQuery(field, operator, text, type);
+            return createQuery(getName(field), operator, text, type);
+        }
+    }
+
+    private String getName(Context.Field field) {
+        if (field instanceof Context.SimpleField) {
+            Context.SimpleField simpleField = (Context.SimpleField) field;
+            return simpleField.getName();
+        } else {
+            throw new IllegalArgumentException("field should be of type Context.SimpleField");
         }
     }
 
@@ -238,7 +270,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
 
         public ForwardingContext(Context context) {
             this.context = context;
-            setFieldName(context.getFieldName());
+            setField(context.getField());
             setOperator(context.getOperator());
         }
 

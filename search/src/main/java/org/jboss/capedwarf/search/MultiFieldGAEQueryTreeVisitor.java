@@ -35,11 +35,11 @@ public class MultiFieldGAEQueryTreeVisitor extends GAEQueryTreeVisitor {
 
     private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
 
-    protected Query createQuery(String field, Operator operator, Tree type, Tree value) {
+    protected Query createQuery(Context.Field field, Operator operator, Tree type, Tree value) {
         BooleanQuery booleanQuery = new BooleanQuery();
         for (Field.FieldType fieldType : Field.FieldType.values()) {
-            String prefixedFieldName = fieldNamePrefixer.getPrefixedFieldName(field, fieldType);
-            Query query = super.createQuery(prefixedFieldName, operator, type, value);
+            Context.Field prefixedField = fieldNamePrefixer.getPrefixedField(field, fieldType);
+            Query query = super.createQuery(prefixedField, operator, type, value);
             booleanQuery.add(query, BooleanClause.Occur.SHOULD);
         }
         return booleanQuery;

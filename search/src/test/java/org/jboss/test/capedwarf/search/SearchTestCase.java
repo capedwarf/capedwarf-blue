@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.appengine.api.search.Consistency;
+import com.google.appengine.api.search.GeoPoint;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.ScoredDocument;
@@ -155,6 +156,30 @@ public class SearchTestCase extends AbstractTest {
         assertSearchYields(index, "text:1993", "a");
     }
 
+    @Test
+    public void testSearchForLocationWithinSpecifiedDistance() {
+        Index index = getTestIndex();
+        index.add(newDocument("a", newField("location").setGeoPoint(new GeoPoint(45.0, 15.0))));
+        index.add(newDocument("b", newField("location").setGeoPoint(new GeoPoint(60.0, 40.0))));
+        assertSearchYields(index, "distance(location, geopoint(45.0, 15.0)) < 1000", "a");
+    }
+
+    @Test
+    public void testArgumentsOfDistanceFunctionCanBeSwapped() {
+        Index index = getTestIndex();
+        index.add(newDocument("a", newField("location").setGeoPoint(new GeoPoint(45.0, 15.0))));
+        index.add(newDocument("b", newField("location").setGeoPoint(new GeoPoint(60.0, 40.0))));
+        assertSearchYields(index, "distance(geopoint(45.0, 15.0), location) < 1000", "a");
+    }
+
+    @Test
+    public void testSearchForLocationYieldsResultsInsideRadiusButNotInsideSquare() {
+        Index index = getTestIndex();
+        index.add(newDocument("a", newField("location").setGeoPoint(new GeoPoint(46.051464, 14.515833))));
+        index.add(newDocument("b", newField("location").setGeoPoint(new GeoPoint(46.046111, 14.513889))));
+        assertSearchYields(index, "distance(location, geopoint(46.051464, 14.506097)) < 800", "a");
+    }
+
     private Date createDate(int year, int month, int day) {
         Calendar cal = Calendar.getInstance();
         cal.set(year, month - 1, day, 0, 0, 0);
@@ -163,17 +188,7 @@ public class SearchTestCase extends AbstractTest {
     }
 
     private void assertSearchYields(Index index, String queryString, String... documentIds) {
-        Results<ScoredDocument> results = index.search(queryString);
-        Collection<ScoredDocument> scoredDocuments = results.getResults();
-        System.out.println("-------------------------------");
-        System.out.println("queryString = " + queryString);
-        System.out.println("scoredDocuments = " + scoredDocuments);
-        for (ScoredDocument scoredDocument : scoredDocuments) {
-            System.out.println("scoredDocument = " + scoredDocument);
-        }
-        assertEquals("number of found documents", documentIds.length, results.getNumberFound());
-        assertEquals("number of returned documents", documentIds.length, results.getNumberReturned());
-        assertEquals("actual number of ScoredDcuments", documentIds.length, scoredDocuments.size());
+        Collection<ScoredDocument> scoredDocuments = getScoredDocuments(index, queryString, documentIds);
 
         Set<String> expectedDocumentIds = new HashSet<String>(Arrays.asList(documentIds));
         for (ScoredDocument scoredDocument : scoredDocuments) {
@@ -182,6 +197,27 @@ public class SearchTestCase extends AbstractTest {
                 fail("Search \"" + queryString + "\" yielded unexpected document id: " + scoredDocument.getId());
             }
         }
+    }
+
+    private Collection<ScoredDocument> getScoredDocuments(Index index, String queryString, String[] documentIds) {
+        Results<ScoredDocument> results = index.search(queryString);
+        Collection<ScoredDocument> scoredDocuments = results.getResults();
+        System.out.println("-------------------------------");
+        System.out.println("queryString = " + queryString);
+        System.out.println("scoredDocuments = " + scoredDocuments);
+
+        for (ScoredDocument scoredDocument : scoredDocuments) {
+            System.out.println("scoredDocument = " + scoredDocument);
+        }
+        assertNumberOfResults(documentIds.length, results);
+
+        return scoredDocuments;
+    }
+
+    private void assertNumberOfResults(int numberOfResults, Results<ScoredDocument> results) {
+        assertEquals("number of found documents", numberOfResults, results.getNumberFound());
+        assertEquals("number of returned documents", numberOfResults, results.getNumberReturned());
+        assertEquals("actual number of ScoredDcuments", numberOfResults, results.getResults().size());
     }
 
     @Ignore("No stemming yet")

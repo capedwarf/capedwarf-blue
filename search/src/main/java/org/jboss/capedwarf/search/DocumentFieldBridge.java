@@ -26,6 +26,8 @@ import com.google.appengine.api.search.Field;
 import org.apache.lucene.document.Document;
 import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.LuceneOptions;
+import org.hibernate.search.spatial.SpatialFieldBridgeByGrid;
+import org.hibernate.search.spatial.impl.Point;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -38,6 +40,7 @@ public class DocumentFieldBridge implements FieldBridge {
     private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    private SpatialFieldBridgeByGrid spatialFieldBridgeByGrid = new SpatialFieldBridgeByGrid();
 
     @SuppressWarnings("unchecked")
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
@@ -48,6 +51,14 @@ public class DocumentFieldBridge implements FieldBridge {
             if (field.getType() == Field.FieldType.NUMBER) {
                 luceneOptions.addNumericFieldToDocument(prefixedFieldName, field.getNumber(), document);
                 luceneOptions.addNumericFieldToDocument(prefixedAllFieldName, field.getNumber(), document);
+            } else if (field.getType() == Field.FieldType.GEO_POINT) {
+                spatialFieldBridgeByGrid.set(
+                    prefixedFieldName,
+                    Point.fromDegrees(field.getGeoPoint().getLatitude(), field.getGeoPoint().getLongitude()),
+                    document, luceneOptions
+                );
+
+                document.getFields();
             } else {
                 luceneOptions.addFieldToDocument(prefixedFieldName, convertToString(field), document);
                 luceneOptions.addFieldToDocument(prefixedAllFieldName, convertToString(field), document);
