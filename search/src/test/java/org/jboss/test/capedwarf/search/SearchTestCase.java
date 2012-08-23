@@ -158,6 +158,9 @@ public class SearchTestCase extends AbstractTest {
 
     @Test
     public void testSearchForLocationWithinSpecifiedDistance() {
+        if (runningInsideDevAppEngine()) {
+            return; // dev appengine does not support geo points
+        }
         Index index = getTestIndex();
         index.add(newDocument("a", newField("location").setGeoPoint(new GeoPoint(45.0, 15.0))));
         index.add(newDocument("b", newField("location").setGeoPoint(new GeoPoint(60.0, 40.0))));
@@ -166,6 +169,9 @@ public class SearchTestCase extends AbstractTest {
 
     @Test
     public void testArgumentsOfDistanceFunctionCanBeSwapped() {
+        if (runningInsideDevAppEngine()) {
+            return; // dev appengine does not support geo points
+        }
         Index index = getTestIndex();
         index.add(newDocument("a", newField("location").setGeoPoint(new GeoPoint(45.0, 15.0))));
         index.add(newDocument("b", newField("location").setGeoPoint(new GeoPoint(60.0, 40.0))));
@@ -174,6 +180,9 @@ public class SearchTestCase extends AbstractTest {
 
     @Test
     public void testSearchForLocationYieldsResultsInsideRadiusButNotInsideSquare() {
+        if (runningInsideDevAppEngine()) {
+            return; // dev appengine does not support geo points
+        }
         Index index = getTestIndex();
         index.add(newDocument("a", newField("location").setGeoPoint(new GeoPoint(46.051464, 14.515833))));
         index.add(newDocument("b", newField("location").setGeoPoint(new GeoPoint(46.046111, 14.513889))));
