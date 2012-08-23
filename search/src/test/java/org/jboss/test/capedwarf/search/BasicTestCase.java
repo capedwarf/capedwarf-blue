@@ -235,6 +235,9 @@ public class BasicTestCase extends AbstractTest {
 
     @Test
     public void testDocumentHandlesGeoPointFields() {
+        if (runningInsideDevAppEngine()) {
+            return; // dev appengine does not support geo points
+        }
         Document doc = newDocument(newField("geoPointField").setGeoPoint(new GeoPoint(45.0, 15.0)));
         Document retrievedDoc = addAndRetrieve(doc);
         Field field = retrievedDoc.getOnlyField("geoPointField");
