@@ -27,7 +27,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.blobstore.BlobInfo;
@@ -263,5 +265,16 @@ public class JBossFileService implements FileService {
             // TODO -- setMtime, setCtime
             return stat;
         }
+    }
+
+    public void delete(AppEngineFile... appEngineFiles) throws IOException {
+        final Set<AppEngineFile> failed = new HashSet<AppEngineFile>();
+        for (AppEngineFile aef : appEngineFiles) {
+            if (getGfsFile(aef).delete() == false) {
+                failed.add(aef);
+            }
+        }
+        if (failed.isEmpty() == false)
+            throw new IOException("Failed to delete files: " + failed);
     }
 }

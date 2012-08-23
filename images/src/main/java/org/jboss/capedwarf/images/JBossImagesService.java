@@ -151,6 +151,10 @@ public class JBossImagesService implements ImagesService {
         return getServingUrl(blobKey, imageSize != null ? imageSize : -1, crop != null && crop, secureUrl != null && secureUrl);
     }
 
+    public void deleteServingUrl(BlobKey blobKey) {
+        ImageServlet.deleteServingUrl(blobKey);
+    }
+
     private byte[] getByteArray(BufferedImage bufferedImage, OutputSettings outputSettings) {
         String formatName = getFormatName(outputSettings.getOutputEncoding());
 

@@ -120,6 +120,11 @@ public class ImageServlet extends HttpServlet {
         return builder.toString();
     }
 
+    @SuppressWarnings("UnusedParameters")
+    public static void deleteServingUrl(BlobKey blobKey) {
+        // no-op atm
+    }
+
     private static String getServletUrl(boolean secureUrl) {
         return JBossEnvironment.getThreadLocalInstance().getBaseApplicationUrl(secureUrl) + SERVLET_URI;
     }
