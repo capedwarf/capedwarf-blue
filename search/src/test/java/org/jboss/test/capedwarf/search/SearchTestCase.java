@@ -293,9 +293,8 @@ public class SearchTestCase extends AbstractTest {
         assertSearchYields(index, "body:foo NOT body:baz", "without_baz");
     }
 
-    @Ignore("check if this is even a valid test")
     @Test
-    public void testSearchWithNegation2() {
+    public void testSearchWithDisjunctionAndNegation() {
 
         Index index = getTestIndex();
         index.add(newDocument("foo_with_baz", newField("body").setText("Foo bar baz")));
