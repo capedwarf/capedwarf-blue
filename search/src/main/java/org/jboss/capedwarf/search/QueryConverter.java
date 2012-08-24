@@ -58,23 +58,10 @@ public class QueryConverter {
     }
 
     private Query convert(Tree tree) {
-        Context context = new Context() {
-            @Override
-            public void addSubQuery(Query query) {
-                setQuery(query);
-            }
-
-            @Override
-            public void addNegatedSubQuery(Query query) {
-                BooleanQuery booleanQuery = new BooleanQuery();
-                booleanQuery.add(new TermQuery(new Term(CacheValue.MATCH_ALL_DOCS_FIELD_NAME, CacheValue.MATCH_ALL_DOCS_FIELD_VALUE)), BooleanClause.Occur.SHOULD);
-                booleanQuery.add(query, BooleanClause.Occur.MUST_NOT);
-                setQuery(booleanQuery);
-            }
-        };
+        Context context = new Context();
         context.setField(new Context.SimpleField(allFieldName));
 
-        new QueryTreeWalker<Context>(createTreeVisitor()).walk(tree, context);
+        new QueryTreeWalker<Context>(createTreeVisitor()).walk(tree.getChild(0), context);
 
         return context.getQuery();
     }

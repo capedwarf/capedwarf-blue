@@ -53,55 +53,30 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
 
     public void visitConjunction(QueryTreeWalker<Context> walker, Tree tree, Context context) {
         BooleanQuery booleanQuery = new BooleanQuery();
-        context.addSubQuery(booleanQuery);
-        Context childContext = new Context(booleanQuery, context.getField(), context.getOperator()) {
-            public void addSubQuery(Query query) {
-                ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST);
-            }
-
-            @Override
-            public void addNegatedSubQuery(Query query) {
-                ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST_NOT);
-            }
-        };
-        walkThroughChildren(walker, tree, childContext);
+        walkThroughChildren(booleanQuery, BooleanClause.Occur.MUST, walker, tree, context);
+        context.setQuery(booleanQuery);
     }
 
     public void visitDisjunction(QueryTreeWalker<Context> walker, Tree tree, Context context) {
         BooleanQuery booleanQuery = new BooleanQuery();
-        context.addSubQuery(booleanQuery);
-        Context childContext = new Context(booleanQuery, context.getField(), context.getOperator()) {
-            public void addSubQuery(Query query) {
-                ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.SHOULD);
-            }
-
-            @Override
-            public void addNegatedSubQuery(Query query) {
-                ((BooleanQuery) getQuery()).add(query, BooleanClause.Occur.MUST_NOT);
-            }
-        };
-        walkThroughChildren(walker, tree, childContext);
+        walkThroughChildren(booleanQuery, BooleanClause.Occur.SHOULD, walker, tree, context);
+        context.setQuery(booleanQuery);
     }
 
     public void visitNegation(QueryTreeWalker<Context> walker, Tree tree, final Context context) {
-        Context childContext = new ForwardingContext(context) {
-            @Override
-            public void addSubQuery(Query query) {
-                context.addNegatedSubQuery(query);
-            }
-
-            @Override
-            public void addNegatedSubQuery(Query query) {
-                context.addSubQuery(query);
-            }
-        };
-        walker.walk(tree.getChild(0), childContext);
+        BooleanQuery booleanQuery = new BooleanQuery();
+        booleanQuery.add(new TermQuery(new Term(CacheValue.MATCH_ALL_DOCS_FIELD_NAME, CacheValue.MATCH_ALL_DOCS_FIELD_VALUE)), BooleanClause.Occur.MUST);
+        walkThroughChildren(booleanQuery, BooleanClause.Occur.MUST_NOT, walker, tree, context);
+        context.setQuery(booleanQuery);
     }
 
-    private void walkThroughChildren(QueryTreeWalker<Context> walker, Tree tree, Context context) {
+    private void walkThroughChildren(BooleanQuery booleanQuery, BooleanClause.Occur occur, QueryTreeWalker<Context> walker, Tree tree, Context context) {
         for (int i = 0; i < tree.getChildCount(); i++) {
             Tree childTree = tree.getChild(i);
-            walker.walk(childTree, context);
+
+            Context childContext = new Context(null, context.getField(), context.getOperator());
+            walker.walk(childTree, childContext);
+            booleanQuery.add(childContext.getQuery(), occur);
         }
     }
 
@@ -172,7 +147,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
         Operator operator = context.getOperator();
         Tree type = tree.getChild(0);
         Tree value = tree.getChild(1);
-        context.addSubQuery(createQuery(field, operator, type, value));
+        context.setQuery(createQuery(field, operator, type, value));
     }
 
     protected Query createQuery(Context.Field field, Operator operator, Tree type, Tree value) {
@@ -262,7 +237,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
     }
 
     public void visitOther(QueryTreeWalker<Context> walker, Tree tree, Context context) {
-        walkThroughChildren(walker, tree, context);
+        throw new RuntimeException("should never come here");
     }
 
     private static class ForwardingContext extends Context {
@@ -275,13 +250,8 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
         }
 
         @Override
-        public void addSubQuery(Query query) {
-            context.addSubQuery(query);
-        }
-
-        @Override
-        public void addNegatedSubQuery(Query query) {
-            context.addNegatedSubQuery(query);
+        protected void setQuery(Query query) {
+            context.setQuery(query);
         }
     }
 }

@@ -28,7 +28,7 @@ import org.apache.lucene.search.Query;
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public abstract class Context {
+public class Context {
 
     private Query query;
     private Field field;
@@ -59,10 +59,6 @@ public abstract class Context {
     protected void setQuery(Query query) {
         this.query = query;
     }
-
-    public abstract void addSubQuery(Query query);
-
-    public abstract void addNegatedSubQuery(Query query);
 
     public void setOperator(Operator operator) {
         this.operator = operator;
