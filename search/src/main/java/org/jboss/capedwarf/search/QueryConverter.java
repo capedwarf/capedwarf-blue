@@ -27,9 +27,11 @@ import com.google.appengine.api.search.query.QueryTreeWalker;
 import com.google.appengine.repackaged.org.antlr.runtime.RecognitionException;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.CommonTree;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.Tree;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 
 import java.util.logging.Logger;
 
@@ -65,6 +67,7 @@ public class QueryConverter {
             @Override
             public void addNegatedSubQuery(Query query) {
                 BooleanQuery booleanQuery = new BooleanQuery();
+                booleanQuery.add(new TermQuery(new Term(CacheValue.MATCH_ALL_DOCS_FIELD_NAME, CacheValue.MATCH_ALL_DOCS_FIELD_VALUE)), BooleanClause.Occur.SHOULD);
                 booleanQuery.add(query, BooleanClause.Occur.MUST_NOT);
                 setQuery(booleanQuery);
             }

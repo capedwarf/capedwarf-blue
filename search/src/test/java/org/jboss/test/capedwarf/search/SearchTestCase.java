@@ -306,7 +306,6 @@ public class SearchTestCase extends AbstractTest {
         assertSearchYields(index, "body:foo OR NOT body:baz", "foo_with_baz", "foo_without_baz", "without_foo_without_baz");
     }
 
-    @Ignore("Not supported by Lucene. Must check if it is even supported by GAE")
     @Test
     public void testSearchWithNegationOnly() {
         Index index = getTestIndex();

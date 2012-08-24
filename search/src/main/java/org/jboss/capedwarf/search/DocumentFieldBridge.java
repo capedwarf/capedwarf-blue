@@ -32,6 +32,8 @@ import org.hibernate.search.spatial.impl.Point;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import static org.apache.lucene.document.Field.*;
+
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
@@ -45,6 +47,7 @@ public class DocumentFieldBridge implements FieldBridge {
     @SuppressWarnings("unchecked")
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         com.google.appengine.api.search.Document googleDocument = (com.google.appengine.api.search.Document) value;
+        document.add(new org.apache.lucene.document.Field(CacheValue.MATCH_ALL_DOCS_FIELD_NAME, CacheValue.MATCH_ALL_DOCS_FIELD_VALUE, Store.NO, Index.NOT_ANALYZED_NO_NORMS));
         for (Field field : googleDocument.getFields()) {
             String prefixedFieldName = fieldNamePrefixer.getPrefixedFieldName(field.getName(), field.getType());
             String prefixedAllFieldName = fieldNamePrefixer.getPrefixedFieldName(CacheValue.ALL_FIELD_NAME, field.getType());

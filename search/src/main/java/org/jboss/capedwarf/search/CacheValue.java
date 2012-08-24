@@ -49,6 +49,8 @@ public class CacheValue implements Serializable {
     public static final String RANK_FIELD_NAME = "__rank__";
     public static final String LOCALE_FIELD_NAME = "__locale__";
     public static final String ALL_FIELD_NAME = "__all__";
+    public static final String MATCH_ALL_DOCS_FIELD_NAME = "__ALL_DOCS__";
+    public static final String MATCH_ALL_DOCS_FIELD_VALUE = "all";
 
     private String indexName;
     private String namespace;

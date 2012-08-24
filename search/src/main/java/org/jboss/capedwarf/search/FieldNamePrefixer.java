@@ -48,7 +48,11 @@ public class FieldNamePrefixer {
     }
 
     public Field.FieldType getFieldType(String prefixedFieldName) {
-        String prefix = prefixedFieldName.substring(0, prefixedFieldName.indexOf(DELIMITER));
+        int delimiterIndex = prefixedFieldName.indexOf(DELIMITER);
+        if (delimiterIndex == -1) {
+            throw new IllegalArgumentException("Field name is not prefixed: " + prefixedFieldName);
+        }
+        String prefix = prefixedFieldName.substring(0, delimiterIndex);
         return Field.FieldType.valueOf(prefix);
     }
 }
