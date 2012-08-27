@@ -49,15 +49,15 @@ public class QueryConverterTestCase {
     @Test
     public void testConversion() throws Exception {
         assertQueryEquals("field:value", "field:value");
-        assertQueryEquals("-field:value", "NOT field:value");
+        assertQueryEquals("+__ALL_DOCS__:all -field:value", "NOT field:value");
         assertQueryEquals("field:aaa AND field:bbb", "field:aaa field:bbb");
         assertQueryEquals("field:aaa AND field:bbb AND field:ccc", "field:aaa field:bbb field:ccc");
         assertQueryEquals("field:aaa OR field:bbb OR field:ccc", "field:aaa OR field:bbb OR field:ccc");
         assertQueryEquals("field:aaa AND field:bbb AND field:ccc", "field:aaa AND field:bbb AND field:ccc");
-        assertQueryEquals("author:rose OR NOT body:filigree", "author:rose OR NOT body:filigree");
-        assertQueryEquals("+author:rose -body:filigree", "author:rose AND NOT body:filigree");
-        assertQueryEquals("+author:rose -(body:filigree author:jones)", "author:rose NOT (body:filigree OR author:jones)");
-        assertQueryEquals("+author:rose -(+body:filigree +author:jones)", "author:rose NOT (body:filigree AND author:jones)");
+        assertQueryEquals("author:rose OR (__ALL_DOCS__:all AND NOT body:filigree)", "author:rose OR NOT body:filigree");
+        assertQueryEquals("+author:rose +(__ALL_DOCS__:all AND -body:filigree)", "author:rose AND NOT body:filigree");
+        assertQueryEquals("+author:rose +(+__ALL_DOCS__:all -(body:filigree author:jones))", "author:rose NOT (body:filigree OR author:jones)");
+        assertQueryEquals("+author:rose +(+__ALL_DOCS__:all -(+body:filigree +author:jones))", "author:rose NOT (body:filigree AND author:jones)");
 
         assertQueryEquals("field:[value TO value]", "field=value");
         assertQueryEquals("all:rose", "rose");
@@ -101,8 +101,8 @@ public class QueryConverterTestCase {
         assertQueryEquals("product_code:[xyz1000 TO xyz1000]", "product_code = xyz1000");
 
         assertQueryEquals("author:bob OR ((author:rose OR author:tom) AND author:jones)", "author:(bob OR ((rose OR tom) AND jones))");
-        assertQueryEquals("author:rose AND NOT body:filigree", "author:rose NOT body:filigree");
-        assertQueryEquals("(author:Thomas OR author:Jones) AND NOT body:rose", "(author:Thomas OR author:Jones) AND (NOT body:rose)");
+        assertQueryEquals("author:rose AND (__ALL_DOCS__:all AND NOT body:filigree)", "author:rose NOT body:filigree");
+        assertQueryEquals("(author:Thomas OR author:Jones) AND (__ALL_DOCS__:all AND NOT body:rose)", "(author:Thomas OR author:Jones) AND (NOT body:rose)");
     }
 
     private static void assertQueryEquals(String expectedLuceneQueryString, String gaeQueryString) throws ParseException {
