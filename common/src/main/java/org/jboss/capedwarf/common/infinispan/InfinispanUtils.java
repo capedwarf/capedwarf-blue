@@ -40,6 +40,7 @@ import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
+import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.capedwarf.common.app.Application;
@@ -62,11 +63,23 @@ public class InfinispanUtils {
         return cacheManager;
     }
 
+    // this method should already hold synch monitor
+    private static <K, V> Cache<K, V> checkCache(String cacheName) {
+        final Cache<K, V> cache = cacheManager.getCache(cacheName, false);
+        if (cache != null) {
+            final ComponentStatus status = cache.getStatus();
+            if (status != ComponentStatus.INITIALIZING && status != ComponentStatus.RUNNING) {
+                cache.start(); // re-start stopped cache
+            }
+        }
+        return cache;
+    }
+
     protected static <K, V> Cache<K, V> getCache(CacheName config, String appId, ConfigurationCallback callback) {
         final String cacheName = toCacheName(config, appId);
         //noinspection SynchronizeOnNonFinalField
         synchronized (cacheManager) {
-            final Cache<K, V> cache = cacheManager.getCache(toCacheName(config, appId), false);
+            final Cache<K, V> cache = checkCache(cacheName);
             if (cache != null)
                 return cache;
 
@@ -147,7 +160,8 @@ public class InfinispanUtils {
         final String appId = Application.getAppId();
         //noinspection SynchronizeOnNonFinalField
         synchronized (cacheManager) {
-            final Cache<K, V> cache = cacheManager.getCache(toCacheName(config, appId), false);
+            final String cacheName = toCacheName(config, appId);
+            final Cache<K, V> cache = checkCache(cacheName);
             if (cache != null)
                 return cache;
         }
