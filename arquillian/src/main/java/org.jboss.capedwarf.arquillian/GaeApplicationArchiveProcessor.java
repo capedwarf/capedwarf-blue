@@ -41,7 +41,7 @@ public class GaeApplicationArchiveProcessor implements ApplicationArchiveProcess
         if (archive instanceof WebArchive) {
             WebArchive war = (WebArchive) archive;
             MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class).loadMetadataFromPom("pom.xml");
-            war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-1.0-sdk:1.7.0").resolveAsFiles());
+            war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-1.0-sdk").resolveAsFiles());
         }
     }
 }
