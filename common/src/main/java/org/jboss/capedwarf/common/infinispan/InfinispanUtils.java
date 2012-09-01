@@ -26,7 +26,10 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.hibernate.search.Environment;
 import org.hibernate.search.backend.impl.jgroups.JGroupsChannelProvider;
@@ -51,6 +54,8 @@ import org.jgroups.JChannel;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InfinispanUtils {
+    private static Map<String, Lock> locks = new ConcurrentHashMap<String, Lock>();
+
     private static String[] defaultJndiNames = {"java:jboss/infinispan/container/capedwarf"};
     private static final String MUX_GEN  = "mux_gen";
     private static final int INDEXING_CACHES = 4;
@@ -77,8 +82,10 @@ public class InfinispanUtils {
 
     protected static <K, V> Cache<K, V> getCache(CacheName config, String appId, ConfigurationCallback callback) {
         final String cacheName = toCacheName(config, appId);
-        //noinspection SynchronizeOnNonFinalField
-        synchronized (cacheManager) {
+
+        final Lock lock = locks.get(appId);
+        lock.lock();
+        try {
             final Cache<K, V> cache = checkCache(cacheName);
             if (cache != null)
                 return cache;
@@ -89,6 +96,8 @@ public class InfinispanUtils {
             }
 
             return cacheManager.getCache(cacheName, true);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -158,12 +167,16 @@ public class InfinispanUtils {
             throw new IllegalArgumentException("Cache " + config + " needs custom configuration!");
 
         final String appId = Application.getAppId();
-        //noinspection SynchronizeOnNonFinalField
-        synchronized (cacheManager) {
+
+        final Lock lock = locks.get(appId);
+        lock.lock();
+        try {
             final String cacheName = toCacheName(config, appId);
             final Cache<K, V> cache = checkCache(cacheName);
             if (cache != null)
                 return cache;
+        } finally {
+            lock.unlock();
         }
 
         final Configuration existing = getConfiguration(config);
@@ -228,9 +241,14 @@ public class InfinispanUtils {
             cacheManager = JndiLookupUtils.lazyLookup("infinispan.jndi.name", EmbeddedCacheManager.class, defaultJndiNames);
         }
         cacheManagerUsers++;
+        // add lock
+        locks.put(appId, new ReentrantLock());
     }
 
     public static synchronized void clearApplicationData(String appId) {
+        // remove lock
+        locks.remove(appId);
+
         synchronized (gridFilesystems) {
             gridFilesystems.remove(appId);
         }
