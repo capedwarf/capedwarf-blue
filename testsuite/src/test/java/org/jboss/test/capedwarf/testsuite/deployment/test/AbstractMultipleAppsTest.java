@@ -44,12 +44,8 @@ public class AbstractMultipleAppsTest {
                 .addAsWebInfResource("appengine-web-" + suffix + ".xml", "appengine-web.xml");
     }
 
-    protected boolean isJBoss() {
-        return DatastoreServiceFactory.getDatastoreService().getClass().getName().contains(".jboss.");
-    }
-
     protected void allTests() throws Exception {
-        if (isJBoss()) testEmptyDS();
+        testEmptyDS();
         testDSTouch();
     }
 
