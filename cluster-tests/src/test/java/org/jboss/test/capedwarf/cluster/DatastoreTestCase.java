@@ -3,14 +3,6 @@ package org.jboss.test.capedwarf.cluster;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
-import org.jboss.capedwarf.datastore.JBossDatastoreService;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -19,9 +11,17 @@ import com.google.appengine.api.datastore.FetchOptions.Builder;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.capedwarf.datastore.JBossDatastoreService;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
 public class DatastoreTestCase extends AbstractClusteredTest {
@@ -42,13 +42,14 @@ public class DatastoreTestCase extends AbstractClusteredTest {
         Entity entity = createTestEntity("KIND", 2);
         getService().put(entity);
         assertStoreContains(entity);
-        waitForSync();
     }
 
     @InSequence(40)
     @Test
     @OperateOnDeployment("dep1")
     public void getEntityOnDepA() throws Exception {
+        waitForSync();
+
         Key key = KeyFactory.createKey("KIND", 1);
         Entity lookup = getService().get(key);
 
@@ -62,6 +63,8 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @Test
     @OperateOnDeployment("dep2")
     public void getEntityOnDepB() throws Exception {
+        waitForSync();
+
         Entity entity = createTestEntity("KIND", 1);
         assertStoreContains(entity);
     }
@@ -70,6 +73,8 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @Test
     @OperateOnDeployment("dep1")
     public void queryOnA() throws Exception {
+        waitForSync();
+
         int count = getService().prepare(new Query("KIND")).countEntities(Builder.withDefaults());
         Assert.assertTrue("Number of entities: " + count, count == 2);
     }
@@ -78,6 +83,8 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @Test
     @OperateOnDeployment("dep2")
     public void queryOnB() throws Exception {
+        waitForSync();
+
         int count = getService().prepare(new Query("KIND")).countEntities(Builder.withDefaults());
         Assert.assertTrue("Number of entities: " + count, count == 2);
     }
@@ -96,7 +103,6 @@ public class DatastoreTestCase extends AbstractClusteredTest {
         entity2.setProperty("text", "A1");
         getService().put(entity2);
 
-        waitForSync();
         int count = getService().prepare(new Query("indexGen")).countEntities(Builder.withDefaults());
         Assert.assertEquals(2, count);
     }
@@ -105,8 +111,6 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @Test
     @OperateOnDeployment("dep2")
     public void indexGenAndQueryInsertOnB() throws Exception {
-        waitForSync();
-
         Entity entity = new Entity("indexGen");
         entity.setProperty("text", "B");
         getService().put(entity);
@@ -121,7 +125,6 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @Test
     @OperateOnDeployment("dep1")
     public void testContentOnA() throws Exception {
-
         waitForSync();
 
         int count = getService().prepare(new Query("indexGen")).countEntities(Builder.withDefaults());
@@ -142,7 +145,9 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     @InSequence(80)
     @Test
     @OperateOnDeployment("dep2")
-    public void testContentOnB() {
+    public void testContentOnB() throws Exception {
+        waitForSync();
+
         List<Entity> list = getService().prepare(new Query("indexGen")).asList(Builder.withDefaults());
         Assert.assertEquals(3, list.size());
 
