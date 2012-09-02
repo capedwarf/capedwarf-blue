@@ -57,7 +57,7 @@ public class ManualMultipleAppsTestCase extends AbstractMultipleAppsTest {
 
     @Test @InSequence(2) @OperateOnDeployment("depA")
     public void testInitialApp() throws Exception {
-        allTests();
+        allTests(true);
     }
 
     @Test @InSequence(3)
@@ -69,6 +69,6 @@ public class ManualMultipleAppsTestCase extends AbstractMultipleAppsTest {
 
     @Test @InSequence(4) @OperateOnDeployment("depA")
     public void testInitialAppAgain() throws Exception {
-        allTests();
+        allTests(false);
     }
 }

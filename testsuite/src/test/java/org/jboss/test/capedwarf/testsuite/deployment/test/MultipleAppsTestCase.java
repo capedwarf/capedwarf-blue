@@ -46,11 +46,11 @@ public class MultipleAppsTestCase extends AbstractMultipleAppsTest {
 
     @Test @OperateOnDeployment("depA")
     public void depATests() throws Exception {
-        allTests();
+        allTests(true);
     }
 
     @Test @OperateOnDeployment("depB")
     public void depBTests() throws Exception {
-        allTests();
+        allTests(true);
     }
 }

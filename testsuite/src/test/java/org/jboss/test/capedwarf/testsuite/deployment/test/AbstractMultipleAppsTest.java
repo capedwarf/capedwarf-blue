@@ -44,16 +44,16 @@ public class AbstractMultipleAppsTest {
                 .addAsWebInfResource("appengine-web-" + suffix + ".xml", "appengine-web.xml");
     }
 
-    protected void allTests() throws Exception {
-        testEmptyDS();
+    protected void allTests(boolean empty) throws Exception {
+        testEmptyDS(empty);
         testDSTouch();
     }
 
-    protected void testEmptyDS() throws Exception {
+    protected void testEmptyDS(boolean empty) throws Exception {
         DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
         Query query = new Query("MKind");
         PreparedQuery pq = ds.prepare(query);
-        Assert.assertFalse(pq.asIterator().hasNext());
+        Assert.assertEquals(!empty, pq.asIterator().hasNext());
     }
 
     protected void testDSTouch() throws Exception {
