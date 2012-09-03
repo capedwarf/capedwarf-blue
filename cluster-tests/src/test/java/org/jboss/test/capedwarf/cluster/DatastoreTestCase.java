@@ -103,6 +103,8 @@ public class DatastoreTestCase extends AbstractClusteredTest {
         entity2.setProperty("text", "A1");
         getService().put(entity2);
 
+        waitForSync();
+
         int count = getService().prepare(new Query("indexGen")).countEntities(Builder.withDefaults());
         Assert.assertEquals(2, count);
     }
