@@ -61,4 +61,11 @@ public class AbstractMultipleAppsTest {
         Key key = ds.put(new Entity("MKind"));
         Assert.assertTrue(ds.get(key) != null);
     }
+
+    protected void cleanup() throws Exception {
+        DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
+        for (Entity e : ds.prepare(new Query("MKind").setKeysOnly()).asIterable()) {
+            ds.delete(e.getKey());
+        }
+    }
 }

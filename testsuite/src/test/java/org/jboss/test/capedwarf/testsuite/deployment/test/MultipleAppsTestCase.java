@@ -47,10 +47,12 @@ public class MultipleAppsTestCase extends AbstractMultipleAppsTest {
     @Test @OperateOnDeployment("depA")
     public void depATests() throws Exception {
         allTests(true);
+        cleanup();
     }
 
     @Test @OperateOnDeployment("depB")
     public void depBTests() throws Exception {
         allTests(true);
+        cleanup();
     }
 }

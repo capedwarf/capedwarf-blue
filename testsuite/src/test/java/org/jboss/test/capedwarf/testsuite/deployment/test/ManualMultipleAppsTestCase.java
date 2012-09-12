@@ -70,5 +70,6 @@ public class ManualMultipleAppsTestCase extends AbstractMultipleAppsTest {
     @Test @InSequence(4) @OperateOnDeployment("depA")
     public void testInitialAppAgain() throws Exception {
         allTests(false);
+        cleanup();
     }
 }
