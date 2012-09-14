@@ -39,7 +39,7 @@ import static org.junit.Assert.assertThat;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class QueryFilteringByBasicPropertyTypesTestCase extends QueryTestCase {
+public class QueryFilteringByBasicPropertyTypesTestCase extends QueryTest {
 
     @Test
     public void testBooleanProperty() throws Exception {

@@ -24,6 +24,8 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.List;
+
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.Category;
 import com.google.appengine.api.datastore.Entity;
@@ -44,8 +46,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.List;
-
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
 import static org.junit.Assert.assertEquals;
@@ -57,7 +57,7 @@ import static org.junit.Assert.assertEquals;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTestCase {
+public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTest {
 
     @Test
     public void testFilterByEntityKey() {

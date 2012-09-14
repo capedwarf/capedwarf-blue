@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class QueryFetchOptionsTestCase extends QueryTestCase {
+public class QueryFetchOptionsTestCase extends QueryTest {
 
     @Ignore("not implemented yet")
     @Test

@@ -24,6 +24,13 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -34,23 +41,20 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
-import static com.google.appengine.api.datastore.Query.FilterOperator.*;
+import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
+import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
+import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN_OR_EQUAL;
+import static com.google.appengine.api.datastore.Query.FilterOperator.LESS_THAN;
+import static com.google.appengine.api.datastore.Query.FilterOperator.LESS_THAN_OR_EQUAL;
+import static com.google.appengine.api.datastore.Query.FilterOperator.NOT_EQUAL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public abstract class QueryTestCase extends AbstractTest {
+public abstract class QueryTest extends AbstractTest {
 
     protected static final String TEST_ENTITY_KIND = "test";
     protected static final String SINGLE_PROPERTY_NAME = "prop";
@@ -60,7 +64,7 @@ public abstract class QueryTestCase extends AbstractTest {
     @Deployment
     public static WebArchive getDeployment() {
         return AbstractTest.getDeployment()
-            .addClass(QueryTestCase.class);
+            .addClass(QueryTest.class);
     }
 
     protected static Date createDate(int year, int month, int day) {

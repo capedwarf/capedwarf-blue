@@ -24,17 +24,16 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsEqual;
 import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.SortDirection.ASCENDING;
@@ -48,7 +47,7 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class QuerySortingTestCase extends QueryTestCase {
+public class QuerySortingTestCase extends QueryTest {
 
     @Test
     public void testSortingByStringProperty() throws Exception {

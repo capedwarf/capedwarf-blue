@@ -1,12 +1,12 @@
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.Arrays;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.Arrays;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static com.google.appengine.api.datastore.Query.FilterOperator.IN;
@@ -18,7 +18,7 @@ import static org.junit.Assert.assertThat;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class QueryFilteringByStringPropertyTypeTestCase extends QueryTestCase {
+public class QueryFilteringByStringPropertyTypeTestCase extends QueryTest {
 
     @Test
     public void queryByEqualReturnsEntityWithEqualPropertyValue() throws Exception {

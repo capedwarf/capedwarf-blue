@@ -147,6 +147,28 @@
                 </dependency>
             </dependencies>
         </profile>
+        <!-- GAE remote - AppSpot -->
+        <profile>
+            <id>gae-remote</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>gae-remote</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-arquillian</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>arquillian-gae-remote</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
 
 </project>

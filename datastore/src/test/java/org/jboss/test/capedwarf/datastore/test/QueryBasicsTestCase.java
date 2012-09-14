@@ -24,6 +24,10 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
@@ -33,11 +37,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-
-import static com.google.appengine.api.datastore.FetchOptions.Builder.*;
+import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
 import static com.google.appengine.api.datastore.Query.FilterOperator.IN;
@@ -53,7 +53,7 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class QueryBasicsTestCase extends QueryTestCase {
+public class QueryBasicsTestCase extends QueryTest {
 
     @Test
     public void textQueryWithoutAnyConstraints() throws Exception {
@@ -112,20 +112,6 @@ public class QueryBasicsTestCase extends QueryTestCase {
                 .addFilter("lastName", EQUAL, "Doe");
 
         assertSingleResult(johnDoe, query);
-    }
-
-    @Test
-    public void testKeysOnly() throws Exception {
-        Entity john = createEntity("Person", 1)
-                .withProperty("name", "John")
-                .store();
-
-        Query query = new Query("Person").setKeysOnly();
-
-        PreparedQuery preparedQuery = service.prepare(query);
-
-        Entity entity = preparedQuery.asSingleEntity();
-        assertEquals(john.getKey(), entity.getKey());
     }
 
     @Test

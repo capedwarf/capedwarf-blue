@@ -22,6 +22,8 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.List;
+
 import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.BaseDatastoreService;
 import com.google.appengine.api.datastore.DatastoreConfig;
@@ -36,8 +38,6 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.List;
-
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
 import static org.junit.Assert.assertEquals;
@@ -48,7 +48,7 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class ConfigTestCase extends QueryTestCase {
+public class ConfigTestCase extends QueryTest {
 
     @Test
     public void testFactoryPassesConfigToDatastoreServiceInstance() throws Exception {

@@ -50,7 +50,7 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class PreparedQueryTestCase extends QueryTestCase {
+public class PreparedQueryTestCase extends QueryTest {
 
     private Entity john;
     private PreparedQuery preparedQuery;
