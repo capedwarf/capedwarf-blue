@@ -241,7 +241,7 @@ public class TransactionsTestCase extends AbstractTest {
         Transaction tx = service.beginTransaction();
         try {
             Key someAncestor = KeyFactory.createKey("ancestor", "1");
-            prepareQueryWithAncestor(tx, someAncestor).asIterator();
+            prepareQueryWithAncestor(tx, someAncestor).asIterator().hasNext();
 
             Key otherAncestor = KeyFactory.createKey("ancestor", "2");
             assertIAEWhenAccessingResult(prepareQueryWithAncestor(tx, otherAncestor));
