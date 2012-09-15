@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -245,6 +246,32 @@ public class TransactionsTestCase extends AbstractTest {
 
             Key otherAncestor = KeyFactory.createKey("ancestor", "2");
             assertIAEWhenAccessingResult(prepareQueryWithAncestor(tx, otherAncestor));
+        } finally {
+            tx.rollback();
+        }
+    }
+
+    @Test
+    public void testQueriesWithDifferentAncestorsInsideSameTransactionNoUsage() {
+        Transaction tx = service.beginTransaction();
+        try {
+            Key a1 = KeyFactory.createKey("ancestor", "1");
+            prepareQueryWithAncestor(tx, a1).asIterator();
+
+            Key a2 = KeyFactory.createKey("ancestor", "2");
+            prepareQueryWithAncestor(tx, a2).asList(FetchOptions.Builder.withDefaults());
+
+            Key a3 = KeyFactory.createKey("ancestor", "3");
+            prepareQueryWithAncestor(tx, a3).asIterable();
+
+            Key a4 = KeyFactory.createKey("ancestor", "4");
+            prepareQueryWithAncestor(tx, a4).asQueryResultIterable();
+
+            Key a5 = KeyFactory.createKey("ancestor", "5");
+            prepareQueryWithAncestor(tx, a5).asQueryResultIterator();
+
+            Key a6 = KeyFactory.createKey("ancestor", "6");
+            prepareQueryWithAncestor(tx, a6).asQueryResultList(FetchOptions.Builder.withDefaults());
         } finally {
             tx.rollback();
         }
