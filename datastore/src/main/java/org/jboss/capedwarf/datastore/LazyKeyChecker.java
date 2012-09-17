@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import javax.transaction.Status;
 
 import com.google.appengine.api.datastore.Key;
@@ -30,6 +32,7 @@ import com.google.appengine.api.datastore.Key;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class LazyKeyChecker {
+    private final AtomicBoolean checked = new AtomicBoolean();
     protected final Key ancestor;
     protected final boolean inTx;
 
@@ -44,7 +47,9 @@ public abstract class LazyKeyChecker {
                 throw new IllegalStateException("Transaction with which this operation is associated is not active.");
             }
 
-            JBossDatastoreService.trackKey(ancestor);
+            if (checked.compareAndSet(false, true)) {
+                JBossDatastoreService.trackKey(ancestor);
+            }
         }
     }
 }
