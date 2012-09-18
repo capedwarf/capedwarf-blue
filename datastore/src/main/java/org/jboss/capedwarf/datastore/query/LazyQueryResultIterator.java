@@ -29,10 +29,10 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.QueryResultIterator;
-import org.infinispan.query.CacheQuery;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 class LazyQueryResultIterator<E> extends LazyChecker implements QueryResultIterator<E> {
     private volatile QueryResultIterator<E> delegate;
@@ -47,23 +47,14 @@ class LazyQueryResultIterator<E> extends LazyChecker implements QueryResultItera
             synchronized (this) {
                 if (delegate == null) {
                     apply();
-                    Iterator iterator = createQueryIterator();
+                    EntityLoader entityLoader = new EntityLoader(holder.getQuery(), holder.getCacheQuery());
+                    Iterator iterator = entityLoader.getIterator(fetchOptions.getChunkSize());
                     iterator = new QueryResultProcessor(holder.getQuery()).process(iterator);
                     delegate = new QueryResultIteratorImpl<E>(iterator);
                 }
             }
         }
         return delegate;
-    }
-
-    private Iterator createQueryIterator() {
-        final CacheQuery cacheQuery = holder.getCacheQuery();
-        final Integer chunkSize = fetchOptions.getChunkSize();
-        if (chunkSize == null) {
-            return cacheQuery.iterator();
-        } else {
-            return cacheQuery.iterator(chunkSize);
-        }
     }
 
     public List<Index> getIndexList() {

@@ -6,6 +6,7 @@ import com.google.appengine.api.datastore.Query;
 import org.apache.lucene.search.Sort;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.query.CacheQuery;
+import org.infinispan.query.ProjectionConstants;
 import org.infinispan.query.SearchManager;
 
 import java.util.ArrayList;
@@ -39,8 +40,16 @@ public class QueryConverter {
     }
 
     public CacheQuery convert(Query gaeQuery) {
-        CacheQuery cacheQuery = getCacheQuery(createLuceneQuery(gaeQuery));
+        CacheQuery cacheQuery = getCacheQuery(gaeQuery);
         addSortToQuery(cacheQuery, gaeQuery);
+        return cacheQuery;
+    }
+
+    private CacheQuery getCacheQuery(Query gaeQuery) {
+        CacheQuery cacheQuery = getCacheQuery(createLuceneQuery(gaeQuery));
+        if (gaeQuery.isKeysOnly()) {
+            cacheQuery.projection(ProjectionConstants.KEY);
+        }
         return cacheQuery;
     }
 

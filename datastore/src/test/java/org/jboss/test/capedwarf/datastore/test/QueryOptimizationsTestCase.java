@@ -49,7 +49,6 @@ public class QueryOptimizationsTestCase extends QueryTest {
     }
 
     @Test
-    @Ignore
     public void testKeysOnly() throws Exception {
         Entity john = createEntity("Person", 1)
                 .withProperty("name", "John")

@@ -32,6 +32,7 @@ import com.google.appengine.api.datastore.QueryResultList;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 class LazyQueryResultList<E> extends LazyList<E> implements QueryResultList<E> {
     private volatile QueryResultList<E> delegate;
@@ -46,7 +47,8 @@ class LazyQueryResultList<E> extends LazyList<E> implements QueryResultList<E> {
             synchronized (this) {
                 if (delegate == null) {
                     apply();
-                    List objects = holder.getCacheQuery().list();
+                    EntityLoader entityLoader = new EntityLoader(holder.getQuery(), holder.getCacheQuery());
+                    List objects = entityLoader.getList();
                     objects = new QueryResultProcessor(holder.getQuery()).process(objects);
                     delegate = new QueryResultListImpl<E>(objects, JBossCursorHelper.createListCursor(fetchOptions));
                 }
