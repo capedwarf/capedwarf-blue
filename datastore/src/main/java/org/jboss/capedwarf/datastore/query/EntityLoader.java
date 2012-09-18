@@ -24,6 +24,8 @@ package org.jboss.capedwarf.datastore.query;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Projection;
+import com.google.appengine.api.datastore.PropertyProjection;
 import com.google.appengine.api.datastore.Query;
 import com.google.common.collect.ForwardingIterator;
 import org.infinispan.query.CacheQuery;
@@ -70,12 +72,23 @@ public class EntityLoader {
     }
 
     private boolean specialLoadingNeeded() {
-        return query.isKeysOnly();
+        return query.isKeysOnly() || !query.getProjections().isEmpty();
     }
 
     private Entity convertToEntity(Object result) {
         Object[] row = (Object[]) result;
-        return new Entity((Key) row[0]);
+        Entity entity = new Entity((Key) row[0]);
+        int i=0;
+        for (Projection projection : query.getProjections()) {
+            if (projection instanceof PropertyProjection) {
+                PropertyProjection propertyProjection = (PropertyProjection) projection;
+                entity.setProperty(propertyProjection.getName(), row[i]);
+            } else {
+                throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
+            }
+            i++;
+        }
+        return entity;
     }
 
     private class WrappingIterator extends ForwardingIterator<Object> {

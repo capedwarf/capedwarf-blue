@@ -66,7 +66,6 @@ public class QueryOptimizationsTestCase extends QueryTest {
     }
 
     @Test
-    @Ignore
     public void testProjections() throws Exception {
         Entity e = createEntity("Product", 1)
                 .withProperty("price", 123L)

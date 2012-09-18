@@ -2,6 +2,8 @@ package org.jboss.capedwarf.datastore.query;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Projection;
+import com.google.appengine.api.datastore.PropertyProjection;
 import com.google.appengine.api.datastore.Query;
 import org.apache.lucene.search.Sort;
 import org.hibernate.search.query.dsl.QueryBuilder;
@@ -49,6 +51,18 @@ public class QueryConverter {
         CacheQuery cacheQuery = getCacheQuery(createLuceneQuery(gaeQuery));
         if (gaeQuery.isKeysOnly()) {
             cacheQuery.projection(ProjectionConstants.KEY);
+        } else if (!gaeQuery.getProjections().isEmpty()) {
+            List<String> projections = new ArrayList<String>(gaeQuery.getProjections().size());
+            projections.add(ProjectionConstants.KEY);
+            for (Projection projection : gaeQuery.getProjections()) {
+                if (projection instanceof PropertyProjection) {
+                    PropertyProjection propertyProjection = (PropertyProjection) projection;
+                    projections.add(propertyProjection.getName());
+                } else {
+                    throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
+                }
+            }
+            cacheQuery.projection(projections.toArray(new String[projections.size()]));
         }
         return cacheQuery;
     }
