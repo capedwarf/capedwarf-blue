@@ -27,6 +27,7 @@ import com.google.appengine.api.capabilities.CapabilityState;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
+import com.google.appengine.api.quota.QuotaService;
 
 /**
  * Environment info.
@@ -50,6 +51,13 @@ public interface Environment {
      * @return capability's state
      */
     CapabilityState getState(Capability capability);
+
+    /**
+     * Get quota service.
+     *
+     * @return quota service
+     */
+    QuotaService getQuotaService();
 
     /**
      * Get range.

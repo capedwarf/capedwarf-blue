@@ -20,45 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.openshift;
+package org.jboss.capedwarf.quota;
 
-import com.google.appengine.api.capabilities.Capability;
-import com.google.appengine.api.capabilities.CapabilityState;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.quota.QuotaService;
-import org.jboss.capedwarf.environment.Environment;
-import org.kohsuke.MetaInfServices;
+import org.jboss.capedwarf.environment.EnvironmentFactory;
 
 /**
- * OpenShift environment.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@MetaInfServices
-public class OpenShiftEnvironment implements Environment {
-    public String getDomain() {
-        return null; // TODO
+public class JBossQuotaService implements QuotaService {
+    protected QuotaService getDelegate() {
+        return EnvironmentFactory.getEnvironment().getQuotaService();
     }
 
-    public CapabilityState getState(Capability capability) {
-        return null; // TODO
+    public boolean supports(DataType dataType) {
+        return getDelegate().supports(dataType);
     }
 
-    public QuotaService getQuotaService() {
-        return null;  // TODO
+    @SuppressWarnings("deprecation")
+    public long getApiTimeInMegaCycles() {
+        return getDelegate().getApiTimeInMegaCycles();
     }
 
-    public Long getRange(Key parent, String kind, long num) {
-        return null; // TODO
+    public long getCpuTimeInMegaCycles() {
+        return getDelegate().getCpuTimeInMegaCycles();
     }
 
-    public DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String sequenceName) {
-        return null; // TODO
+    public double convertMegacyclesToCpuSeconds(long l) {
+        return getDelegate().convertMegacyclesToCpuSeconds(l);
     }
 
-    public String getTransactionId() {
-        return null; // TODO
+    public long convertCpuSecondsToMegacycles(double v) {
+        return getDelegate().convertCpuSecondsToMegacycles(v);
     }
 }

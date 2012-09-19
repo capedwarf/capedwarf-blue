@@ -25,6 +25,7 @@ package org.jboss.capedwarf.environment;
 import com.google.appengine.api.capabilities.Capability;
 import com.google.appengine.api.capabilities.CapabilityState;
 import com.google.appengine.api.capabilities.CapabilityStatus;
+import com.google.appengine.api.quota.QuotaService;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
@@ -33,10 +34,38 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractEnvironment implements Environment {
+    private static final QuotaService NOOP = new NoopQuotaService();
+
     public CapabilityState getState(Capability capability) {
         return ReflectionUtils.newInstance(
                 CapabilityState.class,
                 new Class[]{Capability.class, CapabilityStatus.class, long.class},
                 new Object[]{capability, CapabilityStatus.ENABLED, -1});
+    }
+
+    public QuotaService getQuotaService() {
+        return NOOP;
+    }
+
+    private static class NoopQuotaService implements QuotaService {
+        public boolean supports(DataType dataType) {
+            return false;
+        }
+
+        public long getApiTimeInMegaCycles() {
+            return -1L;
+        }
+
+        public long getCpuTimeInMegaCycles() {
+            return -1L;
+        }
+
+        public double convertMegacyclesToCpuSeconds(long l) {
+            return -1;
+        }
+
+        public long convertCpuSecondsToMegacycles(double v) {
+            return -1;
+        }
     }
 }

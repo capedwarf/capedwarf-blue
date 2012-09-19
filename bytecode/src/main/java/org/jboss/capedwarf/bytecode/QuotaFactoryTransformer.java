@@ -20,45 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.openshift;
+package org.jboss.capedwarf.bytecode;
 
-import com.google.appengine.api.capabilities.Capability;
-import com.google.appengine.api.capabilities.CapabilityState;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyRange;
-import com.google.appengine.api.quota.QuotaService;
-import org.jboss.capedwarf.environment.Environment;
-import org.kohsuke.MetaInfServices;
+import javassist.CtClass;
+import javassist.CtMethod;
 
 /**
- * OpenShift environment.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@MetaInfServices
-public class OpenShiftEnvironment implements Environment {
-    public String getDomain() {
-        return null; // TODO
-    }
-
-    public CapabilityState getState(Capability capability) {
-        return null; // TODO
-    }
-
-    public QuotaService getQuotaService() {
-        return null;  // TODO
-    }
-
-    public Long getRange(Key parent, String kind, long num) {
-        return null; // TODO
-    }
-
-    public DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String sequenceName) {
-        return null; // TODO
-    }
-
-    public String getTransactionId() {
-        return null; // TODO
+public class QuotaFactoryTransformer extends JavassistTransformer {
+    protected void transform(CtClass clazz) throws Exception {
+        final CtMethod method = clazz.getDeclaredMethod("getQuotaService", new CtClass[]{});
+        method.setBody("return new org.jboss.capedwarf.quota.JBossQuotaService();");
     }
 }

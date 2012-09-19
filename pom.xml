@@ -37,6 +37,7 @@
         <module>oauth</module>
         <module>openshift</module>
         <module>prospectivesearch</module>
+        <module>quota</module>
         <module>search</module>
         <module>tasks</module>
         <module>testsuite</module>
@@ -264,6 +265,12 @@
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-prospectivesearch</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-quota</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
