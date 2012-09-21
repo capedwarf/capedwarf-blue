@@ -23,6 +23,7 @@ multitenancy/target/
 oauth/target/
 openshift/target/
 prospectivesearch/target/
+quota/target/
 search/target/
 tasks/target/
 testsuite/target/
