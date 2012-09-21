@@ -34,12 +34,17 @@ import com.google.apphosting.api.ApiProxy;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class JBossEnvironment implements ApiProxy.Environment {
 
     private static final ThreadLocal<JBossEnvironment> threadLocalInstance = new ThreadLocal<JBossEnvironment>();
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
+
+    /* Impl detail ... */
     public static final String REQUEST_END_LISTENERS = "com.google.appengine.tools.development.request_end_listeners";
+    private static final String REQUEST_THREAD_FACTORY_ATTR = "com.google.appengine.api.ThreadManager.REQUEST_THREAD_FACTORY";
+    private static final String BACKGROUND_THREAD_FACTORY_ATTR = "com.google.appengine.api.ThreadManager.BACKGROUND_THREAD_FACTORY";
 
     private static final String HTTPS = "https";
     private static final String DELIMITER = "://";
@@ -57,6 +62,9 @@ public class JBossEnvironment implements ApiProxy.Environment {
     public JBossEnvironment() {
         // a bit of a workaround for LocalServiceTestHelper::tearDown NPE
         attributes.put(REQUEST_END_LISTENERS, new ArrayList());
+        // add thread factory
+        attributes.put(REQUEST_THREAD_FACTORY_ATTR, LazyThreadFactory.INSTANCE);
+        attributes.put(BACKGROUND_THREAD_FACTORY_ATTR, LazyThreadFactory.INSTANCE);
     }
 
     public String getAppId() {
