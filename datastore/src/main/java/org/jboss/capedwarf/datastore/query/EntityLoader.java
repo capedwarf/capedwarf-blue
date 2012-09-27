@@ -22,21 +22,21 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Projection;
 import com.google.appengine.api.datastore.PropertyProjection;
 import com.google.appengine.api.datastore.Query;
-import com.google.common.collect.ForwardingIterator;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.QueryIterator;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class EntityLoader {
 
@@ -78,7 +78,7 @@ public class EntityLoader {
     private Entity convertToEntity(Object result) {
         Object[] row = (Object[]) result;
         Entity entity = new Entity((Key) row[0]);
-        int i=0;
+        int i = 1;
         for (Projection projection : query.getProjections()) {
             if (projection instanceof PropertyProjection) {
                 PropertyProjection propertyProjection = (PropertyProjection) projection;
@@ -91,21 +91,23 @@ public class EntityLoader {
         return entity;
     }
 
-    private class WrappingIterator extends ForwardingIterator<Object> {
-        private QueryIterator iterator;
+    private class WrappingIterator implements Iterator<Object> {
+        private final QueryIterator iterator;
 
         public WrappingIterator(QueryIterator iterator) {
             this.iterator = iterator;
         }
 
-        @Override
-        protected Iterator<Object> delegate() {
-            return iterator;
+        public boolean hasNext() {
+            return iterator.hasNext();
         }
 
-        @Override
         public Object next() {
-            return convertToEntity(super.next());
+            return convertToEntity(iterator.next());
+        }
+
+        public void remove() {
+            iterator.remove();
         }
     }
 }
