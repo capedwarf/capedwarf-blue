@@ -32,10 +32,9 @@ import com.google.appengine.api.search.ListIndexesRequest;
 import com.google.appengine.api.search.ListIndexesResponse;
 import com.google.appengine.api.search.SearchService;
 import org.infinispan.Cache;
-import org.infinispan.distexec.mapreduce.*;
+import org.infinispan.distexec.mapreduce.MapReduceTask;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.ConfigurationCallbacks;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
@@ -61,7 +60,7 @@ public class CapedwarfSearchService implements SearchService {
 
     private void initCache() {
         ClassLoader classLoader = Application.getAppClassloader();
-        this.cache = InfinispanUtils.<CacheKey, CacheValue>getCache(CacheName.SEARCH, ConfigurationCallbacks.SEARCH_CALLBACK).getAdvancedCache().with(classLoader);
+        this.cache = InfinispanUtils.<CacheKey, CacheValue>getCache(CacheName.SEARCH).getAdvancedCache().with(classLoader);
     }
 
     public Index getIndex(IndexSpec indexSpec) {

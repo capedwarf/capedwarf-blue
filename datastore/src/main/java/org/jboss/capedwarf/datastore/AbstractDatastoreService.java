@@ -42,7 +42,6 @@ import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.ConfigurationCallbacks;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
@@ -79,7 +78,7 @@ public class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     protected Cache<Key, Entity> createStore() {
-        return InfinispanUtils.getCache(CacheName.DEFAULT, ConfigurationCallbacks.DEFAULT_CALLBACK);
+        return InfinispanUtils.getCache(CacheName.DEFAULT);
     }
 
     public PreparedQuery prepare(Query query) {

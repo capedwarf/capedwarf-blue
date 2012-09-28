@@ -22,46 +22,28 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
-import com.google.appengine.api.datastore.Entity;
-
 /**
  * Available caches in CapeDwarf.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public enum CacheName {
-    DEFAULT("default", true, new CacheIndexing(1).setOffset(-1).addClass(Entity.class)),
-    DATA("data", false),
-    METADATA("metadata", false),
-    MEMCACHE("memcache", false),
-    DIST("dist", false),
-    TASKS("tasks", true, new CacheIndexing(1).addClass("org.jboss.capedwarf.tasks.TaskOptionsEntity")),
-    SEARCH("search", true, new CacheIndexing(-1).setOffset(1).addClass("org.jboss.capedwarf.search.CacheValue")),
-    PROSPECTIVE_SEARCH("prospective_search", true, new CacheIndexing(-1).addClass("org.jboss.capedwarf.prospectivesearch.SubscriptionHolder"));
+    DEFAULT("default"),
+    DATA("data"),
+    METADATA("metadata"),
+    MEMCACHE("memcache"),
+    DIST("dist"),
+    TASKS("tasks"),
+    SEARCH("search"),
+    PROSPECTIVE_SEARCH("prospective_search");
 
     private String name;
-    private boolean config;
-    private CacheIndexing indexing;
 
-    private CacheName(String name, boolean config) {
+    private CacheName(String name) {
         this.name = name;
-        this.config = config;
-    }
-
-    private CacheName(String name, boolean config, CacheIndexing indexing) {
-        this(name, config);
-        this.indexing = indexing;
     }
 
     public String getName() {
         return name;
-    }
-
-    public boolean hasConfig() {
-        return config;
-    }
-
-    public CacheIndexing getIndexing() {
-        return indexing;
     }
 }

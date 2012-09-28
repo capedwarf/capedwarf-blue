@@ -44,17 +44,11 @@ import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.TermTermination;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.EvictionConfiguration;
-import org.infinispan.container.DataContainer;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.ConfigurationCallback;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
@@ -76,27 +70,6 @@ public class JBossQueue implements Queue {
     static final TargetInvocation<RetryOptions> getRetryOptions = ReflectionUtils.cacheInvocation(TaskOptions.class, "getRetryOptions");
     static final TargetInvocation<Integer> getTaskRetryLimit = ReflectionUtils.cacheInvocation(RetryOptions.class, "getTaskRetryLimit");
 
-    private final ConfigurationCallback CALLBACK = new ConfigurationCallback() {
-        public ConfigurationBuilder configure(EmbeddedCacheManager manager) {
-            Configuration c = InfinispanUtils.getConfiguration(CacheName.TASKS);
-
-            EvictionConfiguration e = c.eviction();
-            DataContainer container = new PurgeDataContainer(
-                    c.locking().concurrencyLevel(),
-                    e.maxEntries(),
-                    e.strategy(),
-                    e.threadPolicy(),
-                    JBossQueue.this);
-
-            ConfigurationBuilder builder = new ConfigurationBuilder();
-            builder.read(c);
-            builder.dataContainer().dataContainer(container);
-
-            InfinispanUtils.applyIndexing(CacheName.TASKS, builder);
-            return builder;
-        }
-    };
-
     private final String queueName;
     private final Cache<String, Object> tasks;
     private final SearchManager searchManager;
@@ -114,7 +87,7 @@ public class JBossQueue implements Queue {
     }
 
     private Cache<String, Object> getCache() {
-        return InfinispanUtils.getCache(CacheName.TASKS, CALLBACK);
+        return InfinispanUtils.getCache(CacheName.TASKS);
     }
 
     private Cache<String, Object> getTasks() {

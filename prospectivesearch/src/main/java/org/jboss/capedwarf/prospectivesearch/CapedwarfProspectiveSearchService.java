@@ -53,7 +53,6 @@ import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.ConfigurationCallbacks;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.search.QueryConverter;
 
@@ -75,7 +74,7 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
     }
 
     private Cache<TopicAndSubId, SubscriptionHolder> createStore() {
-        return InfinispanUtils.getCache(CacheName.PROSPECTIVE_SEARCH, ConfigurationCallbacks.PROSPECTIVE_SEARCH_CALLBACK);
+        return InfinispanUtils.getCache(CacheName.PROSPECTIVE_SEARCH);
     }
 
     public void subscribe(String topic, String subId, long leaseDurationSeconds, String query, Map<String, FieldType> schema) {
