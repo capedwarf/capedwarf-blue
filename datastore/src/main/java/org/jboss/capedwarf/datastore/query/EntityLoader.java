@@ -76,19 +76,23 @@ public class EntityLoader {
     }
 
     private Entity convertToEntity(Object result) {
-        Object[] row = (Object[]) result;
-        Entity entity = new Entity((Key) row[0]);
-        int i = 1;
-        for (Projection projection : query.getProjections()) {
-            if (projection instanceof PropertyProjection) {
-                PropertyProjection propertyProjection = (PropertyProjection) projection;
-                entity.setProperty(propertyProjection.getName(), row[i]);
-            } else {
-                throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
+        if (result instanceof Entity) {
+            return Entity.class.cast(result);
+        } else {
+            Object[] row = (Object[]) result;
+            Entity entity = new Entity((Key) row[0]);
+            int i = 1;
+            for (Projection projection : query.getProjections()) {
+                if (projection instanceof PropertyProjection) {
+                    PropertyProjection propertyProjection = (PropertyProjection) projection;
+                    entity.setProperty(propertyProjection.getName(), row[i]);
+                } else {
+                    throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
+                }
+                i++;
             }
-            i++;
+            return entity;
         }
-        return entity;
     }
 
     private class WrappingIterator implements Iterator<Object> {
