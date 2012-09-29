@@ -34,12 +34,23 @@ public class TaskLeaseEntity implements Serializable {
     static final String LEASE = "LEASE_";
 
     private TaskOptions options;
+    private String queueName;
 
     public TaskLeaseEntity() {
+        // serialization only
     }
 
-    public TaskLeaseEntity(TaskOptions options) {
+    public TaskLeaseEntity(String queueName, TaskOptions options) {
+        this.queueName = queueName;
         this.options = options;
+    }
+
+    public String getQueueName() {
+        return queueName;
+    }
+
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
     }
 
     public TaskOptions getOptions() {

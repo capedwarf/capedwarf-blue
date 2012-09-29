@@ -233,7 +233,7 @@ public class JBossQueue implements Queue {
             final String name = toe.getName();
             final Cache<String, Object> cache = getTasks();
             cache.remove(name);
-            cache.put(TaskLeaseEntity.LEASE + name, new TaskLeaseEntity(toe.getOptions()), options.getLease(), options.getUnit());
+            cache.put(TaskLeaseEntity.LEASE + name, new TaskLeaseEntity(getQueueName(), toe.getOptions()), options.getLease(), options.getUnit());
             handles.add(new TaskHandle(toe.getOptions(), queueName));
         }
         return handles;
