@@ -1,15 +1,18 @@
 package org.jboss.capedwarf.common.apiproxy;
 
-import com.google.apphosting.api.ApiProxy;
-import org.jboss.capedwarf.common.threads.ExecutorFactory;
-
-import javax.servlet.ServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.servlet.ServletRequest;
+
+import com.google.apphosting.api.ApiProxy;
+import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 /**
  * JBoss Delegate impl.
@@ -31,13 +34,11 @@ public class JBossDelegate implements ApiProxy.Delegate<ApiProxy.Environment> {
     }
 
     public Future<byte[]> makeAsyncCall(ApiProxy.Environment environment, String packageName, String methodName, final byte[] bytes, ApiProxy.ApiConfig apiConfig) {
-        final FutureTask<byte[]> task = new FutureTask<byte[]>(new Callable<byte[]>() {
+        return ExecutorFactory.wrap(new Callable<byte[]>() {
             public byte[] call() throws Exception {
                 return bytes;
             }
         });
-        executeTask(task);
-        return task;
     }
 
     public void log(ApiProxy.Environment environment, ApiProxy.LogRecord logRecord) {
@@ -72,10 +73,5 @@ public class JBossDelegate implements ApiProxy.Delegate<ApiProxy.Environment> {
             case warn: return Level.WARNING;
         }
         return Level.OFF;
-    }
-    
-    private void executeTask(FutureTask<?> task) {
-        final Executor executor = ExecutorFactory.getInstance();
-        executor.execute(task);
     }
 }
