@@ -25,18 +25,19 @@ package org.jboss.capedwarf.search;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import com.google.appengine.api.NamespaceManager;
-import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.IndexSpec;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
-import com.google.appengine.api.search.SearchService;
 import org.infinispan.Cache;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+
+import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.search.Index;
+import com.google.appengine.api.search.IndexSpec;
+import com.google.appengine.api.search.ListIndexesRequest;
+import com.google.appengine.api.search.ListIndexesResponse;
+import com.google.appengine.api.search.SearchService;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -89,7 +90,7 @@ public class CapedwarfSearchService implements SearchService {
         ListIndexesReducer reducer = new ListIndexesReducer();
         ListIndexesCollator collator = new ListIndexesCollator(request, cache);
 
-        MapReduceTask<CacheKey, CacheValue, FullIndexSpec, Void> task = new MapReduceTask<CacheKey, CacheValue, FullIndexSpec, Void>(cache);
+        MapReduceTask<CacheKey, CacheValue, FullIndexSpec, String> task = new MapReduceTask<CacheKey, CacheValue, FullIndexSpec, String>(cache);
         return task.mappedWith(mapper).reducedWith(reducer).execute(collator);
     }
 

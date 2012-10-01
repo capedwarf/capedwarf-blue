@@ -22,15 +22,16 @@
 
 package org.jboss.capedwarf.search;
 
-import org.infinispan.distexec.mapreduce.Reducer;
-
 import java.util.Iterator;
+
+import org.infinispan.distexec.mapreduce.Reducer;
 
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
 */
-class ListIndexesReducer implements Reducer<FullIndexSpec, Void> {
-    public Void reduce(FullIndexSpec reducedKey, Iterator<Void> iter) {
-        return null;
+class ListIndexesReducer implements Reducer<FullIndexSpec, String> {
+
+    public String reduce(FullIndexSpec reducedKey, Iterator<String> iter) {
+        return "";
     }
 }
