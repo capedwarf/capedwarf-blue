@@ -108,7 +108,7 @@ public class ConfigTestCase extends QueryTest {
             fail("Expected ApiProxy.ApiDeadlineExceededException");
         } catch (ApiProxy.ApiDeadlineExceededException e) {
             long duration = System.currentTimeMillis() - start;
-            long MAX_DURATION = 100;    // 100 ms should be enough when the timeout is set to 1 ms
+            long MAX_DURATION = 500;    // 500 ms should be enough when the timeout is set to 1 ms
             assertTrue("ApiProxy.ApiDeadlineExceededException was thrown, but it was thrown too late (after " + duration + " ms)", duration < MAX_DURATION);
         }
     }
