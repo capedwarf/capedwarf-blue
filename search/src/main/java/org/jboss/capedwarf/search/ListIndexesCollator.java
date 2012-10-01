@@ -22,21 +22,22 @@
 
 package org.jboss.capedwarf.search;
 
-import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
-import org.infinispan.Cache;
-import org.infinispan.distexec.mapreduce.Collator;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.infinispan.Cache;
+import org.infinispan.distexec.mapreduce.Collator;
+
+import com.google.appengine.api.search.Index;
+import com.google.appengine.api.search.ListIndexesRequest;
+import com.google.appengine.api.search.ListIndexesResponse;
+
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
 */
-class ListIndexesCollator implements Collator<FullIndexSpec, Void, ListIndexesResponse> {
+class ListIndexesCollator implements Collator<FullIndexSpec, String, ListIndexesResponse> {
 
     private final ListIndexesRequest request;
     private final Cache<CacheKey,CacheValue> cache;
@@ -46,7 +47,7 @@ class ListIndexesCollator implements Collator<FullIndexSpec, Void, ListIndexesRe
         this.cache = cache;
     }
 
-    public ListIndexesResponse collate(Map<FullIndexSpec, Void> reducedResults) {
+    public ListIndexesResponse collate(Map<FullIndexSpec, String> reducedResults) {
 
         List<FullIndexSpec> list = new ArrayList<FullIndexSpec>(reducedResults.keySet());
         Collections.sort(list);

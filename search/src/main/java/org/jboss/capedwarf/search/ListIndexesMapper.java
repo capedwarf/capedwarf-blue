@@ -22,20 +22,25 @@
 
 package org.jboss.capedwarf.search;
 
-import com.google.appengine.api.search.Consistency;
-import com.google.appengine.api.search.ListIndexesRequest;
 import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distexec.mapreduce.Mapper;
+
+import com.google.appengine.api.search.Consistency;
+import com.google.appengine.api.search.ListIndexesRequest;
 
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
 */
-class ListIndexesMapper implements Mapper<CacheKey, CacheValue, FullIndexSpec, Void> {
+class ListIndexesMapper implements Mapper<CacheKey, CacheValue, FullIndexSpec, String> {
 
-    private final String namespace;
-    private final String indexNamePrefix;
-    private final String startIndexName;
-    private final boolean includeStartIndex;
+    private String namespace;
+    private String indexNamePrefix;
+    private String startIndexName;
+    private boolean includeStartIndex;
+
+    public ListIndexesMapper() {
+
+    }
 
     public ListIndexesMapper(ListIndexesRequest request, String namespace) {
         this.namespace = namespace;
@@ -44,10 +49,10 @@ class ListIndexesMapper implements Mapper<CacheKey, CacheValue, FullIndexSpec, V
         includeStartIndex = startIndexName != null && request.isIncludeStartIndex();
     }
 
-    public void map(CacheKey key, CacheValue value, Collector<FullIndexSpec, Void> collector) {
+    public void map(CacheKey key, CacheValue value, Collector<FullIndexSpec, String> collector) {
         if (startIndexNameMatches(key) && indexNamePrefixMatches(key) && namespaceMatches(key)) {
             FullIndexSpec fullIndexSpec = new FullIndexSpec(key.getNamespace(), key.getIndexName(), Consistency.GLOBAL);
-            collector.emit(fullIndexSpec, null);
+            collector.emit(fullIndexSpec, "");
         }
     }
 
