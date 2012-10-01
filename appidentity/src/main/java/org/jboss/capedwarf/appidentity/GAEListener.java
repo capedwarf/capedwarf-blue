@@ -115,7 +115,7 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     private CapedwarfConfiguration readCapedwarfConfig() throws IOException {
         InputStream stream = getWebResourceAsStream(CAPEDWARF_WEB_XML);
         if (stream == null) {
-            log.warning("No capedwarf-web.xml found.");
+            log.info("No capedwarf-web.xml found.");
             return new CapedwarfConfiguration();
         }
 

@@ -22,6 +22,8 @@
 
 package org.jboss.test.capedwarf.blobstore.test;
 
+import java.nio.ByteBuffer;
+
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
@@ -29,6 +31,7 @@ import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileService;
 import com.google.appengine.api.files.FileServiceFactory;
 import com.google.appengine.api.files.FileWriteChannel;
+import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -37,8 +40,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.nio.ByteBuffer;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -54,19 +55,24 @@ public class BlobstoreTestCase {
 
     @Test
     public void testBasicOps() throws Exception {
+        final String text = "Uploaded text";
         BlobstoreService service = BlobstoreServiceFactory.getBlobstoreService();
 
         FileService fileService = FileServiceFactory.getFileService();
         AppEngineFile file = fileService.createNewBlobFile("text/plain", "uploadedText.txt");
         FileWriteChannel channel = fileService.openWriteChannel(file, true);
         try {
-            channel.write(ByteBuffer.wrap("Uploaded text".getBytes()));
+            channel.write(ByteBuffer.wrap(text.getBytes()));
         } finally {
             channel.closeFinally();
         }
 
         BlobKey blobKey = fileService.getBlobKey(file);
-
-        // TODO
+        byte[] bytes = service.fetchData(blobKey, 0, Long.MAX_VALUE);
+        try {
+            Assert.assertEquals(text, new String(bytes));
+        } finally {
+            service.delete(blobKey);
+        }
     }
 }
