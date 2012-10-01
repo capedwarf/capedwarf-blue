@@ -22,19 +22,18 @@
 
 package org.jboss.test.capedwarf.prospectivesearch;
 
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -43,6 +42,7 @@ public class MatchResponseServlet extends HttpServlet {
 
     private static List<InvocationData> invocations = new ArrayList<InvocationData>();
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         InvocationData invocationData = new InvocationData();
         invocations.add(invocationData);
@@ -57,6 +57,7 @@ public class MatchResponseServlet extends HttpServlet {
         }
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     }
 
