@@ -15,6 +15,8 @@ import org.infinispan.demo.mapreduce.WordCountMapper;
 import org.infinispan.demo.mapreduce.WordCountReducer;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
 import org.infinispan.util.Util;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -76,8 +78,17 @@ abstract public class AbstractInfinispanClusterTest  {
         }
      }
 
+    @Deployment (name = "dep1") @TargetsContainer("container-1")
+    public static WebArchive getDeploymentA() {
+        return getDeployment();
+    }
 
-    protected static WebArchive getBaseDeployment() {
+    @Deployment(name = "dep2") @TargetsContainer("container-2")
+    public static WebArchive getDeploymentB() {
+        return getDeployment();
+    }
+
+    protected static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, "cluster-tests.war")
             .addClass(AbstractInfinispanClusterTest.class)
             .addClass(WordCountMapper.class)
