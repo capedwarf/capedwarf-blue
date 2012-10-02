@@ -26,7 +26,6 @@ package org.jboss.capedwarf.datastore.query;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Properties;
 
 import com.google.appengine.api.datastore.Entity;
 import org.apache.lucene.document.Document;
@@ -43,26 +42,26 @@ public class PropertyMapBridge implements FieldBridge {
 
     @SuppressWarnings("unchecked")
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
-        Properties bridges = new Properties();
-        Map<String, ?> entityProperties = (Map<String, ?>) value;
+        final Projections projections = new Projections();
+        final Map<String, ?> entityProperties = (Map<String, ?>) value;
         for (Map.Entry<String, ?> entry : entityProperties.entrySet()) {
-            String propertyName = entry.getKey();
-            Object propertyValue = entry.getValue();
+            final String propertyName = entry.getKey();
+            final Object propertyValue = entry.getValue();
             if (!isUnindexedProperty(propertyValue)) {
-                Bridge bridge = Bridge.matchBridge(propertyValue);
+                final Bridge bridge = Bridge.matchBridge(propertyValue);
                 if (propertyValue instanceof Collection) {
                     Collection collection = (Collection) propertyValue;
                     for (Object element : collection) {
-                        Bridge inner = Bridge.matchBridge(element);
+                        final Bridge inner = Bridge.matchBridge(element);
                         luceneOptions.addFieldToDocument(propertyName, inner.objectToString(element), document);
                     }
                 } else {
                     luceneOptions.addFieldToDocument(propertyName, bridge.objectToString(propertyValue), document);
                 }
-                bridges.put(propertyName, bridge.name());
+                projections.storePropertyBridge(propertyName, bridge);
             }
         }
-        Projections.storePropertiesBridges(document, bridges);
+        projections.finish(document);
     }
 
     private boolean isUnindexedProperty(Object value) {

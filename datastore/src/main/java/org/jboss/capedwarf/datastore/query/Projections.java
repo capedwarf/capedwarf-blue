@@ -48,6 +48,11 @@ class Projections {
     private static final String TYPES_FIELD = "__TYPES";
     private static final int OFFSET = 2;
 
+    private Properties bridges = new Properties();
+
+    Projections() {
+    }
+
     /**
      * Apply GAE projections onto Cache projections.
      *
@@ -74,12 +79,21 @@ class Projections {
     }
 
     /**
-     * Store bridges.
+     * Store property's bridge.
+     *
+     * @param propertyName the property name
+     * @param bridge the bridge
+     */
+    void storePropertyBridge(String propertyName, Bridge bridge) {
+        bridges.put(propertyName, String.valueOf(bridge.ordinal()));
+    }
+
+    /**
+     * Store bridges to document.
      *
      * @param document the Lucene document
-     * @param bridges the properties bridges
      */
-    static void storePropertiesBridges(Document document, Properties bridges) {
+    void finish(Document document) {
         try {
             StringWriter writer = new StringWriter();
             bridges.store(writer, null);
@@ -116,19 +130,19 @@ class Projections {
         if (result instanceof Entity) {
             return Entity.class.cast(result);
         } else {
-            Object[] row = (Object[]) result;
-            Entity entity = new Entity((Key) row[0]);
+            final Object[] row = (Object[]) result;
+            final Entity entity = new Entity((Key) row[0]);
             if (row.length > 1) {
-                Properties bridges = readPropertiesBridges(row[1].toString());
+                final Properties bridges = readPropertiesBridges(row[1].toString());
                 int i = OFFSET;
                 for (Projection projection : query.getProjections()) {
                     if (projection instanceof PropertyProjection) {
-                        PropertyProjection propertyProjection = (PropertyProjection) projection;
-                        String propertyName = propertyProjection.getName();
+                        final PropertyProjection propertyProjection = (PropertyProjection) projection;
+                        final String propertyName = propertyProjection.getName();
                         Object value = row[i];
                         if (value instanceof String) {
-                            String bridgeName = bridges.getProperty(propertyName);
-                            Bridge bridge = Bridge.valueOf(bridgeName);
+                            final String bridgeOrdinal = bridges.getProperty(propertyName);
+                            final Bridge bridge = Bridge.values()[Integer.parseInt(bridgeOrdinal)];
                             value = bridge.stringToObject(value.toString());
                         }
                         entity.setProperty(propertyName, value);
