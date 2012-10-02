@@ -1,18 +1,15 @@
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.Projection;
-import com.google.appengine.api.datastore.PropertyProjection;
 import com.google.appengine.api.datastore.Query;
 import org.apache.lucene.search.Sort;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.query.CacheQuery;
-import org.infinispan.query.ProjectionConstants;
 import org.infinispan.query.SearchManager;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 
@@ -49,21 +46,7 @@ public class QueryConverter {
 
     private CacheQuery getCacheQuery(Query gaeQuery) {
         CacheQuery cacheQuery = getCacheQuery(createLuceneQuery(gaeQuery));
-        if (gaeQuery.isKeysOnly()) {
-            cacheQuery.projection(ProjectionConstants.KEY);
-        } else if (!gaeQuery.getProjections().isEmpty()) {
-            List<String> projections = new ArrayList<String>(gaeQuery.getProjections().size());
-            projections.add(ProjectionConstants.KEY);
-            for (Projection projection : gaeQuery.getProjections()) {
-                if (projection instanceof PropertyProjection) {
-                    PropertyProjection propertyProjection = (PropertyProjection) projection;
-                    projections.add(propertyProjection.getName());
-                } else {
-                    throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
-                }
-            }
-            cacheQuery.projection(projections.toArray(new String[projections.size()]));
-        }
+        Projections.applyProjections(gaeQuery, cacheQuery);
         return cacheQuery;
     }
 
@@ -102,6 +85,5 @@ public class QueryConverter {
             list.add(new Query.FilterPredicate(KIND_PROPERTY_KEY, EQUAL, kind));
         }
     }
-
 
 }

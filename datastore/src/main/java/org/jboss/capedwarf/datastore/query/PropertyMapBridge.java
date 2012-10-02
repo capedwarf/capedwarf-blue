@@ -27,6 +27,7 @@ package org.jboss.capedwarf.datastore.query;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.Blob;
@@ -77,6 +78,7 @@ public class PropertyMapBridge implements FieldBridge {
     public static final String UNINDEXED_VALUE_CLASS_NAME = Entity.class.getName() + "$UnindexedValue";
 
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
+        Properties types = new Properties();
         Map<String, ?> entityProperties = (Map<String, ?>) value;
         for (Map.Entry<String, ?> entry : entityProperties.entrySet()) {
             String propertyName = entry.getKey();
@@ -90,15 +92,17 @@ public class PropertyMapBridge implements FieldBridge {
                 } else {
                     luceneOptions.addFieldToDocument(propertyName, convertToString(propertyValue), document);
                 }
+                types.put(propertyName, propertyValue.getClass().getName());
             }
         }
+        Projections.storePropertiesTypes(document, types);
     }
 
     private boolean isUnindexedProperty(Object value) {
         return value != null && UNINDEXED_VALUE_CLASS_NAME.equals(value.getClass().getName());
     }
 
-    public String convertToString(Object value) {
+    public static String convertToString(Object value) {
         if (value == null) {
             return NULL_TOKEN;
         }
@@ -145,6 +149,12 @@ public class PropertyMapBridge implements FieldBridge {
         throw new IllegalArgumentException("Cannot convert value to string. Value was " + value);
     }
 
+    public static Object covertToValue(String typeFQN, Object value) {
+        if (value == null)
+            return null;
+
+        return value; // TODO
+    }
 
     private static class DoubleBridge extends ObjectToStringFieldBridge {
         public String objectToString(Object object) {

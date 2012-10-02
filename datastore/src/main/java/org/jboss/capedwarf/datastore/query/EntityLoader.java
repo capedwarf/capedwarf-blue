@@ -26,10 +26,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.Projection;
-import com.google.appengine.api.datastore.PropertyProjection;
 import com.google.appengine.api.datastore.Query;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.QueryIterator;
@@ -53,7 +49,7 @@ public class EntityLoader {
         if (specialLoadingNeeded()) {
             List<Object> list = new ArrayList<Object>(results.size());
             for (Object result : results) {
-                list.add(convertToEntity(result));
+                list.add(Projections.convertToEntity(query, result));
             }
             return list;
         } else {
@@ -75,26 +71,6 @@ public class EntityLoader {
         return query.isKeysOnly() || !query.getProjections().isEmpty();
     }
 
-    private Entity convertToEntity(Object result) {
-        if (result instanceof Entity) {
-            return Entity.class.cast(result);
-        } else {
-            Object[] row = (Object[]) result;
-            Entity entity = new Entity((Key) row[0]);
-            int i = 1;
-            for (Projection projection : query.getProjections()) {
-                if (projection instanceof PropertyProjection) {
-                    PropertyProjection propertyProjection = (PropertyProjection) projection;
-                    entity.setProperty(propertyProjection.getName(), row[i]);
-                } else {
-                    throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
-                }
-                i++;
-            }
-            return entity;
-        }
-    }
-
     private class WrappingIterator implements Iterator<Object> {
         private final QueryIterator iterator;
 
@@ -107,7 +83,7 @@ public class EntityLoader {
         }
 
         public Object next() {
-            return convertToEntity(iterator.next());
+            return Projections.convertToEntity(query, iterator.next());
         }
 
         public void remove() {

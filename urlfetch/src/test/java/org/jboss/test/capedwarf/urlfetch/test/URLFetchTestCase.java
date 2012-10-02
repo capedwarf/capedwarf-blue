@@ -97,7 +97,7 @@ public class URLFetchTestCase {
         HTTPResponse response = service.fetch(adminConsole);
         printResponse(response);
 
-        URL jbossOrg = new URL("http://www.jboss.org");
+        URL jbossOrg = new URL("http://www.openblend.org");
         if (available(jbossOrg)) {
             response = service.fetch(jbossOrg);
             printResponse(response);
@@ -112,7 +112,7 @@ public class URLFetchTestCase {
         Future<HTTPResponse> response = service.fetchAsync(adminConsole);
         printResponse(response.get(5, TimeUnit.SECONDS));
 
-        URL jbossOrg = new URL("http://www.jboss.org");
+        URL jbossOrg = new URL("http://www.openblend.org");
         if (available(jbossOrg)) {
             response = service.fetchAsync(jbossOrg);
             printResponse(response.get(30, TimeUnit.SECONDS));
