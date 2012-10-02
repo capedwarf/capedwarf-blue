@@ -82,7 +82,7 @@ class Projections {
     static void storePropertiesBridges(Document document, Properties bridges) {
         try {
             StringWriter writer = new StringWriter();
-            bridges.store(writer, "PropertyMap bridges.");
+            bridges.store(writer, null);
             document.add(new Field(TYPES_FIELD, writer.toString(), Field.Store.YES, Field.Index.NO));
         } catch (IOException e) {
             throw new IllegalArgumentException("Cannot store bridges!", e);
