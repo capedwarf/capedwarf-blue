@@ -24,13 +24,13 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.Collection;
+
 import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.RangeMatchingContext;
 import org.hibernate.search.query.dsl.TermMatchingContext;
-
-import java.util.Collection;
 
 /**
  * Converts GAE's Query.FilterPredicates to Lucene Queries
@@ -39,12 +39,10 @@ import java.util.Collection;
  */
 public class FilterPredicateConverter {
 
-    private PropertyMapBridge propertyMapBridge;
     private QueryBuilder queryBuilder;
 
     public FilterPredicateConverter(QueryBuilder queryBuilder) {
         this.queryBuilder = queryBuilder;
-        this.propertyMapBridge = new PropertyMapBridge();
     }
 
     public Query convert(Collection<com.google.appengine.api.datastore.Query.FilterPredicate> filterPredicates) {
@@ -139,6 +137,6 @@ public class FilterPredicateConverter {
     }
 
     private String convertToString(Object value) {
-        return propertyMapBridge.convertToString(value);
+        return Bridge.matchBridge(value).objectToString(value);
     }
 }

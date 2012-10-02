@@ -55,10 +55,7 @@ public class EntityKeyBridge implements FieldBridge {
     }
 
     private void addField(Document document, LuceneOptions luceneOptions, Key key, String fieldName) {
-        luceneOptions.addFieldToDocument(
-                fieldName,
-                PropertyMapBridge.KEY_BRIDGE.objectToString(key),
-                document);
+        luceneOptions.addFieldToDocument(fieldName, Bridge.KEY.objectToString(key), document);
     }
 
 }

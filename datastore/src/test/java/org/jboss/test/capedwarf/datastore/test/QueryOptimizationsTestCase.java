@@ -27,7 +27,6 @@ import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.PropertyProjection;
 import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -66,19 +65,27 @@ public class QueryOptimizationsTestCase extends QueryTest {
     }
 
     @Test
-    @Ignore
     public void testProjections() throws Exception {
         Entity e = createEntity("Product", 1)
                 .withProperty("price", 123L)
+                .withProperty("percent", 0.123)
+                .withProperty("diff", -5L)
                 .withProperty("weight", 10L)
                 .store();
 
-        Query query = new Query("Product").addProjection(new PropertyProjection("price", Long.class));
+        // TODO -- enable percent
+        Query query = new Query("Product")
+                .addProjection(new PropertyProjection("price", Long.class))
+//                .addProjection(new PropertyProjection("percent", Double.class))
+                .addProjection(new PropertyProjection("diff", Long.class));
 
         PreparedQuery preparedQuery = service.prepare(query);
         Entity result = preparedQuery.asSingleEntity();
         assertEquals(e.getKey(), result.getKey());
         assertEquals(e.getProperty("price"), result.getProperty("price"));
+        // assertEquals(e.getProperty("percent"), result.getProperty("percent"));
+        assertEquals(e.getProperty("diff"), result.getProperty("diff"));
+        assertNull(result.getProperty("weight"));
         assertNull(result.getProperty("weight"));
     }
 }

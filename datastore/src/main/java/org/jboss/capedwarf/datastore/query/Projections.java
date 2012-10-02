@@ -74,34 +74,34 @@ class Projections {
     }
 
     /**
-     * Store types.
+     * Store bridges.
      *
      * @param document the Lucene document
-     * @param types the properties types
+     * @param bridges the properties bridges
      */
-    static void storePropertiesTypes(Document document, Properties types) {
+    static void storePropertiesBridges(Document document, Properties bridges) {
         try {
             StringWriter writer = new StringWriter();
-            types.store(writer, "PropertyMap types.");
+            bridges.store(writer, "PropertyMap bridges.");
             document.add(new Field(TYPES_FIELD, writer.toString(), Field.Store.YES, Field.Index.NO));
         } catch (IOException e) {
-            throw new IllegalArgumentException("Cannot store types!", e);
+            throw new IllegalArgumentException("Cannot store bridges!", e);
         }
     }
 
     /**
-     * Read types.
+     * Read bridges.
      *
      * @param field the types field
-     * @return types
+     * @return bridges
      */
-    static Properties readPropertiesTypes(String field) {
+    static Properties readPropertiesBridges(String field) {
         try {
-            Properties types = new Properties();
-            types.load(new StringReader(field));
-            return types;
+            Properties bridges = new Properties();
+            bridges.load(new StringReader(field));
+            return bridges;
         } catch (IOException e) {
-            throw new IllegalArgumentException("Cannot read types!", e);
+            throw new IllegalArgumentException("Cannot read bridges!", e);
         }
     }
 
@@ -119,14 +119,19 @@ class Projections {
             Object[] row = (Object[]) result;
             Entity entity = new Entity((Key) row[0]);
             if (row.length > 1) {
-                Properties types = readPropertiesTypes(row[1].toString());
+                Properties bridges = readPropertiesBridges(row[1].toString());
                 int i = OFFSET;
                 for (Projection projection : query.getProjections()) {
                     if (projection instanceof PropertyProjection) {
                         PropertyProjection propertyProjection = (PropertyProjection) projection;
                         String propertyName = propertyProjection.getName();
-                        String type = types.getProperty(propertyName);
-                        entity.setProperty(propertyName, PropertyMapBridge.covertToValue(type, row[i]));
+                        Object value = row[i];
+                        if (value instanceof String) {
+                            String bridgeName = bridges.getProperty(propertyName);
+                            Bridge bridge = Bridge.valueOf(bridgeName);
+                            value = bridge.stringToObject(value.toString());
+                        }
+                        entity.setProperty(propertyName, value);
                     } else {
                         throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
                     }
