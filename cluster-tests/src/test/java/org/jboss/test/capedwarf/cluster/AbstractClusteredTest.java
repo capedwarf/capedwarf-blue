@@ -27,5 +27,4 @@ public class AbstractClusteredTest {
             .setWebXML(new StringAsset("<web/>"))
             .addAsWebInfResource("appengine-web.xml");
     }
-
 }

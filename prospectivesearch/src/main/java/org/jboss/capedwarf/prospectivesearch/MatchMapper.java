@@ -23,15 +23,17 @@
 package org.jboss.capedwarf.prospectivesearch;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.prospectivesearch.Subscription;
 import org.apache.lucene.analysis.miscellaneous.PatternAnalyzer;
 import org.apache.lucene.index.memory.MemoryIndex;
 import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distexec.mapreduce.Mapper;
+
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.prospectivesearch.Subscription;
 
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -40,20 +42,30 @@ class MatchMapper implements Mapper<TopicAndSubId, SubscriptionHolder, String, L
     private final String topic;
 
     public static final String KEY = "result";
-    private final MemoryIndex memoryIndex;
+    private Map<String, String> map = new HashMap<String, String>();
+    private transient MemoryIndex memoryIndex;
 
     public MatchMapper(String topic, Entity entity) {
         this.topic = topic;
 
-        memoryIndex = new MemoryIndex();
         for (Map.Entry<String, Object> entry : entity.getProperties().entrySet()) {
-            memoryIndex.addField(entry.getKey(), String.valueOf(entry.getValue()), PatternAnalyzer.DEFAULT_ANALYZER);
+            map.put(entry.getKey(), String.valueOf(entry.getValue()));
         }
+    }
+
+    private MemoryIndex getMemoryIndex() {
+        if (memoryIndex == null) {
+            memoryIndex = new MemoryIndex();
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                memoryIndex.addField(entry.getKey(), entry.getValue(), PatternAnalyzer.DEFAULT_ANALYZER);
+            }
+        }
+        return memoryIndex;
     }
 
     public void map(TopicAndSubId key, SubscriptionHolder value, Collector<String, List<Subscription>> collector) {
         if (key.getTopic().equals(topic)) {
-            float score = memoryIndex.search(value.getLuceneQuery());
+            float score = getMemoryIndex().search(value.getLuceneQuery());
             if (score > 0.0f) {
                 collector.emit(KEY, Collections.singletonList(value.toSubscription()));
             }

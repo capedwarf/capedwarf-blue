@@ -33,6 +33,8 @@ import java.util.logging.LogRecord;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -43,8 +45,6 @@ import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.RequestLogs;
-import com.google.apphosting.api.ApiProxy;
-import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -143,7 +143,7 @@ public class JBossLogService implements LogService {
             logLine.setLogMessage((String) entity.getProperty(LOG_LINE_MESSAGE));
             logLine.setTimeUsec((Long) entity.getProperty(LOG_LINE_MILLIS));
 
-            RequestLogs requestLogs = map.get((Key) entity.getProperty(LOG_LINE_REQUEST_KEY));
+            RequestLogs requestLogs = map.get(entity.getProperty(LOG_LINE_REQUEST_KEY));
             requestLogs.getAppLogLines().add(logLine);
         }
     }
@@ -174,7 +174,7 @@ public class JBossLogService implements LogService {
     public void log(LogRecord record) {
         // TODO -- filter per logging.properties
 
-        JBossDelegate jBossDelegate = (JBossDelegate) ApiProxy.getDelegate();
+        JBossDelegate jBossDelegate = JBossDelegate.INSTANCE;
         ServletRequest request = jBossDelegate.getServletRequest();
 
         Entity entity = new Entity(LOG_LINE_ENTITY_KIND);
