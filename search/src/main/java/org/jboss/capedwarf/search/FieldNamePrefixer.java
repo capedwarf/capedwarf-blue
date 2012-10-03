@@ -31,18 +31,6 @@ public class FieldNamePrefixer {
 
     public static final String DELIMITER = "___";
 
-    public Context.Field getPrefixedField(Context.Field field, Field.FieldType fieldType) {
-        if (field instanceof Context.SimpleField) {
-            Context.SimpleField simpleField = (Context.SimpleField) field;
-            return new Context.SimpleField(getPrefixedFieldName(simpleField.getName(), fieldType));
-        } else if (field instanceof Context.DistanceFunction) {
-            Context.DistanceFunction distanceFunction = (Context.DistanceFunction) field;
-            return new Context.DistanceFunction(getPrefixedFieldName(distanceFunction.getFieldName(), fieldType), distanceFunction.getGeoPoint());
-        } else {
-            return field; // TODO
-        }
-    }
-
     public String getPrefixedFieldName(String name, Field.FieldType fieldType) {
         return fieldType.name() + DELIMITER + name;
     }
