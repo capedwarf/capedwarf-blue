@@ -23,7 +23,6 @@
 package org.jboss.capedwarf.search;
 
 import com.google.appengine.api.search.Field;
-import com.google.appengine.repackaged.org.antlr.runtime.tree.Tree;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -35,11 +34,16 @@ public class MultiFieldGAEQueryTreeVisitor extends GAEQueryTreeVisitor {
 
     private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
 
-    protected Query createQuery(Context.Field field, Operator operator, Tree type, Tree value) {
+    public MultiFieldGAEQueryTreeVisitor(String allFieldName) {
+        super(allFieldName);
+    }
+
+    @Override
+    protected Query createQuery(String field, Operator operator, Context text) {
         BooleanQuery booleanQuery = new BooleanQuery();
         for (Field.FieldType fieldType : Field.FieldType.values()) {
-            Context.Field prefixedField = fieldNamePrefixer.getPrefixedField(field, fieldType);
-            Query query = super.createQuery(prefixedField, operator, type, value);
+            String prefixedField = fieldNamePrefixer.getPrefixedFieldName(field, fieldType);
+            Query query = super.createQuery(prefixedField, operator, text);
             booleanQuery.add(query, BooleanClause.Occur.SHOULD);
         }
         return booleanQuery;

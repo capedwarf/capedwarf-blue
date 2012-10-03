@@ -27,11 +27,7 @@ import com.google.appengine.api.search.query.QueryTreeWalker;
 import com.google.appengine.repackaged.org.antlr.runtime.RecognitionException;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.CommonTree;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.Tree;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 
 import java.util.logging.Logger;
 
@@ -59,15 +55,17 @@ public class QueryConverter {
 
     private Query convert(Tree tree) {
         Context context = new Context();
-        context.setField(new Context.SimpleField(allFieldName));
 
-        new QueryTreeWalker<Context>(createTreeVisitor()).walk(tree.getChild(0), context);
+        GAEQueryTreeVisitor visitor = createTreeVisitor(allFieldName);
+
+        QueryTreeWalker<Context> walker = new QueryTreeWalker<Context>(visitor);
+        walker.walk(tree, context);
 
         return context.getQuery();
     }
 
-    protected GAEQueryTreeVisitor createTreeVisitor() {
-        return new GAEQueryTreeVisitor();
+    protected GAEQueryTreeVisitor createTreeVisitor(String allFieldName) {
+        return new GAEQueryTreeVisitor(allFieldName);
     }
 
     private Tree parseQuery(String queryString) {
@@ -87,6 +85,6 @@ public class QueryConverter {
             }
         };
 
-        new QueryTreeWalker<Integer>(visitor).walk(tree, 0);
+        new QueryTreeWalker<PrintingQueryTreeVisitor.IntegerContext>(visitor).walk(tree, new PrintingQueryTreeVisitor.IntegerContext(0));
     }
 }

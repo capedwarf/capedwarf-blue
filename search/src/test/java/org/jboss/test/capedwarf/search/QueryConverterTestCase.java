@@ -22,20 +22,13 @@
 
 package org.jboss.test.capedwarf.search;
 
-import com.google.appengine.api.search.query.QueryTreeBuilder;
-import com.google.appengine.api.search.query.QueryTreeWalker;
-import com.google.appengine.repackaged.org.antlr.runtime.RecognitionException;
-import com.google.appengine.repackaged.org.antlr.runtime.tree.CommonTree;
-import com.google.appengine.repackaged.org.antlr.runtime.tree.Tree;
 import junit.framework.Assert;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
-import org.jboss.capedwarf.search.PrintingQueryTreeVisitor;
 import org.jboss.capedwarf.search.QueryConverter;
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -64,7 +57,7 @@ public class QueryConverterTestCase {
         assertQueryEquals("bob:hope OR bob:dope", "bob:(hope OR dope)");
         assertQueryEquals("bob:hope AND bob:dope", "bob:(hope AND dope)");
         assertQueryEquals("bob:hope AND bob:dope", "bob:(hope dope)");
-        assertQueryEquals("bob:[hope TO hope] OR bob:[dope TO dope]", "bob=(hope OR dope)");
+        assertQueryEquals("bob:hope OR bob:dope", "bob=(hope OR dope)");
 
         assertQueryEquals("field:[12.0 TO 12.0]", "field=12");
         assertQueryEquals("field:{12.0 TO *}", "field>12");
@@ -106,7 +99,6 @@ public class QueryConverterTestCase {
     }
 
     private static void assertQueryEquals(String expectedLuceneQueryString, String gaeQueryString) throws ParseException {
-        dumpTree(gaeQueryString);
         Query query = new QueryConverter("all").convert(gaeQueryString);
         Query expectedQuery = new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION)).parse(expectedLuceneQueryString);
         System.out.println("expectedQuery = " + expectedQuery + "    (" + expectedQuery.getClass() + ")");
@@ -114,17 +106,5 @@ public class QueryConverterTestCase {
         Assert.assertEquals(expectedQuery.toString(), query.toString());
     }
 
-
-    private static void dumpTree(String query) {
-        try {
-            System.out.println("------------------------------------------------------------");
-            System.out.println("query = " + query);
-            CommonTree tree = new QueryTreeBuilder().parse(query);
-            Tree simplifiedTree = QueryTreeWalker.simplify(tree);
-            new QueryTreeWalker<Integer>(new PrintingQueryTreeVisitor()).walk(simplifiedTree, 0);
-        } catch (RecognitionException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
 }
