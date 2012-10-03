@@ -28,7 +28,8 @@ import java.util.List;
 
 import com.google.appengine.api.datastore.Query;
 import org.infinispan.query.CacheQuery;
-import org.infinispan.query.QueryIterator;
+import org.infinispan.query.FetchOptions;
+import org.infinispan.query.ResultIterator;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -59,7 +60,7 @@ public class EntityLoader {
     }
 
     public Iterator<Object> getIterator(Integer chunkSize) {
-        QueryIterator iterator = chunkSize == null ? cacheQuery.iterator() : cacheQuery.iterator(chunkSize);
+        final ResultIterator iterator = (chunkSize == null) ? cacheQuery.iterator() : cacheQuery.iterator(new FetchOptions().fetchSize(chunkSize));
         if (specialLoadingNeeded()) {
             return new WrappingIterator(iterator);
         } else {
@@ -72,9 +73,9 @@ public class EntityLoader {
     }
 
     private class WrappingIterator implements Iterator<Object> {
-        private final QueryIterator iterator;
+        private final ResultIterator iterator;
 
-        public WrappingIterator(QueryIterator iterator) {
+        public WrappingIterator(ResultIterator iterator) {
             this.iterator = iterator;
         }
 

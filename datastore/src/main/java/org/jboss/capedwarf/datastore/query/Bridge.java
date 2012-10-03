@@ -50,6 +50,7 @@ import org.hibernate.search.bridge.builtin.StringBridge;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public enum Bridge implements TwoWayStringBridge {
+    // add new enums at the end!
     STRING(StringBridge.INSTANCE),
     BOOLEAN(new BooleanBridge()),
     COLLECTION(new CollectionBridge()),
@@ -70,7 +71,8 @@ public enum Bridge implements TwoWayStringBridge {
     SHORT_BLOB(new ShortBlobBridge()),
     LONG(new LongBridge()),
     DOUBLE(new DoubleBridge()),
-    FLOAT(new FloatBridge());
+    FLOAT(new FloatBridge()),
+    NULL(new NullBridge());
 
     private TwoWayStringBridge bridge;
 
@@ -88,7 +90,7 @@ public enum Bridge implements TwoWayStringBridge {
 
     public static Bridge matchBridge(Object value) {
         if (value == null) {
-            return null;
+            return NULL;
         }
 
         if (value instanceof String) {
@@ -133,6 +135,18 @@ public enum Bridge implements TwoWayStringBridge {
             return SHORT_BLOB;
         }
         throw new IllegalArgumentException("No matching bridge. Value was " + value);
+    }
+
+    private static class NullBridge implements TwoWayStringBridge {
+        private static final String NULL_TOKEN = "__capedwarf___NULL___";
+
+        public Object stringToObject(String stringValue) {
+            return null;
+        }
+
+        public String objectToString(Object object) {
+            return NULL_TOKEN;
+        }
     }
 
     private static class CollectionBridge implements TwoWayStringBridge {

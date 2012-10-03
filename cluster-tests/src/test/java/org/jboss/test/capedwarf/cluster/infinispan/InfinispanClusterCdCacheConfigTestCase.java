@@ -21,8 +21,7 @@ public class InfinispanClusterCdCacheConfigTestCase extends AbstractInfinispanCl
 
     @Override
     protected Cache<String, String> getCache() {
-        Cache<String, String> cache = InfinispanUtils.<String, String>getCache(CacheName.SEARCH);
-        return cache;
+        return InfinispanUtils.getCache(CacheName.SEARCH);
     }
 
     @InSequence(10)

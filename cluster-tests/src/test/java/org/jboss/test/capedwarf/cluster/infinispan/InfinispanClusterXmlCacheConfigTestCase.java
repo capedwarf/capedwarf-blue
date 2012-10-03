@@ -20,7 +20,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class InfinispanClusterXmlCacheConfigTestCase extends AbstractInfinispanClusterTest {
 
-    @Resource(lookup="java:jboss/infinispan/container/capedwarf")
+    @Resource(mappedName="java:jboss/infinispan/container/capedwarf")
     CacheContainer container;
 
     private Cache<String, String> cache;

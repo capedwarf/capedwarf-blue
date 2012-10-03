@@ -27,13 +27,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.prospectivesearch.Subscription;
 import org.apache.lucene.analysis.miscellaneous.PatternAnalyzer;
 import org.apache.lucene.index.memory.MemoryIndex;
 import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distexec.mapreduce.Mapper;
-
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.prospectivesearch.Subscription;
 
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -53,7 +52,7 @@ class MatchMapper implements Mapper<TopicAndSubId, SubscriptionHolder, String, L
         }
     }
 
-    private MemoryIndex getMemoryIndex() {
+    private synchronized MemoryIndex getMemoryIndex() {
         if (memoryIndex == null) {
             memoryIndex = new MemoryIndex();
             for (Map.Entry<String, String> entry : map.entrySet()) {

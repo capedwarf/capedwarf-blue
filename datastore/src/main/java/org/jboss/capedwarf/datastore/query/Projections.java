@@ -45,7 +45,7 @@ import org.infinispan.query.ProjectionConstants;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class Projections {
-    private static final String TYPES_FIELD = "__TYPES";
+    private static final String TYPES_FIELD = "__capedwarf___TYPES___";
     private static final int OFFSET = 2;
 
     private Properties bridges = new Properties();
