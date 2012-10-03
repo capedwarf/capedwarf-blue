@@ -27,14 +27,17 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.google.appengine.api.search.AddResponse;
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.GeoPoint;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchServiceFactory;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -314,4 +317,13 @@ public class SearchTestCase extends AbstractTest {
         assertSearchYields(index, "NOT body=baz", "without_baz");
     }
 
+    @Test
+     public void testGet() {
+        Index index = getTestIndex();
+        AddResponse ar = index.add(newDocument("get_id", newField("acme").setText("bipbip")));
+        List<String> ids = ar.getIds();
+        Assert.assertNotNull(ids);
+        Assert.assertFalse(ids.isEmpty());
+        Assert.assertNotNull(index.get(ids.get(0)));
+    }
 }

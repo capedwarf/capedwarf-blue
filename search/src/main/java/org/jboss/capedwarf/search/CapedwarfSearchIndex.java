@@ -144,6 +144,11 @@ public class CapedwarfSearchIndex implements Index {
         }
     }
 
+    public Document get(String documentId) {
+        CacheValue value = cache.get(getCacheKey(documentId));
+        return (value != null ? value.getDocument() : null);
+    }
+
     private CacheKey getCacheKey(String documentId) {
         return new CacheKey(getName(), getNamespace(), documentId);
     }
@@ -240,8 +245,8 @@ public class CapedwarfSearchIndex implements Index {
     private org.apache.lucene.search.Query createLuceneQuery(Query query) {
         QueryConverter queryConverter = new QueryConverter(CacheValue.ALL_FIELD_NAME) {
             @Override
-            protected GAEQueryTreeVisitor createTreeVisitor() {
-                return new MultiFieldGAEQueryTreeVisitor();
+            protected GAEQueryTreeVisitor createTreeVisitor(String allFieldName) {
+                return new MultiFieldGAEQueryTreeVisitor(allFieldName);
             }
         };
         org.apache.lucene.search.Query luceneQuery = queryConverter.convert(query.getQueryString());
