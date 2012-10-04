@@ -69,23 +69,24 @@ public class QueryOptimizationsTestCase extends QueryTest {
         Entity e = createEntity("Product", 1)
                 .withProperty("price", 123L)
                 .withProperty("percent", 0.123)
+                .withProperty("x", -0.321)
                 .withProperty("diff", -5L)
                 .withProperty("weight", 10L)
                 .store();
 
-        // TODO -- enable percent
         Query query = new Query("Product")
                 .addProjection(new PropertyProjection("price", Long.class))
-//                .addProjection(new PropertyProjection("percent", Double.class))
+                .addProjection(new PropertyProjection("percent", Double.class))
+                .addProjection(new PropertyProjection("x", Double.class))
                 .addProjection(new PropertyProjection("diff", Long.class));
 
         PreparedQuery preparedQuery = service.prepare(query);
         Entity result = preparedQuery.asSingleEntity();
         assertEquals(e.getKey(), result.getKey());
         assertEquals(e.getProperty("price"), result.getProperty("price"));
-        // assertEquals(e.getProperty("percent"), result.getProperty("percent"));
+        assertEquals(e.getProperty("percent"), result.getProperty("percent"));
+        assertEquals(e.getProperty("x"), result.getProperty("x"));
         assertEquals(e.getProperty("diff"), result.getProperty("diff"));
-        assertNull(result.getProperty("weight"));
         assertNull(result.getProperty("weight"));
     }
 }
