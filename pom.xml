@@ -71,7 +71,7 @@
         <version.org.datanucleus.gae>2.1.0-final</version.org.datanucleus.gae>
         <version.org.datanucleus.jdo>3.0</version.org.datanucleus.jdo>
         <version.org.hibernate.search>4.2.0.Beta1</version.org.hibernate.search>
-        <version.org.infinispan>5.2.0-SNAPSHOT</version.org.infinispan>
+        <version.org.infinispan>5.2.0.Beta1</version.org.infinispan>
         <version.net.jcip>1.0</version.net.jcip>
         <version.junit>4.10</version.junit>
         <version.arquillian>1.0.1.Final</version.arquillian>
