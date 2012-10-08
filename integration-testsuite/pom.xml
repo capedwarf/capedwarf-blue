@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>capedwarf-build</artifactId>
+        <groupId>org.jboss.capedwarf.blue</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jboss.capedwarf.blue</groupId>
+    <artifactId>integration-testsuite</artifactId>
+    <packaging>pom</packaging>
+    <properties>
+        <version.jboss.as>7.2.0.Alpha1-SNAPSHOT</version.jboss.as>
+        <version.org.jboss.capedwarf>1.0.0-SNAPSHOT</version.org.jboss.capedwarf>
+        <version.com.google.appengine>1.7.1</version.com.google.appengine>
+        <version.javax.jdo.api>3.0</version.javax.jdo.api>
+        <version.org.hibernate.search>4.2.0.Beta1</version.org.hibernate.search>
+        <version.org.datanucleus>3.1.0-release</version.org.datanucleus>
+        <version.org.datanucleus.appengine>2.1.0-final</version.org.datanucleus.appengine>
+        <version.org.datanucleus.cache>3.1.0</version.org.datanucleus.cache>
+        <version.org.bouncycastle>1.47</version.org.bouncycastle>
+        <version.org.apache.lucene>3.6.0</version.org.apache.lucene>
+        <version.org.apache.ant>1.8.2</version.org.apache.ant>
+        <version.org.codehaus.exec>1.2.1</version.org.codehaus.exec>
+        <version.org.jboss.maven.transformer>1.0.0.Beta3</version.org.jboss.maven.transformer>
+        <version.org.jboss.as.capedwarf>1.0.0-SNAPSHOT</version.org.jboss.as.capedwarf>
+        <version.org.jivesoftware.smack>3.1.0</version.org.jivesoftware.smack>
+        <version.org.picketbox>4.0.13.Final</version.org.picketbox>
+        <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
+        <version.org.picketlink>2.1.4.Final</version.org.picketlink>
+        <version.org.picketlink.consolidated.social>2.0.0.Beta1</version.org.picketlink.consolidated.social>
+        <version.org.openid4java>0.9.5</version.org.openid4java>
+        <version.rhino.js>1.7R2</version.rhino.js>
+
+        <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
+        <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
+    </properties>
+
+
+
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jboss.capedwarf</groupId>
+                <artifactId>jboss-as-capedwarf</artifactId>
+                <version>${version.org.jboss.as.capedwarf}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.maven.plugins</groupId>
+                <artifactId>maven-transformer-plugin</artifactId>
+                <version>${version.org.jboss.maven.transformer}</version>
+            </dependency>
+
+            <!-- External Dependencies -->
+
+
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-memory</artifactId>
+                <version>${version.org.apache.lucene}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>${version.org.bouncycastle}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.datanucleus</groupId>
+                <artifactId>datanucleus-api-jdo</artifactId>
+                <version>${version.org.datanucleus}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.datanucleus</groupId>
+                <artifactId>datanucleus-cache</artifactId>
+                <version>${version.org.datanucleus.cache}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-infinispan</artifactId>
+                <version>${version.org.hibernate.search}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-cachestore-jdbc</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-cachestore-remote</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-client-hotrod</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-client-hotrod</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-pool</groupId>
+                        <artifactId>commons-pool</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.openid4java</groupId>
+                <artifactId>openid4java-consumer</artifactId>
+                <version>${version.org.openid4java}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.openid4java</groupId>
+                <artifactId>openid4java-nodeps</artifactId>
+                <version>${version.org.openid4java}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketbox</groupId>
+                <artifactId>picketbox</artifactId>
+                <version>${version.org.picketbox}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketbox</groupId>
+                <artifactId>picketbox-commons</artifactId>
+                <version>${version.org.picketbox.picketbox-commons}</version>
+            </dependency>
+
+            <!-- CapeDwarf & GAE -->
+
+
+            <dependency>
+                <groupId>com.google.appengine</groupId>
+                <artifactId>appengine-api-1.0-sdk</artifactId>
+                <version>${version.com.google.appengine}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <modules>
+        <module>build-as</module>
+        <module>integrate-cd</module>
+    </modules>
+</project>
