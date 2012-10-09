@@ -11,7 +11,7 @@
     <artifactId>capedwarf-build</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>CapeDwarf Build</name>
+    <name>CapeDwarf Blue</name>
     <url>http://www.jboss.org/capedwarf</url>
     <description>CapeDwarf Build</description>
 
@@ -51,10 +51,10 @@
         <version.com.google.gae.api>1.7.2.1</version.com.google.gae.api>
         <version.com.google.guava>11.0.2</version.com.google.guava>
         <version.json>20090211</version.json>
-        <version.org.apache.lucene>3.6.0</version.org.apache.lucene>
+        <version.org.apache.lucene>3.6.1</version.org.apache.lucene>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
         <version.org.bouncycastle>1.47</version.org.bouncycastle>
-        <version.org.jboss.logging>3.1.1.GA</version.org.jboss.logging>
+        <version.org.jboss.logging>3.1.2.GA</version.org.jboss.logging>
         <version.org.jboss.modules.jboss-modules>1.1.2.GA</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.vfs>3.1.0.Final</version.org.jboss.vfs>
         <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
@@ -62,7 +62,7 @@
         <version.org.picketlink>2.1.1.Final</version.org.picketlink>
         <version.org.picketlink.consolidated.social>2.0.0.Beta1</version.org.picketlink.consolidated.social>
         <version.javassist>3.15.0-GA</version.javassist>
-        <version.javax.jpa2>1.0.0.Final</version.javax.jpa2>
+        <version.javax.jpa2>1.0.1.Final</version.javax.jpa2>
         <version.javax.mail>1.4.4</version.javax.mail>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
         <version.org.datanucleus.core>3.1.0-release</version.org.datanucleus.core>
@@ -83,6 +83,9 @@
         <version.shrinkwrap.maven-resolver>1.0.0-beta-5</version.shrinkwrap.maven-resolver>
         <version.metainf>1.1</version.metainf>
         <version.org.apache.httpcomponents>4.1.1</version.org.apache.httpcomponents>
+        <!-- Build configuration -->
+        <maven.compiler.source>1.6</maven.compiler.source>
+        <maven.compiler.target>1.6</maven.compiler.target>
     </properties>
 
     <build>
@@ -90,10 +93,8 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                    <debug>true</debug>
                     <encoding>UTF-8</encoding>
                     <fork>true</fork>
                 </configuration>
@@ -102,23 +103,15 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.0-beta-9</version>
+                <version>2.3.2</version>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-idea-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <downloadSources>true</downloadSources>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.10</version>
+                <version>2.12.4</version>
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <includes>
@@ -171,6 +164,11 @@
                 <artifactId>capedwarf-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-admin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
@@ -205,6 +203,12 @@
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-channel</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-cluster</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -565,6 +569,13 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-arquillian-container-managed</artifactId>
+                <version>${version.jboss.as7}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.arquillian.container</groupId>
                 <artifactId>arquillian-gae-local</artifactId>
                 <version>${version.arquillian.gae}</version>
@@ -595,9 +606,116 @@
 
     <scm>
         <connection>scm:git:git@github.com/capedwarf/capedwarf-blue.git</connection>
-        <developerConnection>scm:git:git@github.com/capedwarf/capedwarf-blue.git
-        </developerConnection>
+        <developerConnection>scm:git:git@github.com/capedwarf/capedwarf-blue.git</developerConnection>
         <url>scm:git:git@github.com/capedwarf/capedwarf-blue.git</url>
     </scm>
+
+    <profiles>
+        <!-- Default, compile tests, but not run -->
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
+        <!-- Run tests against running AS7, manual -->
+        <profile>
+            <id>remote</id>
+            <activation>
+                <property>
+                    <name>remote</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-arquillian-container-remote</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- Full AS7 testsuite, automated, managed -->
+        <profile>
+            <id>testsuite</id>
+            <activation>
+                <property>
+                    <name>testsuite</name>
+                </property>
+            </activation>
+            <modules>
+                <module>integration-testsuite</module>
+            </modules>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-arquillian-container-managed</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- GAE -->
+        <profile>
+            <id>gae</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>gae</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-arquillian</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>arquillian-gae-local</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <!-- TODO - why do we need these? -->
+                <dependency>
+                    <groupId>org.jboss.shrinkwrap</groupId>
+                    <artifactId>shrinkwrap-api</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                    <artifactId>shrinkwrap-resolver-api-maven</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                    <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- GAE remote - AppSpot -->
+        <profile>
+            <id>gae-remote</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>gae-remote</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-arquillian</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>arquillian-gae-remote</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
 </project>

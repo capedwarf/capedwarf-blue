@@ -64,17 +64,4 @@
 
     </dependencies>
 
-    <profiles>
-        <!-- default -->
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <property>
-                    <name>default</name>
-                </property>
-            </activation>
-        </profile>
-    </profiles>
-
 </project>
