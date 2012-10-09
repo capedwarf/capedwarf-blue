@@ -66,7 +66,7 @@ public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTest {
         service.put(fooEntity);
 
         Query query = new Query("foo")
-                .addFilter(Entity.KEY_RESERVED_PROPERTY, EQUAL, fooKey);
+                .setFilter(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, EQUAL, fooKey));
 
         PreparedQuery preparedQuery = service.prepare(query);
         List<Entity> results = preparedQuery.asList(FetchOptions.Builder.withDefaults());
@@ -83,7 +83,7 @@ public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTest {
         Entity entity2 = new Entity("foo");
         service.put(entity2);
 
-        Query query = new Query("foo").addFilter(Entity.KEY_RESERVED_PROPERTY, GREATER_THAN, entity1.getKey());
+        Query query = new Query("foo").setFilter(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, GREATER_THAN, entity1.getKey()));
         List<Entity> list = service.prepare(query).asList(FetchOptions.Builder.withDefaults());
         assertEquals(1, list.size());
         assertEquals(entity2.getKey(), list.get(0).getKey());

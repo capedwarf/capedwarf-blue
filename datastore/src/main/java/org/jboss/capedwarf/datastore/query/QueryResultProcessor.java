@@ -114,13 +114,27 @@ public class QueryResultProcessor {
         return list;
     }
 
+    @SuppressWarnings("deprecation")
     private List<Query.FilterPredicate> getInPredicates(Query query) {
         List<Query.FilterPredicate> inPredicates = new LinkedList<Query.FilterPredicate>();
+        addInPredicatesToList(query.getFilter(), inPredicates);
         for (Query.FilterPredicate predicate : query.getFilterPredicates()) {
+            addInPredicatesToList(predicate, inPredicates);
+        }
+        return inPredicates;
+    }
+
+    private void addInPredicatesToList(Query.Filter filter, List<Query.FilterPredicate> inPredicates) {
+        if (filter instanceof Query.CompositeFilter) {
+            Query.CompositeFilter compositeFilter = (Query.CompositeFilter) filter;
+            for (Query.Filter subFilter : compositeFilter.getSubFilters()) {
+                addInPredicatesToList(subFilter, inPredicates);
+            }
+        } else if (filter instanceof Query.FilterPredicate) {
+            Query.FilterPredicate predicate = (Query.FilterPredicate) filter;
             if (predicate.getOperator() == Query.FilterOperator.IN) {
                 inPredicates.add(predicate);
             }
         }
-        return inPredicates;
     }
 }

@@ -25,6 +25,7 @@ package org.jboss.capedwarf.log;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -121,15 +122,25 @@ public class JBossLogService implements LogService {
     }
 
     private Query createRequestLogsQuery(LogQuery logQuery) {
-        Query query = new Query(LOG_REQUEST_ENTITY_KIND);
+        List<Query.Filter> filters = new LinkedList<Query.Filter>();
         if (logQuery.getStartTimeUsec() != null) {
-            query.addFilter(LOG_REQUEST_END_TIME_MILLIS, Query.FilterOperator.GREATER_THAN_OR_EQUAL, logQuery.getStartTimeUsec());
+            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, Query.FilterOperator.GREATER_THAN_OR_EQUAL, logQuery.getStartTimeUsec()));
         }
         if (logQuery.getEndTimeUsec() != null) {
-            query.addFilter(LOG_REQUEST_END_TIME_MILLIS, Query.FilterOperator.LESS_THAN_OR_EQUAL, logQuery.getEndTimeUsec());
+            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, Query.FilterOperator.LESS_THAN_OR_EQUAL, logQuery.getEndTimeUsec()));
         }
+        Query query = new Query(LOG_REQUEST_ENTITY_KIND);
+        addFilters(query, filters);
         query.addSort(LOG_REQUEST_END_TIME_MILLIS);
         return query;
+    }
+
+    private void addFilters(Query query, List<Query.Filter> filters) {
+        if (filters.size() == 1) {
+            query.setFilter(filters.get(0));
+        } else if (filters.size() > 1) {
+            query.setFilter(Query.CompositeFilterOperator.and(filters));
+        }
     }
 
     private void fetchAppLogLines(LogQuery logQuery, Map<Key, RequestLogs> map) {
@@ -143,22 +154,26 @@ public class JBossLogService implements LogService {
             logLine.setLogMessage((String) entity.getProperty(LOG_LINE_MESSAGE));
             logLine.setTimeUsec((Long) entity.getProperty(LOG_LINE_MILLIS));
 
-            RequestLogs requestLogs = map.get(entity.getProperty(LOG_LINE_REQUEST_KEY));
+            RequestLogs requestLogs = map.get((Key) entity.getProperty(LOG_LINE_REQUEST_KEY));
             requestLogs.getAppLogLines().add(logLine);
         }
     }
 
     private Query createAppLogLinesQuery(LogQuery logQuery) {
+        List<Query.Filter> filters = new ArrayList<Query.Filter>();
+
         Query query = new Query(LOG_LINE_ENTITY_KIND);
         if (logQuery.getMinLogLevel() != null) {
-            query.addFilter(LOG_LINE_LEVEL, Query.FilterOperator.GREATER_THAN_OR_EQUAL, logQuery.getMinLogLevel().ordinal());
+            filters.add(new Query.FilterPredicate(LOG_LINE_LEVEL, Query.FilterOperator.GREATER_THAN_OR_EQUAL, logQuery.getMinLogLevel().ordinal()));
         }
         if (logQuery.getStartTimeUsec() != null) {
-            query.addFilter(LOG_LINE_MILLIS, Query.FilterOperator.GREATER_THAN_OR_EQUAL, logQuery.getStartTimeUsec());
+            filters.add(new Query.FilterPredicate(LOG_LINE_MILLIS, Query.FilterOperator.GREATER_THAN_OR_EQUAL, logQuery.getStartTimeUsec()));
         }
         if (logQuery.getEndTimeUsec() != null) {
-            query.addFilter(LOG_LINE_MILLIS, Query.FilterOperator.LESS_THAN_OR_EQUAL, logQuery.getEndTimeUsec());
+            filters.add(new Query.FilterPredicate(LOG_LINE_MILLIS, Query.FilterOperator.LESS_THAN_OR_EQUAL, logQuery.getEndTimeUsec()));
         }
+
+        addFilters(query, filters);
         query.addSort(LOG_LINE_MILLIS);
         return query;
     }

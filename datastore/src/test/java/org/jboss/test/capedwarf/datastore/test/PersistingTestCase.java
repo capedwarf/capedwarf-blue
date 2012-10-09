@@ -48,7 +48,7 @@ public class PersistingTestCase extends AbstractTest {
         final Key key = ds.put(client);
         try {
             Query query = new Query("Client");
-            query.addFilter("username", Query.FilterOperator.EQUAL, "alesj");
+            query.setFilter(new Query.FilterPredicate("username", Query.FilterOperator.EQUAL, "alesj"));
             PreparedQuery pq = ds.prepare(query);
             Entity result = pq.asSingleEntity();
             Assert.assertNotNull(result);

@@ -32,31 +32,52 @@ import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.RangeMatchingContext;
 import org.hibernate.search.query.dsl.TermMatchingContext;
 
+import static com.google.appengine.api.datastore.Query.*;
+
 /**
  * Converts GAE's Query.FilterPredicates to Lucene Queries
  *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class FilterPredicateConverter {
+public class FilterConverter {
 
     private QueryBuilder queryBuilder;
 
-    public FilterPredicateConverter(QueryBuilder queryBuilder) {
+    public FilterConverter(QueryBuilder queryBuilder) {
         this.queryBuilder = queryBuilder;
     }
 
-    public Query convert(Collection<com.google.appengine.api.datastore.Query.FilterPredicate> filterPredicates) {
-        if (filterPredicates.isEmpty()) {
+    public Query convert(Filter filter) {
+        if (filter == null) {
             return queryBuilder.all().createQuery();
         }
+
+        if (filter instanceof CompositeFilter) {
+            CompositeFilter compositeFilter = (CompositeFilter) filter;
+            return convert(compositeFilter);
+        } else if (filter instanceof FilterPredicate) {
+            FilterPredicate predicate = (FilterPredicate) filter;
+            return convert(predicate);
+        } else {
+            throw new IllegalArgumentException("Unknown filter type: " + filter);
+        }
+    }
+
+    private Query convert(CompositeFilter compositeFilter) {
         BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
-        for (com.google.appengine.api.datastore.Query.FilterPredicate filterPredicate : filterPredicates) {
-            bool.must(convert(filterPredicate));
+        for (Filter subFilter : compositeFilter.getSubFilters()) {
+            if (compositeFilter.getOperator() == CompositeFilterOperator.AND) {
+                bool.must(convert(subFilter));
+            } else if (compositeFilter.getOperator() == CompositeFilterOperator.OR) {
+                bool.should(convert(subFilter));
+            } else {
+                throw new IllegalArgumentException("Unknown operator " + compositeFilter.getOperator());
+            }
         }
         return bool.createQuery();
     }
 
-    public Query convert(com.google.appengine.api.datastore.Query.FilterPredicate filterPredicate) {
+    public Query convert(FilterPredicate filterPredicate) {
         String fieldName = filterPredicate.getPropertyName();
         Object value = filterPredicate.getValue();
 

@@ -25,12 +25,12 @@ public class QueryConverter {
 
     private SearchManager searchManager;
 
-    private FilterPredicateConverter filterPredicateConverter;
+    private FilterConverter filterConverter;
     private SortPredicateConverter sortPredicateConverter;
 
     public QueryConverter(SearchManager searchManager) {
         this.searchManager = searchManager;
-        this.filterPredicateConverter = new FilterPredicateConverter(createQueryBuilder());
+        this.filterConverter = new FilterConverter(createQueryBuilder());
         this.sortPredicateConverter = new SortPredicateConverter();
     }
 
@@ -63,24 +63,40 @@ public class QueryConverter {
     }
 
     private org.apache.lucene.search.Query createLuceneQuery(Query gaeQuery) {
-        return filterPredicateConverter.convert(getAllFilterPredicates(gaeQuery));
+        Query.Filter filter = getFilter(gaeQuery);
+        return filterConverter.convert(filter);
     }
 
-    private List<Query.FilterPredicate> getAllFilterPredicates(Query gaeQuery) {
-        List<Query.FilterPredicate> list = new ArrayList<Query.FilterPredicate>();
+    private Query.Filter getFilter(Query gaeQuery) {
+        List<Query.Filter> filters = getAllFilterPredicates(gaeQuery);
+        if (filters.size() == 1) {
+            return filters.get(0);
+        } else if (filters.size() > 1) {
+            return Query.CompositeFilterOperator.and(filters);
+        } else {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private List<Query.Filter> getAllFilterPredicates(Query gaeQuery) {
+        List<Query.Filter> list = new ArrayList<Query.Filter>();
         addEntityKindFilterPredicate(list, gaeQuery.getKind());
         addAncestorFilterPredicate(list, gaeQuery.getAncestor());
+        if (gaeQuery.getFilter() != null) {
+            list.add(gaeQuery.getFilter());
+        }
         list.addAll(gaeQuery.getFilterPredicates());
         return list;
     }
 
-    private void addAncestorFilterPredicate(List<Query.FilterPredicate> list, Key ancestor) {
+    private void addAncestorFilterPredicate(List<Query.Filter> list, Key ancestor) {
         if (ancestor != null) {
             list.add(new Query.FilterPredicate(ANCESTOR_PROPERTY_KEY, EQUAL, ancestor));
         }
     }
 
-    private void addEntityKindFilterPredicate(List<Query.FilterPredicate> list, String kind) {
+    private void addEntityKindFilterPredicate(List<Query.Filter> list, String kind) {
         if (kind != null) {
             list.add(new Query.FilterPredicate(KIND_PROPERTY_KEY, EQUAL, kind));
         }

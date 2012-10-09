@@ -67,22 +67,9 @@ public class LazyChecker extends LazyKeyChecker {
         super.check();
     }
 
-    @SuppressWarnings("deprecation")
     private void checkInequalityConstraints() {
         final Query query = holder.getQuery();
-        String inequalityFilterProperty = null;
-        for (Query.FilterPredicate predicate : query.getFilterPredicates()) {
-            if (isInequalityOperator(predicate.getOperator())) {
-                if (inequalityFilterProperty == null) {
-                    inequalityFilterProperty = predicate.getPropertyName();
-                } else {
-                    if (!inequalityFilterProperty.equals(predicate.getPropertyName())) {
-                        throw new IllegalArgumentException("Only one inequality filter per query is supported.  " +
-                                "Encountered both " + inequalityFilterProperty + " and " + predicate.getPropertyName());
-                    }
-                }
-            }
-        }
+        String inequalityFilterProperty = checkInequalityConstraints(query.getFilter(), null);
 
         if (inequalityFilterProperty != null && !query.getSortPredicates().isEmpty()) {
             Query.SortPredicate firstSortPredicate = query.getSortPredicates().get(0);
@@ -93,6 +80,32 @@ public class LazyChecker extends LazyKeyChecker {
                         "but the inequality filter is on " + inequalityFilterProperty);
             }
         }
+    }
+
+    private String checkInequalityConstraints(Query.Filter filter, String inequalityFilterProperty) {
+        if (filter instanceof Query.FilterPredicate) {
+            Query.FilterPredicate predicate = (Query.FilterPredicate) filter;
+            if (isInequalityOperator(predicate.getOperator())) {
+                String property = predicate.getPropertyName();
+                if (inequalityFilterProperty == null) {
+                    return property;
+                } else {
+                    if (!inequalityFilterProperty.equals(property)) {
+                        throw new IllegalArgumentException("Only one inequality filter per query is supported.  " +
+                            "Encountered both " + inequalityFilterProperty + " and " + property);
+                    }
+                }
+            }
+        } else if (filter instanceof Query.CompositeFilter) {
+            Query.CompositeFilter compositeFilter = (Query.CompositeFilter) filter;
+            for (Query.Filter subFilter : compositeFilter.getSubFilters()) {
+                String property = checkInequalityConstraints(subFilter, inequalityFilterProperty);
+                if (property != null) {
+                    inequalityFilterProperty = property;
+                }
+            }
+        }
+        return inequalityFilterProperty;
     }
 
     private boolean isInequalityOperator(Query.FilterOperator operator) {
