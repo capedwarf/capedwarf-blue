@@ -15,10 +15,6 @@
     <name>CapeDwarf - Application Server Build</name>
     <packaging>pom</packaging>
 
-    <properties>
-
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -159,10 +155,20 @@
 
     <profiles>
         <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <ant.target>noop</ant.target>
+            </properties>
+        </profile>
+
+        <profile>
             <id>normal</id>
             <activation>
                 <property>
-                    <name>!minimalistic</name>
+                    <name>testsuite</name>
                 </property>
             </activation>
 

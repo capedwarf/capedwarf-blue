@@ -26,6 +26,8 @@
 
     <property name="output.dir" value="target/capedwarf-release"/>
 
+    <target name="noop"/>
+
     <target name="base" depends="clean-target, copy-files"/>
 
     <target name="copy-files">

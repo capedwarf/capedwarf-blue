@@ -13,6 +13,8 @@
     <groupId>org.jboss.capedwarf.blue</groupId>
     <artifactId>integrate-cd</artifactId>
     <name>CapeDwarf Integrate AS</name>
+    <packaging>pom</packaging>
+
     <properties>
         <jboss.dir>../build-as/target/jboss-as-${version.jboss.as}</jboss.dir>
     </properties>
@@ -32,7 +34,7 @@
                         <configuration>
                             <target>
                                 <ant antfile="build.xml" inheritRefs="true">
-                                    <target name="all"/>
+                                    <target name="${ant.target}}"/>
                                 </ant>
                             </target>
                         </configuration>
@@ -82,7 +84,11 @@
         </plugins>
     </build>
     <dependencies>
-
+        <dependency>
+            <groupId>org.jboss.capedwarf.blue</groupId>
+            <artifactId>build-as</artifactId>
+            <type>pom</type>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.maven.plugins</groupId>
@@ -332,4 +338,28 @@
         </dependency>
 
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <ant.target>noop</ant.target>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>testsuite</id>
+            <activation>
+                <property>
+                    <name>testsuite</name>
+                </property>
+            </activation>
+            <properties>
+                <ant.target>all</ant.target>
+            </properties>
+        </profile>
+    </profiles>
 </project>

@@ -13,6 +13,7 @@
     <artifactId>integration-testsuite</artifactId>
     <name>CapeDwarf Integration Testsuite</name>
     <packaging>pom</packaging>
+
     <properties>
         <version.jboss.as>7.2.0.Alpha1-SNAPSHOT</version.jboss.as>
         <version.org.jboss.capedwarf>1.0.0-SNAPSHOT</version.org.jboss.capedwarf>
@@ -39,9 +40,6 @@
         <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
         <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
     </properties>
-
-
-
 
     <dependencyManagement>
         <dependencies>

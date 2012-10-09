@@ -26,6 +26,8 @@
 
     <property name="output.dir" value="target/jboss-as-${jboss.as.release.version}"/>
 
+    <target name="noop"/>
+
     <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
 
     <target name="copy-files">
