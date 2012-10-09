@@ -12,7 +12,7 @@
     <groupId>org.jboss.capedwarf.blue</groupId>
     <artifactId>build-as</artifactId>
 
-    <name>JBoss Application Server: Build</name>
+    <name>CapeDwarf - Application Server Build</name>
     <packaging>pom</packaging>
 
     <properties>

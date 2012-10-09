@@ -12,6 +12,7 @@
 
     <groupId>org.jboss.capedwarf.blue</groupId>
     <artifactId>integrate-cd</artifactId>
+    <name>CapeDwarf Integrate AS</name>
     <properties>
         <jboss.dir>../build-as/target/jboss-as-${version.jboss.as}</jboss.dir>
     </properties>
