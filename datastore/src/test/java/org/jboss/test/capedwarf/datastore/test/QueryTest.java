@@ -110,7 +110,7 @@ public abstract class QueryTest extends AbstractTest {
 
     protected Query createQuery(Query.FilterOperator operator, Object value) {
         return createQuery()
-                .addFilter(SINGLE_PROPERTY_NAME, operator, value);
+                .setFilter(new Query.FilterPredicate(SINGLE_PROPERTY_NAME, operator, value));
     }
 
     protected Query createQuery() {

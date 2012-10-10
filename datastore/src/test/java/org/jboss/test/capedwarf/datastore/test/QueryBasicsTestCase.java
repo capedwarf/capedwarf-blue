@@ -46,6 +46,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Datastore querying basic tests.
@@ -81,13 +82,18 @@ public class QueryBasicsTestCase extends QueryTest {
         assertSingleResult(person, new Query("Person"));
     }
 
-    @Test(expected = PreparedQuery.TooManyResultsException.class)
+    @Test
     public void singleEntityThrowsTooManyResultsExceptionWhenMoreThanOneResult() throws Exception {
         createEntity("Person", 1).store();
         createEntity("Person", 2).store();
 
         PreparedQuery preparedQuery = service.prepare(new Query("Person"));
-        preparedQuery.asSingleEntity();
+        try {
+            preparedQuery.asSingleEntity();
+            fail("Expected PreparedQuery.TooManyResultsException");
+        } catch (PreparedQuery.TooManyResultsException e) {
+            // pass
+        }
     }
 
     @Test
@@ -108,8 +114,9 @@ public class QueryBasicsTestCase extends QueryTest {
                 .store();
 
         Query query = new Query("Person")
-                .addFilter("name", EQUAL, "John")
-                .addFilter("lastName", EQUAL, "Doe");
+            .setFilter(Query.CompositeFilterOperator.and(
+                new Query.FilterPredicate("name", EQUAL, "John"),
+                new Query.FilterPredicate("lastName", EQUAL, "Doe")));
 
         assertSingleResult(johnDoe, query);
     }
@@ -130,7 +137,7 @@ public class QueryBasicsTestCase extends QueryTest {
             .withProperty("user", null)
             .store();
 
-        Query query = new Query("Entry").addFilter("user", EQUAL, null);
+        Query query = new Query("Entry").setFilter(new Query.FilterPredicate("user", EQUAL, null));
         assertNotNull(service.prepare(query).asSingleEntity());
     }
 
@@ -140,7 +147,7 @@ public class QueryBasicsTestCase extends QueryTest {
             .withProperty("user", "joe")
             .store();
 
-        Query query = new Query("Entry").addFilter("user", NOT_EQUAL, null);
+        Query query = new Query("Entry").setFilter(new Query.FilterPredicate("user", NOT_EQUAL, null));
         assertNotNull(service.prepare(query).asSingleEntity());
     }
 
@@ -150,7 +157,7 @@ public class QueryBasicsTestCase extends QueryTest {
             .withProperty("user", null)
             .store();
 
-        Query query = new Query("Entry").addFilter("user", IN, Arrays.asList(null, "foo"));
+        Query query = new Query("Entry").setFilter(new Query.FilterPredicate("user", IN, Arrays.asList(null, "foo")));
         assertNotNull(service.prepare(query).asSingleEntity());
     }
 
@@ -160,7 +167,7 @@ public class QueryBasicsTestCase extends QueryTest {
             .withProperty("letters", Arrays.asList("a", "b", "c"))
             .store();
 
-        Query query = new Query("Entry").addFilter("letters", EQUAL, "a");
+        Query query = new Query("Entry").setFilter(new Query.FilterPredicate("letters", EQUAL, "a"));
         assertNotNull(service.prepare(query).asSingleEntity());
     }
 
@@ -199,8 +206,9 @@ public class QueryBasicsTestCase extends QueryTest {
     @Test
     public void testQueryWithInequalityFiltersOnMultiplePropertiesThrowsIllegalArgumentException() throws Exception {
         Query query = createQuery()
-            .addFilter("weight", GREATER_THAN, 3)
-            .addFilter("size", GREATER_THAN, 5);
+            .setFilter(Query.CompositeFilterOperator.and(
+                new Query.FilterPredicate("weight", GREATER_THAN, 3),
+                new Query.FilterPredicate("size", GREATER_THAN, 5)));
 
         assertIAEWhenAccessingResult(service.prepare(query));
     }
@@ -208,7 +216,7 @@ public class QueryBasicsTestCase extends QueryTest {
     @Test
     public void testQueryWithInequalityFilterAndFirstSortOnDifferentPropertyThrowsIllegalArgumentException() throws Exception {
         Query query = createQuery()
-            .addFilter("foo", GREATER_THAN, 3)
+            .setFilter(new Query.FilterPredicate("foo", GREATER_THAN, 3))
             .addSort("bar");
 
         assertIAEWhenAccessingResult(service.prepare(query));
@@ -217,11 +225,36 @@ public class QueryBasicsTestCase extends QueryTest {
     @Test
     public void testQueryWithInequalityFilterAndFirstSortOnSamePropertyIsAllowed() throws Exception {
         Query query = createQuery()
-            .addFilter("foo", GREATER_THAN, 3)
+            .setFilter(new Query.FilterPredicate("foo", GREATER_THAN, 3))
             .addSort("foo")
             .addSort("bar");
 
         service.prepare(query).asList(withDefaults());
+    }
+
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testDeprecatedFiltersAreSupported() throws Exception {
+        Entity johnDoe = createEntity("Person", 1)
+            .withProperty("name", "John")
+            .withProperty("lastName", "Doe")
+            .store();
+
+        Entity johnBooks = createEntity("Person", 2)
+            .withProperty("name", "John")
+            .withProperty("lastName", "Books")
+            .store();
+
+        Entity janeDoe = createEntity("Person", 3)
+            .withProperty("name", "Jane")
+            .withProperty("lastName", "Doe")
+            .store();
+
+        Query query = new Query("Person")
+            .addFilter("name", EQUAL, "John")
+            .addFilter("lastName", EQUAL, "Doe");
+
+        assertSingleResult(johnDoe, query);
     }
 
     private HashSet<Entity> asSet(List<Entity> collection) {

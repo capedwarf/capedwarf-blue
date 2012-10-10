@@ -79,7 +79,7 @@ public class ChannelManager {
     }
 
     public Set<Channel> getChannels(String clientId) {
-        Query query = new Query(CHANNEL_ENTITY_KIND).addFilter(PROPERTY_CLIENT_ID, Query.FilterOperator.EQUAL, clientId);
+        Query query = new Query(CHANNEL_ENTITY_KIND).setFilter(new Query.FilterPredicate(PROPERTY_CLIENT_ID, Query.FilterOperator.EQUAL, clientId));
         List<Entity> entities = DatastoreServiceFactory.getDatastoreService().prepare(query).asList(FetchOptions.Builder.withDefaults());
         Set<Channel> set = new HashSet<Channel>();
         for (Entity entity : entities) {
@@ -92,7 +92,7 @@ public class ChannelManager {
         if (token == null) {
             throw new NullPointerException("token should not be null");
         }
-        Query query = new Query(CHANNEL_ENTITY_KIND).addFilter(PROPERTY_TOKEN, Query.FilterOperator.EQUAL, token);
+        Query query = new Query(CHANNEL_ENTITY_KIND).setFilter(new Query.FilterPredicate(PROPERTY_TOKEN, Query.FilterOperator.EQUAL, token));
         Entity entity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
         if (entity == null) {
             throw new NoSuchChannelException("No channel with token " + token);

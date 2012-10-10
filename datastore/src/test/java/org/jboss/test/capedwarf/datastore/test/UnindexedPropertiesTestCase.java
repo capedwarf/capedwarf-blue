@@ -76,14 +76,14 @@ public class UnindexedPropertiesTestCase extends AbstractTest {
         assertTrue(isUnindexed(getRawProperty(entity2, "text")));
         assertTrue(isUnindexed(getRawProperty(entity2, "blob")));
 
-        assertNull(getResult(new Query("test").addFilter("unindexedString", Query.FilterOperator.EQUAL, "unindexedString")));
-        assertNull(getResult(new Query("test").addFilter("unindexedList", Query.FilterOperator.EQUAL, "listElement1")));
-        assertNull(getResult(new Query("test").addFilter("unindexedText", Query.FilterOperator.EQUAL, "unindexedText")));
-        assertNull(getResult(new Query("test").addFilter("unindexedText", Query.FilterOperator.EQUAL, new Text("unindexedText"))));
-        assertNull(getResult(new Query("test").addFilter("unindexedBlob", Query.FilterOperator.EQUAL, new Blob("unindexedBlob".getBytes()))));
-        assertNull(getResult(new Query("test").addFilter("text", Query.FilterOperator.EQUAL, "text")));
-        assertNull(getResult(new Query("test").addFilter("text", Query.FilterOperator.EQUAL, new Text("text"))));
-        assertNull(getResult(new Query("test").addFilter("blob", Query.FilterOperator.EQUAL, new Blob("blob".getBytes()))));
+        assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("unindexedString", Query.FilterOperator.EQUAL, "unindexedString"))));
+        assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("unindexedList", Query.FilterOperator.EQUAL, "listElement1"))));
+        assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("unindexedText", Query.FilterOperator.EQUAL, "unindexedText"))));
+        assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("unindexedText", Query.FilterOperator.EQUAL, new Text("unindexedText")))));
+        assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("unindexedBlob", Query.FilterOperator.EQUAL, new Blob("unindexedBlob".getBytes())))));
+        assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("text", Query.FilterOperator.EQUAL, "text"))));
+        assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("text", Query.FilterOperator.EQUAL, new Text("text")))));
+        assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("blob", Query.FilterOperator.EQUAL, new Blob("blob".getBytes())))));
     }
 
     private Entity getResult(Query query) {

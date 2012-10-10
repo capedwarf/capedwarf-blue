@@ -63,7 +63,7 @@ public class PreparedQueryTestCase extends QueryTest {
                 .store();
 
         Query query = new Query("Person")
-                .addFilter("name", EQUAL, "John");
+                .setFilter(new Query.FilterPredicate("name", EQUAL, "John"));
 
         preparedQuery = service.prepare(query);
     }
