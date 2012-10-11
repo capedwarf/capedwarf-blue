@@ -88,13 +88,6 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.jboss.capedwarf.blue</groupId>
-            <artifactId>integrate-cd</artifactId>
-            <type>pom</type>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>

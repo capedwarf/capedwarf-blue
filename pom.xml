@@ -30,7 +30,6 @@
         <module>environment</module>
         <module>files</module>
         <module>images</module>
-        <module>integration-testsuite</module>
         <module>log</module>
         <module>mail</module>
         <module>memcache</module>
@@ -112,7 +111,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12.4</version>
+                <version>2.12.1</version>
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <includes>
@@ -125,6 +124,18 @@
                         </property>
                     </systemProperties>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -159,22 +170,6 @@
     <dependencyManagement>
         <!-- The parent pom manages the inter-dependencies of the modules. -->
         <dependencies>
-            <!-- CapeDwarf Testsuite -->
-
-            <dependency>
-                <groupId>org.jboss.capedwarf.blue</groupId>
-                <artifactId>build-as</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.capedwarf.blue</groupId>
-                <artifactId>integrate-cd</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-            </dependency>
-
             <!-- CapeDwarf APIs -->
 
             <dependency>
@@ -587,13 +582,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-container-managed</artifactId>
-                <version>${version.jboss.as7}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.arquillian.container</groupId>
                 <artifactId>arquillian-gae-local</artifactId>
                 <version>${version.arquillian.gae}</version>
@@ -651,22 +639,6 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-arquillian-container-remote</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <!-- Full AS7 testsuite, automated, managed -->
-        <profile>
-            <id>testsuite</id>
-            <activation>
-                <property>
-                    <name>testsuite</name>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-arquillian-container-managed</artifactId>
                     <scope>test</scope>
                 </dependency>
             </dependencies>

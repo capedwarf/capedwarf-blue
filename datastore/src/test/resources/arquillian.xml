@@ -5,9 +5,4 @@
 
     <defaultProtocol type="Servlet 2.5"/>
 
-    <container qualifier="jbossas-managed" default="true">
-        <configuration>
-            <property name="jbossHome">../integration-testsuite/build-as/target/jboss-as-${version.jboss.as}</property>
-        </configuration>
-    </container>
 </arquillian>
