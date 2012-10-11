@@ -2,6 +2,7 @@
 *.iml
 *.ipr
 *.iws
+target/
 admin/target/
 appidentity/target/
 arquillian/target/
