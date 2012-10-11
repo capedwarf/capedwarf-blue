@@ -29,8 +29,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -46,7 +48,7 @@ public class QueryResultProcessor {
     }
 
     public List<Entity> process(List<Entity> list) {
-        if (processingNeeded()) {
+        if (isProcessingNeeded()) {
             return sort(list);
         } else {
             return list;
@@ -54,7 +56,7 @@ public class QueryResultProcessor {
     }
 
     public Iterator<Entity> process(Iterator<Entity> iterator) {
-        if (processingNeeded()) {
+        if (isProcessingNeeded()) {
             List<Entity> list = toList(iterator);
             return sort(list).iterator();
         } else {
@@ -62,8 +64,16 @@ public class QueryResultProcessor {
         }
     }
 
-    private boolean processingNeeded() {
+    public boolean isProcessingNeeded() {
         return !inPredicates.isEmpty() && query.getSortPredicates().isEmpty();
+    }
+
+    public List<String> getPropertiesUsedInIn() {
+        Set<String> set = new LinkedHashSet<String>();
+        for (Query.FilterPredicate predicate : inPredicates) {
+            set.add(predicate.getPropertyName());
+        }
+        return new ArrayList<String>(set);
     }
 
     private List<Entity> toList(Iterator<Entity> iterator) {
@@ -111,7 +121,20 @@ public class QueryResultProcessor {
                 return 0;
             }
         });
+        removeSortProperties(list);
         return list;
+    }
+
+    private void removeSortProperties(List<Entity> list) {
+        for (Entity entity : list) {
+            removeSortProperties(entity);
+        }
+    }
+
+    private void removeSortProperties(Entity entity) {
+        for (String propertyName : Projections.getPropertiesRequiredOnlyForSorting(query)) {
+            entity.removeProperty(propertyName);
+        }
     }
 
     @SuppressWarnings("deprecation")
