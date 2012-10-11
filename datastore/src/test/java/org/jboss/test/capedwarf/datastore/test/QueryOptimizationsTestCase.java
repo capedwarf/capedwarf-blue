@@ -23,6 +23,7 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.PropertyProjection;
 import com.google.appengine.api.datastore.Query;
@@ -30,8 +31,13 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
+import java.util.List;
+
+import static com.google.appengine.api.datastore.Query.FilterOperator.IN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 /**
  * Datastore querying optimizations tests.
@@ -43,16 +49,11 @@ import static org.junit.Assert.assertNull;
 public class QueryOptimizationsTestCase extends QueryTest {
 
     @Test
-    public void testDummy() throws Exception {
-        // remote this
-    }
-
-    @Test
     public void testKeysOnly() throws Exception {
         Entity john = createEntity("Person", 1)
-                .withProperty("name", "John")
-                .withProperty("surname", "Doe")
-                .store();
+            .withProperty("name", "John")
+            .withProperty("surname", "Doe")
+            .store();
 
         Query query = new Query("Person").setKeysOnly();
 
@@ -88,5 +89,84 @@ public class QueryOptimizationsTestCase extends QueryTest {
         assertEquals(e.getProperty("x"), result.getProperty("x"));
         assertEquals(e.getProperty("diff"), result.getProperty("diff"));
         assertNull(result.getProperty("weight"));
+    }
+
+    @Test
+    public void testOrderOfReturnedResultsIsSameAsOrderOfElementsInInStatementWhenUsingProjections() throws Exception {
+        Entity a = createEntity("Product", 1)
+            .withProperty("name", "b")
+            .withProperty("price", 1L)
+            .store();
+
+        Entity b = createEntity("Product", 2)
+            .withProperty("name", "a")
+            .withProperty("price", 2L)
+            .store();
+
+        Query query = new Query("Product")
+            .addProjection(new PropertyProjection("price", String.class))
+            .setFilter(new Query.FilterPredicate("name", IN, Arrays.asList("a", "b")));
+        assertResultsInOrder(query, a, b);
+
+        query = query.setFilter(new Query.FilterPredicate("name", IN, Arrays.asList("b", "a")));
+        assertResultsInOrder(query, b, a);
+    }
+
+    @Test
+    public void testOrderOfReturnedResultsIsSameAsOrderOfElementsInInStatementWhenUsingKeysOnly() throws Exception {
+        Entity a = createEntity("Product", 1)
+            .withProperty("name", "b")
+            .store();
+
+        Entity b = createEntity("Product", 2)
+            .withProperty("name", "a")
+            .store();
+
+        Query query = new Query("Product")
+            .setKeysOnly()
+            .setFilter(new Query.FilterPredicate("name", IN, Arrays.asList("a", "b")));
+        assertResultsInOrder(query, a, b);
+
+        query = query.setFilter(new Query.FilterPredicate("name", IN, Arrays.asList("b", "a")));
+        assertResultsInOrder(query, b, a);
+    }
+
+    @Test
+    public void testEntityOnlyContainsProjectedProperties() throws Exception {
+        Entity a = createEntity("Product", 1)
+            .withProperty("name", "b")
+            .withProperty("price", 1L)
+            .store();
+
+        Entity b = createEntity("Product", 2)
+            .withProperty("name", "a")
+            .withProperty("price", 2L)
+            .store();
+
+        Query query = new Query("Product")
+            .addProjection(new PropertyProjection("price", String.class))
+            .setFilter(new Query.FilterPredicate("name", IN, Arrays.asList("a", "b")));
+        Entity firstResult = service.prepare(query).asList(FetchOptions.Builder.withDefaults()).get(0);
+
+        assertEquals(1, firstResult.getProperties().size());
+        assertEquals("price", firstResult.getProperties().keySet().iterator().next());
+
+        query = new Query("Product")
+            .setKeysOnly()
+            .setFilter(new Query.FilterPredicate("name", IN, Arrays.asList("a", "b")));
+        firstResult = service.prepare(query).asList(FetchOptions.Builder.withDefaults()).get(0);
+
+        assertEquals(0, firstResult.getProperties().size());
+    }
+
+    private void assertResultsInOrder(Query query, Entity a, Entity b) {
+        PreparedQuery preparedQuery = service.prepare(query);
+        List<Entity> results = preparedQuery.asList(FetchOptions.Builder.withDefaults());
+
+        Entity firstResult = results.get(0);
+        Entity secondResult = results.get(1);
+
+        assertEquals(b.getKey(), firstResult.getKey());
+        assertEquals(a.getKey(), secondResult.getKey());
     }
 }
