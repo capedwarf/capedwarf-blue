@@ -22,6 +22,9 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -31,13 +34,9 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static com.google.appengine.api.datastore.Query.FilterOperator.IN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
 /**
  * Datastore querying optimizations tests.
@@ -104,7 +103,7 @@ public class QueryOptimizationsTestCase extends QueryTest {
             .store();
 
         Query query = new Query("Product")
-            .addProjection(new PropertyProjection("price", String.class))
+            .addProjection(new PropertyProjection("price", Long.class))
             .setFilter(new Query.FilterPredicate("name", IN, Arrays.asList("a", "b")));
         assertResultsInOrder(query, a, b);
 
@@ -144,7 +143,7 @@ public class QueryOptimizationsTestCase extends QueryTest {
             .store();
 
         Query query = new Query("Product")
-            .addProjection(new PropertyProjection("price", String.class))
+            .addProjection(new PropertyProjection("price", Long.class))
             .setFilter(new Query.FilterPredicate("name", IN, Arrays.asList("a", "b")));
         Entity firstResult = service.prepare(query).asList(FetchOptions.Builder.withDefaults()).get(0);
 
