@@ -303,7 +303,7 @@ public class MatchTestCase extends AbstractTest {
     }
 
     private void waitForJMSToKickIn() throws InterruptedException {
-        Thread.sleep(3000);
+        Thread.sleep(5000);
     }
 
 }
