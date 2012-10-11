@@ -23,17 +23,11 @@
 package org.jboss.test.capedwarf.prospectivesearch;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.prospectivesearch.FieldType;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,32 +37,12 @@ import static com.google.appengine.api.prospectivesearch.ProspectiveSearchServic
 import static com.google.appengine.api.prospectivesearch.ProspectiveSearchService.DEFAULT_RESULT_TASK_QUEUE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class MatchTestCase extends AbstractTest {
-
-    private static final String SPECIAL_RESULT_RELATIVE_URI = "/_ah/prospective_search_special";
-    private static final String TOPIC = "myTopic";
-
-    @Deployment
-    public static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-            .addClasses(AbstractTest.class, MatchResponseServlet.class, SpecialMatchResponseServlet.class)
-            .addAsWebInfResource("web.xml")
-            .addAsWebInfResource("appengine-web.xml");
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        MatchResponseServlet.clear();
-        SpecialMatchResponseServlet.clear();
-    }
+public class MatchTestCase extends AbstractMatchTest {
 
     @Test
     public void testMatchInvokesServletWhenSearchMatches() throws Exception {
@@ -124,25 +98,6 @@ public class MatchTestCase extends AbstractTest {
         service.match(entity, TOPIC, "", SPECIAL_RESULT_RELATIVE_URI, DEFAULT_RESULT_TASK_QUEUE_NAME, DEFAULT_RESULT_BATCH_SIZE, true);
 
         assertSpecialServletWasInvokedWith(entity);
-    }
-
-    @Test
-    public void testMatchHonorsResultBatchSize() throws Exception {
-        service.subscribe(TOPIC, "foo1", 0, "title:foo", createSchema("title", FieldType.STRING));
-        service.subscribe(TOPIC, "foo2", 0, "title:foo", createSchema("title", FieldType.STRING));
-        service.subscribe(TOPIC, "foo3", 0, "title:foo", createSchema("title", FieldType.STRING));
-
-        int resultBatchSize = 2;
-        service.match(articleWithTitle("Foo foo"), TOPIC, "", DEFAULT_RESULT_RELATIVE_URL, DEFAULT_RESULT_TASK_QUEUE_NAME, resultBatchSize, true);
-
-        assertServletReceivedSubIds("foo1", "foo2", "foo3");
-
-        int expectedInvocationCount = 2; // Math.ceil(3 / 2) = 2
-        assertEquals("incorrect servlet invocation count", expectedInvocationCount, MatchResponseServlet.getInvocationCount());
-
-        for (MatchResponseServlet.InvocationData invocationData : MatchResponseServlet.getInvocations()) {
-            assertTrue("batch was too large", invocationData.getSubIds().length <= resultBatchSize);
-        }
     }
 
     @Test
@@ -236,74 +191,6 @@ public class MatchTestCase extends AbstractTest {
         service.match(entity, TOPIC);
 
         assertServletWasInvokedWith(entity);
-    }
-
-    private void assertServletWasInvoked() {
-        if (!MatchResponseServlet.isInvoked()) {
-            fail("servlet was not invoked");
-        }
-    }
-
-    private Entity articleWithTitle(String title) {
-        Entity entity = new Entity("article");
-        entity.setProperty("title", title);
-        return entity;
-    }
-
-    private Entity articleWithTitleAndBody(String title, String body) {
-        Entity entity = new Entity("article");
-        entity.setProperty("title", title);
-        entity.setProperty("body", body);
-        return entity;
-    }
-
-    private void assertServletWasInvokedWith(Entity entity) throws Exception {
-        waitForJMSToKickIn();
-
-        assertServletWasInvoked();
-
-        Entity lastReceivedDocument = MatchResponseServlet.getLastInvocationData().getDocument();
-        if (lastReceivedDocument == null) {
-            fail("servlet was invoked without a document (document was null)");
-        }
-
-        assertTrue("servlet was invoked with some other entity: " + lastReceivedDocument, entity.getProperties().equals(lastReceivedDocument.getProperties()));
-    }
-
-    private void assertServletReceivedSubIds(String... subIds) throws Exception {
-        waitForJMSToKickIn();
-
-        assertServletWasInvoked();
-
-        Set<String> expectedSubIds = new HashSet<String>(Arrays.asList(subIds));
-        Set<String> receivedSubIds = new HashSet<String>(MatchResponseServlet.getAllSubIds());
-        assertEquals("servlet was invoked with wrong subIds", expectedSubIds, receivedSubIds);
-    }
-
-    private void assertSpecialServletWasInvokedWith(Entity entity) throws Exception {
-        waitForJMSToKickIn();
-
-        if (!SpecialMatchResponseServlet.isInvoked()) {
-            fail("servlet was not invoked");
-        }
-
-        Entity lastReceivedDocument = SpecialMatchResponseServlet.getLastReceivedDocument();
-        if (lastReceivedDocument == null) {
-            fail("servlet was invoked without a document (document was null)");
-        }
-    }
-
-    private void assertServletWasNotInvoked() throws Exception {
-        waitForJMSToKickIn();
-
-        if (MatchResponseServlet.isInvoked()) {
-            Entity lastReceivedDocument = MatchResponseServlet.getLastInvocationData().getDocument();
-            fail("servlet was invoked with: " + lastReceivedDocument);
-        }
-    }
-
-    private void waitForJMSToKickIn() throws InterruptedException {
-        Thread.sleep(5000);
     }
 
 }
