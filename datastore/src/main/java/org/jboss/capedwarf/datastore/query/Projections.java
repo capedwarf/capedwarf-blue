@@ -47,7 +47,6 @@ import org.infinispan.query.ProjectionConstants;
 class Projections {
     private static final String TYPES_FIELD = "__capedwarf___TYPES___";
     private static final int OFFSET = 2;
-
     private Properties bridges = new Properties();
 
     Projections() {
@@ -56,25 +55,53 @@ class Projections {
     /**
      * Apply GAE projections onto Cache projections.
      *
-     * @param gaeQuery the GAE query
+     * @param gaeQuery   the GAE query
      * @param cacheQuery the cache query
      */
     static void applyProjections(Query gaeQuery, CacheQuery cacheQuery) {
+        List<String> projections = getProjections(gaeQuery);
+        if (!projections.isEmpty()) {
+            cacheQuery.projection(projections.toArray(new String[projections.size()]));
+        }
+    }
+
+    private static List<String> getProjections(Query gaeQuery) {
+        List<String> projections = new ArrayList<String>();
         if (gaeQuery.isKeysOnly()) {
-            cacheQuery.projection(ProjectionConstants.KEY);
+            projections.add(ProjectionConstants.KEY);
+            projections.add(TYPES_FIELD);
+            projections.addAll(getPropertiesRequiredOnlyForSorting(gaeQuery));
         } else if (gaeQuery.getProjections().size() > 0) {
-            List<String> projections = new ArrayList<String>(OFFSET + gaeQuery.getProjections().size());
             projections.add(ProjectionConstants.KEY);
             projections.add(TYPES_FIELD);
             for (Projection projection : gaeQuery.getProjections()) {
-                if (projection instanceof PropertyProjection) {
-                    PropertyProjection propertyProjection = (PropertyProjection) projection;
-                    projections.add(propertyProjection.getName());
-                } else {
-                    throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
+                projections.add(getProjection(projection));
+            }
+            projections.addAll(getPropertiesRequiredOnlyForSorting(gaeQuery));
+        }
+
+        return projections;
+    }
+
+    public static List<String> getPropertiesRequiredOnlyForSorting(Query gaeQuery) {
+        List<String> list = new ArrayList<String>();
+        QueryResultProcessor processor = new QueryResultProcessor(gaeQuery);
+        if (processor.isProcessingNeeded()) {
+            for (String propertyName : processor.getPropertiesUsedInIn()) {
+                if (isOnlyNeededForSorting(propertyName,gaeQuery)) {
+                    list.add(propertyName);
                 }
             }
-            cacheQuery.projection(projections.toArray(new String[projections.size()]));
+        }
+        return list;
+    }
+
+    private static String getProjection(Projection projection) {
+        if (projection instanceof PropertyProjection) {
+            PropertyProjection propertyProjection = (PropertyProjection) projection;
+            return propertyProjection.getName();
+        } else {
+            throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
         }
     }
 
@@ -82,7 +109,7 @@ class Projections {
      * Store property's bridge.
      *
      * @param propertyName the property name
-     * @param bridge the bridge
+     * @param bridge       the bridge
      */
     void storePropertyBridge(String propertyName, Bridge bridge) {
         bridges.put(propertyName, String.valueOf(bridge.ordinal()));
@@ -122,7 +149,7 @@ class Projections {
     /**
      * Convert to entity.
      *
-     * @param query the GAE query
+     * @param query  the GAE query
      * @param result the current result
      * @return Entity instance
      */
@@ -138,21 +165,56 @@ class Projections {
                 for (Projection projection : query.getProjections()) {
                     if (projection instanceof PropertyProjection) {
                         final PropertyProjection propertyProjection = (PropertyProjection) projection;
-                        final String propertyName = propertyProjection.getName();
-                        Object value = row[i];
-                        if (value instanceof String) {
-                            final String bridgeOrdinal = bridges.getProperty(propertyName);
-                            final Bridge bridge = Bridge.values()[Integer.parseInt(bridgeOrdinal)];
-                            value = bridge.stringToObject(value.toString());
-                        }
+                        String propertyName = propertyProjection.getName();
+                        Object value = convert(propertyName, row[i], bridges);
                         entity.setProperty(propertyName, value);
                     } else {
                         throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
                     }
                     i++;
                 }
+                for (String propertyName : getPropertiesRequiredOnlyForSorting(query)) {
+                    Object value = convert(propertyName, row[i], bridges);
+                    entity.setProperty(propertyName, value);
+                    i++;
+                }
             }
             return entity;
         }
+    }
+
+    private static boolean isOnlyNeededForSorting(String propertyName, Query query) {
+        if (query.isKeysOnly()) {
+            return true;
+        } else if (query.getProjections().size() > 0) {
+            return !isProjectedProperty(propertyName, query);
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean isProjectedProperty(String propertyName, Query query) {
+        for (Projection projection : query.getProjections()) {
+            if (projection instanceof PropertyProjection) {
+                PropertyProjection propertyProjection = (PropertyProjection) projection;
+                if (propertyProjection.getName().equals(propertyName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static Object convert(String propertyName, Object o, Properties bridges) {
+        if (o instanceof String) {
+            final Bridge bridge = getBridge(propertyName, bridges);
+            return bridge.stringToObject(o.toString());
+        }
+        return o;
+    }
+
+    private static Bridge getBridge(String propertyName, Properties bridges) {
+        final String bridgeOrdinal = bridges.getProperty(propertyName);
+        return Bridge.values()[Integer.parseInt(bridgeOrdinal)];
     }
 }
