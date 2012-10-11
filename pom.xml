@@ -18,7 +18,6 @@
     <modules>
         <module>admin</module>
         <module>appidentity</module>
-        <module>arquillian</module>
         <module>bytecode</module>
         <module>common</module>
         <module>blobstore</module>
@@ -638,6 +637,10 @@
             <properties>
                 <skipTests>true</skipTests>
             </properties>
+            <modules>
+                <!-- Add Arquillian module -->
+                <module>arquillian</module>
+            </modules>
         </profile>
         <!-- Run tests against running AS7, manual -->
         <profile>
@@ -647,6 +650,10 @@
                     <name>remote</name>
                 </property>
             </activation>
+            <modules>
+                <!-- Add Arquillian module -->
+                <module>arquillian</module>
+            </modules>
             <dependencies>
                 <dependency>
                     <groupId>org.jboss.as</groupId>
