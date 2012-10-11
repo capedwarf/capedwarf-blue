@@ -33,7 +33,7 @@ import org.hibernate.search.util.impl.PassThroughAnalyzer;
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class DocumentFieldAnalyzer extends Analyzer {
+public final class DocumentFieldAnalyzer extends Analyzer {
 
     private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
 
@@ -41,8 +41,7 @@ public class DocumentFieldAnalyzer extends Analyzer {
     private StandardAnalyzer standardAnalyzer = new StandardAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
     private PassThroughAnalyzer passThroughAnalyzer = new PassThroughAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
 
-    @Override
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    public final TokenStream tokenStream(String fieldName, Reader reader) {
         Field.FieldType fieldType = fieldNamePrefixer.getFieldType(fieldName);
         Analyzer analyzer = getAnalyzer(fieldType);
         return analyzer.tokenStream(fieldName, reader);

@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.search;
 
+import java.io.Reader;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharReader;
 import org.apache.lucene.analysis.TokenStream;
@@ -29,12 +31,10 @@ import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.util.Version;
 
-import java.io.Reader;
-
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class StandardHtmlAnalyzer extends Analyzer {
+public final class StandardHtmlAnalyzer extends Analyzer {
 
     private StandardAnalyzer standardAnalyzer;
 
@@ -42,8 +42,7 @@ public class StandardHtmlAnalyzer extends Analyzer {
         this.standardAnalyzer = new StandardAnalyzer(luceneVersion);
     }
 
-    @Override
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    public final TokenStream tokenStream(String fieldName, Reader reader) {
         return standardAnalyzer.tokenStream(fieldName, new HTMLStripCharFilter(CharReader.get(reader)));
     }
 }
