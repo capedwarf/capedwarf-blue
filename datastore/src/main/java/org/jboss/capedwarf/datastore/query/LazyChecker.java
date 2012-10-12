@@ -43,21 +43,32 @@ public class LazyChecker extends LazyKeyChecker {
 
     protected void apply() {
         final CacheQuery cacheQuery = holder.getCacheQuery();
-        final Integer offset = fetchOptions.getOffset();
-        if (offset != null) {
+
+        Integer offset = fetchOptions.getOffset();
+        Integer cursorOffset = null;
+        Cursor startCursor = fetchOptions.getStartCursor();
+        if (startCursor != null) {
+            cursorOffset = JBossCursorHelper.readIndex(startCursor);
+        }
+        if (offset != null || cursorOffset != null) {
+            offset = (offset == null ? 0 : offset)
+                + (cursorOffset == null ? 0 : cursorOffset);
             cacheQuery.firstResult(offset);
         }
-        final Integer limit = fetchOptions.getLimit();
-        if (limit != null) {
-            cacheQuery.maxResults(limit);
+
+        Integer limit = fetchOptions.getLimit();
+        Integer cursorLimit = null;
+        Cursor endCursor = fetchOptions.getEndCursor();
+        if (endCursor != null) {
+            int last = JBossCursorHelper.readIndex(endCursor)-1;
+            int first = (offset == null) ? 0 : offset;
+            cursorLimit = last - first + 1;
         }
-        final Cursor start = fetchOptions.getStartCursor();
-        if (start != null) {
-            JBossCursorHelper.applyStartCursor(start, cacheQuery);
-        }
-        final Cursor end = fetchOptions.getEndCursor();
-        if (end != null) {
-            JBossCursorHelper.applyEndCursor(end, cacheQuery, start);
+        if (limit != null || cursorLimit != null) {
+            cacheQuery.maxResults(
+                Math.min(
+                    limit == null ? Integer.MAX_VALUE : limit,
+                    cursorLimit == null ? Integer.MAX_VALUE : cursorLimit));
         }
     }
 
