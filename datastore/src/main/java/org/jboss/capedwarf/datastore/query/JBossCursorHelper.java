@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.FetchOptions;
-import org.infinispan.query.CacheQuery;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.reflection.TargetInvocation;
 
@@ -69,18 +68,7 @@ final class JBossCursorHelper {
         }
     }
 
-    static void applyStartCursor(Cursor start, CacheQuery cacheQuery) {
-        final int index = readIndex(start);
-        cacheQuery.firstResult(index);
-    }
-
-    static void applyEndCursor(Cursor end, CacheQuery cacheQuery, Cursor start) {
-        final int last = readIndex(end);
-        final int first = (start != null) ? readIndex(start) : 0;
-        cacheQuery.maxResults(last - first + 1);
-    }
-
-    private static int readIndex(Cursor cursor) {
+    public static int readIndex(Cursor cursor) {
         try {
             return getIndex.invoke(cursor);
         } catch (Exception e) {
