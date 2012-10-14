@@ -21,8 +21,8 @@ public class TestUtils {
 
     protected static boolean isBlue(String absolutePath) {
         // Is this test run in CapeDwarf Blue -- impl detail!
-        // Found "blue" or not "testsuite" from Testsuite
-        return absolutePath.contains("blue") || (absolutePath.contains("testsuite") == false);
+        // Found "blue" or force Blue via "capedwarf.blue" system property
+        return absolutePath.contains("blue") || Boolean.getBoolean("capedwarf.blue");
     }
 
     // we need testsuite/pom.xml file
