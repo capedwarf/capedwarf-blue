@@ -72,16 +72,17 @@
         <version.org.hibernate.search>4.2.0.Beta1</version.org.hibernate.search>
         <version.org.infinispan>5.2.0.Beta1</version.org.infinispan>
         <version.net.jcip>1.0</version.net.jcip>
-        <version.junit>4.10</version.junit>
-        <version.arquillian>1.0.1.Final</version.arquillian>
-        <version.shrinkwrap>1.0.0</version.shrinkwrap>
-        <version.arquillian.gae>1.0.0.Alpha3</version.arquillian.gae>
-        <version.jboss.as7>7.2.0.Alpha1-SNAPSHOT</version.jboss.as7>
-        <version.jboss.maven.transformer>1.0.0.Beta4</version.jboss.maven.transformer>
-        <version.jboss.maven.arquillian>1.0.0.Alpha1</version.jboss.maven.arquillian>
-        <version.shrinkwrap.maven-resolver>1.0.0-beta-5</version.shrinkwrap.maven-resolver>
         <version.metainf>1.1</version.metainf>
         <version.org.apache.httpcomponents>4.1.1</version.org.apache.httpcomponents>
+        <!-- Testing -->
+        <version.junit>4.10</version.junit>
+        <version.arquillian>1.0.1.Final</version.arquillian>
+        <version.shrinkwrap>1.1.0</version.shrinkwrap>
+        <version.shrinkwrap.maven-resolver>1.1.0-alpha-3</version.shrinkwrap.maven-resolver>
+        <version.jboss.as7>7.2.0.Alpha1-SNAPSHOT</version.jboss.as7>
+        <version.arquillian.gae>1.0.0.Alpha3</version.arquillian.gae>
+        <version.jboss.maven.transformer>1.0.0.Beta4</version.jboss.maven.transformer>
+        <version.jboss.maven.arquillian>1.0.0.Alpha1</version.jboss.maven.arquillian>
         <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
