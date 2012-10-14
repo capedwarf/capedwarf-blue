@@ -19,12 +19,25 @@ public class TestUtils {
         return resolver;
     }
 
+    protected static boolean isBlue(String absolutePath) {
+        // Is this test run in CapeDwarf Blue -- impl detail!
+        // Found "blue" or not "testsuite" from Testsuite
+        return absolutePath.contains("blue") || (absolutePath.contains("testsuite") == false);
+    }
+
     // we need testsuite/pom.xml file
     protected static String getPomPath() {
-        File root = new File(".");
+        final File root = new File(".");
         String path = "pom.xml";
-        if (root.getAbsolutePath().contains("testsuite") == false)
-            path = "testsuite/" + path;
+        final String absolutePath = root.getAbsolutePath();
+        if (isBlue(absolutePath)) {
+            if (absolutePath.contains("testsuite") == false)
+                path = "testsuite/" + path;
+        } else {
+            // Or are we in CapeDwarf Testsuite
+            if (absolutePath.contains("tests") == false)
+                path = "tests/" + path;
+        }
         return path;
     }
 
