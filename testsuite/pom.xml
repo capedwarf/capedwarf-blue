@@ -19,7 +19,7 @@
             <plugin>
                 <groupId>org.datanucleus</groupId>
                 <artifactId>maven-datanucleus-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>${version.datanucleus.plugin}</version>
                 <configuration>
                     <metadataIncludes>org/jboss/capedwarf/testsuite/jpa/*.class</metadataIncludes>
                     <verbose>true</verbose>
@@ -65,7 +65,6 @@
                     <artifactId>geronimo-jpa_3.0_spec</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -109,11 +108,11 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.jboss.shrinkwrap.resolver</groupId>
             <artifactId>shrinkwrap-resolver-api-maven</artifactId>
         </dependency>
-
 
     </dependencies>
 
