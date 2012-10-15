@@ -26,8 +26,9 @@ import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArch
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.DependencyResolvers;
-import org.jboss.shrinkwrap.resolver.api.maven.MavenDependencyResolver;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+
+import java.io.File;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -40,8 +41,8 @@ public class GaeApplicationArchiveProcessor implements ApplicationArchiveProcess
 
         if (archive instanceof WebArchive) {
             WebArchive war = (WebArchive) archive;
-            MavenDependencyResolver resolver = DependencyResolvers.use(MavenDependencyResolver.class).loadMetadataFromPom("pom.xml");
-            war.addAsLibraries(resolver.artifact("com.google.appengine:appengine-api-1.0-sdk").resolveAsFiles());
+            war.addAsLibraries(Maven.resolver().loadPomFromFile("pom.xml").
+                    resolve("com.google.appengine:appengine-api-1.0-sdk").withTransitivity().as(File.class));
         }
     }
 }

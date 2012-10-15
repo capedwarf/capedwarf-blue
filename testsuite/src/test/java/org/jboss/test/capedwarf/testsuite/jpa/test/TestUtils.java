@@ -1,21 +1,21 @@
 package org.jboss.test.capedwarf.testsuite.jpa.test;
 
-import java.io.File;
-
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.shrinkwrap.resolver.api.DependencyResolvers;
-import org.jboss.shrinkwrap.resolver.api.maven.MavenDependencyResolver;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
+
+import java.io.File;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class TestUtils {
 
-    private static MavenDependencyResolver resolver;
+    private static PomEquippedResolveStage resolver;
 
-    public static MavenDependencyResolver getResolver() {
+    public static PomEquippedResolveStage getResolver() {
         if (resolver == null)
-            resolver = DependencyResolvers.use(MavenDependencyResolver.class).loadMetadataFromPom(getPomPath());
+            resolver = Maven.resolver().loadPomFromFile(getPomPath());
         return resolver;
     }
 
@@ -43,13 +43,17 @@ public class TestUtils {
 
     public static void addLibraries(WebArchive war) {
         // default JPA libs
-        war.addAsLibraries(getResolver().artifact("com.google.appengine:appengine-api-1.0-sdk").resolveAsFiles());
-        war.addAsLibraries(getResolver().artifact("org.datanucleus:datanucleus-core").resolveAsFiles());
-        war.addAsLibraries(getResolver().artifact("org.datanucleus:datanucleus-api-jpa").resolveAsFiles());
-        war.addAsLibraries(getResolver().artifact("com.google.appengine.orm:datanucleus-appengine").resolveAsFiles());
-        war.addAsLibraries(getResolver().artifact("javax.jdo:jdo-api").resolveAsFiles());
-        war.addAsLibraries(getResolver().artifact("org.apache.geronimo.specs:geronimo-jta_1.1_spec").resolveAsFiles());
-        war.addAsLibraries(getResolver().artifact("org.hibernate.javax.persistence:hibernate-jpa-2.0-api").resolveAsFiles());
+        war.addAsLibraries(getDependency("com.google.appengine:appengine-api-1.0-sdk"));
+        war.addAsLibraries(getDependency("org.datanucleus:datanucleus-core"));
+        war.addAsLibraries(getDependency("org.datanucleus:datanucleus-api-jpa"));
+        war.addAsLibraries(getDependency("com.google.appengine.orm:datanucleus-appengine"));
+        war.addAsLibraries(getDependency("javax.jdo:jdo-api"));
+        war.addAsLibraries(getDependency("org.apache.geronimo.specs:geronimo-jta_1.1_spec"));
+        war.addAsLibraries(getDependency("org.hibernate.javax.persistence:hibernate-jpa-2.0-api"));
+    }
+    
+    private static File getDependency(final String coordinates){
+        return getResolver().resolve(coordinates).withoutTransitivity().asSingle(File.class);
     }
 
     public static void addPersistenceXml(WebArchive war, String resource) {
