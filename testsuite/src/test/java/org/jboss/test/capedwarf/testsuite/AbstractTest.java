@@ -64,6 +64,10 @@ public abstract class AbstractTest {
         if (ignoreTearDown)
             return;
 
+        cleanup();
+    }
+
+    protected void cleanup() {
         DatastoreService service = DatastoreServiceFactory.getDatastoreService();
         List<Entity> entities = service.prepare(new Query().setKeysOnly()).asList(withDefaults());
         for (Entity entity : entities) {
