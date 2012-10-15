@@ -40,12 +40,8 @@ import javassist.NotFoundException;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CursorTransformer extends JavassistTransformer {
-    protected void transform(CtClass clazz) throws Exception {
-        // allow for multiple bytecode runs
-        if (isAlreadyModified(clazz))
-            return;
-
+public class CursorTransformer extends RewriteTransformer {
+    protected void transformInternal(CtClass clazz) throws Exception {
         final ClassPool pool = clazz.getClassPool();
         CtClass intClass = pool.get(int.class.getName());
 
@@ -99,11 +95,7 @@ public class CursorTransformer extends JavassistTransformer {
         toString.setBody("return \"Cursor:\" + index;");
     }
 
-    protected boolean isAlreadyModified(CtClass clazz) {
-        try {
-            return clazz.getDeclaredField("index") != null;
-        } catch (NotFoundException e) {
-            return false;
-        }
+    protected boolean doCheck(CtClass clazz) throws NotFoundException {
+        return clazz.getDeclaredField("index") != null;
     }
 }

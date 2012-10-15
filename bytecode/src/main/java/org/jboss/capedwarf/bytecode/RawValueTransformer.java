@@ -22,7 +22,9 @@
 
 package org.jboss.capedwarf.bytecode;
 
-import com.google.appengine.api.datastore.PreparedQuery;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
@@ -30,22 +32,13 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Modifier;
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Hack RawValue class.
  *
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class RawValueTransformer extends JavassistTransformer {
-    protected void transform(CtClass clazz) throws Exception {
-        // allow for multiple bytecode runs
-        if (isAlreadyModified(clazz))
-            return;
-
+public class RawValueTransformer extends RewriteTransformer {
+    protected void transformInternal(CtClass clazz) throws Exception {
         final ClassPool pool = clazz.getClassPool();
         CtClass objectClass = pool.get(Object.class.getName());
 
@@ -84,11 +77,7 @@ public class RawValueTransformer extends JavassistTransformer {
         toString.setBody("return \"RawValue:\" + getValue();");
     }
 
-    protected boolean isAlreadyModified(CtClass clazz) {
-        try {
-            return clazz.getDeclaredField("value") != null;
-        } catch (NotFoundException e) {
-            return false;
-        }
+    protected boolean doCheck(CtClass clazz) throws NotFoundException {
+        return clazz.getDeclaredField("value") != null;
     }
 }
