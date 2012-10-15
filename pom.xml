@@ -462,13 +462,6 @@
                 <groupId>com.google.appengine.orm</groupId>
                 <artifactId>datanucleus-appengine</artifactId>
                 <version>${version.org.datanucleus.gae}</version>
-                <exclusions>
-                    <exclusion>
-                        <!-- Force this just in case -->
-                        <groupId>org.jboss.maven.plugins</groupId>
-                        <artifactId>arquillian-transformer</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
