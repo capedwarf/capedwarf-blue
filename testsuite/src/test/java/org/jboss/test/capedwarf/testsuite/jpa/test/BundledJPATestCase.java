@@ -35,7 +35,7 @@ public class BundledJPATestCase extends SimpleJPATest {
 
     @Deployment
     public static WebArchive getDeployment() {
-        final WebArchive war = getDefaultDeployment();
+        final WebArchive war = getDefaultDeployment("bundled-jpa");
         war.addClass(BundledJPATestCase.class);
         TestUtils.addLibraries(war);
         return war;

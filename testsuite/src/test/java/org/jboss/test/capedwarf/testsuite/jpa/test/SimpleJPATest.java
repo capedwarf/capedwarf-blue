@@ -15,16 +15,16 @@ import org.junit.Test;
  */
 public abstract class SimpleJPATest extends AbstractJPATest {
 
-    protected static WebArchive getBaseDeployment() {
-        final WebArchive war = getCapedwarfDeployment();
+    protected static WebArchive getBaseDeployment(String name) {
+        final WebArchive war = getCapedwarfDeployment(name);
         war.addPackage(Client.class.getPackage());
         war.addClass(AbstractJPATest.class);
         war.addClass(SimpleJPATest.class);
         return war;
     }
 
-    protected static WebArchive getDefaultDeployment() {
-        final WebArchive war = getBaseDeployment();
+    protected static WebArchive getDefaultDeployment(String name) {
+        final WebArchive war = getBaseDeployment(name);
         TestUtils.addPersistenceXml(war, "jpa/default-persistence.xml");
         return war;
     }
