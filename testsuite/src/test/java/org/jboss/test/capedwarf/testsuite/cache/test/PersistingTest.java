@@ -55,8 +55,14 @@ public abstract class PersistingTest extends AbstractTest {
         final Long id = readMarker();
         if (id != null) {
             Entity entity = ds.get(KeyFactory.createKey("Persisting", id));
-            Assert.assertNotNull(entity);
-            Assert.assertEquals("bar", entity.getProperty("foo"));
+            try {
+                Assert.assertNotNull(entity);
+                Assert.assertEquals("bar", entity.getProperty("foo"));
+            } finally {
+                if (entity != null) {
+                    ds.delete(entity.getKey()); // proper remove
+                }
+            }
         } else {
             Entity entity = new Entity("Persisting");
             entity.setProperty("foo", "bar");
