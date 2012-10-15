@@ -30,7 +30,9 @@ import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.PropertyProjection;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.RawValue;
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -88,6 +90,24 @@ public class QueryOptimizationsTestCase extends QueryTest {
         assertEquals(e.getProperty("x"), result.getProperty("x"));
         assertEquals(e.getProperty("diff"), result.getProperty("diff"));
         assertNull(result.getProperty("weight"));
+    }
+
+    @Test
+    public void testProjectionsWithoutType() throws Exception {
+        Entity e = createEntity("Product", 1)
+                .withProperty("long", 123L)
+                .store();
+
+        Query query = new Query("Product")
+                .addProjection(new PropertyProjection("long", null));
+
+        PreparedQuery preparedQuery = service.prepare(query);
+        Entity result = preparedQuery.asSingleEntity();
+        assertEquals(e.getKey(), result.getKey());
+
+        RawValue rawValue = (RawValue) result.getProperty("long");
+        assertEquals(Long.valueOf(123L), rawValue.asType(Long.class));
+        assertEquals(Long.valueOf(123L), rawValue.asStrictType(Long.class));
     }
 
     @Test

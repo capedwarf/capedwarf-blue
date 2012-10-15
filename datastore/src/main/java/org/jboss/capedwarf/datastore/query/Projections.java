@@ -34,10 +34,12 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Projection;
 import com.google.appengine.api.datastore.PropertyProjection;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.RawValue;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.ProjectionConstants;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
  * Handle query projections.
@@ -88,7 +90,7 @@ class Projections {
         QueryResultProcessor processor = new QueryResultProcessor(gaeQuery);
         if (processor.isProcessingNeeded()) {
             for (String propertyName : processor.getPropertiesUsedInIn()) {
-                if (isOnlyNeededForSorting(propertyName,gaeQuery)) {
+                if (isOnlyNeededForSorting(propertyName, gaeQuery)) {
                     list.add(propertyName);
                 }
             }
@@ -156,31 +158,38 @@ class Projections {
     static Entity convertToEntity(Query query, Object result) {
         if (result instanceof Entity) {
             return Entity.class.cast(result);
-        } else {
-            final Object[] row = (Object[]) result;
-            final Entity entity = new Entity((Key) row[0]);
-            if (row.length > 1) {
-                final Properties bridges = readPropertiesBridges(row[1].toString());
-                int i = OFFSET;
-                for (Projection projection : query.getProjections()) {
-                    if (projection instanceof PropertyProjection) {
-                        final PropertyProjection propertyProjection = (PropertyProjection) projection;
-                        String propertyName = propertyProjection.getName();
-                        Object value = convert(propertyName, row[i], bridges);
-                        entity.setProperty(propertyName, value);
-                    } else {
-                        throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
-                    }
-                    i++;
-                }
-                for (String propertyName : getPropertiesRequiredOnlyForSorting(query)) {
-                    Object value = convert(propertyName, row[i], bridges);
-                    entity.setProperty(propertyName, value);
-                    i++;
-                }
-            }
-            return entity;
         }
+
+        final Object[] row = (Object[]) result;
+        final Entity entity = new Entity((Key) row[0]);
+        if (row.length > 1) {
+            final Properties bridges = readPropertiesBridges(row[1].toString());
+            int i = OFFSET;
+            for (Projection projection : query.getProjections()) {
+                if (projection instanceof PropertyProjection) {
+                    PropertyProjection propertyProjection = (PropertyProjection) projection;
+                    String propertyName = propertyProjection.getName();
+                    Object value = convert(propertyName, row[i], bridges);
+                    if (mustBeWrappedInRawValue(propertyProjection)) {
+                        value = newRawValue(value);
+                    }
+                    entity.setProperty(propertyName, value);
+                } else {
+                    throw new IllegalStateException("Unsupported projection type: " + projection.getClass());
+                }
+                i++;
+            }
+            for (String propertyName : getPropertiesRequiredOnlyForSorting(query)) {
+                Object value = convert(propertyName, row[i], bridges);
+                entity.setProperty(propertyName, value);
+                i++;
+            }
+        }
+        return entity;
+    }
+
+    private static boolean mustBeWrappedInRawValue(PropertyProjection propertyProjection) {
+        return propertyProjection.getType() == null;
     }
 
     private static boolean isOnlyNeededForSorting(String propertyName, Query query) {
@@ -211,6 +220,10 @@ class Projections {
             return bridge.stringToObject(o.toString());
         }
         return o;
+    }
+
+    private static RawValue newRawValue(Object o) {
+        return ReflectionUtils.newInstance(RawValue.class, new Class[]{Object.class}, new Object[]{o});
     }
 
     private static Bridge getBridge(String propertyName, Properties bridges) {
