@@ -54,6 +54,7 @@ public abstract class AbstractTest {
 
         war.setWebXML(new StringAsset("<web/>"));
         war.addAsWebInfResource("appengine-web.xml");
+        war.addAsWebInfResource("logging.properties");
         war.addClass(AbstractTest.class);
         return war;
     }
