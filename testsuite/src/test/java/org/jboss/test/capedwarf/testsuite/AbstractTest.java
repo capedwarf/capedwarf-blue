@@ -22,14 +22,24 @@
 
 package org.jboss.test.capedwarf.testsuite;
 
+import java.util.List;
+
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Query;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
+
+import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractTest {
+    protected boolean ignoreTearDown;
 
     protected static WebArchive getCapedwarfDeployment() {
         return getCapedwarfDeployment("testsuite");
@@ -48,4 +58,15 @@ public abstract class AbstractTest {
         return war;
     }
 
+    @After
+    public void tearDown() {
+        if (ignoreTearDown)
+            return;
+
+        DatastoreService service = DatastoreServiceFactory.getDatastoreService();
+        List<Entity> entities = service.prepare(new Query().setKeysOnly()).asList(withDefaults());
+        for (Entity entity : entities) {
+            service.delete(entity.getKey());
+        }
+    }
 }

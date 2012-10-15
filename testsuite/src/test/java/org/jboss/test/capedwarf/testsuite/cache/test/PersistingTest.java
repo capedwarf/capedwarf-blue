@@ -68,6 +68,7 @@ public abstract class PersistingTest extends AbstractTest {
             entity.setProperty("foo", "bar");
             ds.put(entity);
             writeMarker(entity.getKey().getId());
+            ignoreTearDown = true;
         }
     }
 

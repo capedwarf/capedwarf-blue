@@ -64,7 +64,7 @@ public class AbstractMultipleAppsTest {
 
     protected void cleanup() throws Exception {
         DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
-        for (Entity e : ds.prepare(new Query("MKind").setKeysOnly()).asIterable()) {
+        for (Entity e : ds.prepare(new Query().setKeysOnly()).asIterable()) {
             ds.delete(e.getKey());
         }
     }
