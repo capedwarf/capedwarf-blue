@@ -39,7 +39,8 @@ public class Compatibility {
     public static enum Feature {
         ENABLE_ALL("enable.all"),
         DISABLE_ENTITY_GROUPS("disable.entity.groups"),
-        IGNORE_TO_LONG_CONVERSION("ignore.long.conversion");
+        IGNORE_TO_LONG_CONVERSION("ignore.long.conversion"),
+        IGNORE_LOGGING("ignore.logging");
 
         private String key;
         private String value;

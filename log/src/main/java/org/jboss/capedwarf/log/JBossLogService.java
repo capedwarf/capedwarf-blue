@@ -34,8 +34,6 @@ import java.util.logging.LogRecord;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
-import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
-
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -46,6 +44,8 @@ import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.RequestLogs;
+import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
+import org.jboss.capedwarf.common.compatibility.Compatibility;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -68,6 +68,8 @@ public class JBossLogService implements LogService {
     private static final String LOG_LINE_THROWN = "thrown";
 
     private static final String LOG_REQUEST_ENTITY_REQUEST_ATTRIBUTE = "__org.jboss.capedwarf.LogRequest__";
+
+    private boolean ignoreLogging = Compatibility.getInstance().isEnabled(Compatibility.Feature.IGNORE_LOGGING);
 
     public Iterable<RequestLogs> fetch(LogQuery logQuery) {
         List<RequestLogs> list = new ArrayList<RequestLogs>();
@@ -187,7 +189,9 @@ public class JBossLogService implements LogService {
     }
 
     public void log(LogRecord record) {
-        // TODO -- filter per logging.properties
+        // did we disable logging
+        if (ignoreLogging)
+            return;
 
         JBossDelegate jBossDelegate = JBossDelegate.INSTANCE;
         ServletRequest request = jBossDelegate.getServletRequest();
