@@ -22,10 +22,6 @@
 
 package org.jboss.capedwarf.common.jms;
 
-import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
-import org.jboss.modules.ModuleClassLoader;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -34,6 +30,10 @@ import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import org.jboss.modules.ModuleClassLoader;
 
 
 /**
@@ -45,7 +45,6 @@ import javax.jms.Session;
 public class ServletExecutorProducer {
 
     private static final String PREFIX = "org_jboss_capedwarf_jms_";
-    private static ConnectionFactory factory = JndiLookupUtils.lazyLookup("jms.factory.jndi", ConnectionFactory.class, "java:/JmsXA");
 
     private Session session;
     private MessageProducer producer;
@@ -53,6 +52,7 @@ public class ServletExecutorProducer {
 
     private Session getSession() throws Exception {
         if (session == null) {
+            final ConnectionFactory factory = JndiLookupUtils.lookup("jms.factory.jndi", ConnectionFactory.class, "java:/JmsXA");
             connection = factory.createConnection();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         }
