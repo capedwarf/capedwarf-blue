@@ -600,6 +600,7 @@
                 <artifactId>shrinkwrap-resolver-api</artifactId>
                 <version>${version.shrinkwrap.maven-resolver}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.jboss.shrinkwrap.resolver</groupId>
                 <artifactId>shrinkwrap-resolver-api-maven</artifactId>
@@ -656,12 +657,6 @@
                 <version>${version.jboss.maven.arquillian}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.jboss.arquillian.protocol</groupId>
-                <artifactId>arquillian-protocol-servlet</artifactId>
-                <version>${version.arquillian}</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -702,6 +697,11 @@
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-arquillian-container-remote</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.arquillian.protocol</groupId>
+                    <artifactId>arquillian-protocol-servlet</artifactId>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
