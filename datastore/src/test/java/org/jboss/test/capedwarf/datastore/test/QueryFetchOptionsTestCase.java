@@ -30,6 +30,7 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultList;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Before;
@@ -98,6 +99,17 @@ public class QueryFetchOptionsTestCase extends QueryTest {
         List<Entity> results3 = executeQuery(withDefaults());
         assertEquals(5, results3.size());
         assertEquals(asList(foo1, foo2, foo3, foo4, foo5), results3);
+    }
+
+    @Test
+    public void testOffsetWithIterator() {
+        Iterable<Entity> results2 = executeQueryForIterable(withOffset(1));
+        int count = 0;
+        //noinspection UnusedDeclaration
+        for (Entity e : results2) {
+            count++;
+        }
+        assertEquals(4, count);
     }
 
     @Test
@@ -178,6 +190,11 @@ public class QueryFetchOptionsTestCase extends QueryTest {
     private QueryResultList<Entity> executeQuery(FetchOptions fetchOptions) {
         Query query = new Query("Foo").addSort("bar");
         return service.prepare(query).asQueryResultList(fetchOptions);
+    }
+
+    private QueryResultIterable<Entity> executeQueryForIterable(FetchOptions fetchOptions) {
+        Query query = new Query("Foo").addSort("bar");
+        return service.prepare(query).asQueryResultIterable(fetchOptions);
     }
 
 }
