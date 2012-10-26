@@ -24,6 +24,8 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.List;
+
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -34,14 +36,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.List;
-
-import static com.google.appengine.api.datastore.FetchOptions.Builder.*;
-import static java.util.Arrays.*;
+import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
+import static com.google.appengine.api.datastore.FetchOptions.Builder.withEndCursor;
+import static com.google.appengine.api.datastore.FetchOptions.Builder.withLimit;
+import static com.google.appengine.api.datastore.FetchOptions.Builder.withOffset;
+import static com.google.appengine.api.datastore.FetchOptions.Builder.withStartCursor;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
 public class QueryFetchOptionsTestCase extends QueryTest {
@@ -78,6 +83,21 @@ public class QueryFetchOptionsTestCase extends QueryTest {
     public void testOffset() {
         List<Entity> results = executeQuery(withOffset(3));
         assertEquals(asList(foo4, foo5), results);
+    }
+
+    @Test
+    public void testOffsetMultiple() {
+        List<Entity> results = executeQuery(withDefaults());
+        assertEquals(5, results.size());
+        assertEquals(asList(foo1, foo2, foo3, foo4, foo5), results);
+
+        List<Entity> results2 = executeQuery(withOffset(1));
+        assertEquals(4, results2.size());
+        assertEquals(asList(foo2, foo3, foo4, foo5), results2);
+
+        List<Entity> results3 = executeQuery(withDefaults());
+        assertEquals(5, results3.size());
+        assertEquals(asList(foo1, foo2, foo3, foo4, foo5), results3);
     }
 
     @Test
@@ -159,7 +179,5 @@ public class QueryFetchOptionsTestCase extends QueryTest {
         Query query = new Query("Foo").addSort("bar");
         return service.prepare(query).asQueryResultList(fetchOptions);
     }
-
-
 
 }
