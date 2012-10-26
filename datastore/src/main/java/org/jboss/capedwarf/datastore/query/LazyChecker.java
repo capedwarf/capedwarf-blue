@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
@@ -32,6 +35,8 @@ import org.jboss.capedwarf.datastore.LazyKeyChecker;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class LazyChecker extends LazyKeyChecker {
+    private final AtomicBoolean checked = new AtomicBoolean();
+
     protected final QueryHolder holder;
     protected final FetchOptions fetchOptions;
 
@@ -74,13 +79,35 @@ public class LazyChecker extends LazyKeyChecker {
 
     @Override
     protected void check() {
-        checkInequalityConstraints();
+        if (checked.compareAndSet(false, true)) {
+            checkInequalityConstraints();
+        }
         super.check();
     }
 
     private void checkInequalityConstraints() {
         final Query query = holder.getQuery();
         String inequalityFilterProperty = checkInequalityConstraints(query.getFilter(), null);
+
+        // legacy filters API can still be used, but I guess not both?
+        if (inequalityFilterProperty == null) {
+            //noinspection deprecation
+            final List<Query.FilterPredicate> filterPredicates = query.getFilterPredicates();
+            if (filterPredicates != null && filterPredicates.size() > 0) {
+                for (Query.FilterPredicate predicate : filterPredicates) {
+                    if (isInequalityOperator(predicate.getOperator())) {
+                        if (inequalityFilterProperty == null) {
+                            inequalityFilterProperty = predicate.getPropertyName();
+                        } else {
+                            if (!inequalityFilterProperty.equals(predicate.getPropertyName())) {
+                                throw new IllegalArgumentException("Only one inequality filter per query is supported.  " +
+                                        "Encountered both " + inequalityFilterProperty + " and " + predicate.getPropertyName());
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         if (inequalityFilterProperty != null && !query.getSortPredicates().isEmpty()) {
             Query.SortPredicate firstSortPredicate = query.getSortPredicates().get(0);
