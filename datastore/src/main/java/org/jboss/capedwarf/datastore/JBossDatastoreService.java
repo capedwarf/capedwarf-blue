@@ -206,6 +206,9 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             if (v instanceof Integer || v instanceof Short || v instanceof Byte) {
                 Number number = (Number) v;
                 setProperty(clone, name, number.longValue(), unindexed);
+            } else if (v instanceof Float) {
+                Number number = (Number) v;
+                setProperty(clone, name, number.doubleValue(), unindexed);
             } else if (v instanceof Collection) {
                 Collection<?> collection = (Collection<?>) v;
                 if (collection.isEmpty()) {
@@ -244,6 +247,8 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         if (o instanceof Integer || o instanceof Short || o instanceof Byte) {
             Number number = (Number) o;
             return number.longValue();
+        } else if (o instanceof Float) {
+            return Number.class.cast(o).doubleValue();
         } else {
             return o;
         }
