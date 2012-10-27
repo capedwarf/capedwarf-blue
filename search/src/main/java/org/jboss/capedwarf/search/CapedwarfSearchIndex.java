@@ -36,10 +36,13 @@ import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Cursor;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
+import com.google.appengine.api.search.GetRequest;
+import com.google.appengine.api.search.GetResponse;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.ListRequest;
 import com.google.appengine.api.search.ListResponse;
 import com.google.appengine.api.search.OperationResult;
+import com.google.appengine.api.search.PutResponse;
 import com.google.appengine.api.search.Query;
 import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.Schema;
@@ -58,6 +61,7 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
+@SuppressWarnings("deprecation")
 public class CapedwarfSearchIndex implements Index {
 
     private final Logger log = Logger.getLogger(getClass().getName());
@@ -305,6 +309,103 @@ public class CapedwarfSearchIndex implements Index {
 
     public Schema getSchema() {
         return null;  // TODO
+    }
+
+    public Future<Void> deleteAsync(String... strings) {
+        return deleteAsync(Arrays.asList(strings));
+    }
+
+    public Future<Void> deleteAsync(final Iterable<String> strings) {
+        return ExecutorFactory.wrap(new Callable<Void>() {
+            public Void call() throws Exception {
+                delete(strings);
+                return null;
+            }
+        });
+    }
+
+    public Future<AddResponse> addAsync(final Document.Builder... builders) {
+        return ExecutorFactory.wrap(new Callable<AddResponse>() {
+            public AddResponse call() throws Exception {
+                return add(builders);
+            }
+        });
+    }
+
+    public Future<PutResponse> putAsync(Document... documents) {
+        return putAsync(Arrays.asList(documents));
+    }
+
+    public Future<PutResponse> putAsync(final Document.Builder... builders) {
+        return ExecutorFactory.wrap(new Callable<PutResponse>() {
+            public PutResponse call() throws Exception {
+                return put(builders);
+            }
+        });
+    }
+
+    public Future<PutResponse> putAsync(final Iterable<Document> documents) {
+        return ExecutorFactory.wrap(new Callable<PutResponse>() {
+            public PutResponse call() throws Exception {
+                return put(documents);
+            }
+        });
+    }
+
+    public Future<GetResponse<Document>> getRangeAsync(final GetRequest getRequest) {
+        return ExecutorFactory.wrap(new Callable<GetResponse<Document>>() {
+            public GetResponse<Document> call() throws Exception {
+                return getRange(getRequest);
+            }
+        });
+    }
+
+    public Future<GetResponse<Document>> getRangeAsync(final GetRequest.Builder builder) {
+        return ExecutorFactory.wrap(new Callable<GetResponse<Document>>() {
+            public GetResponse<Document> call() throws Exception {
+                return getRange(builder);
+            }
+        });
+    }
+
+    public void delete(String... strings) {
+        delete(Arrays.asList(strings));
+    }
+
+    public void delete(Iterable<String> strings) {
+        // TODO
+    }
+
+    public AddResponse add(Document.Builder... builders) {
+        return add(toDocuments(builders)); // TODO -- OK?
+    }
+
+    public PutResponse put(Document... documents) {
+        return put(Arrays.asList(documents));
+    }
+
+    public PutResponse put(Document.Builder... builders) {
+        return put(toDocuments(builders)); // TODo -- OK?
+    }
+
+    public PutResponse put(Iterable<Document> documents) {
+        return null;  // TODO
+    }
+
+    public GetResponse<Document> getRange(GetRequest getRequest) {
+        return null;  // TODO
+    }
+
+    public GetResponse<Document> getRange(GetRequest.Builder builder) {
+        return getRange(builder.build()); // TODO -- OK?
+    }
+
+    protected static Document[] toDocuments(Document.Builder... builders) {
+        final Document[] documents = new Document[builders.length];
+        for (int i = 0; i < documents.length; i++) {
+            documents[i] = builders[i].build();
+        }
+        return documents;
     }
 
     @Override

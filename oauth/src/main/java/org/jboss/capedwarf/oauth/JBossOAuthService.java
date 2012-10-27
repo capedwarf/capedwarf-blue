@@ -44,6 +44,10 @@ public class JBossOAuthService implements OAuthService {
         return false;  // TODO
     }
 
+    public boolean isUserAdmin(String user) throws OAuthRequestException {
+        return false;  // TODO
+    }
+
     public String getOAuthConsumerKey() throws OAuthRequestException {
         return null;  // TODO
     }

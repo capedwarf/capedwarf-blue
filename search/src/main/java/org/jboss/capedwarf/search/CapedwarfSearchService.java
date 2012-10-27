@@ -25,19 +25,20 @@ package org.jboss.capedwarf.search;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
+import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.search.GetIndexesRequest;
+import com.google.appengine.api.search.GetResponse;
+import com.google.appengine.api.search.Index;
+import com.google.appengine.api.search.IndexSpec;
+import com.google.appengine.api.search.ListIndexesRequest;
+import com.google.appengine.api.search.ListIndexesResponse;
+import com.google.appengine.api.search.SearchService;
 import org.infinispan.Cache;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
-
-import com.google.appengine.api.NamespaceManager;
-import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.IndexSpec;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
-import com.google.appengine.api.search.SearchService;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -98,6 +99,30 @@ public class CapedwarfSearchService implements SearchService {
         return ExecutorFactory.wrap(new Callable<ListIndexesResponse>() {
             public ListIndexesResponse call() throws Exception {
                 return listIndexes(request);
+            }
+        });
+    }
+
+    public GetResponse<Index> getIndexes(GetIndexesRequest getIndexesRequest) {
+        return null;  // TODO
+    }
+
+    public GetResponse<Index> getIndexes(GetIndexesRequest.Builder builder) {
+        return getIndexes(builder.build()); // TODO -- OK?
+    }
+
+    public Future<GetResponse<Index>> getIndexesAsync(final GetIndexesRequest getIndexesRequest) {
+        return ExecutorFactory.wrap(new Callable<GetResponse<Index>>() {
+            public GetResponse<Index> call() throws Exception {
+                return getIndexes(getIndexesRequest);
+            }
+        });
+    }
+
+    public Future<GetResponse<Index>> getIndexesAsync(final GetIndexesRequest.Builder builder) {
+        return ExecutorFactory.wrap(new Callable<GetResponse<Index>>() {
+            public GetResponse<Index> call() throws Exception {
+                return getIndexes(builder);
             }
         });
     }
