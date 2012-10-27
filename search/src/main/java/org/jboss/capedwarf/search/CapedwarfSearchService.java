@@ -39,6 +39,7 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.common.util.Util;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -96,9 +97,9 @@ public class CapedwarfSearchService implements SearchService {
         }
         builder.setIncludeStartIndex(includeStartIndex);
         builder.setIndexNamePrefix(request.getIndexNamePrefix());
-        builder.setLimit(request.getLimit());
+        builder.setLimit(Util.defaultIfNull(request.getLimit(), 20));
         builder.setNamespace(request.getNamespace());
-        builder.setOffset(request.getOffset());
+        builder.setOffset(Util.defaultIfNull(request.getOffset(), 0));
         final Boolean schemaFetched = request.isSchemaFetched();
         builder.setSchemaFetched(schemaFetched != null && schemaFetched);
         builder.setStartIndexName(request.getStartIndexName());
