@@ -88,12 +88,19 @@ public class CapedwarfSearchService implements SearchService {
 
     public ListIndexesResponse listIndexes(ListIndexesRequest request) {
         final GetIndexesRequest.Builder builder = GetIndexesRequest.newBuilder();
-        builder.setIncludeStartIndex(request.isIncludeStartIndex());
+        boolean includeStartIndex = false;
+        try {
+            includeStartIndex = request.isIncludeStartIndex();
+        } catch (NullPointerException ignore) {
+            // hack around a GAE bug
+        }
+        builder.setIncludeStartIndex(includeStartIndex);
         builder.setIndexNamePrefix(request.getIndexNamePrefix());
         builder.setLimit(request.getLimit());
         builder.setNamespace(request.getNamespace());
         builder.setOffset(request.getOffset());
-        builder.setSchemaFetched(request.isSchemaFetched());
+        final Boolean schemaFetched = request.isSchemaFetched();
+        builder.setSchemaFetched(schemaFetched != null && schemaFetched);
         builder.setStartIndexName(request.getStartIndexName());
         return new ListIndexesResponse(getIndexes(builder.build()).getResults()){};
     }
