@@ -68,6 +68,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-api-jdo</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.appengine.orm</groupId>
             <artifactId>datanucleus-appengine</artifactId>
             <scope>test</scope>
