@@ -26,16 +26,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import com.google.appengine.api.search.AddResponse;
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
+import com.google.appengine.api.search.GetIndexesRequest;
+import com.google.appengine.api.search.GetRequest;
+import com.google.appengine.api.search.GetResponse;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
-import com.google.appengine.api.search.ListRequest;
-import com.google.appengine.api.search.ListResponse;
+import com.google.appengine.api.search.PutResponse;
 import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
@@ -76,11 +75,11 @@ public abstract class AbstractTest {
     }
 
     private void removeAllDocumentsFrom(SearchService service) {
-        ListIndexesResponse response = service.listIndexes(ListIndexesRequest.newBuilder().build());
-        for (Index index : response.getIndexes()) {
-            ListResponse<Document> documents = index.listDocuments(ListRequest.newBuilder().build());
+        GetResponse<Index> response = service.getIndexes(GetIndexesRequest.newBuilder());
+        for (Index index : response.getResults()) {
+            GetResponse<Document> documents = index.getRange(GetRequest.newBuilder());
             for (Document document : documents.getResults()) {
-                index.remove(document.getId());
+                index.delete(document.getId());
             }
         }
     }
@@ -182,13 +181,13 @@ public abstract class AbstractTest {
         return IndexSpec.newBuilder().setName(name).setConsistency(consistency).build();
     }
 
-    protected ListRequest defaultListRequest() {
-        return ListRequest.newBuilder().build();
+    protected GetRequest defaultListRequest() {
+        return GetRequest.newBuilder().build();
     }
 
     protected Document addAndRetrieve(Document doc) {
         Index index = getTestIndex();
-        AddResponse addResponse = index.add(doc);
+        PutResponse addResponse = index.put(doc);
         String docId = addResponse.getIds().get(0);
 
         List<Document> results = getAllDocumentsIn(index);
@@ -207,7 +206,7 @@ public abstract class AbstractTest {
         if (runningInsideDevAppEngine()) {
             fixListDocumentsBugWhenInvokedOnEmptyIndex(index);
         }
-        return index.listDocuments(defaultListRequest()).getResults();
+        return index.getRange(defaultListRequest()).getResults();
     }
 
     /**
@@ -217,13 +216,13 @@ public abstract class AbstractTest {
      * We work around this bug by storing and immediately removing a document.
      */
     private void fixListDocumentsBugWhenInvokedOnEmptyIndex(Index index) {
-        index.add(newEmptyDocument("indexInitializer"));
-        index.remove("indexInitializer");
+        index.put(newEmptyDocument("indexInitializer"));
+        index.delete("indexInitializer");
     }
 
     protected void createEmptyDocuments(int number, Index index) {
         for (int i=0; i<number; i++) {
-            index.add(newEmptyDocument());
+            index.put(newEmptyDocument());
         }
     }
 
@@ -233,13 +232,13 @@ public abstract class AbstractTest {
 
     protected Index createIndex(String indexName) {
         Index index = getIndex(indexName);
-        index.add(newEmptyDocument());
+        index.put(newEmptyDocument());
         return index;
     }
 
     protected Index createIndexInNamespace(String indexName, String namespace) {
         Index index = getIndexInNamespace(indexName, namespace);
-        index.add(newEmptyDocument());
+        index.put(newEmptyDocument());
         return index;
     }
 

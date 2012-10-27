@@ -27,27 +27,27 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.google.appengine.api.search.GetIndexesRequest;
+import com.google.appengine.api.search.GetResponse;
+import com.google.appengine.api.search.Index;
 import org.infinispan.Cache;
 import org.infinispan.distexec.mapreduce.Collator;
 
-import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
-
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+* @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
 */
-class ListIndexesCollator implements Collator<FullIndexSpec, String, ListIndexesResponse> {
+class GetIndexesCollator implements Collator<FullIndexSpec, String, GetResponse<Index>> {
 
-    private final ListIndexesRequest request;
+    private final GetIndexesRequest request;
     private final Cache<CacheKey,CacheValue> cache;
 
-    public ListIndexesCollator(ListIndexesRequest request, Cache<CacheKey, CacheValue> cache) {
+    public GetIndexesCollator(GetIndexesRequest request, Cache<CacheKey, CacheValue> cache) {
         this.request = request;
         this.cache = cache;
     }
 
-    public ListIndexesResponse collate(Map<FullIndexSpec, String> reducedResults) {
+    public GetResponse<Index> collate(Map<FullIndexSpec, String> reducedResults) {
 
         List<FullIndexSpec> list = new ArrayList<FullIndexSpec>(reducedResults.keySet());
         Collections.sort(list);
@@ -69,7 +69,6 @@ class ListIndexesCollator implements Collator<FullIndexSpec, String, ListIndexes
             indexes.add(index);
         }
 
-        return new ListIndexesResponse(indexes) {
-        };
+        return new GetResponse<Index>(indexes){};
     }
 }

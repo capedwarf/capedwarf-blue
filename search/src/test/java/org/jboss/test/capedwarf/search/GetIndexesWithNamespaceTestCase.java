@@ -22,39 +22,39 @@
 
 package org.jboss.test.capedwarf.search;
 
+import java.util.Arrays;
+
+import com.google.appengine.api.search.GetIndexesRequest;
+import com.google.appengine.api.search.GetResponse;
 import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
 import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
 import org.junit.Test;
-
-import java.util.Arrays;
 
 import static junit.framework.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class ListIndexesWithNamespaceTestCase extends AbstractTest {
+public class GetIndexesWithNamespaceTestCase extends AbstractTest {
 
     @Test
     public void testListIndexesWithNamespaceIsIgnored() {
         Index fooAIndex = createIndexInNamespace("a", FOO_NAMESPACE);
         Index fooBIndex = createIndexInNamespace("b", FOO_NAMESPACE);
-        Index barAIndex = createIndexInNamespace("a", BAR_NAMESPACE);
-        Index barBIndex = createIndexInNamespace("b", BAR_NAMESPACE);
+        createIndexInNamespace("a", BAR_NAMESPACE);
+        createIndexInNamespace("b", BAR_NAMESPACE);
 
         SearchService fooSearchService = SearchServiceFactory.getSearchService(FOO_NAMESPACE);
 
-        ListIndexesResponse response = fooSearchService.listIndexes(ListIndexesRequest.newBuilder().build());
-        assertEquals(Arrays.asList(fooAIndex, fooBIndex), response.getIndexes());
+        GetResponse<Index> response = fooSearchService.getIndexes(GetIndexesRequest.newBuilder());
+        assertEquals(Arrays.asList(fooAIndex, fooBIndex), response.getResults());
 
-        response = fooSearchService.listIndexes(ListIndexesRequest.newBuilder().setNamespace(FOO_NAMESPACE).build());
-        assertEquals(Arrays.asList(fooAIndex, fooBIndex), response.getIndexes());
+        response = fooSearchService.getIndexes(GetIndexesRequest.newBuilder().setNamespace(FOO_NAMESPACE));
+        assertEquals(Arrays.asList(fooAIndex, fooBIndex), response.getResults());
 
-        response = fooSearchService.listIndexes(ListIndexesRequest.newBuilder().setNamespace(BAR_NAMESPACE).build());
-        assertEquals(Arrays.asList(fooAIndex, fooBIndex), response.getIndexes());
+        response = fooSearchService.getIndexes(GetIndexesRequest.newBuilder().setNamespace(BAR_NAMESPACE));
+        assertEquals(Arrays.asList(fooAIndex, fooBIndex), response.getResults());
     }
 
 }

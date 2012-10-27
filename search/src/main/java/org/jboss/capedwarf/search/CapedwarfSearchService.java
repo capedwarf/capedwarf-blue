@@ -87,12 +87,15 @@ public class CapedwarfSearchService implements SearchService {
     }
 
     public ListIndexesResponse listIndexes(ListIndexesRequest request) {
-        ListIndexesMapper mapper = new ListIndexesMapper(request, resolveNamespace());
-        ListIndexesReducer reducer = new ListIndexesReducer();
-        ListIndexesCollator collator = new ListIndexesCollator(request, cache);
-
-        MapReduceTask<CacheKey, CacheValue, FullIndexSpec, String> task = new MapReduceTask<CacheKey, CacheValue, FullIndexSpec, String>(cache);
-        return task.mappedWith(mapper).reducedWith(reducer).execute(collator);
+        final GetIndexesRequest.Builder builder = GetIndexesRequest.newBuilder();
+        builder.setIncludeStartIndex(request.isIncludeStartIndex());
+        builder.setIndexNamePrefix(request.getIndexNamePrefix());
+        builder.setLimit(request.getLimit());
+        builder.setNamespace(request.getNamespace());
+        builder.setOffset(request.getOffset());
+        builder.setSchemaFetched(request.isSchemaFetched());
+        builder.setStartIndexName(request.getStartIndexName());
+        return new ListIndexesResponse(getIndexes(builder.build()).getResults()){};
     }
 
     public Future<ListIndexesResponse> listIndexesAsync(final ListIndexesRequest request) {
@@ -103,12 +106,18 @@ public class CapedwarfSearchService implements SearchService {
         });
     }
 
-    public GetResponse<Index> getIndexes(GetIndexesRequest getIndexesRequest) {
-        return null;  // TODO
+    @SuppressWarnings("unchecked")
+    public GetResponse<Index> getIndexes(GetIndexesRequest request) {
+        GetIndexesMapper mapper = new GetIndexesMapper(request, resolveNamespace());
+        GetIndexesReducer reducer = new GetIndexesReducer();
+        GetIndexesCollator collator = new GetIndexesCollator(request, cache);
+
+        MapReduceTask<CacheKey, CacheValue, FullIndexSpec, String> task = new MapReduceTask<CacheKey, CacheValue, FullIndexSpec, String>(cache);
+        return task.mappedWith(mapper).reducedWith(reducer).execute(collator);
     }
 
     public GetResponse<Index> getIndexes(GetIndexesRequest.Builder builder) {
-        return getIndexes(builder.build()); // TODO -- OK?
+        return getIndexes(builder.build());
     }
 
     public Future<GetResponse<Index>> getIndexesAsync(final GetIndexesRequest getIndexesRequest) {
@@ -134,6 +143,5 @@ public class CapedwarfSearchService implements SearchService {
     public boolean isEmpty() {
         return cache.isEmpty();
     }
-
 
 }

@@ -22,27 +22,27 @@
 
 package org.jboss.capedwarf.search;
 
+import com.google.appengine.api.search.Consistency;
+import com.google.appengine.api.search.GetIndexesRequest;
 import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distexec.mapreduce.Mapper;
 
-import com.google.appengine.api.search.Consistency;
-import com.google.appengine.api.search.ListIndexesRequest;
-
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+* @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
 */
-class ListIndexesMapper implements Mapper<CacheKey, CacheValue, FullIndexSpec, String> {
+class GetIndexesMapper implements Mapper<CacheKey, CacheValue, FullIndexSpec, String> {
 
     private String namespace;
     private String indexNamePrefix;
     private String startIndexName;
     private boolean includeStartIndex;
 
-    public ListIndexesMapper() {
+    public GetIndexesMapper() {
 
     }
 
-    public ListIndexesMapper(ListIndexesRequest request, String namespace) {
+    public GetIndexesMapper(GetIndexesRequest request, String namespace) {
         this.namespace = namespace;
         indexNamePrefix = request.getIndexNamePrefix();
         startIndexName = request.getStartIndexName();

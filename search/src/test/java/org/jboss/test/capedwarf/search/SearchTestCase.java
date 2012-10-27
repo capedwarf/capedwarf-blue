@@ -30,10 +30,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.appengine.api.search.AddResponse;
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.GeoPoint;
 import com.google.appengine.api.search.Index;
+import com.google.appengine.api.search.PutResponse;
 import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchServiceFactory;
@@ -53,8 +53,8 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchBySingleField() {
         Index index = getTestIndex();
-        index.add(newDocument("fooaaa", newField("foo").setText("aaa")));
-        index.add(newDocument("foobbb", newField("foo").setText("bbb")));
+        index.put(newDocument("fooaaa", newField("foo").setText("aaa")));
+        index.put(newDocument("foobbb", newField("foo").setText("bbb")));
 
         assertSearchYields(index, "foo:aaa", "fooaaa");
     }
@@ -62,8 +62,8 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchByTwoFields() {
         Index index = getTestIndex();
-        index.add(newDocument("fooaaa", newField("foo").setText("aaa"), newField("bar").setText("bbb")));
-        index.add(newDocument("foobbb", newField("foo").setText("aaa"), newField("bar").setText("ccc")));
+        index.put(newDocument("fooaaa", newField("foo").setText("aaa"), newField("bar").setText("bbb")));
+        index.put(newDocument("foobbb", newField("foo").setText("aaa"), newField("bar").setText("ccc")));
 
         assertSearchYields(index, "foo:aaa bar:bbb", "fooaaa");
     }
@@ -71,9 +71,9 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchDisjunction() {
         Index index = getTestIndex();
-        index.add(newDocument("fooaaa", newField("foo").setText("aaa"), newField("bar").setText("bbb")));
-        index.add(newDocument("foobbb", newField("foo").setText("bbb"), newField("bar").setText("ccc")));
-        index.add(newDocument("fooccc", newField("foo").setText("ccc"), newField("bar").setText("bbb")));
+        index.put(newDocument("fooaaa", newField("foo").setText("aaa"), newField("bar").setText("bbb")));
+        index.put(newDocument("foobbb", newField("foo").setText("bbb"), newField("bar").setText("ccc")));
+        index.put(newDocument("fooccc", newField("foo").setText("ccc"), newField("bar").setText("bbb")));
 
         assertSearchYields(index, "foo:aaa OR bar:bbb", "fooaaa", "fooccc");
     }
@@ -81,9 +81,9 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchByTerm() {
         Index index = getTestIndex();
-        index.add(newDocument("fooaaa", newField("foo").setText("bar aaa baz")));
-        index.add(newDocument("foobbb", newField("foo").setText("bar bbb baz")));
-        index.add(newDocument("fooaaa2", newField("foo").setText("baraaabaz")));
+        index.put(newDocument("fooaaa", newField("foo").setText("bar aaa baz")));
+        index.put(newDocument("foobbb", newField("foo").setText("bar bbb baz")));
+        index.put(newDocument("fooaaa2", newField("foo").setText("baraaabaz")));
 
         assertSearchYields(index, "foo:aaa", "fooaaa");
     }
@@ -91,8 +91,8 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchByPhrase() {
         Index index = getTestIndex();
-        index.add(newDocument("fooaaa", newField("foo").setText("aaa bbb ccc ddd")));
-        index.add(newDocument("foobbb", newField("foo").setText("bbb ccc aaa ddd")));
+        index.put(newDocument("fooaaa", newField("foo").setText("aaa bbb ccc ddd")));
+        index.put(newDocument("foobbb", newField("foo").setText("bbb ccc aaa ddd")));
 
         assertSearchYields(index, "foo:\"aaa bbb ccc\"", "fooaaa");
     }
@@ -100,10 +100,10 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchByStringEquality() {
         Index index = getTestIndex();
-        index.add(newDocument("d", newField("foo").setText("ddd")));
-        index.add(newDocument("b", newField("foo").setText("bbb")));
-        index.add(newDocument("c", newField("foo").setText("ccc")));
-        index.add(newDocument("a", newField("foo").setText("aaa")));
+        index.put(newDocument("d", newField("foo").setText("ddd")));
+        index.put(newDocument("b", newField("foo").setText("bbb")));
+        index.put(newDocument("c", newField("foo").setText("ccc")));
+        index.put(newDocument("a", newField("foo").setText("aaa")));
 
         assertSearchYields(index, "foo = bbb", "b");
     }
@@ -116,10 +116,10 @@ public class SearchTestCase extends AbstractTest {
         }
 
         Index index = getTestIndex();
-        index.add(newDocument("d", newField("date").setDate(createDate(2004, 5, 5))));
-        index.add(newDocument("b", newField("date").setDate(createDate(2002, 5, 5))));
-        index.add(newDocument("c", newField("date").setDate(createDate(2003, 5, 5))));
-        index.add(newDocument("a", newField("date").setDate(createDate(2001, 5, 5))));
+        index.put(newDocument("d", newField("date").setDate(createDate(2004, 5, 5))));
+        index.put(newDocument("b", newField("date").setDate(createDate(2002, 5, 5))));
+        index.put(newDocument("c", newField("date").setDate(createDate(2003, 5, 5))));
+        index.put(newDocument("a", newField("date").setDate(createDate(2001, 5, 5))));
 
         assertSearchYields(index, "date > 2002-05-05", "c", "d");
         assertSearchYields(index, "date >= 2002-05-05", "b", "c", "d");
@@ -131,10 +131,10 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchByNumberEqualityAndInequality() {
         Index index = getTestIndex();
-        index.add(newDocument("d", newField("num").setNumber(4.0d)));
-        index.add(newDocument("b", newField("num").setNumber(2.0d)));
-        index.add(newDocument("c", newField("num").setNumber(3.0d)));
-        index.add(newDocument("a", newField("num").setNumber(1.0d)));
+        index.put(newDocument("d", newField("num").setNumber(4.0d)));
+        index.put(newDocument("b", newField("num").setNumber(2.0d)));
+        index.put(newDocument("c", newField("num").setNumber(3.0d)));
+        index.put(newDocument("a", newField("num").setNumber(1.0d)));
 
         assertSearchYields(index, "num > 2", "c", "d");
         assertSearchYields(index, "num >= 2", "b", "c", "d");
@@ -146,8 +146,8 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchOnHtmlFieldIgnoresTags() {
         Index index = getTestIndex();
-        index.add(newDocument("a", newField("html").setHTML("<html><body>hello</body></html>")));
-        index.add(newDocument("b", newField("html").setHTML("<html><body>body</body></html>")));
+        index.put(newDocument("a", newField("html").setHTML("<html><body>hello</body></html>")));
+        index.put(newDocument("b", newField("html").setHTML("<html><body>body</body></html>")));
 
         assertSearchYields(index, "html:body", "b");
     }
@@ -155,7 +155,7 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchForNumberInText() {
         Index index = getTestIndex();
-        index.add(newDocument("a", newField("text").setText("Founded in 1993, Red Hat has its corporate headquarters in Raleigh, North Carolina with satellite offices worldwide.")));
+        index.put(newDocument("a", newField("text").setText("Founded in 1993, Red Hat has its corporate headquarters in Raleigh, North Carolina with satellite offices worldwide.")));
         assertSearchYields(index, "text:1993", "a");
     }
 
@@ -165,8 +165,8 @@ public class SearchTestCase extends AbstractTest {
             return; // dev appengine does not support geo points
         }
         Index index = getTestIndex();
-        index.add(newDocument("a", newField("location").setGeoPoint(new GeoPoint(45.0, 15.0))));
-        index.add(newDocument("b", newField("location").setGeoPoint(new GeoPoint(60.0, 40.0))));
+        index.put(newDocument("a", newField("location").setGeoPoint(new GeoPoint(45.0, 15.0))));
+        index.put(newDocument("b", newField("location").setGeoPoint(new GeoPoint(60.0, 40.0))));
         assertSearchYields(index, "distance(location, geopoint(45.0, 15.0)) < 1000", "a");
     }
 
@@ -176,8 +176,8 @@ public class SearchTestCase extends AbstractTest {
             return; // dev appengine does not support geo points
         }
         Index index = getTestIndex();
-        index.add(newDocument("a", newField("location").setGeoPoint(new GeoPoint(45.0, 15.0))));
-        index.add(newDocument("b", newField("location").setGeoPoint(new GeoPoint(60.0, 40.0))));
+        index.put(newDocument("a", newField("location").setGeoPoint(new GeoPoint(45.0, 15.0))));
+        index.put(newDocument("b", newField("location").setGeoPoint(new GeoPoint(60.0, 40.0))));
         assertSearchYields(index, "distance(geopoint(45.0, 15.0), location) < 1000", "a");
     }
 
@@ -187,8 +187,8 @@ public class SearchTestCase extends AbstractTest {
             return; // dev appengine does not support geo points
         }
         Index index = getTestIndex();
-        index.add(newDocument("a", newField("location").setGeoPoint(new GeoPoint(46.051464, 14.515833))));
-        index.add(newDocument("b", newField("location").setGeoPoint(new GeoPoint(46.046111, 14.513889))));
+        index.put(newDocument("a", newField("location").setGeoPoint(new GeoPoint(46.051464, 14.515833))));
+        index.put(newDocument("b", newField("location").setGeoPoint(new GeoPoint(46.046111, 14.513889))));
         assertSearchYields(index, "distance(location, geopoint(46.051464, 14.506097)) < 800", "a");
     }
 
@@ -236,8 +236,8 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchByWordStem() {
         Index index = getTestIndex();
-        index.add(newDocument("fooaaa", newField("foo").setText("rolling trolled")));
-        index.add(newDocument("foobbb", newField("foo").setText("bowling")));
+        index.put(newDocument("fooaaa", newField("foo").setText("rolling trolled")));
+        index.put(newDocument("foobbb", newField("foo").setText("bowling")));
 
         assertSearchYields(index, "foo:roll", "fooaaa");
     }
@@ -245,10 +245,10 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchReturnsDocumentsInCorrectIndex() {
         Index fooIndex = getIndex("fooIndex");
-        fooIndex.add(newDocument("foo", newField("foo").setText("aaa")));
+        fooIndex.put(newDocument("foo", newField("foo").setText("aaa")));
 
         Index barIndex = getIndex("barIndex");
-        barIndex.add(newDocument("bar", newField("foo").setText("aaa")));
+        barIndex.put(newDocument("bar", newField("foo").setText("aaa")));
 
         assertSearchYields(fooIndex, "foo:aaa", "foo");
     }
@@ -256,10 +256,10 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchReturnsDocumentsInCorrectNamespace() {
         Index fooIndex = SearchServiceFactory.getSearchService(FOO_NAMESPACE).getIndex(getIndexSpec("index", Consistency.GLOBAL));
-        fooIndex.add(newDocument("foo", newField("foo").setText("aaa")));
+        fooIndex.put(newDocument("foo", newField("foo").setText("aaa")));
 
         Index barIndex = SearchServiceFactory.getSearchService(BAR_NAMESPACE).getIndex(getIndexSpec("index", Consistency.GLOBAL));
-        barIndex.add(newDocument("bar", newField("foo").setText("aaa")));
+        barIndex.put(newDocument("bar", newField("foo").setText("aaa")));
 
         assertSearchYields(fooIndex, "foo:aaa", "foo");
     }
@@ -267,9 +267,9 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchOnAllFields() {
         Index index = getTestIndex();
-        index.add(newDocument(newField("foo").setText("aaa"), newField("bar").setText("bbb")));
-        index.add(newDocument(newField("foo").setText("bbb"), newField("bar").setText("aaa")));
-        index.add(newDocument(newField("foo").setText("bbb"), newField("bar").setText("bbb")));
+        index.put(newDocument(newField("foo").setText("aaa"), newField("bar").setText("bbb")));
+        index.put(newDocument(newField("foo").setText("bbb"), newField("bar").setText("aaa")));
+        index.put(newDocument(newField("foo").setText("bbb"), newField("bar").setText("bbb")));
 
         assertEquals(2, index.search("aaa").getResults().size());
     }
@@ -277,10 +277,10 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testComplexSearch1() {
         Index index = getTestIndex();
-        index.add(newDocument("bm", newField("author").setText("Bob Marley")));
-        index.add(newDocument("rj", newField("author").setText("Rose Jones")));
-        index.add(newDocument("rt", newField("author").setText("Rose Trunk")));
-        index.add(newDocument("tj", newField("author").setText("Tom Jones")));
+        index.put(newDocument("bm", newField("author").setText("Bob Marley")));
+        index.put(newDocument("rj", newField("author").setText("Rose Jones")));
+        index.put(newDocument("rt", newField("author").setText("Rose Trunk")));
+        index.put(newDocument("tj", newField("author").setText("Tom Jones")));
 
         assertSearchYields(index, "author:(bob OR ((rose OR tom) AND jones))", "bm", "rj", "tj");
     }
@@ -289,8 +289,8 @@ public class SearchTestCase extends AbstractTest {
     public void testSearchWithNegation() {
 
         Index index = getTestIndex();
-        index.add(newDocument("with_baz", newField("body").setText("Foo bar baz")));
-        index.add(newDocument("without_baz", newField("body").setText("Foo bar.")));
+        index.put(newDocument("with_baz", newField("body").setText("Foo bar baz")));
+        index.put(newDocument("without_baz", newField("body").setText("Foo bar.")));
 
         assertSearchYields(index, "body:foo AND NOT body:baz", "without_baz");
         assertSearchYields(index, "body:foo NOT body:baz", "without_baz");
@@ -300,10 +300,10 @@ public class SearchTestCase extends AbstractTest {
     public void testSearchWithDisjunctionAndNegation() {
 
         Index index = getTestIndex();
-        index.add(newDocument("foo_with_baz", newField("body").setText("Foo bar baz")));
-        index.add(newDocument("foo_without_baz", newField("body").setText("Foo bar.")));
-        index.add(newDocument("without_foo_without_baz", newField("body").setText("bar.")));
-        index.add(newDocument("without_foo_with_baz", newField("body").setText("bar baz.")));
+        index.put(newDocument("foo_with_baz", newField("body").setText("Foo bar baz")));
+        index.put(newDocument("foo_without_baz", newField("body").setText("Foo bar.")));
+        index.put(newDocument("without_foo_without_baz", newField("body").setText("bar.")));
+        index.put(newDocument("without_foo_with_baz", newField("body").setText("bar baz.")));
 
         assertSearchYields(index, "body:foo OR NOT body:baz", "foo_with_baz", "foo_without_baz", "without_foo_without_baz");
     }
@@ -311,8 +311,8 @@ public class SearchTestCase extends AbstractTest {
     @Test
     public void testSearchWithNegationOnly() {
         Index index = getTestIndex();
-        index.add(newDocument("with_baz", newField("body").setText("Foo bar baz")));
-        index.add(newDocument("without_baz", newField("body").setText("Foo bar.")));
+        index.put(newDocument("with_baz", newField("body").setText("Foo bar baz")));
+        index.put(newDocument("without_baz", newField("body").setText("Foo bar.")));
 
         assertSearchYields(index, "NOT body=baz", "without_baz");
     }
@@ -320,7 +320,7 @@ public class SearchTestCase extends AbstractTest {
     @Test
      public void testGet() {
         Index index = getTestIndex();
-        AddResponse ar = index.add(newDocument("get_id", newField("acme").setText("bipbip")));
+        PutResponse ar = index.put(newDocument("get_id", newField("acme").setText("bipbip")));
         List<String> ids = ar.getIds();
         Assert.assertNotNull(ids);
         Assert.assertFalse(ids.isEmpty());

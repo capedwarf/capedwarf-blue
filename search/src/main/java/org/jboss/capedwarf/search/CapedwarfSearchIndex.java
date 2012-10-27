@@ -143,9 +143,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public void remove(Iterable<String> documentIds) {
-        for (String documentId : documentIds) {
-            cache.remove(getCacheKey(documentId));
-        }
+        delete(documentIds);
     }
 
     public Document get(String documentId) {
@@ -179,9 +177,9 @@ public class CapedwarfSearchIndex implements Index {
         }
 
         return ReflectionUtils.newInstance(
-            AddResponse.class,
-            new Class[]{List.class, List.class},
-            new Object[]{documentList, documentIds});
+                AddResponse.class,
+                new Class[]{List.class, List.class},
+                new Object[]{documentList, documentIds});
     }
 
     private String generateId(Document document) {
@@ -260,51 +258,41 @@ public class CapedwarfSearchIndex implements Index {
 
     @SuppressWarnings("unchecked")
     private Results<ScoredDocument> newResults(OperationResult operationResult, Collection<ScoredDocument> results, long numberFound, int numberReturned, Cursor cursor) {
-        return ReflectionUtils.newInstance(
-            Results.class,
-            new Class[]{OperationResult.class, Collection.class, long.class, int.class, Cursor.class},
-            new Object[]{operationResult, results, numberFound, numberReturned, cursor}
-        );
+        return new Results<ScoredDocument>(operationResult, results, numberFound, numberReturned, cursor){};
     }
 
-    public ListResponse<Document> listDocuments(ListRequest listRequest) {
-        List<Document> documents = new ArrayList<Document>();
-        CacheQuery cacheQuery = createListDocumentsQuery(listRequest);
-        for (Object o : cacheQuery.list()) {
-            CacheValue cacheValue = (CacheValue) o;
-            documents.add(cacheValue.getDocument());
-        }
-        return newListResponse(documents);
+    public ListResponse<Document> listDocuments(ListRequest request) {
+        final GetRequest.Builder builder = GetRequest.newBuilder();
+        builder.setIncludeStart(request.isIncludeStart());
+        builder.setLimit(request.getLimit());
+        builder.setReturningIdsOnly(request.isReturningIdsOnly());
+        builder.setStartId(request.getStartId());
+        return new ListResponse<Document>(getRange(builder).getResults()){};
     }
 
-    private CacheQuery createListDocumentsQuery(ListRequest listRequest) {
+    private CacheQuery createListDocumentsQuery(GetRequest request) {
         CacheQuery query;
-        if (listRequest.getStartId() == null) {
+        if (request.getStartId() == null) {
             query = searchManager.getQuery(createIndexAndNamespaceQuery());
         } else {
             query = searchManager.getQuery(
                 createQueryBuilder().bool()
                     .must(createIndexAndNamespaceQuery())
-                    .must(createStartingIdQuery(listRequest))
+                    .must(createStartingIdQuery(request))
                     .createQuery());
         }
-        if (listRequest.getLimit() > 0) {
-            query.maxResults(listRequest.getLimit());
+        if (request.getLimit() > 0) {
+            query.maxResults(request.getLimit());
         }
         return query;
     }
 
-    private org.apache.lucene.search.Query createStartingIdQuery(ListRequest listRequest) {
-        RangeTerminationExcludable range = createQueryBuilder().range().onField(CacheValue.ID_FIELD_NAME).above(listRequest.getStartId());
-        if (!listRequest.isIncludeStart()) {
+    private org.apache.lucene.search.Query createStartingIdQuery(GetRequest request) {
+        RangeTerminationExcludable range = createQueryBuilder().range().onField(CacheValue.ID_FIELD_NAME).above(request.getStartId());
+        if (!request.isIncludeStart()) {
             range = range.excludeLimit();
         }
         return range.createQuery();
-    }
-
-    @SuppressWarnings("unchecked")
-    private ListResponse<Document> newListResponse(List<Document> documents) {
-        return ReflectionUtils.newInstance(ListResponse.class, new Class[]{List.class}, new Object[]{documents});
     }
 
     public Schema getSchema() {
@@ -372,12 +360,14 @@ public class CapedwarfSearchIndex implements Index {
         delete(Arrays.asList(strings));
     }
 
-    public void delete(Iterable<String> strings) {
-        // TODO
+    public void delete(Iterable<String> documentIds) {
+        for (String documentId : documentIds) {
+            cache.remove(getCacheKey(documentId));
+        }
     }
 
     public AddResponse add(Document.Builder... builders) {
-        return add(toDocuments(builders)); // TODO -- OK?
+        return add(toDocuments(builders));
     }
 
     public PutResponse put(Document... documents) {
@@ -385,25 +375,52 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public PutResponse put(Document.Builder... builders) {
-        return put(toDocuments(builders)); // TODo -- OK?
+        return put(toDocuments(builders));
     }
 
     public PutResponse put(Iterable<Document> documents) {
-        return null;  // TODO
+        final List<OperationResult> results = new ArrayList<OperationResult>();
+        final List<String> ids = new ArrayList<String>();
+        for (Document document : documents) {
+            StatusCode status = StatusCode.OK;
+            String errorDetail = null;
+            String id = null;
+            try {
+                Document documentWithId = document;
+                if (document.getId() == null) {
+                    documentWithId = createCopyWithId(document, generateId(document));
+                }
+                cache.put(getCacheKey(documentWithId.getId()), getCacheValue(documentWithId));
+                id = documentWithId.getId();
+            } catch (Exception e) {
+                // TODO -- check err
+                status = StatusCode.INTERNAL_ERROR;
+                errorDetail = e.getMessage();
+            }
+            results.add(new OperationResult(status, errorDetail));
+            ids.add(id);
+        }
+        return new PutResponse(results, ids){};
     }
 
-    public GetResponse<Document> getRange(GetRequest getRequest) {
-        return null;  // TODO
+    public GetResponse<Document> getRange(GetRequest request) {
+        final List<Document> documents = new ArrayList<Document>();
+        final CacheQuery cacheQuery = createListDocumentsQuery(request);
+        for (Object o : cacheQuery.list()) {
+            CacheValue cacheValue = (CacheValue) o;
+            documents.add(cacheValue.getDocument());
+        }
+        return new GetResponse<Document>(documents){};
     }
 
     public GetResponse<Document> getRange(GetRequest.Builder builder) {
-        return getRange(builder.build()); // TODO -- OK?
+        return getRange(builder.build());
     }
 
-    protected static Document[] toDocuments(Document.Builder... builders) {
-        final Document[] documents = new Document[builders.length];
-        for (int i = 0; i < documents.length; i++) {
-            documents[i] = builders[i].build();
+    protected static List<Document> toDocuments(Document.Builder... builders) {
+        final List<Document> documents = new ArrayList<Document>();
+        for (Document.Builder builder : builders) {
+            documents.add(builder.build());
         }
         return documents;
     }

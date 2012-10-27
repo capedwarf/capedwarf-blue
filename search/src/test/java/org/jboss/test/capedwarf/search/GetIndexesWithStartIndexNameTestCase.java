@@ -22,27 +22,34 @@
 
 package org.jboss.test.capedwarf.search;
 
-import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
-import org.junit.Test;
-
 import java.util.Arrays;
+
+import com.google.appengine.api.search.GetIndexesRequest;
+import com.google.appengine.api.search.GetResponse;
+import com.google.appengine.api.search.Index;
+import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class ListIndexesTestCase extends AbstractTest {
+public class GetIndexesWithStartIndexNameTestCase extends AbstractTest {
 
     @Test
-    public void testListIndexes() {
-        Index fooIndex = createIndex("foo");
-        Index barIndex = createIndex("bar");
+    public void testListIndexesWithStartIndexName() {
+        createIndex("a");
+        Index bIndex = createIndex("b");
+        Index cIndex = createIndex("c");
 
-        ListIndexesResponse response = service.listIndexes(ListIndexesRequest.newBuilder().build());
-        assertEquals(Arrays.asList(barIndex, fooIndex), response.getIndexes());
+        GetResponse<Index> response = service.getIndexes(GetIndexesRequest.newBuilder().setStartIndexName("b"));
+        assertEquals(Arrays.asList(bIndex, cIndex), response.getResults());
+
+        response = service.getIndexes(GetIndexesRequest.newBuilder().setStartIndexName("b").setIncludeStartIndex(true));
+        assertEquals(Arrays.asList(bIndex, cIndex), response.getResults());
+
+        response = service.getIndexes(GetIndexesRequest.newBuilder().setStartIndexName("b").setIncludeStartIndex(false));
+        assertEquals(Arrays.asList(cIndex), response.getResults());
     }
 
 }

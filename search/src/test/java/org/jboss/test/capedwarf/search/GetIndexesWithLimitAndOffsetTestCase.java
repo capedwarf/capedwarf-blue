@@ -22,34 +22,47 @@
 
 package org.jboss.test.capedwarf.search;
 
-import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
-import org.junit.Test;
-
 import java.util.Arrays;
+import java.util.Collections;
+
+import com.google.appengine.api.search.GetIndexesRequest;
+import com.google.appengine.api.search.GetResponse;
+import com.google.appengine.api.search.Index;
+import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class ListIndexesWithStartIndexNameTestCase extends AbstractTest {
+public class GetIndexesWithLimitAndOffsetTestCase extends AbstractTest {
 
     @Test
-    public void testListIndexesWithStartIndexName() {
+    public void testListIndexesWithLimitAndOffset() {
         Index aIndex = createIndex("a");
         Index bIndex = createIndex("b");
         Index cIndex = createIndex("c");
+        Index dIndex = createIndex("d");
 
-        ListIndexesResponse response = service.listIndexes(ListIndexesRequest.newBuilder().setStartIndexName("b").build());
-        assertEquals(Arrays.asList(bIndex, cIndex), response.getIndexes());
+        GetResponse<Index> response = service.getIndexes(GetIndexesRequest.newBuilder().setLimit(1000));
+        assertEquals(Arrays.asList(aIndex, bIndex, cIndex, dIndex), response.getResults());
 
-        response = service.listIndexes(ListIndexesRequest.newBuilder().setStartIndexName("b").setIncludeStartIndex(true).build());
-        assertEquals(Arrays.asList(bIndex, cIndex), response.getIndexes());
+        response = service.getIndexes(GetIndexesRequest.newBuilder().setLimit(2));
+        assertEquals(Arrays.asList(aIndex, bIndex), response.getResults());
 
-        response = service.listIndexes(ListIndexesRequest.newBuilder().setStartIndexName("b").setIncludeStartIndex(false).build());
-        assertEquals(Arrays.asList(cIndex), response.getIndexes());
+
+        response = service.getIndexes(GetIndexesRequest.newBuilder().setOffset(1000));
+        assertEquals(Collections.emptyList(), response.getResults());
+
+        response = service.getIndexes(GetIndexesRequest.newBuilder().setOffset(4));
+        assertEquals(Collections.emptyList(), response.getResults());
+
+        response = service.getIndexes(GetIndexesRequest.newBuilder().setOffset(1));
+        assertEquals(Arrays.asList(bIndex, cIndex, dIndex), response.getResults());
+
+
+        response = service.getIndexes(GetIndexesRequest.newBuilder().setOffset(1).setLimit(2));
+        assertEquals(Arrays.asList(bIndex, cIndex), response.getResults());
     }
 
 }

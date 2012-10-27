@@ -20,29 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.search;
+package org.jboss.capedwarf.search;
 
-import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
-import org.junit.Test;
+import java.util.Iterator;
 
-import java.util.Arrays;
-
-import static junit.framework.Assert.assertEquals;
+import org.infinispan.distexec.mapreduce.Reducer;
 
 /**
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
- */
-public class ListIndexesWithIndexNamePrefixTestCase extends AbstractTest {
+* @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+*/
+class GetIndexesReducer implements Reducer<FullIndexSpec, String> {
 
-    @Test
-    public void testListIndexesWithIndexNamePrefix() {
-        Index a1Index = createIndex("a1");
-        Index a2Index = createIndex("a2");
-        Index b1Index = createIndex("b1");
-
-        ListIndexesResponse response = service.listIndexes(ListIndexesRequest.newBuilder().setIndexNamePrefix("a").build());
-        assertEquals(Arrays.asList(a1Index, a2Index), response.getIndexes());
+    public String reduce(FullIndexSpec reducedKey, Iterator<String> iter) {
+        return "";
     }
 }
