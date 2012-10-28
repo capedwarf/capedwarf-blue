@@ -25,6 +25,7 @@ package org.jboss.test.capedwarf.testsuite.deployment.test;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -48,9 +49,9 @@ public class ManualMultipleAppsTestCase extends AbstractMultipleAppsTest {
     }
 
     @ArquillianResource
-    private Deployer deployer;
+    private transient Deployer deployer;
 
-    @Test @InSequence(1)
+    @Test @InSequence(1) @RunAsClient
     public void deployInitialApp() throws Exception {
         deployer.deploy("depA");
     }
@@ -60,7 +61,7 @@ public class ManualMultipleAppsTestCase extends AbstractMultipleAppsTest {
         allTests(true);
     }
 
-    @Test @InSequence(3)
+    @Test @InSequence(3) @RunAsClient
     public void deployBundeployAdeployA() throws Exception {
         deployer.deploy("depB"); // deploy another, so we're still using ECM
         deployer.undeploy("depA");
