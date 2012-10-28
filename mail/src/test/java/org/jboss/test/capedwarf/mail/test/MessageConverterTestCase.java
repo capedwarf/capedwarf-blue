@@ -1,16 +1,17 @@
 package org.jboss.test.capedwarf.mail.test;
 
-import com.google.appengine.api.mail.MailService;
-import org.jboss.capedwarf.mail.MessageConverter;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.Collections;
 
 import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.InternetAddress;
-import java.util.Collections;
+
+import com.google.appengine.api.mail.MailService;
+import org.jboss.capedwarf.mail.MessageConverter;
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;

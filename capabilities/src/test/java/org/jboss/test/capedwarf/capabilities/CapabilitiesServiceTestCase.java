@@ -35,9 +35,7 @@ import com.google.appengine.api.capabilities.CapabilityStatus;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,7 +46,7 @@ import static org.junit.Assert.assertNull;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class CapabilitiesServiceTestCase {
+public class CapabilitiesServiceTestCase extends BaseTest {
 
     private static final List<Capability> KNOWN_CAPABILITIES = Arrays.asList(Capability.BLOBSTORE,
             Capability.DATASTORE, Capability.DATASTORE_WRITE, Capability.IMAGES, Capability.MAIL, Capability.MEMCACHE,
@@ -56,9 +54,7 @@ public class CapabilitiesServiceTestCase {
 
     @Deployment
     public static Archive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-                .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web.xml");
+        return getCapedwarfDeployment();
     }
 
     @Test

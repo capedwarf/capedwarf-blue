@@ -28,8 +28,8 @@ import java.util.Set;
 
 import com.google.appengine.api.datastore.Entity;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.After;
 
 import static org.junit.Assert.assertEquals;
@@ -47,10 +47,11 @@ public class AbstractMatchTest extends AbstractTest {
 
     @Deployment
     public static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-            .addClasses(AbstractTest.class, AbstractMatchTest.class, MatchResponseServlet.class, SpecialMatchResponseServlet.class)
-            .addAsWebInfResource("web.xml")
-            .addAsWebInfResource("appengine-web.xml");
+        final TestContext context = new TestContext();
+        context.setWebXmlFile("web.xml");
+        final WebArchive war = getCapedwarfDeployment(context);
+        war.addClasses(AbstractTest.class, AbstractMatchTest.class, MatchResponseServlet.class, SpecialMatchResponseServlet.class);
+        return war;
     }
 
     @After

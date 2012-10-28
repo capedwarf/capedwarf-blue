@@ -28,28 +28,24 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- *
+ * Marko Luksa
  */
 @RunWith(Arquillian.class)
 @Ignore
-public class ChannelTestCase {
+public class ChannelTestCase extends BaseTest {
 
     private ChannelService service;
 
     @Deployment
     public static Archive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-            .setWebXML(new StringAsset("<web/>"))
-            .addAsWebInfResource("appengine-web.xml");
+        return getCapedwarfDeployment();
     }
 
     @Before

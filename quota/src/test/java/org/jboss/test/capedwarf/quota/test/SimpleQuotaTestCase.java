@@ -26,9 +26,8 @@ import com.google.appengine.api.quota.QuotaService;
 import com.google.appengine.api.quota.QuotaServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -36,13 +35,10 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-public class SimpleQuotaTestCase {
+public class SimpleQuotaTestCase extends BaseTest {
     @Deployment
     public static WebArchive getDeployment() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class);
-        war.setWebXML(new StringAsset("<web/>"));
-        war.addAsWebInfResource("appengine-web.xml");
-        return war;
+        return getCapedwarfDeployment();
     }
 
     @Test

@@ -40,9 +40,8 @@ import com.google.appengine.api.search.SearchServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -54,7 +53,7 @@ import static junit.framework.Assert.fail;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public abstract class AbstractTest {
+public abstract class AbstractTest extends BaseTest {
     public static final String FOO_NAMESPACE = "fooNamespace";
     public static final String BAR_NAMESPACE = "barNamespace";
 
@@ -62,10 +61,7 @@ public abstract class AbstractTest {
 
     @Deployment
     public static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-            .addClass(AbstractTest.class)
-            .setWebXML(new StringAsset("<web/>"))
-            .addAsWebInfResource("appengine-web.xml");
+        return getCapedwarfDeployment().addClass(AbstractTest.class);
     }
 
     protected void clear() {

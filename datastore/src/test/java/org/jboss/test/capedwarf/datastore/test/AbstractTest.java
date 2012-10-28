@@ -38,9 +38,8 @@ import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,16 +51,13 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class AbstractTest {
+public class AbstractTest extends BaseTest {
 
     protected DatastoreService service;
 
     @Deployment
     public static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-                .addClass(AbstractTest.class)
-                .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web.xml");
+        return getCapedwarfDeployment();
     }
 
     @Before

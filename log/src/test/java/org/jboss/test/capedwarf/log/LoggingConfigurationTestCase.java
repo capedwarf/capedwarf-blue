@@ -27,8 +27,6 @@ import java.util.logging.Logger;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,11 +39,11 @@ public class LoggingConfigurationTestCase extends AbstractLoggingTest {
 
     @Deployment
     public static Archive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-                .addClass(AbstractLoggingTest.class)
-                .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web-with-logging-properties.xml", "appengine-web.xml")
-                .addAsWebInfResource("logging.properties");
+        final WebArchive war = getCapedwarfDeployment();
+        war.addClass(AbstractLoggingTest.class);
+        war.addAsWebInfResource("appengine-web-with-logging-properties.xml", "appengine-web.xml");
+        war.addAsWebInfResource("logging.properties");
+        return war;
     }
 
     @Test

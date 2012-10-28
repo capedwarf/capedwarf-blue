@@ -31,6 +31,7 @@ import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.log.RequestLogs;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Before;
 
 import static org.junit.Assert.assertFalse;
@@ -40,7 +41,7 @@ import static org.junit.Assert.assertTrue;
  * @author Ales Justin
  * @author Marko Luksa
  */
-public class AbstractLoggingTest {
+public class AbstractLoggingTest extends BaseTest {
 
     @Before
     public void clearLog() {

@@ -33,8 +33,6 @@ import com.google.appengine.api.prospectivesearch.QuerySyntaxException;
 import com.google.appengine.api.prospectivesearch.Subscription;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,10 +50,7 @@ public class BasicTestCase extends AbstractTest {
 
     @Deployment
     public static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-            .addClass(AbstractTest.class)
-            .setWebXML(new StringAsset("<web/>"))
-            .addAsWebInfResource("appengine-web.xml");
+        return getCapedwarfDeployment().addClass(AbstractTest.class);
     }
 
     @Test

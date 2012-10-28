@@ -24,17 +24,15 @@
 
 package org.jboss.test.capedwarf.appidentity;
 
+import java.util.Map;
+
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -44,13 +42,11 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class ApiProxyTestCase {
+public class ApiProxyTestCase extends BaseTest {
 
     @Deployment
     public static Archive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-                .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web.xml");
+        return getCapedwarfDeployment();
     }
 
     @Test

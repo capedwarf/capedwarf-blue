@@ -7,6 +7,7 @@ import javax.persistence.Query;
 
 import org.jboss.capedwarf.testsuite.jpa.Client;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,16 +16,17 @@ import org.junit.Test;
  */
 public abstract class SimpleJPATest extends AbstractJPATest {
 
-    protected static WebArchive getBaseDeployment(String name) {
-        final WebArchive war = getCapedwarfDeployment(name);
+    protected static WebArchive getBaseDeployment() {
+        final TestContext context = new TestContext().setIgnoreLogging(true);
+        final WebArchive war = getCapedwarfDeployment(context);
         war.addPackage(Client.class.getPackage());
         war.addClass(AbstractJPATest.class);
         war.addClass(SimpleJPATest.class);
         return war;
     }
 
-    protected static WebArchive getDefaultDeployment(String name) {
-        final WebArchive war = getBaseDeployment(name);
+    protected static WebArchive getDefaultDeployment() {
+        final WebArchive war = getBaseDeployment();
         TestUtils.addPersistenceXml(war, "jpa/default-persistence.xml");
         return war;
     }

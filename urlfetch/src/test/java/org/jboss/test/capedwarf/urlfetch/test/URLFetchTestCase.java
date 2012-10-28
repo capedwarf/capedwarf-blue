@@ -35,9 +35,7 @@ import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,13 +44,11 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-public class URLFetchTestCase {
+public class URLFetchTestCase extends BaseTest {
 
     @Deployment
     public static Archive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-                .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web.xml");
+        return getCapedwarfDeployment();
     }
 
     /**

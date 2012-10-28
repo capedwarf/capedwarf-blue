@@ -29,19 +29,20 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import junit.framework.Assert;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
+import org.jboss.test.capedwarf.common.test.TestContext;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class AbstractMultipleAppsTest {
+public class AbstractMultipleAppsTest extends BaseTest {
     protected static WebArchive getDeployment(String suffix) {
-        return ShrinkWrap.create(WebArchive.class, "test-" + suffix + ".war")
-                .addClass(AbstractMultipleAppsTest.class)
-                .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web-" + suffix + ".xml", "appengine-web.xml");
+        final TestContext context = new TestContext("test-" + suffix + ".war");
+        context.setWebXmlFile("appengine-web-" + suffix + ".xml");
+        final WebArchive war = getCapedwarfDeployment(context);
+        war.addClass(AbstractMultipleAppsTest.class);
+        return war;
     }
 
     protected void allTests(boolean empty) throws Exception {

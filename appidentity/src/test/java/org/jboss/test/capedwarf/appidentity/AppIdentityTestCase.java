@@ -40,9 +40,8 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,16 +49,14 @@ import org.junit.runner.RunWith;
  * @author Marko Luksa
  */
 @RunWith(Arquillian.class)
-public class AppIdentityTestCase {
+public class AppIdentityTestCase extends BaseTest {
 
     @Deployment
     public static Archive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-            .setWebXML(new StringAsset("<web/>"))
-            .addAsWebInfResource("jboss-deployment-structure.xml")
-            .addAsWebInfResource("appengine-web.xml");
+        final WebArchive war = getCapedwarfDeployment();
+        war.addAsWebInfResource("jboss-deployment-structure.xml");
+        return war;
     }
-
 
     @Test
     public void test() {

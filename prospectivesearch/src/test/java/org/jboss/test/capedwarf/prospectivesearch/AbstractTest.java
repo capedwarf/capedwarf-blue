@@ -33,13 +33,14 @@ import com.google.appengine.api.prospectivesearch.ProspectiveSearchService;
 import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
 import com.google.appengine.api.prospectivesearch.Subscription;
 import com.google.appengine.api.utils.SystemProperty;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.After;
 import org.junit.Before;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public abstract class AbstractTest {
+public abstract class AbstractTest extends BaseTest {
 
     protected ProspectiveSearchService service;
 
@@ -87,6 +88,5 @@ public abstract class AbstractTest {
     protected boolean runningInsideDevAppEngine() {
         return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
     }
-
 
 }

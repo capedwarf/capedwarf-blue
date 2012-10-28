@@ -32,9 +32,8 @@ import com.google.appengine.api.images.Transform;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,16 +43,15 @@ import static org.junit.Assert.assertNotNull;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class IntegrationTestCase {
+public class IntegrationTestCase extends BaseTest {
 
     private static final String TEST_IMAGE_RESOURCE = "capedwarf.png";
 
     @Deployment
     public static Archive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-                .setWebXML(new StringAsset("<web/>"))
-                .addAsWebInfResource("appengine-web.xml")
-                .addAsResource(TEST_IMAGE_RESOURCE);
+        final WebArchive war = getCapedwarfDeployment();
+        war.addAsResource(TEST_IMAGE_RESOURCE);
+        return war;
     }
 
     @Test

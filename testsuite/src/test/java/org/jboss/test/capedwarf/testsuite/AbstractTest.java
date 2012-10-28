@@ -28,9 +28,7 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.After;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
@@ -38,26 +36,8 @@ import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaul
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractTest {
+public abstract class AbstractTest extends BaseTest {
     protected boolean ignoreTearDown;
-
-    protected static WebArchive getCapedwarfDeployment() {
-        return getCapedwarfDeployment("testsuite");
-    }
-
-    protected static WebArchive getCapedwarfDeployment(String name) {
-        final WebArchive war;
-        if (name != null)
-            war = ShrinkWrap.create(WebArchive.class, name + ".war");
-        else
-            war = ShrinkWrap.create(WebArchive.class);
-
-        war.setWebXML(new StringAsset("<web/>"));
-        war.addAsWebInfResource("appengine-web.xml");
-        war.addAsResource("capedwarf-compatibility.properties");
-        war.addClass(AbstractTest.class);
-        return war;
-    }
 
     @After
     public void tearDown() {
