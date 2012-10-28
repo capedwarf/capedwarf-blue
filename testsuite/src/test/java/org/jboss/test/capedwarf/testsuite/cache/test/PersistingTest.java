@@ -41,7 +41,7 @@ import org.junit.Test;
  */
 public abstract class PersistingTest extends AbstractTest {
     protected static WebArchive getBaseDeployment() {
-        return getCapedwarfDeployment().addClass(PersistingTest.class);
+        return getCapedwarfDeployment().addClasses(PersistingTest.class, AbstractTest.class);
     }
 
     @Test

@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 public class ThreadsTestCase extends BaseTest {
     @Deployment
     public static WebArchive getDeployment() {
-        return getCapedwarfDeployment();
+        return getCapedwarfDeployment().addClass(X.class);
     }
 
     @Test

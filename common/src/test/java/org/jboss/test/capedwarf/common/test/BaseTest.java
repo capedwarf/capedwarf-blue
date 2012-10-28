@@ -58,7 +58,11 @@ public class BaseTest {
         }
 
         // appengine-web.xml
-        war.addAsWebInfResource("appengine-web.xml");
+        if (context.getAppEngineWebXmlFile() != null) {
+            war.addAsWebInfResource(context.getAppEngineWebXmlFile(), "appengine-web.xml");
+        } else {
+            war.addAsWebInfResource("appengine-web.xml");
+        }
 
         // capedwarf-compatibility
         if (context.getCompatibilityProperties() != null) {

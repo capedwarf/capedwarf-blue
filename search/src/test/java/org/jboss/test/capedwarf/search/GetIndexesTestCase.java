@@ -40,21 +40,16 @@ import static junit.framework.Assert.assertEquals;
 public class GetIndexesTestCase extends AbstractTest {
 
     @Test
-    public void testListIndexes() {
-        Index fooIndex = createIndex("foo1");
-        Index barIndex = createIndex("bar1");
-
-        ListIndexesResponse response = service.listIndexes(ListIndexesRequest.newBuilder().build());
-        assertEquals(Arrays.asList(barIndex, fooIndex), response.getIndexes());
-    }
-
-    @Test
     public void testGetIndexes() {
-        Index fooIndex = createIndex("foo2");
-        Index barIndex = createIndex("bar2");
+        Index fooIndex = createIndex("foo");
+        Index barIndex = createIndex("bar");
 
         GetResponse<Index> response = service.getIndexes(GetIndexesRequest.newBuilder());
         assertEquals(Arrays.asList(barIndex, fooIndex), response.getResults());
+
+        // test legacy usage
+        ListIndexesResponse lir = service.listIndexes(ListIndexesRequest.newBuilder().build());
+        assertEquals(Arrays.asList(barIndex, fooIndex), lir.getIndexes());
     }
 
 }

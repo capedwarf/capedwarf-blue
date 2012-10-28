@@ -37,6 +37,8 @@ public class TestContext {
     private String webXml = "<web/>";
     private String webXmlFile;
 
+    private String appEngineWebXmlFile;
+
     private String compatibilityProperties;
     private Properties properties = new Properties();
 
@@ -71,6 +73,15 @@ public class TestContext {
 
     public TestContext setWebXmlFile(String webXmlFile) {
         this.webXmlFile = webXmlFile;
+        return this;
+    }
+
+    public String getAppEngineWebXmlFile() {
+        return appEngineWebXmlFile;
+    }
+
+    public TestContext setAppEngineWebXmlFile(String appEngineWebXmlFile) {
+        this.appEngineWebXmlFile = appEngineWebXmlFile;
         return this;
     }
 

@@ -28,6 +28,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,9 +40,9 @@ public class LoggingConfigurationTestCase extends AbstractLoggingTest {
 
     @Deployment
     public static Archive getDeployment() {
-        final WebArchive war = getCapedwarfDeployment();
+        final TestContext context = new TestContext().setAppEngineWebXmlFile("appengine-web-with-logging-properties.xml");
+        final WebArchive war = getCapedwarfDeployment(context);
         war.addClass(AbstractLoggingTest.class);
-        war.addAsWebInfResource("appengine-web-with-logging-properties.xml", "appengine-web.xml");
         war.addAsWebInfResource("logging.properties");
         return war;
     }

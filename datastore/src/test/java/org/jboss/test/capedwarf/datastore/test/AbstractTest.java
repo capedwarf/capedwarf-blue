@@ -57,7 +57,7 @@ public class AbstractTest extends BaseTest {
 
     @Deployment
     public static WebArchive getDeployment() {
-        return getCapedwarfDeployment();
+        return getCapedwarfDeployment().addClass(AbstractTest.class);
     }
 
     @Before
