@@ -46,8 +46,9 @@ public class BaseTest {
             war = ShrinkWrap.create(WebArchive.class);
         }
 
-        // this class
+        // this class + test_context
         war.addClass(BaseTest.class);
+        war.addClass(TestContext.class);
 
         // web.xml
         if (context.getWebXmlFile() != null) {
