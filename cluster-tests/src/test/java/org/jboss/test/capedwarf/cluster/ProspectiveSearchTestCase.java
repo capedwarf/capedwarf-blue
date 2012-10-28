@@ -1,10 +1,5 @@
 package org.jboss.test.capedwarf.cluster;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -14,18 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.test.capedwarf.cluster.ProspectiveSearchMatchResponseServlet.InvocationData;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -34,12 +17,29 @@ import com.google.appengine.api.prospectivesearch.ProspectiveSearchService;
 import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
 import com.google.appengine.api.prospectivesearch.QuerySyntaxException;
 import com.google.appengine.api.prospectivesearch.Subscription;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.cluster.ProspectiveSearchMatchResponseServlet.InvocationData;
+import org.jboss.test.capedwarf.common.test.BaseTest;
+import org.jboss.test.capedwarf.common.test.TestContext;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Matej Lazar
  */
 @RunWith(Arquillian.class)
-public class ProspectiveSearchTestCase {
+public class ProspectiveSearchTestCase extends BaseTest {
 
     private static final String TOPIC = "myTopic";
 
@@ -423,10 +423,9 @@ public class ProspectiveSearchTestCase {
     }
 
     public static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class, "cluster-tests.war")
-            .addClass(ProspectiveSearchMatchResponseServlet.class)
-            .addAsWebInfResource("web.xml")
-            .addAsWebInfResource("appengine-web.xml");
-
+        final TestContext context = new TestContext().setWebXmlFile("web.xml");
+        final WebArchive war = getCapedwarfDeployment(context);
+        war.addClass(ProspectiveSearchMatchResponseServlet.class);
+        return war;
     }
 }

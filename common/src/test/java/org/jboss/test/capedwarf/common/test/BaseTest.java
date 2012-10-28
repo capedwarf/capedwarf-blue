@@ -54,7 +54,7 @@ public class BaseTest {
         if (context.getWebXmlFile() != null) {
             war.setWebXML(context.getWebXmlFile());
         } else {
-            war.setWebXML(new StringAsset(context.getWebXml()));
+            war.setWebXML(new StringAsset(context.getWebXmlContent()));
         }
 
         // appengine-web.xml

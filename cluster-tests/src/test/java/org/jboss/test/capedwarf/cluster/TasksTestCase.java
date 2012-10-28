@@ -1,27 +1,26 @@
 package org.jboss.test.capedwarf.cluster;
 
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.jboss.test.capedwarf.tasks.support.PrintListener;
 import org.jboss.test.capedwarf.tasks.support.PrintServlet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.TaskOptions;
-
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 @RunWith(Arquillian.class)
-public class TasksTestCase {
+public class TasksTestCase extends BaseTest {
 
     private static final String URL = "/_ah/test";
     private static final String WEB_XML =
@@ -85,9 +84,9 @@ public class TasksTestCase {
     }
 
     protected static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class)
-            .addClasses(PrintServlet.class, PrintListener.class)
-            .setWebXML(new StringAsset(WEB_XML))
-            .addAsWebInfResource("appengine-web.xml");
+        final TestContext context = new TestContext().setWebXmlContent(WEB_XML);
+        final WebArchive war = getCapedwarfDeployment(context);
+        war.addClasses(PrintServlet.class, PrintListener.class);
+        return war;
     }
 }

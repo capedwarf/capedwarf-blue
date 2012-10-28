@@ -34,7 +34,7 @@ public class TestContext {
 
     private String archiveName = "capedwarf-tests.war";
 
-    private String webXml = "<web/>";
+    private String webXmlContent = "<web/>";
     private String webXmlFile;
 
     private String appEngineWebXmlFile;
@@ -58,12 +58,12 @@ public class TestContext {
         return this;
     }
 
-    public String getWebXml() {
-        return webXml;
+    public String getWebXmlContent() {
+        return webXmlContent;
     }
 
-    public TestContext setWebXml(String webXml) {
-        this.webXml = webXml;
+    public TestContext setWebXmlContent(String webXmlContent) {
+        this.webXmlContent = webXmlContent;
         return this;
     }
 

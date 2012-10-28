@@ -17,14 +17,13 @@ import org.infinispan.distexec.mapreduce.MapReduceTask;
 import org.infinispan.util.Util;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
 
 /**
  * @author Matej Lazar
  */
-abstract public class AbstractInfinispanClusterTest  {
+abstract public class AbstractInfinispanClusterTest extends BaseTest {
 
     private final String textFileName = "dummy.txt";
     private final int numPopularWords = 20;
@@ -89,13 +88,12 @@ abstract public class AbstractInfinispanClusterTest  {
     }
 
     protected static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class, "cluster-tests.war")
-            .addClass(AbstractInfinispanClusterTest.class)
-            .addClass(WordCountMapper.class)
-            .addClass(WordCountReducer.class)
-            .addClass(WordCountCollator.class)
-            .setWebXML(new StringAsset("<web/>"))
-            .addAsWebInfResource("appengine-web.xml")
-            .addAsResource("dummy.txt");
+        final WebArchive war = getCapedwarfDeployment();
+        war.addClass(AbstractInfinispanClusterTest.class);
+        war.addClass(WordCountMapper.class);
+        war.addClass(WordCountReducer.class);
+        war.addClass(WordCountCollator.class);
+        war.addAsResource("dummy.txt");
+        return war;
     }
 }

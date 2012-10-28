@@ -76,7 +76,7 @@ public class TasksTestCase extends BaseTest {
     @Deployment
     public static Archive getDeployment() {
         final TestContext context = new TestContext();
-        context.setWebXml(WEB_XML);
+        context.setWebXmlContent(WEB_XML);
         final WebArchive war = getCapedwarfDeployment(context);
         war.addClasses(PrintServlet.class, PrintListener.class);
         war.addAsWebInfResource("queue-tasks.xml", "queue.xml");

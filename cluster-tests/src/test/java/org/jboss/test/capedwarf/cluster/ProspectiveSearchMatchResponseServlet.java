@@ -81,8 +81,7 @@ public class ProspectiveSearchMatchResponseServlet extends HttpServlet {
         for (String subId : subIds) {
             subIdStr += "~" + subId;
         }
-        subIdStr.substring(2);
-        return subIdStr;
+        return subIdStr.substring(2);
     }
 
     private static String[] subIdsStrToArr(String subIdStr) {
@@ -90,8 +89,7 @@ public class ProspectiveSearchMatchResponseServlet extends HttpServlet {
     }
 
     private static Key createEntityKey() {
-        Key key = KeyFactory.createKey("pst", 1);
-        return key;
+        return KeyFactory.createKey("pst", 1);
     }
 
     public static InvocationData getInvocationData(DatastoreService service) throws EntityNotFoundException, Base64DecoderException {
