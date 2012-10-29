@@ -76,7 +76,7 @@
         <version.org.datanucleus.jdo>3.0.1</version.org.datanucleus.jdo>
         <!-- Testing -->
         <version.junit>4.10</version.junit>
-        <version.arquillian>1.0.1.Final</version.arquillian>
+        <version.arquillian>1.0.3.Final</version.arquillian>
         <version.shrinkwrap>1.1.0</version.shrinkwrap>
         <version.shrinkwrap.maven-resolver>2.0.0-alpha-4</version.shrinkwrap.maven-resolver>
         <version.jboss.as7>7.2.0.Alpha1-SNAPSHOT</version.jboss.as7>
