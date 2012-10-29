@@ -1,15 +1,22 @@
 package org.jboss.test.capedwarf.cluster;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.fail;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.appengine.api.search.Document;
+import com.google.appengine.api.search.Field;
+import com.google.appengine.api.search.GetIndexesRequest;
+import com.google.appengine.api.search.GetRequest;
+import com.google.appengine.api.search.GetResponse;
+import com.google.appengine.api.search.Index;
+import com.google.appengine.api.search.IndexSpec;
+import com.google.appengine.api.search.Results;
+import com.google.appengine.api.search.ScoredDocument;
+import com.google.appengine.api.search.SearchService;
+import com.google.appengine.api.search.SearchServiceFactory;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -17,19 +24,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.google.appengine.api.search.Consistency;
-import com.google.appengine.api.search.Document;
-import com.google.appengine.api.search.Field;
-import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.IndexSpec;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
-import com.google.appengine.api.search.ListRequest;
-import com.google.appengine.api.search.ListResponse;
-import com.google.appengine.api.search.Results;
-import com.google.appengine.api.search.ScoredDocument;
-import com.google.appengine.api.search.SearchService;
-import com.google.appengine.api.search.SearchServiceFactory;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.fail;
 
 /**
  * @author Matej Lazar
@@ -62,7 +59,7 @@ public class SearchTestCase extends AbstractClusteredTest {
         Document doc2 = newEmptyDocument();   // id-less document
 
         Index index = getTestIndex();
-        index.add(doc1, doc2);
+        index.put(doc1, doc2);
 
         waitForSync();
         List<Document> documents = getAllDocumentsIn(index);
@@ -77,7 +74,7 @@ public class SearchTestCase extends AbstractClusteredTest {
         Index index = getTestIndex();
 
         Document doc = newEmptyDocument();   // id-less document
-        index.add(doc);
+        index.put(doc);
 
         List<Document> documents = getAllDocumentsIn(index);
         assertEquals(3, documents.size());
@@ -101,14 +98,14 @@ public class SearchTestCase extends AbstractClusteredTest {
             .setRank(123)
             .addField(newField("bar").setText("ding"))
             .build();
-        index.add(doc1);
+        index.put(doc1);
 
         Document doc2 = Document.newBuilder()
             .setId(documentId)
             .setRank(456)
             .addField(newField("bar").setText("dong"))
             .build();
-        index.add(doc2);
+        index.put(doc2);
 
         waitForSync();
         List<Document> results = getAllDocumentsIn(index);
@@ -137,7 +134,7 @@ public class SearchTestCase extends AbstractClusteredTest {
                 .setRank(789)
                 .addField(newField("bar").setText("dooong"))
                 .build();
-        index.add(doc1);
+        index.put(doc1);
 
         waitForSync();
         results = getAllDocumentsIn(index);
@@ -154,8 +151,8 @@ public class SearchTestCase extends AbstractClusteredTest {
     @OperateOnDeployment("dep1")
     public void testSearchBySingleFieldOnDep1() throws Exception {
         Index index = getTestIndex();
-        index.add(newDocument("fooaaa", newField("foo").setText("aaa")));
-        index.add(newDocument("foobbb", newField("foo").setText("bbb")));
+        index.put(newDocument("fooaaa", newField("foo").setText("aaa")));
+        index.put(newDocument("foobbb", newField("foo").setText("bbb")));
 
         waitForSync();
         assertSearchYields(index, "foo:aaa", "fooaaa");
@@ -166,7 +163,7 @@ public class SearchTestCase extends AbstractClusteredTest {
     @OperateOnDeployment("dep2")
     public void testSearchBySingleFieldOnDep2() throws Exception {
         Index index = getTestIndex();
-        index.add(newDocument("fooccc", newField("foo").setText("ccc")));
+        index.put(newDocument("fooccc", newField("foo").setText("ccc")));
 
         waitForSync();
         assertSearchYields(index, "foo:bbb", "foobbb");
@@ -180,9 +177,9 @@ public class SearchTestCase extends AbstractClusteredTest {
     @OperateOnDeployment("dep1")
     public void testSearchDisjunctionOnDep1() {
         Index index = getTestIndex();
-        index.add(newDocument("fooaaa", newField("foo").setText("aaa"), newField("bar").setText("bbb")));
-        index.add(newDocument("foobbb", newField("foo").setText("bbb"), newField("bar").setText("ccc")));
-        index.add(newDocument("fooccc", newField("foo").setText("ccc"), newField("bar").setText("bbb")));
+        index.put(newDocument("fooaaa", newField("foo").setText("aaa"), newField("bar").setText("bbb")));
+        index.put(newDocument("foobbb", newField("foo").setText("bbb"), newField("bar").setText("ccc")));
+        index.put(newDocument("fooccc", newField("foo").setText("ccc"), newField("bar").setText("bbb")));
 
         waitForSync();
         assertSearchYields(index, "foo:aaa OR bar:bbb", "fooaaa", "fooccc");
@@ -195,7 +192,7 @@ public class SearchTestCase extends AbstractClusteredTest {
         Index index = getTestIndex();
         assertSearchYields(index, "foo:aaa OR bar:bbb", "fooaaa", "fooccc");
 
-        index.add(newDocument("fooddd", newField("foo").setText("ddd"), newField("bar").setText("bbb")));
+        index.put(newDocument("fooddd", newField("foo").setText("ddd"), newField("bar").setText("bbb")));
 
         waitForSync();
         assertSearchYields(index, "foo:aaa OR bar:bbb", "fooaaa", "fooccc", "fooddd");
@@ -206,10 +203,10 @@ public class SearchTestCase extends AbstractClusteredTest {
     @OperateOnDeployment("dep1")
     public void testSearchReturnsDocumentsInCorrectIndexOnDep1() {
         Index fooIndex = getIndex("fooIndex");
-        fooIndex.add(newDocument("foo", newField("foo").setText("aaa")));
+        fooIndex.put(newDocument("foo", newField("foo").setText("aaa")));
 
         Index barIndex = getIndex("barIndex");
-        barIndex.add(newDocument("bar", newField("foo").setText("aaa")));
+        barIndex.put(newDocument("bar", newField("foo").setText("aaa")));
 
         waitForSync();
         assertSearchYields(fooIndex, "foo:aaa", "foo");
@@ -225,7 +222,7 @@ public class SearchTestCase extends AbstractClusteredTest {
         Index barIndex = getIndex("barIndex");
         assertSearchYields(barIndex, "foo:aaa", "bar");
 
-        fooIndex.add(newDocument("foobbb", newField("foo").setText("aaa")));
+        fooIndex.put(newDocument("foobbb", newField("foo").setText("aaa")));
 
         waitForSync();
         assertSearchYields(fooIndex, "foo:aaa", "foo", "foobbb");
@@ -237,9 +234,9 @@ public class SearchTestCase extends AbstractClusteredTest {
     public void testSearchOnAllFieldsOnDep1() {
         clear();
         Index index = getTestIndex();
-        index.add(newDocument(newField("foo").setText("aaa"), newField("bar").setText("bbb")));
-        index.add(newDocument(newField("foo").setText("bbb"), newField("bar").setText("aaa")));
-        index.add(newDocument(newField("foo").setText("bbb"), newField("bar").setText("bbb")));
+        index.put(newDocument(newField("foo").setText("aaa"), newField("bar").setText("bbb")));
+        index.put(newDocument(newField("foo").setText("bbb"), newField("bar").setText("aaa")));
+        index.put(newDocument(newField("foo").setText("bbb"), newField("bar").setText("bbb")));
 
         waitForSync();
         assertEquals(2, index.search("aaa").getResults().size());
@@ -252,9 +249,9 @@ public class SearchTestCase extends AbstractClusteredTest {
         Index index = getTestIndex();
         assertEquals(2, index.search("aaa").getResults().size());
 
-        index.add(newDocument(newField("foo").setText("aaa"), newField("bar").setText("aaa")));
-        index.add(newDocument(newField("foo").setText("aaa"), newField("bar").setText("ccc")));
-        index.add(newDocument(newField("foo").setText("ccc"), newField("bar").setText("ccc")));
+        index.put(newDocument(newField("foo").setText("aaa"), newField("bar").setText("aaa")));
+        index.put(newDocument(newField("foo").setText("aaa"), newField("bar").setText("ccc")));
+        index.put(newDocument(newField("foo").setText("ccc"), newField("bar").setText("ccc")));
         waitForSync();
         assertEquals(4, index.search("aaa").getResults().size());
     }
@@ -264,10 +261,10 @@ public class SearchTestCase extends AbstractClusteredTest {
     @OperateOnDeployment("dep1")
     public void testComplexSearch1OnDep1() {
         Index index = getTestIndex();
-        index.add(newDocument("bm", newField("author").setText("Bob Marley")));
-        index.add(newDocument("rj", newField("author").setText("Rose Jones")));
-        index.add(newDocument("rt", newField("author").setText("Rose Trunk")));
-        index.add(newDocument("tj", newField("author").setText("Tom Jones")));
+        index.put(newDocument("bm", newField("author").setText("Bob Marley")));
+        index.put(newDocument("rj", newField("author").setText("Rose Jones")));
+        index.put(newDocument("rt", newField("author").setText("Rose Trunk")));
+        index.put(newDocument("tj", newField("author").setText("Tom Jones")));
 
         waitForSync();
         assertSearchYields(index, "author:(bob OR ((rose OR tom) AND jones))", "bm", "rj", "tj");
@@ -280,8 +277,8 @@ public class SearchTestCase extends AbstractClusteredTest {
         Index index = getTestIndex();
         assertSearchYields(index, "author:(bob OR ((rose OR tom) AND jones))", "bm", "rj", "tj");
 
-        index.add(newDocument("zm", newField("author").setText("Ziggy Marley")));
-        index.add(newDocument("bd", newField("author").setText("Bob Dylan")));
+        index.put(newDocument("zm", newField("author").setText("Ziggy Marley")));
+        index.put(newDocument("bd", newField("author").setText("Bob Dylan")));
 
         waitForSync();
         assertSearchYields(index, "author:(bob OR ((rose OR tom) AND jones))", "bm", "rj", "tj", "bd");
@@ -329,16 +326,12 @@ public class SearchTestCase extends AbstractClusteredTest {
     }
 
     private Index getIndex(String name) {
-        return getIndex(name, Consistency.GLOBAL);
-    }
-
-    private Index getIndex(String name, Consistency consistency) {
-        IndexSpec indexSpec = getIndexSpec(name, consistency);
+        IndexSpec indexSpec = getIndexSpec(name);
         return service.getIndex(indexSpec);
     }
 
-    private IndexSpec getIndexSpec(String name, Consistency consistency) {
-        return IndexSpec.newBuilder().setName(name).setConsistency(consistency).build();
+    private IndexSpec getIndexSpec(String name) {
+        return IndexSpec.newBuilder().setName(name).build();
     }
 
     private Field.Builder newField(String fieldName) {
@@ -365,19 +358,19 @@ public class SearchTestCase extends AbstractClusteredTest {
     }
 
     private List<Document> getAllDocumentsIn(Index index) {
-        return index.listDocuments(defaultListRequest()).getResults();
+        return index.getRange(defaultGetRequest()).getResults();
     }
 
-    protected ListRequest defaultListRequest() {
-        return ListRequest.newBuilder().build();
+    protected GetRequest defaultGetRequest() {
+        return GetRequest.newBuilder().build();
     }
 
     private void clear() {
-        ListIndexesResponse response = service.listIndexes(ListIndexesRequest.newBuilder().build());
-        for (Index index : response.getIndexes()) {
-            ListResponse<Document> documents = index.listDocuments(ListRequest.newBuilder().build());
+        GetResponse<Index> response = service.getIndexes(GetIndexesRequest.newBuilder());
+        for (Index index : response.getResults()) {
+            GetResponse<Document> documents = index.getRange(GetRequest.newBuilder());
             for (Document document : documents.getResults()) {
-                index.remove(document.getId());
+                index.delete(document.getId());
             }
         }
     }

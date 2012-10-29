@@ -60,12 +60,8 @@ class GetIndexesCollator implements Collator<FullIndexSpec, String, GetResponse<
         }
 
         List<Index> indexes = new ArrayList<Index>();
-        for (FullIndexSpec fullIndexSpec : list) {
-            CapedwarfSearchIndex index = new CapedwarfSearchIndex(
-                fullIndexSpec.getName(),
-                fullIndexSpec.getNamespace(),
-                fullIndexSpec.getConsistency(),
-                cache);
+        for (FullIndexSpec fis : list) {
+            CapedwarfSearchIndex index = new CapedwarfSearchIndex(fis.getName(), fis.getNamespace(), cache);
             indexes.add(index);
         }
 

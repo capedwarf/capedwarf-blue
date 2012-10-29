@@ -23,20 +23,18 @@
 package org.jboss.test.capedwarf.search;
 
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-import com.google.appengine.api.search.AddResponse;
-import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.GeoPoint;
+import com.google.appengine.api.search.GetRequest;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
-import com.google.appengine.api.search.ListRequest;
+import com.google.appengine.api.search.PutResponse;
 import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
 import org.junit.Test;
@@ -66,12 +64,6 @@ public class BasicTestCase extends AbstractTest {
     }
 
     @Test
-    public void testIndexHasRequestedConsistency() {
-        assertEquals(Consistency.GLOBAL, getIndex("foo").getConsistency());
-        assertEquals(Consistency.PER_DOCUMENT, getIndex("bar", Consistency.PER_DOCUMENT).getConsistency());
-    }
-
-    @Test
     public void testIndexHasRequestedName() {
         IndexSpec indexSpec = IndexSpec.newBuilder().setName("bar").build();
         assertEquals("bar", service.getIndex(indexSpec).getName());
@@ -82,7 +74,7 @@ public class BasicTestCase extends AbstractTest {
         Document doc = newEmptyDocument("foo");
 
         Index index = getTestIndex();
-        index.add(doc);
+        index.put(doc);
 
         List<Document> documents = getAllDocumentsIn(index);
         assertEquals(1, documents.size());
@@ -94,7 +86,7 @@ public class BasicTestCase extends AbstractTest {
         Document doc = newEmptyDocument();   // id-less document
 
         Index index = getTestIndex();
-        AddResponse addResponse = index.add(doc);
+        PutResponse addResponse = index.put(doc);
 
         assertNull(doc.getId()); // id must stay null
 
@@ -110,7 +102,7 @@ public class BasicTestCase extends AbstractTest {
         Document doc2 = newEmptyDocument();   // id-less document
 
         Index index = getTestIndex();
-        index.add(doc1, doc2);
+        index.put(doc1, doc2);
 
         List<Document> documents = getAllDocumentsIn(index);
         assertEquals(2, documents.size());
@@ -128,14 +120,14 @@ public class BasicTestCase extends AbstractTest {
             .setRank(123)
             .addField(newField("bar").setText("ding"))
             .build();
-        index.add(doc1);
+        index.put(doc1);
 
         Document doc2 = Document.newBuilder()
             .setId(documentId)
             .setRank(456)
             .addField(newField("bar").setText("dong"))
             .build();
-        index.add(doc2);
+        index.put(doc2);
 
         List<Document> results = getAllDocumentsIn(index);
         assertEquals(1, results.size());
@@ -151,7 +143,7 @@ public class BasicTestCase extends AbstractTest {
         Index fooIndex = getIndex("fooIndex");
         Index barIndex = getIndex("barIndex");
 
-        fooIndex.add(newEmptyDocument("foo"));
+        fooIndex.put(newEmptyDocument("foo"));
 
         assertEquals(1, numberOfDocumentsIn(fooIndex));
         assertEquals(0, numberOfDocumentsIn(barIndex));
@@ -162,10 +154,10 @@ public class BasicTestCase extends AbstractTest {
         SearchService fooService = SearchServiceFactory.getSearchService(FOO_NAMESPACE);
         SearchService barService = SearchServiceFactory.getSearchService(BAR_NAMESPACE);
 
-        Index fooNamespaceIndex = fooService.getIndex(getIndexSpec("index", Consistency.GLOBAL));
-        Index barNamespaceIndex = barService.getIndex(getIndexSpec("index", Consistency.GLOBAL));
+        Index fooNamespaceIndex = fooService.getIndex(getIndexSpec("index"));
+        Index barNamespaceIndex = barService.getIndex(getIndexSpec("index"));
 
-        fooNamespaceIndex.add(newEmptyDocument("foo"));
+        fooNamespaceIndex.put(newEmptyDocument("foo"));
 
         assertEquals(1, numberOfDocumentsIn(fooNamespaceIndex));
         assertEquals(0, numberOfDocumentsIn(barNamespaceIndex));
@@ -225,12 +217,12 @@ public class BasicTestCase extends AbstractTest {
 
     @Test
     public void testDocumentHandlesDateFields() {
-        Date today = Field.truncate(new Date(), Calendar.DAY_OF_MONTH);
+        Date today = new Date();
         Document doc = newDocument(newField("dateField").setDate(today));
         Document retrievedDoc = addAndRetrieve(doc);
         Field field = retrievedDoc.getOnlyField("dateField");
         assertEquals(Field.FieldType.DATE, field.getType());
-        assertEquals(Field.truncate(today, Calendar.DAY_OF_MONTH), retrievedDoc.getOnlyField("dateField").getDate());
+        assertEquals(today, retrievedDoc.getOnlyField("dateField").getDate());
     }
 
     @Test
@@ -269,7 +261,7 @@ public class BasicTestCase extends AbstractTest {
         Document baz = newEmptyDocument("baz");
 
         Index index = getTestIndex();
-        index.add(foo, bar, baz);
+        index.put(foo, bar, baz);
 
         assertEquals(
             new HashSet<Document>(Arrays.asList(foo, bar, baz)),
@@ -284,7 +276,7 @@ public class BasicTestCase extends AbstractTest {
         Document baz = newEmptyDocument("baz");
 
         Index index = getTestIndex();
-        index.add(Arrays.asList(foo, bar, baz));
+        index.put(Arrays.asList(foo, bar, baz));
 
         List<Document> results = getAllDocumentsIn(index);
         assertEquals(
@@ -297,40 +289,40 @@ public class BasicTestCase extends AbstractTest {
         Index index = getTestIndex();
         createEmptyDocuments(10, index);
 
-        ListRequest listRequest = ListRequest.newBuilder().setLimit(5).build();
-        assertEquals(5, index.listDocuments(listRequest).getResults().size());
+        GetRequest listRequest = GetRequest.newBuilder().setLimit(5).build();
+        assertEquals(5, index.getRange(listRequest).getResults().size());
     }
 
     @Test
     public void testListDocumentsWithStartId() {
         Index index = getTestIndex();
-        index.add(newEmptyDocument("aaa"));
-        index.add(newEmptyDocument("bbb"));
-        index.add(newEmptyDocument("ccc"));
-        index.add(newEmptyDocument("ddd"));
+        index.put(newEmptyDocument("aaa"));
+        index.put(newEmptyDocument("bbb"));
+        index.put(newEmptyDocument("ccc"));
+        index.put(newEmptyDocument("ddd"));
 
-        ListRequest listRequest1 = ListRequest.newBuilder().setStartId("bbb").setIncludeStart(true).build();
-        assertListContainsDocumentsWithIds(Arrays.asList("bbb", "ccc", "ddd"), index.listDocuments(listRequest1).getResults());
+        GetRequest listRequest1 = GetRequest.newBuilder().setStartId("bbb").setIncludeStart(true).build();
+        assertListContainsDocumentsWithIds(Arrays.asList("bbb", "ccc", "ddd"), index.getRange(listRequest1).getResults());
 
-        ListRequest listRequest2 = ListRequest.newBuilder().setStartId("bbb").setIncludeStart(false).build();
-        assertListContainsDocumentsWithIds(Arrays.asList("ccc", "ddd"), index.listDocuments(listRequest2).getResults());
+        GetRequest listRequest2 = GetRequest.newBuilder().setStartId("bbb").setIncludeStart(false).build();
+        assertListContainsDocumentsWithIds(Arrays.asList("ccc", "ddd"), index.getRange(listRequest2).getResults());
     }
 
     @Test
     public void testRemoveDocument() {
         Index index = getTestIndex();
-        index.add(newEmptyDocument("foo"));
-        index.add(newEmptyDocument("bar"));
-        index.remove("foo", "bar");
+        index.put(newEmptyDocument("foo"));
+        index.put(newEmptyDocument("bar"));
+        index.delete("foo", "bar");
         assertEquals(0, numberOfDocumentsIn(index));
     }
 
     @Test
     public void testRemoveDocumentIterable() {
         Index index = getTestIndex();
-        index.add(newEmptyDocument("foo"));
-        index.add(newEmptyDocument("bar"));
-        index.remove(Arrays.asList("foo", "bar"));
+        index.put(newEmptyDocument("foo"));
+        index.put(newEmptyDocument("bar"));
+        index.delete(Arrays.asList("foo", "bar"));
         assertEquals(0, numberOfDocumentsIn(index));
     }
 

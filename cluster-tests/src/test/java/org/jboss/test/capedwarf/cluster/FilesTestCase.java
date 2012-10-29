@@ -11,6 +11,7 @@ import com.google.appengine.api.files.FileServiceFactory;
 import com.google.appengine.api.files.FileWriteChannel;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -47,8 +48,11 @@ public class FilesTestCase extends AbstractClusteredTest {
 
     @Test @OperateOnDeployment("dep2") @InSequence(20)
     public void testReadFromNodeB() throws Exception {
+        Thread.sleep(3000L);
+
         MemcacheService ms = MemcacheServiceFactory.getMemcacheService();
         String string = (String) ms.get(FilesTestCase.class.getSimpleName());
+        Assert.assertNotNull(string);
         BlobKey blobKey = new BlobKey(string);
 
         AppEngineFile file = service.getBlobFile(blobKey);

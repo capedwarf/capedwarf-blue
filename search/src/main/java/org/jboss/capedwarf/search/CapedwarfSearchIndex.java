@@ -68,15 +68,13 @@ public class CapedwarfSearchIndex implements Index {
 
     private String name;
     private String namespace;
-    private Consistency consistency;
 
     private Cache<CacheKey, CacheValue> cache;
     private SearchManager searchManager;
 
-    public CapedwarfSearchIndex(String name, String namespace, Consistency consistency, Cache<CacheKey, CacheValue> cache) {
+    public CapedwarfSearchIndex(String name, String namespace, Cache<CacheKey, CacheValue> cache) {
         this.name = name;
         this.namespace = namespace;
-        this.consistency = consistency;
         this.cache = cache;
         this.searchManager = Search.getSearchManager(cache);
     }
@@ -90,7 +88,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public Consistency getConsistency() {
-        return consistency;
+        return Consistency.PER_DOCUMENT;
     }
 
     public Future<Void> removeAsync(String... documentIds) {
@@ -432,7 +430,6 @@ public class CapedwarfSearchIndex implements Index {
 
         CapedwarfSearchIndex that = (CapedwarfSearchIndex) o;
 
-        if (consistency != that.consistency) return false;
         if (!name.equals(that.name)) return false;
         if (namespace != null ? !namespace.equals(that.namespace) : that.namespace != null) return false;
 
@@ -443,7 +440,6 @@ public class CapedwarfSearchIndex implements Index {
     public int hashCode() {
         int result = name.hashCode();
         result = 31 * result + (namespace != null ? namespace.hashCode() : 0);
-        result = 31 * result + consistency.hashCode();
         return result;
     }
 
@@ -452,7 +448,6 @@ public class CapedwarfSearchIndex implements Index {
         return "CapedwarfSearchIndex{" +
             "name='" + name + '\'' +
             ", namespace='" + namespace + '\'' +
-            ", consistency=" + consistency +
             '}';
     }
 }

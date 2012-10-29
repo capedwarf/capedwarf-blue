@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.GeoPoint;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.PutResponse;
@@ -194,6 +193,7 @@ public class SearchTestCase extends AbstractTest {
 
     private Date createDate(int year, int month, int day) {
         Calendar cal = Calendar.getInstance();
+        //noinspection MagicConstant
         cal.set(year, month - 1, day, 0, 0, 0);
         cal.clear(Calendar.MILLISECOND);
         return cal.getTime();
@@ -255,10 +255,10 @@ public class SearchTestCase extends AbstractTest {
 
     @Test
     public void testSearchReturnsDocumentsInCorrectNamespace() {
-        Index fooIndex = SearchServiceFactory.getSearchService(FOO_NAMESPACE).getIndex(getIndexSpec("index", Consistency.GLOBAL));
+        Index fooIndex = SearchServiceFactory.getSearchService(FOO_NAMESPACE).getIndex(getIndexSpec("index"));
         fooIndex.put(newDocument("foo", newField("foo").setText("aaa")));
 
-        Index barIndex = SearchServiceFactory.getSearchService(BAR_NAMESPACE).getIndex(getIndexSpec("index", Consistency.GLOBAL));
+        Index barIndex = SearchServiceFactory.getSearchService(BAR_NAMESPACE).getIndex(getIndexSpec("index"));
         barIndex.put(newDocument("bar", newField("foo").setText("aaa")));
 
         assertSearchYields(fooIndex, "foo:aaa", "foo");

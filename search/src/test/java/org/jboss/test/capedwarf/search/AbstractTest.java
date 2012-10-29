@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.GetIndexesRequest;
@@ -91,9 +90,8 @@ public abstract class AbstractTest extends BaseTest {
         clear();
     }
 
-
     protected static void assertDocumentContainsField(Document doc, String fieldName, Field.FieldType fieldType, Object fieldValue) {
-        for (Field field : doc.getField(fieldName)) {
+        for (Field field : doc.getFields(fieldName)) {
             if (field.getType().equals(fieldType)) {
                 Object storedValue = getFieldValue(field, fieldType);
                 if (storedValue.equals(fieldValue)) {
@@ -159,22 +157,18 @@ public abstract class AbstractTest extends BaseTest {
         return getIndex("testIndex");
     }
 
-    protected Index getIndex(String name) {
-        return getIndex(name, Consistency.GLOBAL);
-    }
-
     protected Index getIndexInNamespace(String name, String namespace) {
-        IndexSpec indexSpec = getIndexSpec(name, Consistency.GLOBAL);
+        IndexSpec indexSpec = getIndexSpec(name);
         return SearchServiceFactory.getSearchService(namespace).getIndex(indexSpec);
     }
 
-    protected Index getIndex(String name, Consistency consistency) {
-        IndexSpec indexSpec = getIndexSpec(name, consistency);
+    protected Index getIndex(String name) {
+        IndexSpec indexSpec = getIndexSpec(name);
         return service.getIndex(indexSpec);
     }
 
-    protected IndexSpec getIndexSpec(String name, Consistency consistency) {
-        return IndexSpec.newBuilder().setName(name).setConsistency(consistency).build();
+    protected IndexSpec getIndexSpec(String name) {
+        return IndexSpec.newBuilder().setName(name).build();
     }
 
     protected GetRequest defaultListRequest() {

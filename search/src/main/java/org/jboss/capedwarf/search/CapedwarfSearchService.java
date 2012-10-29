@@ -67,7 +67,7 @@ public class CapedwarfSearchService implements SearchService {
     }
 
     public Index getIndex(IndexSpec indexSpec) {
-        return new CapedwarfSearchIndex(indexSpec.getName(), resolveNamespace(), indexSpec.getConsistency(), cache);
+        return new CapedwarfSearchIndex(indexSpec.getName(), resolveNamespace(), cache);
     }
 
     public Index getIndex(IndexSpec.Builder builder) {
