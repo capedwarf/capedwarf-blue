@@ -22,12 +22,13 @@
 
 package org.jboss.capedwarf.prospectivesearch;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import com.google.appengine.api.prospectivesearch.Subscription;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import org.infinispan.distexec.mapreduce.Collator;
 
 /**
@@ -35,17 +36,18 @@ import org.infinispan.distexec.mapreduce.Collator;
 * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
 */
 class MatchCollator implements Collator<String, List<SerializableSubscription>, List<Subscription>> {
+    private static final Function<SerializableSubscription, Subscription> FN = new Function<SerializableSubscription, Subscription>() {
+        public Subscription apply(SerializableSubscription input) {
+            return input.getSubscription();
+        }
+    };
 
     public List<Subscription> collate(Map<String, List<SerializableSubscription>> reducedResults) {
         List<SerializableSubscription> subscriptions = reducedResults.get(MatchMapper.KEY);
         if (subscriptions == null || subscriptions.isEmpty()) {
             return Collections.emptyList();
         } else {
-            final List<Subscription> results = new ArrayList<Subscription>();
-            for (SerializableSubscription ss : subscriptions) {
-                results.add(ss.getSubscription());
-            }
-            return results;
+            return Lists.transform(subscriptions, FN);
         }
     }
 

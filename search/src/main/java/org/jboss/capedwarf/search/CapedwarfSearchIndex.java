@@ -48,13 +48,14 @@ import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.Schema;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.StatusCode;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.RangeTerminationExcludable;
 import org.infinispan.Cache;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 /**
@@ -63,6 +64,11 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
  */
 @SuppressWarnings("deprecation")
 public class CapedwarfSearchIndex implements Index {
+    private final static Function<Document.Builder, Document> FN = new Function<Document.Builder, Document>() {
+        public Document apply(Document.Builder input) {
+            return input.build();
+        }
+    };
 
     private final Logger log = Logger.getLogger(getClass().getName());
 
@@ -162,22 +168,8 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public AddResponse add(Iterable<Document> documents) {
-        List<Document> documentList = new ArrayList<Document>();
-        List<String> documentIds = new ArrayList<String>();
-        for (Document document : documents) {
-            Document documentWithId = document;
-            if (document.getId() == null) {
-                documentWithId = createCopyWithId(document, generateId(document));
-            }
-            cache.put(getCacheKey(documentWithId.getId()), getCacheValue(documentWithId));
-            documentList.add(document);
-            documentIds.add(documentWithId.getId());
-        }
-
-        return ReflectionUtils.newInstance(
-                AddResponse.class,
-                new Class[]{List.class, List.class},
-                new Object[]{documentList, documentIds});
+        final PutResponse response = put(documents);
+        return new AddResponse(response.getResults(), response.getIds()){};
     }
 
     private String generateId(Document document) {
@@ -416,11 +408,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     protected static List<Document> toDocuments(Document.Builder... builders) {
-        final List<Document> documents = new ArrayList<Document>();
-        for (Document.Builder builder : builders) {
-            documents.add(builder.build());
-        }
-        return documents;
+        return Lists.transform(Lists.newArrayList(builders), FN);
     }
 
     @Override
