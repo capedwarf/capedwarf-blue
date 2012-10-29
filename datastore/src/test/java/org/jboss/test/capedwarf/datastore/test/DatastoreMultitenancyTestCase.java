@@ -30,19 +30,20 @@ import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.datastore.query.GAEKeyTransformer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class DatastoreMultitenancyTestCase extends AbstractTest {
+public class DatastoreMultitenancyTestCase extends SimpleTest {
 
     private String originalNamespace;
 

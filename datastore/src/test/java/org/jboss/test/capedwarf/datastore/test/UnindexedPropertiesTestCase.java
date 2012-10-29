@@ -22,6 +22,11 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
@@ -31,11 +36,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -43,7 +43,7 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-public class UnindexedPropertiesTestCase extends AbstractTest {
+public class UnindexedPropertiesTestCase extends SimpleTest {
 
     private static final Field PROPERTY_MAP_FIELD;
     static {

@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-public class PersistingTestCase extends AbstractTest {
+public class PersistingTestCase extends SimpleTest {
 
     @Test
     public void putStoresEntity() throws Exception {

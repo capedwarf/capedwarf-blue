@@ -22,34 +22,18 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
-import com.google.appengine.api.datastore.EmbeddedEntity;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
-import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 
 /**
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@RunWith(Arquillian.class)
-public class EmbeddedEntityTestCase extends SimpleTest {
+public class SimpleTest extends AbstractTest {
 
-    @Test
-    public void test() throws Exception {
-
-        EmbeddedEntity embedded = new EmbeddedEntity();
-        embedded.setProperty("string", "foo");
-
-        Entity entity = createTestEntity();
-        entity.setProperty("embedded", embedded);
-        Key key = service.put(entity);
-
-        Entity storedEntity = service.get(key);
-        EmbeddedEntity storedEmbedded = (EmbeddedEntity) storedEntity.getProperty("embedded");
-
-        assertEquals(embedded, storedEmbedded);
+    @Deployment
+    public static WebArchive getDeployment() {
+        return getDefaultDeployment().addClass(SimpleTest.class);
     }
+
 }

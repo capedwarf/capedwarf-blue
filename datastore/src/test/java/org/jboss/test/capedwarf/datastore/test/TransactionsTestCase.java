@@ -50,7 +50,7 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-public class TransactionsTestCase extends AbstractTest {
+public class TransactionsTestCase extends SimpleTest {
 
     @Test
     public void testBasicTxPut() throws Exception {

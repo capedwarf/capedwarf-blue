@@ -63,8 +63,7 @@ public abstract class QueryTest extends AbstractTest {
 
     @Deployment
     public static WebArchive getDeployment() {
-        return AbstractTest.getDeployment()
-            .addClass(QueryTest.class);
+        return getDefaultDeployment().addClass(QueryTest.class);
     }
 
     protected static Date createDate(int year, int month, int day) {

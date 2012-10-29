@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-public class AllocateIdsTestCase extends AbstractTest {
+public class AllocateIdsTestCase extends SimpleTest {
 
     @Test
     public void testAllocateId() throws Exception {
