@@ -32,6 +32,7 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -43,7 +44,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
-import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static org.junit.Assert.fail;
 
 /**
@@ -69,6 +69,10 @@ public class AbstractTest extends BaseTest {
         for (Entity entity : entities) {
             service.delete(entity.getKey());
         }
+    }
+
+    protected FetchOptions withDefaults() {
+        return FetchOptions.Builder.withDefaults();
     }
 
     protected Collection<Key> extractKeys(Collection<Entity> entities) {

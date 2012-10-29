@@ -41,7 +41,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 
-import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN_OR_EQUAL;
@@ -68,13 +67,14 @@ public abstract class QueryTest extends AbstractTest {
 
     protected static Date createDate(int year, int month, int day) {
         Calendar cal = Calendar.getInstance();
+        //noinspection MagicConstant
         cal.set(year, month + 1, day);
         return cal.getTime();
     }
 
     protected void assertSingleResult(Entity expectedEntity, Query query) {
         PreparedQuery preparedQuery = service.prepare(query);
-        assertEquals("number of results", 1, preparedQuery.countEntities());
+        assertEquals("number of results", 1, preparedQuery.countEntities(withDefaults()));
 
         Entity entityFromQuery = preparedQuery.asSingleEntity();
         assertEquals(expectedEntity, entityFromQuery);
@@ -82,7 +82,7 @@ public abstract class QueryTest extends AbstractTest {
 
     protected void assertNoResults(Query query) {
         PreparedQuery preparedQuery = service.prepare(query);
-        Assert.assertEquals("number of results", 0, preparedQuery.countEntities());
+        Assert.assertEquals("number of results", 0, preparedQuery.countEntities(withDefaults()));
     }
 
     protected TestEntityBuilder buildTestEntity() {

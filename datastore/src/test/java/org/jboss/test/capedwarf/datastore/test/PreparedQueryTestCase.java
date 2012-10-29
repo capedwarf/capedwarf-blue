@@ -38,7 +38,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -70,7 +69,7 @@ public class PreparedQueryTestCase extends QueryTest {
 
     @Test
     public void testCountEntities() throws Exception {
-        assertEquals("number of results", 1, preparedQuery.countEntities());
+        assertEquals("number of results", 1, preparedQuery.countEntities(withDefaults()));
     }
 
     @Test
