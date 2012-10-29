@@ -17,6 +17,7 @@ import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
+import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -108,6 +109,7 @@ public class SearchTestCase extends AbstractClusteredTest {
         index.put(doc2);
 
         waitForSync();
+
         List<Document> results = getAllDocumentsIn(index);
         assertEquals(1, results.size());
 
@@ -121,10 +123,14 @@ public class SearchTestCase extends AbstractClusteredTest {
     @Test
     @OperateOnDeployment("dep2")
     public void testAddOverwritesPreviousDocumentWithSameIdOnDep2() {
+        waitForSync();
+
         String documentId = "foo";
 
         Index index = getTestIndex();
         List<Document> results = getAllDocumentsIn(index);
+        Assert.assertEquals(1, results.size());
+
         Document retrievedDoc = results.get(0);
         assertEquals(456, retrievedDoc.getRank());
         assertEquals("dong", retrievedDoc.getOnlyField("bar").getText());
@@ -137,6 +143,7 @@ public class SearchTestCase extends AbstractClusteredTest {
         index.put(doc1);
 
         waitForSync();
+
         results = getAllDocumentsIn(index);
         assertEquals(1, results.size());
 
@@ -155,6 +162,7 @@ public class SearchTestCase extends AbstractClusteredTest {
         index.put(newDocument("foobbb", newField("foo").setText("bbb")));
 
         waitForSync();
+
         assertSearchYields(index, "foo:aaa", "fooaaa");
     }
 
@@ -302,12 +310,12 @@ public class SearchTestCase extends AbstractClusteredTest {
     private void assertSearchYields(Index index, String queryString, String... documentIds) {
         Results<ScoredDocument> results = index.search(queryString);
         Collection<ScoredDocument> scoredDocuments = results.getResults();
-        System.out.println("-------------------------------");
-        System.out.println("queryString = " + queryString);
-        System.out.println("scoredDocuments = " + scoredDocuments);
-        for (ScoredDocument scoredDocument : scoredDocuments) {
-            System.out.println("scoredDocument = " + scoredDocument);
-        }
+//        System.out.println("-------------------------------");
+//        System.out.println("queryString = " + queryString);
+//        System.out.println("scoredDocuments = " + scoredDocuments);
+//        for (ScoredDocument scoredDocument : scoredDocuments) {
+//            System.out.println("scoredDocument = " + scoredDocument);
+//        }
         assertEquals("number of found documents", documentIds.length, results.getNumberFound());
         assertEquals("number of returned documents", documentIds.length, results.getNumberReturned());
         assertEquals("actual number of ScoredDcuments", documentIds.length, scoredDocuments.size());
@@ -384,7 +392,7 @@ public class SearchTestCase extends AbstractClusteredTest {
     }
 
     private void waitForSync() {
-        sleep(2000);
+        sleep(3000);
     }
 
 
