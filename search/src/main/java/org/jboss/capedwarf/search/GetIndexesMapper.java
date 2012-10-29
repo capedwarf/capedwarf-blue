@@ -22,7 +22,6 @@
 
 package org.jboss.capedwarf.search;
 
-import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.GetIndexesRequest;
 import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distexec.mapreduce.Mapper;
@@ -51,7 +50,7 @@ class GetIndexesMapper implements Mapper<CacheKey, CacheValue, FullIndexSpec, St
 
     public void map(CacheKey key, CacheValue value, Collector<FullIndexSpec, String> collector) {
         if (startIndexNameMatches(key) && indexNamePrefixMatches(key) && namespaceMatches(key)) {
-            FullIndexSpec fullIndexSpec = new FullIndexSpec(key.getNamespace(), key.getIndexName(), Consistency.GLOBAL);
+            FullIndexSpec fullIndexSpec = new FullIndexSpec(key.getNamespace(), key.getIndexName());
             collector.emit(fullIndexSpec, "");
         }
     }

@@ -22,8 +22,6 @@
 
 package org.jboss.capedwarf.search;
 
-import com.google.appengine.api.search.Consistency;
-
 import java.io.Serializable;
 
 /**
@@ -32,12 +30,10 @@ import java.io.Serializable;
 public class FullIndexSpec implements Serializable, Comparable<FullIndexSpec> {
     private String namespace;
     private String name;
-    private Consistency consistency;
 
-    FullIndexSpec(String namespace, String name, Consistency consistency) {
+    FullIndexSpec(String namespace, String name) {
         this.namespace = namespace;
         this.name = name;
-        this.consistency = consistency;
     }
 
     public String getNamespace() {
@@ -48,22 +44,13 @@ public class FullIndexSpec implements Serializable, Comparable<FullIndexSpec> {
         return name;
     }
 
-    public Consistency getConsistency() {
-        return consistency;
-    }
-
     public int compareTo(FullIndexSpec o) {
         int compare = name.compareTo(o.name);
         if (compare != 0) {
             return compare;
         }
 
-        compare = namespace.compareTo(o.namespace);
-        if (compare != 0) {
-            return compare;
-        }
-
-        return consistency.compareTo(o.consistency);
+        return namespace.compareTo(o.namespace);
     }
 
     @Override
@@ -73,7 +60,6 @@ public class FullIndexSpec implements Serializable, Comparable<FullIndexSpec> {
 
         FullIndexSpec that = (FullIndexSpec) o;
 
-        if (consistency != that.consistency) return false;
         if (!name.equals(that.name)) return false;
         if (namespace != null ? !namespace.equals(that.namespace) : that.namespace != null) return false;
 
@@ -84,7 +70,6 @@ public class FullIndexSpec implements Serializable, Comparable<FullIndexSpec> {
     public int hashCode() {
         int result = namespace != null ? namespace.hashCode() : 0;
         result = 31 * result + name.hashCode();
-        result = 31 * result + consistency.hashCode();
         return result;
     }
 }
