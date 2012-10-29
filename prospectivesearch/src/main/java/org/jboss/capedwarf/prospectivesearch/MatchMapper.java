@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.prospectivesearch.Subscription;
 import org.apache.lucene.analysis.miscellaneous.PatternAnalyzer;
 import org.apache.lucene.index.memory.MemoryIndex;
 import org.infinispan.distexec.mapreduce.Collector;
@@ -36,8 +35,9 @@ import org.infinispan.distexec.mapreduce.Mapper;
 
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+* @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
 */
-class MatchMapper implements Mapper<TopicAndSubId, SubscriptionHolder, String, List<Subscription>> {
+class MatchMapper implements Mapper<TopicAndSubId, SubscriptionHolder, String, List<SerializableSubscription>> {
     private final String topic;
 
     public static final String KEY = "result";
@@ -62,11 +62,11 @@ class MatchMapper implements Mapper<TopicAndSubId, SubscriptionHolder, String, L
         return memoryIndex;
     }
 
-    public void map(TopicAndSubId key, SubscriptionHolder value, Collector<String, List<Subscription>> collector) {
+    public void map(TopicAndSubId key, SubscriptionHolder value, Collector<String, List<SerializableSubscription>> collector) {
         if (key.getTopic().equals(topic)) {
             float score = getMemoryIndex().search(value.getLuceneQuery());
             if (score > 0.0f) {
-                collector.emit(KEY, Collections.singletonList(value.toSubscription()));
+                collector.emit(KEY, Collections.singletonList(new SerializableSubscription(value.toSubscription())));
             }
         }
     }

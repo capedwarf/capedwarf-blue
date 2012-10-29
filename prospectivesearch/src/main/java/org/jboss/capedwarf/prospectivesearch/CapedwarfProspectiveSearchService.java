@@ -161,7 +161,7 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
         MatchReducer reducer = new MatchReducer();
         MatchCollator collator = new MatchCollator();
 
-        MapReduceTask<TopicAndSubId, SubscriptionHolder, String, List<Subscription>> task = new MapReduceTask<TopicAndSubId, SubscriptionHolder, String, List<Subscription>>(cache);
+        MapReduceTask<TopicAndSubId, SubscriptionHolder, String, List<SerializableSubscription>> task = new MapReduceTask<TopicAndSubId, SubscriptionHolder, String, List<SerializableSubscription>>(cache);
         return task.mappedWith(mapper).reducedWith(reducer).execute(collator);
     }
 

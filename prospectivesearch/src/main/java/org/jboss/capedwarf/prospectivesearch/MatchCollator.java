@@ -22,20 +22,31 @@
 
 package org.jboss.capedwarf.prospectivesearch;
 
-import com.google.appengine.api.prospectivesearch.Subscription;
-import org.infinispan.distexec.mapreduce.Collator;
-
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.google.appengine.api.prospectivesearch.Subscription;
+import org.infinispan.distexec.mapreduce.Collator;
+
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+* @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
 */
-class MatchCollator implements Collator<String, List<Subscription>, List<Subscription>> {
-    public List<Subscription> collate(Map<String, List<Subscription>> reducedResults) {
-        List<Subscription> subscriptions = reducedResults.get(MatchMapper.KEY);
-        return subscriptions == null ? Collections.<Subscription>emptyList() : subscriptions;
+class MatchCollator implements Collator<String, List<SerializableSubscription>, List<Subscription>> {
+
+    public List<Subscription> collate(Map<String, List<SerializableSubscription>> reducedResults) {
+        List<SerializableSubscription> subscriptions = reducedResults.get(MatchMapper.KEY);
+        if (subscriptions == null || subscriptions.isEmpty()) {
+            return Collections.emptyList();
+        } else {
+            final List<Subscription> results = new ArrayList<Subscription>();
+            for (SerializableSubscription ss : subscriptions) {
+                results.add(ss.getSubscription());
+            }
+            return results;
+        }
     }
 
 }

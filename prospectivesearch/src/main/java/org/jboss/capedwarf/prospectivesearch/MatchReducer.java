@@ -26,18 +26,18 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.appengine.api.prospectivesearch.Subscription;
 import org.infinispan.distexec.mapreduce.Reducer;
 
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+* @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
 */
-class MatchReducer implements Reducer<String, List<Subscription>> {
+class MatchReducer implements Reducer<String, List<SerializableSubscription>> {
 
-    public List<Subscription> reduce(String reducedKey, Iterator<List<Subscription>> iter) {
-        List<Subscription> list = new ArrayList<Subscription>();
+    public List<SerializableSubscription> reduce(String reducedKey, Iterator<List<SerializableSubscription>> iter) {
+        List<SerializableSubscription> list = new ArrayList<SerializableSubscription>();
         while (iter.hasNext()) {
-            List<Subscription> topics = iter.next();
+            List<SerializableSubscription> topics = iter.next();
             list.addAll(topics);
         }
         return list;
