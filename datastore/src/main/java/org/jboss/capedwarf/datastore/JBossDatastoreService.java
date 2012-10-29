@@ -283,7 +283,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public Transaction beginTransaction(TransactionOptions options) {
-        return JBossTransaction.newTransaction();
+        return JBossTransaction.newTransaction(options);
     }
 
     public Map<Index, Index.IndexState> getIndexes() {

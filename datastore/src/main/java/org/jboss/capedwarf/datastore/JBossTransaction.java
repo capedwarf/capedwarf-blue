@@ -38,6 +38,7 @@ import javax.transaction.TransactionManager;
 
 import com.google.appengine.api.datastore.DatastoreFailureException;
 import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.datastore.TransactionOptions;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.common.tx.TxUtils;
@@ -54,12 +55,14 @@ public class JBossTransaction implements Transaction {
     private final static TransactionManager tm = TxUtils.getTransactionManager();
     private final static ThreadLocal<Stack<JBossTransaction>> current = new ThreadLocal<Stack<JBossTransaction>>();
 
+    private final TransactionOptions options;
     private javax.transaction.Transaction transaction;
 
-    private JBossTransaction() {
+    private JBossTransaction(TransactionOptions options) {
+        this.options = options;
     }
 
-    static Transaction newTransaction() {
+    static Transaction newTransaction(TransactionOptions options) {
         Stack<JBossTransaction> stack = current.get();
         if (stack == null) {
             stack = new Stack<JBossTransaction>();
@@ -78,7 +81,7 @@ public class JBossTransaction implements Transaction {
 
             throw new DatastoreFailureException("Cannot begin tx.", e);
         }
-        JBossTransaction tx = new JBossTransaction();
+        JBossTransaction tx = new JBossTransaction(options);
         stack.push(tx);
         return tx;
     }
@@ -142,8 +145,18 @@ public class JBossTransaction implements Transaction {
     }
 
     static Transaction currentTransaction() {
-        Stack<JBossTransaction> stack = current.get();
+        final Stack<JBossTransaction> stack = current.get();
         return (stack != null) ? stack.peek() : null;
+    }
+
+    static TransactionOptions currentTransactionOptions() {
+        final Stack<JBossTransaction> stack = current.get();
+        return (stack != null) ? stack.peek().options : null;
+    }
+
+    static boolean isXG() {
+        final TransactionOptions to = currentTransactionOptions();
+        return (to != null && to.isXG());
     }
 
     private static void cleanup(JBossTransaction tx) {

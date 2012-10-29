@@ -44,12 +44,12 @@ class EntityGroupTracker implements Synchronization {
     private static final String LOG_LINE_ENTITY_KIND = "__org.jboss.capedwarf.LogLine__";
 
     private final Transaction tx;
-    private Key root;
-    private boolean invalid;
+    private final TxChecker checker;
     private final Map<Key, Key> keys;
 
     private EntityGroupTracker(Transaction tx) {
         this.tx = tx;
+        this.checker = JBossTransaction.isXG() ? new XGTxChecker() : new SingleTxChecker();
         this.keys = new ConcurrentHashMap<Key, Key>();
     }
 
@@ -93,19 +93,12 @@ class EntityGroupTracker implements Synchronization {
     private Key addKey(Key key) {
         Key currentRoot = getRoot(key);
         keys.put(key, currentRoot);
-        // do not check if already known that it's invalid
-        if (invalid == false) {
-            if (root == null) {
-                root = currentRoot;
-            } else if (root.equals(currentRoot) == false){
-                invalid = true;
-            }
-        }
+        checker.add(currentRoot, key);
         return currentRoot;
     }
 
     private void checkRoot() {
-        if (invalid) {
+        if (checker.isInvalid()) {
             throw new IllegalArgumentException("can't operate on multiple entity groups in a single transaction. found: " + keys.keySet());
         }
     }
@@ -123,5 +116,6 @@ class EntityGroupTracker implements Synchronization {
     }
 
     public void afterCompletion(int status) {
+        checker.clear();
     }
 }
