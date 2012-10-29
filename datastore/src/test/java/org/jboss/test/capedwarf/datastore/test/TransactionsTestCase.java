@@ -22,9 +22,11 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.google.appengine.api.datastore.Entity;
@@ -34,6 +36,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.datastore.TransactionOptions;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -274,6 +277,41 @@ public class TransactionsTestCase extends AbstractTest {
             prepareQueryWithAncestor(tx, a6).asQueryResultList(FetchOptions.Builder.withDefaults());
         } finally {
             tx.rollback();
+        }
+    }
+
+    @Test
+    public void testXGTransaction() throws Exception {
+        if (isJBossImpl(service) == false)
+            return;
+
+        final int N = 5; // max XG entity groups
+
+        List<Key> keys = new ArrayList<Key>();
+        for (int i = 0; i < N + 1; i++) {
+            keys.add(service.put(new Entity("XG")));
+        }
+
+        boolean ok = false;
+        Transaction tx = service.beginTransaction(TransactionOptions.Builder.withXG(true));
+        try {
+            for (int i = 0; i < N; i++) {
+                service.get(keys.get(i));
+            }
+
+            try {
+                service.get(keys.get(N));
+                fail("Expected IllegalArgumentException");
+            } catch (IllegalArgumentException e) {
+                // pass
+            }
+            ok = true;
+        } finally {
+            if (ok) {
+                tx.commit();
+            } else {
+                tx.rollback();
+            }
         }
     }
 

@@ -49,7 +49,7 @@ public abstract class PersistingTest extends AbstractTest {
         DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
 
         // ignore the test for non JBoss impl
-        if (ds.getClass().getName().contains(".jboss.") == false)
+        if (isJBossImpl(ds) == false)
             return;
 
         final Long id = readMarker();

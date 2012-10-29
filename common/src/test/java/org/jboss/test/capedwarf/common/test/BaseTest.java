@@ -84,4 +84,12 @@ public class BaseTest {
     protected static WebArchive getCapedwarfDeployment() {
         return getCapedwarfDeployment(TestContext.DEFAULT);
     }
+
+    protected static boolean isJBossImpl(Object service) {
+        if (service == null)
+            throw new IllegalArgumentException("Null service!");
+
+        // good enough?
+        return service.getClass().getName().contains(".jboss.");
+    }
 }
