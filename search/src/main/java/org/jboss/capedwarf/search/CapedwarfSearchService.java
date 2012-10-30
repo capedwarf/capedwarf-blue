@@ -22,9 +22,6 @@
 
 package org.jboss.capedwarf.search;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.search.GetIndexesRequest;
 import com.google.appengine.api.search.GetResponse;
@@ -41,6 +38,9 @@ import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.common.util.Util;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -56,7 +56,9 @@ public class CapedwarfSearchService implements SearchService {
     }
 
     public CapedwarfSearchService(String namespace) {
-        NamespaceManager.validateNamespace(namespace);
+        if (namespace != null) {
+            NamespaceManager.validateNamespace(namespace);
+        }
         this.namespace = namespace;
         initCache();
     }
