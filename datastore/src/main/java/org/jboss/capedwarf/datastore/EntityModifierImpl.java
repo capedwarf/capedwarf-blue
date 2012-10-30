@@ -34,7 +34,11 @@ import com.google.appengine.api.datastore.Entity;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class EntityModifierImpl implements EntityModifier {
+class EntityModifierImpl implements EntityModifier {
+    static EntityModifier INSTANCE  = new EntityModifierImpl();
+
+    private EntityModifierImpl() {
+    }
 
     public Entity modify(Entity original) {
         final Entity clone = original.clone();

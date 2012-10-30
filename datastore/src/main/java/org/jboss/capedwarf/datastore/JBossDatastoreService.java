@@ -57,8 +57,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
 
     private static final String SEQUENCE_POSTFIX = "_SEQUENCE__"; // GAE's SequenceGenerator impl detail
 
-    // static for now, until we might need diff strategies
-    private static final EntityModifier entityModifier = new EntityModifierImpl();
+    private final EntityModifier entityModifier = EntityModifierImpl.INSTANCE;
 
     public JBossDatastoreService() {
     }
