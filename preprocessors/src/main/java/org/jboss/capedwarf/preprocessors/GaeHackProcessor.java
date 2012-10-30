@@ -29,6 +29,7 @@ import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -61,10 +62,15 @@ public class GaeHackProcessor extends DatastoreCallbacksProcessor {
     private static final String CALLBACKS_FILE = "META-INF/datastorecallbacks.xml";
 
     private Field callbacksConfigWriterField;
+    private Field configOutputStream;
 
     public GaeHackProcessor() throws Exception {
+        // writer
         callbacksConfigWriterField = DatastoreCallbacksProcessor.class.getDeclaredField("callbacksConfigWriter");
         callbacksConfigWriterField.setAccessible(true);
+        // output stream
+        configOutputStream = DatastoreCallbacksProcessor.class.getDeclaredField("configOutputStream");
+        configOutputStream.setAccessible(true);
     }
 
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -73,6 +79,13 @@ public class GaeHackProcessor extends DatastoreCallbacksProcessor {
             if (writter != null) {
                 callbacksConfigWriterField.set(this, writter);
             }
+
+            if (roundEnv.processingOver()) {
+                final Filer filer = processingEnv.getFiler();
+                final FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "", CALLBACKS_FILE);
+                configOutputStream.set(this, fileObject.openOutputStream());
+            }
+
             final boolean process = super.process(annotations, roundEnv);
             if (process) {
                 Logger.getLogger(GaeHackProcessor.class.getName()).info("Hacked around GAE DatastoreCallbacksProcessor Winz bug. ;-)");
