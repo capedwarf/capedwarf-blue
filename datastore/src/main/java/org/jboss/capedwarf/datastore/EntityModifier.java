@@ -24,89 +24,24 @@ package org.jboss.capedwarf.datastore;
 
 import com.google.appengine.api.datastore.Entity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * GAE does some funky stuff to certain property types:
  *     - Integer, Short, Byte types are stored as Long
+ *     - Float is stored as Double
  *     - empty collections are stored as null
  *     - elements of collections that are of type Integer, Short or Byte are also stored as Long
+ *     - elements of collections that are of type Float are also stored as Double
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
- *
  */
-public class EntityModifier {
+public interface EntityModifier {
 
     /**
+     * Do modify entity and its properties if needed.
+     *
      * @param original the original entity
      * @return fixed clone
      */
-    public Entity modify(Entity original) {
-        Entity clone = original.clone();
-        Map<String, Object> properties = original.getProperties();
-        for (Map.Entry<String, Object> entry : properties.entrySet()) {
-            String property = entry.getKey();
-            Object value = entry.getValue();
-            boolean unindexed = original.isUnindexedProperty(property);
-            modifyProperty(clone, property, value, unindexed);
-        }
-        return clone;
-    }
-
-    private void modifyProperty(Entity entity, String property, Object value, boolean unindexed) {
-        if (value instanceof Integer || value instanceof Short || value instanceof Byte) {
-            Number number = (Number) value;
-            setProperty(entity, property, number.longValue(), unindexed);
-        } else if (value instanceof Float) {
-            Number number = (Number) value;
-            setProperty(entity, property, number.doubleValue(), unindexed);
-        } else if (value instanceof Collection) {
-            Collection<?> collection = (Collection<?>) value;
-            if (collection.isEmpty()) {
-                entity.setProperty(property, null);
-            } else {
-                if (collection instanceof Set) {
-                    replaceCollection(entity, property, unindexed, collection, new HashSet());
-                } else if (collection instanceof List) {
-                    replaceCollection(entity, property, unindexed, collection, new ArrayList(collection.size()));
-                }
-            }
-        } else if (unindexed) {
-            entity.setUnindexedProperty(property, value);
-        }
-    }
-
-    private void setProperty(Entity clone, String name, Object convertedValue, boolean unindexed) {
-        if (unindexed) {
-            clone.setUnindexedProperty(name, convertedValue);
-        } else {
-            clone.setProperty(name, convertedValue);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void replaceCollection(Entity entity, String propertyName, boolean unindexed, Collection collection, Collection convertedCollection) {
-        for (Object o : collection) {
-            convertedCollection.add(convert(o));
-        }
-        setProperty(entity, propertyName, convertedCollection, unindexed);
-    }
-
-    private Object convert(Object o) {
-        if (o instanceof Integer || o instanceof Short || o instanceof Byte) {
-            Number number = (Number) o;
-            return number.longValue();
-        } else if (o instanceof Float) {
-            return Number.class.cast(o).doubleValue();
-        } else {
-            return o;
-        }
-    }
-
+    Entity modify(Entity original);
 }

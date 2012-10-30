@@ -22,6 +22,15 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.transaction.Synchronization;
+
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
@@ -36,14 +45,6 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
-import javax.transaction.Synchronization;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * JBoss DatastoreService impl.
  *
@@ -56,7 +57,8 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
 
     private static final String SEQUENCE_POSTFIX = "_SEQUENCE__"; // GAE's SequenceGenerator impl detail
 
-    private EntityModifier entityModifier = new EntityModifier();
+    // static for now, until we might need diff strategies
+    private static final EntityModifier entityModifier = new EntityModifierImpl();
 
     public JBossDatastoreService() {
     }
