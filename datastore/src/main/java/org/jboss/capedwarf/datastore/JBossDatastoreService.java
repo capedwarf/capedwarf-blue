@@ -22,18 +22,6 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.transaction.Synchronization;
-
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
@@ -48,6 +36,14 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
+import javax.transaction.Synchronization;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * JBoss DatastoreService impl.
  *
@@ -59,6 +55,8 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     private volatile Map<String, Integer> allocationsMap;
 
     private static final String SEQUENCE_POSTFIX = "_SEQUENCE__"; // GAE's SequenceGenerator impl detail
+
+    private EntityModifier entityModifier = new EntityModifier();
 
     public JBossDatastoreService() {
     }
@@ -167,90 +165,23 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         return put(getCurrentTransaction(null), entityIterable);
     }
 
-    public List<Key> put(Transaction tx, Iterable<Entity> entityIterable) {
-        final javax.transaction.Transaction transaction = beforeTx(tx);
+    public List<Key> put(Transaction tx, Iterable<Entity> entities) {
+        javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             List<Key> list = new ArrayList<Key>();
-            for (Entity entity : entityIterable) {
-                final Key key = entity.getKey();
+            for (Entity entity : entities) {
+                Key key = entity.getKey();
                 if (key.isComplete() == false) {
                     long id = getRangeStart(key.getParent(), key.getKind(), 1).getStart();
                     ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
                 }
                 trackKey(key);
-                putInTx(key, modify(entity));
+                putInTx(key, entityModifier.modify(entity));
                 list.add(key);
             }
             return list;
         } finally {
             afterTx(transaction);
-        }
-    }
-
-    /**
-     * GAE does some funky stuff to certain property types:
-     *     - Integer, Short, Byte types are stored as Long
-     *     - empty collections are stored as null
-     *     - elements of collections that are of type Integer, Short or Byte are also stored as Long
-     *
-     * @param original the original entity
-     * @return fixed clone
-     */
-    protected Entity modify(Entity original) {
-        final Entity clone = original.clone();
-        final Map<String, Object> properties = original.getProperties();
-        for (Map.Entry<String, Object> entry : properties.entrySet()) {
-            final String name = entry.getKey();
-            final Object v = entry.getValue();
-            boolean unindexed = original.isUnindexedProperty(name);
-            if (v instanceof Integer || v instanceof Short || v instanceof Byte) {
-                Number number = (Number) v;
-                setProperty(clone, name, number.longValue(), unindexed);
-            } else if (v instanceof Float) {
-                Number number = (Number) v;
-                setProperty(clone, name, number.doubleValue(), unindexed);
-            } else if (v instanceof Collection) {
-                Collection<?> collection = (Collection<?>) v;
-                if (collection.isEmpty()) {
-                    clone.setProperty(name, null);
-                } else {
-                    if (collection instanceof Set) {
-                        replaceCollection(clone, name, unindexed, collection, new HashSet());
-                    } else if (collection instanceof List) {
-                        replaceCollection(clone, name, unindexed, collection, new ArrayList(collection.size()));
-                    }
-                }
-            } else if (unindexed) {
-                clone.setUnindexedProperty(name, v);
-            }
-        }
-        return clone;
-    }
-
-    private void setProperty(Entity clone, String name, Object convertedValue, boolean unindexed) {
-        if (unindexed) {
-            clone.setUnindexedProperty(name, convertedValue);
-        } else {
-            clone.setProperty(name, convertedValue);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void replaceCollection(Entity entity, String propertyName, boolean unindexed, Collection collection, Collection convertedCollection) {
-        for (Object o : collection) {
-            convertedCollection.add(convert(o));
-        }
-        setProperty(entity, propertyName, convertedCollection, unindexed);
-    }
-
-    private Object convert(Object o) {
-        if (o instanceof Integer || o instanceof Short || o instanceof Byte) {
-            Number number = (Number) o;
-            return number.longValue();
-        } else if (o instanceof Float) {
-            return Number.class.cast(o).doubleValue();
-        } else {
-            return o;
         }
     }
 
