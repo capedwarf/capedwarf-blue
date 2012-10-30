@@ -35,6 +35,7 @@
         <module>multitenancy</module>
         <module>oauth</module>
         <module>openshift</module>
+        <module>preprocessors</module>
         <module>prospectivesearch</module>
         <module>quota</module>
         <module>search</module>
@@ -314,6 +315,12 @@
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-oauth</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-preprocessors</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
