@@ -40,6 +40,7 @@ public abstract class AbstractCallbacksTest extends AbstractTest {
     protected static WebArchive getDefaultDeployment() {
         final WebArchive war = getCapedwarfDeployment();
         war.addClass(AbstractCallbacksTest.class);
+        war.addClass(AbstractTest.class);
         war.addClass(CallbackHandler.class);
         war.addAsWebInfResource("META-INF/datastorecallbacks.xml", "classes/META-INF/datastorecallbacks.xml");
         LibUtils.addGaeAsLibrary(war);
