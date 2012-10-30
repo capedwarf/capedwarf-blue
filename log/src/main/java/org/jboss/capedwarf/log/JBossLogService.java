@@ -22,18 +22,6 @@
 
 package org.jboss.capedwarf.log;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -46,6 +34,17 @@ import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.RequestLogs;
 import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -222,6 +221,10 @@ public class JBossLogService implements LogService {
     }
 
     public void requestStarted(ServletRequest servletRequest, long startTimeMillis) {
+        if (ignoreLogging) {
+            return;
+        }
+
         Entity entity = new Entity(LOG_REQUEST_ENTITY_KIND);
         entity.setProperty(LOG_REQUEST_START_TIME_MILLIS, startTimeMillis);
 
