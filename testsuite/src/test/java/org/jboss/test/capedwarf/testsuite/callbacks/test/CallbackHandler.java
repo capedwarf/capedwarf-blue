@@ -20,42 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.testsuite;
+package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
-import java.util.List;
-
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Query;
-import org.jboss.test.capedwarf.common.test.BaseTest;
-import org.junit.After;
-
-import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
+import com.google.appengine.api.datastore.DeleteContext;
+import com.google.appengine.api.datastore.PostDelete;
+import com.google.appengine.api.datastore.PostPut;
+import com.google.appengine.api.datastore.PreDelete;
+import com.google.appengine.api.datastore.PrePut;
+import com.google.appengine.api.datastore.PutContext;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractTest extends BaseTest {
-    protected boolean ignoreTearDown;
+public class CallbackHandler {
+    static final String KIND = "Data";
 
-    @After
-    public void tearDown() {
-        if (ignoreTearDown)
-            return;
+    static String state;
 
-        cleanup();
+    @PrePut(kinds = {KIND})
+    public void prePut(PutContext context) {
+        state = "PrePut";
+        System.out.println("context = " + context);
     }
 
-    protected DatastoreService createDatastoreService() {
-        return DatastoreServiceFactory.getDatastoreService();
+    @PostPut(kinds = {KIND})
+    public void postPut(PutContext context) {
+        state = "PostPut";
+        System.out.println("context = " + context);
     }
 
-    protected void cleanup() {
-        DatastoreService service = createDatastoreService();
-        List<Entity> entities = service.prepare(new Query().setKeysOnly()).asList(withDefaults());
-        for (Entity entity : entities) {
-            service.delete(entity.getKey());
-        }
+    @PreDelete(kinds = {KIND})
+    public void preDelete(DeleteContext context) {
+        state = "PreDelete";
+        System.out.println("context = " + context);
+    }
+
+    @PostDelete(kinds = {KIND})
+    public void postDelete(DeleteContext context) {
+        state = "PostDelete";
+        System.out.println("context = " + context);
     }
 }
