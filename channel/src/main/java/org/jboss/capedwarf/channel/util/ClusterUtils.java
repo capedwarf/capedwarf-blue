@@ -60,18 +60,18 @@ public class ClusterUtils {
     }
 
     private static void executeOnAllNodes(Callable<Void> task) {
-        DistributedExecuteCommand<Void> command = new DistributedExecuteCommand<Void>(Collections.emptyList(), task);
-        AdvancedCache cache = InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache();
-        RpcManager rpc = cache.getRpcManager();
+        final AdvancedCache cache = InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache();
+        final DistributedExecuteCommand<Void> command = new DistributedExecuteCommand<Void>(cache.getName(), Collections.emptyList(), task);
+        final RpcManager rpc = cache.getRpcManager();
         rpc.broadcastRpcCommand(command, false);
     }
 
     public static void submitToNode(Address nodeAddress, Callable<Void> task) {
-        AdvancedCache cache = InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache();
-        RpcManager rpc = cache.getRpcManager();
+        final AdvancedCache cache = InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache();
+        final RpcManager rpc = cache.getRpcManager();
         rpc.invokeRemotely(
                 Collections.singleton(nodeAddress),
-                new DistributedExecuteCommand<Void>(Collections.emptyList(), task),
+                new DistributedExecuteCommand<Void>(cache.getName(), Collections.emptyList(), task),
                 false);
     }
 
