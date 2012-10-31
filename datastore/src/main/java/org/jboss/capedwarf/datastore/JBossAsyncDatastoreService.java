@@ -29,7 +29,6 @@ import java.util.concurrent.Future;
 
 import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.DatastoreAttributes;
-import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Index;
@@ -46,15 +45,16 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
  */
 public class JBossAsyncDatastoreService extends AbstractDatastoreService implements AsyncDatastoreService {
 
-    private final DatastoreService datastoreService;
-
     public JBossAsyncDatastoreService() {
         this(null);
     }
 
     public JBossAsyncDatastoreService(DatastoreServiceConfig config) {
-        super(config);
-        datastoreService = new JBossDatastoreService();
+        super(new DatastoreServiceImpl(config));
+    }
+
+    DatastoreServiceImpl getDelegate() {
+        return (DatastoreServiceImpl) super.getDelegate();
     }
 
     protected <T> Future<T> wrap(final Callable<T> callable) {
@@ -64,7 +64,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Transaction> beginTransaction() {
         return wrap(new Callable<Transaction>() {
             public Transaction call() throws Exception {
-                return datastoreService.beginTransaction();
+                return getDelegate().beginTransaction();
             }
         });
     }
@@ -72,7 +72,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Transaction> beginTransaction(final TransactionOptions transactionOptions) {
         return wrap(new Callable<Transaction>() {
             public Transaction call() throws Exception {
-                return datastoreService.beginTransaction(transactionOptions);
+                return getDelegate().beginTransaction(transactionOptions);
             }
         });
     }
@@ -80,7 +80,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Entity> get(final Key key) {
         return wrap(new Callable<Entity>() {
             public Entity call() throws Exception {
-                return datastoreService.get(key);
+                return getDelegate().get(key);
             }
         });
     }
@@ -88,7 +88,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Entity> get(final Transaction transaction, final Key key) {
         return wrap(new Callable<Entity>() {
             public Entity call() throws Exception {
-                return datastoreService.get(transaction, key);
+                return getDelegate().get(transaction, key);
             }
         });
     }
@@ -96,7 +96,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Map<Key, Entity>> get(final Iterable<Key> keyIterable) {
         return wrap(new Callable<Map<Key, Entity>>() {
             public Map<Key, Entity> call() throws Exception {
-                return datastoreService.get(keyIterable);
+                return getDelegate().get(keyIterable);
             }
         });
     }
@@ -104,7 +104,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Map<Key, Entity>> get(final Transaction transaction, final Iterable<Key> keyIterable) {
         return wrap(new Callable<Map<Key, Entity>>() {
             public Map<Key, Entity> call() throws Exception {
-                return datastoreService.get(transaction, keyIterable);
+                return getDelegate().get(transaction, keyIterable);
             }
         });
     }
@@ -112,7 +112,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Key> put(final Entity entity) {
         return wrap(new Callable<Key>() {
             public Key call() throws Exception {
-                return datastoreService.put(entity);
+                return getDelegate().put(entity);
             }
         });
     }
@@ -120,7 +120,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Key> put(final Transaction transaction, final Entity entity) {
         return wrap(new Callable<Key>() {
             public Key call() throws Exception {
-                return datastoreService.put(transaction, entity);
+                return getDelegate().put(transaction, entity);
             }
         });
     }
@@ -128,7 +128,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<List<Key>> put(final Iterable<Entity> entityIterable) {
         return wrap(new Callable<List<Key>>() {
             public List<Key> call() throws Exception {
-                return datastoreService.put(entityIterable);
+                return getDelegate().put(entityIterable);
             }
         });
     }
@@ -136,7 +136,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<List<Key>> put(final Transaction transaction, final Iterable<Entity> entityIterable) {
         return wrap(new Callable<List<Key>>() {
             public List<Key> call() throws Exception {
-                return datastoreService.put(transaction, entityIterable);
+                return getDelegate().put(transaction, entityIterable);
             }
         });
     }
@@ -144,7 +144,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Void> delete(final Key... keys) {
         return wrap(new Callable<Void>() {
             public Void call() throws Exception {
-                datastoreService.delete(keys);
+                getDelegate().delete(keys);
                 return null;
             }
         });
@@ -153,7 +153,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Void> delete(final Transaction transaction, final Key... keys) {
         return wrap(new Callable<Void>() {
             public Void call() throws Exception {
-                datastoreService.delete(transaction, keys);
+                getDelegate().delete(transaction, keys);
                 return null;
             }
         });
@@ -162,7 +162,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Void> delete(final Iterable<Key> keyIterable) {
         return wrap(new Callable<Void>() {
             public Void call() throws Exception {
-                datastoreService.delete(keyIterable);
+                getDelegate().delete(keyIterable);
                 return null;
             }
         });
@@ -171,7 +171,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Void> delete(final Transaction transaction, final Iterable<Key> keyIterable) {
         return wrap(new Callable<Void>() {
             public Void call() throws Exception {
-                datastoreService.delete(transaction, keyIterable);
+                getDelegate().delete(transaction, keyIterable);
                 return null;
             }
         });
@@ -180,7 +180,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<KeyRange> allocateIds(final String s, final long l) {
         return wrap(new Callable<KeyRange>() {
             public KeyRange call() throws Exception {
-                return datastoreService.allocateIds(s, l);
+                return getDelegate().allocateIds(s, l);
             }
         });
     }
@@ -188,7 +188,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<KeyRange> allocateIds(final Key key, final String s, final long l) {
         return wrap(new Callable<KeyRange>() {
             public KeyRange call() throws Exception {
-                return datastoreService.allocateIds(key, s, l);
+                return getDelegate().allocateIds(key, s, l);
             }
         });
     }
@@ -196,7 +196,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<DatastoreAttributes> getDatastoreAttributes() {
         return wrap(new Callable<DatastoreAttributes>() {
             public DatastoreAttributes call() throws Exception {
-                return datastoreService.getDatastoreAttributes();
+                return getDelegate().getDatastoreAttributes();
             }
         });
     }
@@ -204,8 +204,15 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     public Future<Map<Index, Index.IndexState>> getIndexes() {
         return wrap(new Callable<Map<Index, Index.IndexState>>() {
             public Map<Index, Index.IndexState> call() throws Exception {
-                return datastoreService.getIndexes();
+                return getDelegate().getIndexes();
             }
         });
+    }
+
+    /**
+     * Testing only!
+     */
+    public void clearCache() {
+        getDelegate().clearCache();
     }
 }

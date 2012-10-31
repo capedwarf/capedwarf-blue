@@ -48,7 +48,7 @@ public abstract class LazyKeyChecker {
             }
 
             if (checked.compareAndSet(false, true)) {
-                JBossDatastoreService.trackKey(ancestor);
+                DatastoreServiceImpl.trackKey(ancestor);
             }
         }
     }
