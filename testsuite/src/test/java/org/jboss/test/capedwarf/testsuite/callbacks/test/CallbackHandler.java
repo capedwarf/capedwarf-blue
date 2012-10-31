@@ -24,9 +24,15 @@ package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
 import com.google.appengine.api.datastore.DeleteContext;
 import com.google.appengine.api.datastore.PostDelete;
+import com.google.appengine.api.datastore.PostLoad;
+import com.google.appengine.api.datastore.PostLoadContext;
 import com.google.appengine.api.datastore.PostPut;
 import com.google.appengine.api.datastore.PreDelete;
+import com.google.appengine.api.datastore.PreGet;
+import com.google.appengine.api.datastore.PreGetContext;
 import com.google.appengine.api.datastore.PrePut;
+import com.google.appengine.api.datastore.PreQuery;
+import com.google.appengine.api.datastore.PreQueryContext;
 import com.google.appengine.api.datastore.PutContext;
 
 /**
@@ -46,6 +52,24 @@ public class CallbackHandler {
     @PostPut(kinds = {KIND})
     public void postPut(PutContext context) {
         state = "PostPut";
+        System.out.println("context = " + context);
+    }
+
+    @PreGet(kinds = {KIND})
+    public void preGet(PreGetContext context) {
+        state = "PreGet";
+        System.out.println("context = " + context);
+    }
+
+    @PostLoad(kinds = {KIND})
+    public void postLoad(PostLoadContext context) {
+        state = "PostLoad";
+        System.out.println("context = " + context);
+    }
+
+    @PreQuery(kinds = {KIND})
+    public void preQuery(PreQueryContext context) {
+        state = "PreQuery";
         System.out.println("context = " + context);
     }
 

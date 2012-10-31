@@ -27,7 +27,10 @@ import java.util.concurrent.Future;
 import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -60,6 +63,15 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
         Assert.assertEquals("PrePut", CallbackHandler.state);
         Key k = f.get();
         Assert.assertEquals("PostPut", CallbackHandler.state);
+
+        Future<Entity> e = service.get(k);
+        Assert.assertEquals("PreGet", CallbackHandler.state);
+        e.get();
+        Assert.assertEquals("PostLoad", CallbackHandler.state);
+
+        PreparedQuery pq = service.prepare(new Query(CallbackHandler.KIND));
+        Assert.assertEquals("PreQuery", CallbackHandler.state);
+        pq.asList(FetchOptions.Builder.withDefaults());
 
         Future<Void> v = service.delete(k);
         Assert.assertEquals("PreDelete", CallbackHandler.state);
