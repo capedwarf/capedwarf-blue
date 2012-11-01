@@ -66,7 +66,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService {
 
     public BaseDatastoreServiceImpl(DatastoreServiceConfig config) {
         this.appId = Application.getAppId();
-        this.config = config;
+        this.config = (config == null ? DatastoreServiceConfig.Builder.withDefaults() : config);
         ClassLoader classLoader = Application.getAppClassloader();
         this.store = createStore().getAdvancedCache().with(classLoader);
         this.searchManager = Search.getSearchManager(store);
@@ -95,7 +95,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService {
         try {
             CacheQuery cacheQuery = queryConverter.convert(query);
 
-            Double deadlineSeconds = getConfig().getDeadline();
+            Double deadlineSeconds = getDatastoreServiceConfig().getDeadline();
             if (deadlineSeconds != null) {
                 long deadlineMicroseconds = (long) (deadlineSeconds * 1000000);
                 cacheQuery.timeout(deadlineMicroseconds, TimeUnit.MICROSECONDS);
@@ -135,7 +135,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService {
         }
     }
 
-    public DatastoreServiceConfig getConfig() {
-        return config == null ? DatastoreServiceConfig.Builder.withDefaults() : config;
+    public DatastoreServiceConfig getDatastoreServiceConfig() {
+        return config;
     }
 }

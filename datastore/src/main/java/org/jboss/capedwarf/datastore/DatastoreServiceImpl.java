@@ -30,7 +30,6 @@ import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
@@ -109,13 +108,13 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         return new AllocationTuple(start, asNum);
     }
 
-    public Entity get(Transaction tx, Key key) throws EntityNotFoundException {
+    public Entity get(Transaction tx, Key key) {
         final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             trackKey(key);
             Entity entity = store.get(key);
             if (entity == null)
-                throw new EntityNotFoundException(key);
+                return null;
             else
                 return entity.clone();
         } finally {

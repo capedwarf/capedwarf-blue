@@ -34,7 +34,6 @@ import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -51,11 +50,6 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
     }
 
     @Test
-    public void testDummy() throws Exception {
-    }
-
-    @Test
-    @Ignore("TODO -- enable once supported")
     public void testSmoke() throws Exception {
         reset();
 

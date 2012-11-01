@@ -27,6 +27,7 @@ import java.util.Map;
 import com.google.appengine.api.datastore.BaseDatastoreService;
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Index;
@@ -43,6 +44,13 @@ import com.google.appengine.api.datastore.TransactionOptions;
  */
 interface DatastoreServiceInternal extends BaseDatastoreService {
     /**
+     * Get datastore config.
+     *
+     * @return
+     */
+    DatastoreServiceConfig getDatastoreServiceConfig();
+
+    /**
      * Get.
      *
      * @param tx current tx
@@ -50,7 +58,7 @@ interface DatastoreServiceInternal extends BaseDatastoreService {
      * @return entity
      * @throws EntityNotFoundException
      */
-    Entity get(Transaction tx, Key key) throws EntityNotFoundException;
+    Entity get(Transaction tx, Key key);
 
     /**
      * Put.

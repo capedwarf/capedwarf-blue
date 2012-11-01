@@ -23,11 +23,22 @@
 package org.jboss.capedwarf.datastore;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 import com.google.appengine.api.datastore.BaseDatastoreService;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.PreGetContext;
 import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.PutContext;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
+import com.google.common.base.Function;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
  * Abstract base DatastoreService impl.
@@ -35,14 +46,74 @@ import com.google.appengine.api.datastore.Transaction;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractDatastoreService implements BaseDatastoreService {
-    private final BaseDatastoreService datastoreService;
+    private final DatastoreServiceInternal datastoreService;
+    private volatile DatastoreCallbacks datastoreCallbacks;
 
-    public AbstractDatastoreService(BaseDatastoreService datastoreService) {
+    public AbstractDatastoreService(DatastoreServiceInternal datastoreService) {
         this.datastoreService = datastoreService;
     }
 
-    BaseDatastoreService getDelegate() {
+    protected DatastoreCallbacks getDatastoreCallbacks() {
+        if (datastoreCallbacks == null) {
+            Object callbacks = ReflectionUtils.invokeInstanceMethod(datastoreService.getDatastoreServiceConfig(), "getDatastoreCallbacks");
+            datastoreCallbacks = new DatastoreCallbacks(callbacks);
+        }
+        return datastoreCallbacks;
+    }
+
+    DatastoreServiceInternal getDelegate() {
         return datastoreService;
+    }
+
+    protected abstract <T> Future<T> wrap(final Transaction transaction, final Callable<T> callable, final Runnable pre, final Function<T, Void> post);
+
+    protected Future<Entity> doGet(final Transaction transaction, final Key key) {
+        final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
+        final PreGetContext preGetContext = DatastoreCallbacks.createPreGetContext(transaction, Collections.singletonList(key), map);
+        final Runnable pre = new Runnable() {
+            public void run() {
+                getDatastoreCallbacks().executePreGetCallbacks(preGetContext);
+            }
+        };
+        final Function<Entity, Void> post = new Function<Entity, Void>() {
+            public Void apply(Entity input) {
+                getDatastoreCallbacks().executePostLoadCallbacks(DatastoreCallbacks.createPostLoadContext(transaction, input));
+                return null;
+            }
+        };
+
+        return wrap(transaction, new Callable<Entity>() {
+            public Entity call() throws Exception {
+                final Entity previous = map.get(key);
+                return (previous == null) ? getDelegate().get(transaction, key) : previous;
+            }
+        }, pre, post);
+    }
+
+    protected Future<Key> doPut(final Transaction transaction, final Entity entity) {
+        final PutContext context = DatastoreCallbacks.createPutContext(transaction, Collections.singletonList(entity));
+        final Function<Entity, Void> preFn = new Function<Entity, Void>() {
+            public Void apply(Entity input) {
+                getDatastoreCallbacks().executePrePutCallbacks(context);
+                return null;
+            }
+        };
+        final Runnable pre = new Runnable() {
+            public void run() {
+                preFn.apply(null);
+            }
+        };
+        final Function<Key, Void> post = new Function<Key, Void>() {
+            public Void apply(Key input) {
+                getDatastoreCallbacks().executePostPutCallbacks(context);
+                return null;
+            }
+        };
+        return wrap(transaction, new Callable<Key>() {
+            public Key call() throws Exception {
+                return getDelegate().put(transaction, entity);
+            }
+        }, pre, post);
     }
 
     public PreparedQuery prepare(Query query) {
