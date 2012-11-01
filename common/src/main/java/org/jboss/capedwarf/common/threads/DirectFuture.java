@@ -69,7 +69,15 @@ public class DirectFuture<T> implements Future<T> {
             }
             return result;
         } catch (Exception e) {
-            throw new ExecutionException(e);
+            if (e instanceof RuntimeException) {
+                throw RuntimeException.class.cast(e);
+            } else if (e instanceof ExecutionException) {
+                throw ExecutionException.class.cast(e);
+            } else if (e instanceof InterruptedException) {
+                throw InterruptedException.class.cast(e);
+            } else {
+                throw new ExecutionException(e);
+            }
         }
     }
 
