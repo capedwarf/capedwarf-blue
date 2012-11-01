@@ -54,6 +54,7 @@ import org.jboss.capedwarf.datastore.query.QueryConverter;
  */
 public class BaseDatastoreServiceImpl implements BaseDatastoreService {
     protected final Logger log = Logger.getLogger(getClass().getName());
+    protected final String appId;
     protected final Cache<Key, Entity> store;
     protected final SearchManager searchManager;
     private final QueryConverter queryConverter;
@@ -64,6 +65,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService {
     }
 
     public BaseDatastoreServiceImpl(DatastoreServiceConfig config) {
+        this.appId = Application.getAppId();
         this.config = config;
         ClassLoader classLoader = Application.getAppClassloader();
         this.store = createStore().getAdvancedCache().with(classLoader);

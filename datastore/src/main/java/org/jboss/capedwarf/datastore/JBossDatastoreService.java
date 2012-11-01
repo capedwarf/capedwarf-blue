@@ -22,10 +22,12 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.Callable;
 
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
@@ -50,97 +52,130 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public JBossDatastoreService(DatastoreServiceConfig config) {
-        super(new JBossAsyncDatastoreService(config));
+        super(new DatastoreServiceImpl(config));
     }
 
-    protected <T> T unwrap(Future<T> future) {
+    protected <T> T execute(final Callable<T> callable, final Runnable pre, final Runnable post) {
+        if (pre != null) {
+            pre.run();
+        }
+        final T result;
         try {
-            return future.get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
+            result = callable.call();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        if (post != null) {
+            post.run();
+        }
+        return result;
     }
 
-    JBossAsyncDatastoreService getDelegate() {
-        return (JBossAsyncDatastoreService) super.getDelegate();
+    DatastoreServiceInternal getDelegate() {
+        return (DatastoreServiceInternal) super.getDelegate();
     }
     
     public Entity get(Key key) throws EntityNotFoundException {
-        return unwrap(getDelegate().get(key));
+        return get(getCurrentTransaction(null), key);
     }
 
-    public Entity get(Transaction transaction, Key key) throws EntityNotFoundException {
-        return unwrap(getDelegate().get(transaction, key));
+    public Entity get(final Transaction transaction, final Key key) throws EntityNotFoundException {
+        return execute(new Callable<Entity>() {
+            public Entity call() throws Exception {
+                return getDelegate().get(transaction, key);
+            }
+        }, null, null);
     }
 
     public Map<Key, Entity> get(Iterable<Key> keys) {
-        return unwrap(getDelegate().get(keys));
+        return get(getCurrentTransaction(null), keys);
     }
 
-    public Map<Key, Entity> get(Transaction transaction, Iterable<Key> keys) {
-        return unwrap(getDelegate().get(transaction, keys));
+    public Map<Key, Entity> get(final Transaction transaction, final Iterable<Key> keys) {
+        final Map<Key, Entity> map = new HashMap<Key, Entity>();
+        for (Key key : keys) {
+            try {
+                map.put(key, get(key));
+            } catch (EntityNotFoundException ignore) {
+            }
+        }
+        return map;
     }
 
     public Key put(Entity entity) {
-        return unwrap(getDelegate().put(entity));
+        return put(getCurrentTransaction(null), entity);
     }
 
-    public Key put(Transaction transaction, Entity entity) {
-        return unwrap(getDelegate().put(transaction, entity));
+    public Key put(final Transaction transaction, final Entity entity) {
+        return execute(new Callable<Key>() {
+            public Key call() throws Exception {
+                return getDelegate().put(transaction, entity);
+            }
+        }, null, null);
     }
 
     public List<Key> put(Iterable<Entity> entities) {
-        return unwrap(getDelegate().put(entities));
+        return put(getCurrentTransaction(null), entities);
     }
 
     public List<Key> put(Transaction transaction, Iterable<Entity> entities) {
-        return unwrap(getDelegate().put(transaction, entities));
+        final List<Key> keys = new ArrayList<Key>();
+        for (Entity e : entities) {
+            keys.add(put(transaction, e));
+        }
+        return keys;
     }
 
     public void delete(Key... keys) {
-        unwrap(getDelegate().delete(keys));
+        delete(getCurrentTransaction(null), keys);
     }
 
     public void delete(Transaction transaction, Key... keys) {
-        unwrap(getDelegate().delete(transaction, keys));
+        delete(transaction, Arrays.asList(keys));
     }
 
     public void delete(Iterable<Key> keys) {
-        unwrap(getDelegate().delete(keys));
+        delete(getCurrentTransaction(null), keys);
     }
 
-    public void delete(Transaction transaction, Iterable<Key> keys) {
-        unwrap(getDelegate().delete(transaction, keys));
+    public void delete(final Transaction transaction, final Iterable<Key> keys) {
+        for (Key k : keys) {
+            final Key key = k;
+            execute(new Callable<Object>() {
+                public Object call() throws Exception {
+                    getDelegate().delete(transaction, key);
+                    return null;
+                }
+            }, null, null);
+        }
     }
 
     public Transaction beginTransaction() {
-        return unwrap(getDelegate().beginTransaction());
+        return beginTransaction(TransactionOptions.Builder.withDefaults());
     }
 
-    public Transaction beginTransaction(TransactionOptions transactionOptions) {
-        return unwrap(getDelegate().beginTransaction(transactionOptions));
+    public Transaction beginTransaction(final TransactionOptions transactionOptions) {
+        return getDelegate().beginTransaction(transactionOptions);
     }
 
     public KeyRange allocateIds(String kind, long num) {
-        return unwrap(getDelegate().allocateIds(kind, num));
+        return allocateIds(null, kind, num);
     }
 
     public KeyRange allocateIds(Key key, String s, long l) {
-        return unwrap(getDelegate().allocateIds(key, s, l));
+        return getDelegate().allocateIds(key, s, l);
     }
 
     public KeyRangeState allocateIdRange(KeyRange keys) {
-        return getDelegate().getDelegate().allocateIdRange(keys);
+        return getDelegate().allocateIdRange(keys);
     }
 
     public DatastoreAttributes getDatastoreAttributes() {
-        return unwrap(getDelegate().getDatastoreAttributes());
+        return getDelegate().getDatastoreAttributes();
     }
 
     public Map<Index, Index.IndexState> getIndexes() {
-        return unwrap(getDelegate().getIndexes());
+        return getDelegate().getIndexes();
     }
 
     /**

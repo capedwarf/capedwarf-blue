@@ -22,11 +22,6 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.transaction.Synchronization;
@@ -41,7 +36,6 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
-import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
@@ -51,7 +45,7 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements DatastoreService {
+class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements DatastoreServiceInternal {
     private DatastoreAttributes datastoreAttributes;
     private volatile Map<String, Integer> allocationsMap;
 
@@ -74,7 +68,7 @@ public class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Da
                     allocationsMap = JndiLookupUtils.lookup(
                             "jndi.persistence.allocationsMap",
                             Map.class,
-                            "java:jboss/capedwarf/persistence/allocationsMap/" + Application.getAppId()
+                            "java:jboss/capedwarf/persistence/allocationsMap/" + appId
                     );
                 }
             }
@@ -115,10 +109,6 @@ public class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Da
         return new AllocationTuple(start, asNum);
     }
 
-    public Entity get(Key key) throws EntityNotFoundException {
-        return get(getCurrentTransaction(null), key);
-    }
-
     public Entity get(Transaction tx, Key key) throws EntityNotFoundException {
         final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
@@ -133,85 +123,30 @@ public class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Da
         }
     }
 
-    public Map<Key, Entity> get(Iterable<Key> keyIterable) {
-        return get(getCurrentTransaction(null), keyIterable);
-    }
-
-    public Map<Key, Entity> get(Transaction tx, Iterable<Key> keyIterable) {
-        final javax.transaction.Transaction transaction = beforeTx(tx);
-        try {
-            Map<Key, Entity> result = new HashMap<Key, Entity>();
-            for (Key key : keyIterable) {
-                trackKey(key);
-                Entity entity = store.get(key);
-                if (entity != null) {
-                    result.put(key, entity.clone());
-                }
-            }
-            return result;
-        } finally {
-            afterTx(transaction);
-        }
-    }
-
-    public Key put(Entity entity) {
-        return put(getCurrentTransaction(null), entity);
-    }
-
-    public Key put(Transaction transaction, Entity entity) {
-        return put(transaction, Collections.singleton(entity)).get(0);
-    }
-
-    public List<Key> put(Iterable<Entity> entityIterable) {
-        return put(getCurrentTransaction(null), entityIterable);
-    }
-
-    public List<Key> put(Transaction tx, Iterable<Entity> entities) {
+    public Key put(Transaction tx, Entity entity) {
         javax.transaction.Transaction transaction = beforeTx(tx);
         try {
-            List<Key> list = new ArrayList<Key>();
-            for (Entity entity : entities) {
-                Key key = entity.getKey();
-                if (key.isComplete() == false) {
-                    long id = getRangeStart(key.getParent(), key.getKind(), 1).getStart();
-                    ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
-                }
-                trackKey(key);
-                putInTx(key, entityModifier.modify(entity));
-                list.add(key);
+            Key key = entity.getKey();
+            if (key.isComplete() == false) {
+                long id = getRangeStart(key.getParent(), key.getKind(), 1).getStart();
+                ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
             }
-            return list;
+            trackKey(key);
+            putInTx(key, entityModifier.modify(entity));
+            return key;
         } finally {
             afterTx(transaction);
         }
     }
 
-    public void delete(Key... keys) {
-        delete(getCurrentTransaction(null), keys);
-    }
-
-    public void delete(Transaction transaction, Key... keys) {
-        delete(transaction, Arrays.asList(keys));
-    }
-
-    public void delete(Iterable<Key> keyIterable) {
-        delete(getCurrentTransaction(null), keyIterable);
-    }
-
-    public void delete(Transaction tx, Iterable<Key> keyIterable) {
+    public void delete(Transaction tx, Key key) {
         final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
-            for (Key key : keyIterable) {
-                trackKey(key);
-                removeInTx(key);
-            }
+            trackKey(key);
+            removeInTx(key);
         } finally {
             afterTx(transaction);
         }
-    }
-
-    public Transaction beginTransaction() {
-        return beginTransaction(TransactionOptions.Builder.withDefaults());
     }
 
     public Transaction beginTransaction(TransactionOptions options) {
@@ -222,17 +157,13 @@ public class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Da
         return null;  // TODO
     }
 
-    public KeyRange allocateIds(String kind, long num) {
-        return allocateIds(null, kind, num);
-    }
-
     public KeyRange allocateIds(Key parent, String kind, long num) {
         final AllocationTuple at = getRangeStart(parent, kind, num);
         final long start = at.getStart();
         return new KeyRange(parent, kind, start, start + at.getNum() - 1);
     }
 
-    public KeyRangeState allocateIdRange(KeyRange keyRange) {
+    public DatastoreService.KeyRangeState allocateIdRange(KeyRange keyRange) {
         final String kind = keyRange.getStart().getKind();
         final SequenceTuple st = getSequenceTuple(kind);
         return KeyGenerator.checkRange(keyRange, st.getSequenceName());

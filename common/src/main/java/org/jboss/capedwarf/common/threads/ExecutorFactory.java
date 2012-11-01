@@ -71,30 +71,6 @@ public class ExecutorFactory {
         return task;
     }
 
-    /**
-     * Wrap callable into future task.
-     *
-     * @param callable the callable
-     * @param pre the pre runnable
-     * @param post the post runnable
-     * @return future task
-     */
-    public static <T> Future<T> callback(final Callable<T> callable, final Runnable pre, final Runnable post) {
-        if (pre != null) {
-            pre.run();
-        }
-        final Callable<T> wrapper = new Callable<T>() {
-            public T call() throws Exception {
-                final T result = callable.call();
-                if (post != null) {
-                    post.run();
-                }
-                return result;
-            }
-        };
-        return wrap(wrapper);
-    }
-
     protected static Executor doJndiLookup() {
         try {
             return JndiLookupUtils.lookup("jndi.executor", Executor.class, defaultJndiNames);
