@@ -30,6 +30,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import com.google.appengine.api.datastore.BaseDatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreGetContext;
@@ -134,5 +135,9 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService {
 
     public Collection<Transaction> getActiveTransactions() {
         return getDelegate().getActiveTransactions();
+    }
+
+    public DatastoreServiceConfig getDatastoreServiceConfig() {
+        return getDelegate().getDatastoreServiceConfig();
     }
 }

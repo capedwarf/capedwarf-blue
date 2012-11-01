@@ -38,7 +38,6 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -83,7 +82,7 @@ public class ConfigTestCase extends QueryTest {
 
     private DatastoreServiceConfig getConfig(BaseDatastoreService service) {
         assertTrue(isJBossDatastoreService(service));
-        return (DatastoreServiceConfig) ReflectionUtils.invokeInstanceMethod(service, "getConfig", new Class[0], new Object[0]);
+        return (DatastoreServiceConfig) ReflectionUtils.invokeInstanceMethod(service, "getDatastoreServiceConfig", new Class[0], new Object[0]);
     }
 
     private boolean isJBossDatastoreService(BaseDatastoreService service) {
