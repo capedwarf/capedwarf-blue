@@ -81,7 +81,8 @@ final class DatastoreCallbacks {
     }
 
     static Object getCurrentTransactionProvider(final Transaction tx) {
-        return Proxy.newProxyInstance(DatastoreCallbacks.class.getClassLoader(), new Class<?>[]{getCurrentTransactionProviderClass()}, new InvocationHandler() {
+        final Class<?> ctpClass = getCurrentTransactionProviderClass();
+        return Proxy.newProxyInstance(ctpClass.getClassLoader(), new Class<?>[]{getCurrentTransactionProviderClass()}, new InvocationHandler() {
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 final String name = method.getName();
                 if ("toString".equals(name)) {
