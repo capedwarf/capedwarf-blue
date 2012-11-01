@@ -69,12 +69,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                 if (pre != null) {
                     pre.run();
                 }
-                final T result;
-                try {
-                    result = callable.call();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                final T result = callable.call();
                 if (post != null) {
                     post.apply(result);
                 }
@@ -160,16 +155,17 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public List<Key> put(Transaction transaction, Iterable<Entity> entities) {
-        final PutContext context = DatastoreCallbacks.createPutContext(transaction, Lists.newArrayList(entities));
+        final PutContext preContext = DatastoreCallbacks.createPutContext(transaction, Lists.newArrayList(entities));
         final Function<Entity, Void> pre = new Function<Entity, Void>() {
             public Void apply(Entity input) {
-                getDatastoreCallbacks().executePrePutCallbacks(context);
+                getDatastoreCallbacks().executePrePutCallbacks(preContext);
                 return null;
             }
         };
+        final PutContext postContext = DatastoreCallbacks.createPutContext(transaction, Lists.newArrayList(entities));
         final Function<Entity, Void> post = new Function<Entity, Void>() {
             public Void apply(Entity input) {
-                getDatastoreCallbacks().executePostPutCallbacks(context);
+                getDatastoreCallbacks().executePostPutCallbacks(postContext);
                 return null;
             }
         };
@@ -199,16 +195,17 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public void delete(final Transaction transaction, final Iterable<Key> keys) {
-        final DeleteContext context = DatastoreCallbacks.createDeleteContext(transaction, Lists.newArrayList(keys));
+        final DeleteContext preContext = DatastoreCallbacks.createDeleteContext(transaction, Lists.newArrayList(keys));
         final Function<Key, Void> pre = new Function<Key, Void>() {
             public Void apply(Key input) {
-                getDatastoreCallbacks().executePreDeleteCallbacks(context);
+                getDatastoreCallbacks().executePreDeleteCallbacks(preContext);
                 return null;
             }
         };
+        final DeleteContext postContext = DatastoreCallbacks.createDeleteContext(transaction, Lists.newArrayList(keys));
         final Function<Key, Void> post = new Function<Key, Void>() {
             public Void apply(Key input) {
-                getDatastoreCallbacks().executePostDeleteCallbacks(context);
+                getDatastoreCallbacks().executePostDeleteCallbacks(postContext);
                 return null;
             }
         };

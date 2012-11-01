@@ -92,10 +92,10 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     protected Future<Key> doPut(final Transaction transaction, final Entity entity) {
-        final PutContext context = DatastoreCallbacks.createPutContext(transaction, Collections.singletonList(entity));
+        final PutContext preContext = DatastoreCallbacks.createPutContext(transaction, Collections.singletonList(entity));
         final Function<Entity, Void> preFn = new Function<Entity, Void>() {
             public Void apply(Entity input) {
-                getDatastoreCallbacks().executePrePutCallbacks(context);
+                getDatastoreCallbacks().executePrePutCallbacks(preContext);
                 return null;
             }
         };
@@ -104,9 +104,10 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService {
                 preFn.apply(null);
             }
         };
+        final PutContext postContext = DatastoreCallbacks.createPutContext(transaction, Collections.singletonList(entity));
         final Function<Key, Void> post = new Function<Key, Void>() {
             public Void apply(Key input) {
-                getDatastoreCallbacks().executePostPutCallbacks(context);
+                getDatastoreCallbacks().executePostPutCallbacks(postContext);
                 return null;
             }
         };
