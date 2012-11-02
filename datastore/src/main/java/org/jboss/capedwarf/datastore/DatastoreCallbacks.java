@@ -80,7 +80,7 @@ final class DatastoreCallbacks {
         }
     }
 
-    static Object getCurrentTransactionProvider(final Transaction tx) {
+    static Object getCurrentTransactionProvider(final CurrentTransactionProvider ctp) {
         final Class<?> ctpClass = getCurrentTransactionProviderClass();
         return Proxy.newProxyInstance(ctpClass.getClassLoader(), new Class<?>[]{getCurrentTransactionProviderClass()}, new InvocationHandler() {
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -90,47 +90,47 @@ final class DatastoreCallbacks {
                 } else if ("equals".equals(name)) {
                     return (args[0] == proxy);
                 } else if ("hashCode".equals(name)) {
-                    return tx.hashCode();
+                    return ctp.hashCode();
                 } else {
-                    return tx;
+                    return ctp.getCurrentTransaction(Transaction.class.cast(args[0]));
                 }
             }
         });
     }
 
-    static PutContext createPutContext(final Transaction tx, List<Entity> entities) {
+    static PutContext createPutContext(final CurrentTransactionProvider ctp, List<Entity> entities) {
         Class[] types = {getCurrentTransactionProviderClass(), List.class};
-        Object[] args = {getCurrentTransactionProvider(tx), entities};
+        Object[] args = {getCurrentTransactionProvider(ctp), entities};
         return ReflectionUtils.newInstance(PutContext.class, types, args);
     }
 
-    static DeleteContext createDeleteContext(final Transaction tx, List<Key> keys) {
+    static DeleteContext createDeleteContext(final CurrentTransactionProvider ctp, List<Key> keys) {
         Class[] types = {getCurrentTransactionProviderClass(), List.class};
-        Object[] args = {getCurrentTransactionProvider(tx), keys};
+        Object[] args = {getCurrentTransactionProvider(ctp), keys};
         return ReflectionUtils.newInstance(DeleteContext.class, types, args);
     }
 
-    static PreGetContext createPreGetContext(final Transaction tx, List<Key> keys, Map<Key,Entity> resultMap) {
+    static PreGetContext createPreGetContext(final CurrentTransactionProvider ctp, List<Key> keys, Map<Key,Entity> resultMap) {
         Class[] types = {getCurrentTransactionProviderClass(), List.class, Map.class};
-        Object[] args = {getCurrentTransactionProvider(tx), keys, resultMap};
+        Object[] args = {getCurrentTransactionProvider(ctp), keys, resultMap};
         return ReflectionUtils.newInstance(PreGetContext.class, types, args);
     }
 
-    static PostLoadContext createPostLoadContext(final Transaction tx, Entity result) {
+    static PostLoadContext createPostLoadContext(final CurrentTransactionProvider ctp, Entity result) {
         Class[] types = {getCurrentTransactionProviderClass(), Entity.class};
-        Object[] args = {getCurrentTransactionProvider(tx), result};
+        Object[] args = {getCurrentTransactionProvider(ctp), result};
         return ReflectionUtils.newInstance(PostLoadContext.class, types, args);
     }
 
-    static PostLoadContext createPostLoadContext(final Transaction tx, List<Entity> results) {
+    static PostLoadContext createPostLoadContext(final CurrentTransactionProvider ctp, List<Entity> results) {
         Class[] types = {getCurrentTransactionProviderClass(), List.class};
-        Object[] args = {getCurrentTransactionProvider(tx), results};
+        Object[] args = {getCurrentTransactionProvider(ctp), results};
         return ReflectionUtils.newInstance(PostLoadContext.class, types, args);
     }
 
-    static PreQueryContext createPreQueryContext(final Transaction tx, Query query) {
+    static PreQueryContext createPreQueryContext(final CurrentTransactionProvider ctp, Query query) {
         Class[] types = {getCurrentTransactionProviderClass(), Query.class};
-        Object[] args = {getCurrentTransactionProvider(tx), query};
+        Object[] args = {getCurrentTransactionProvider(ctp), query};
         return ReflectionUtils.newInstance(PreQueryContext.class, types, args);
     }
 

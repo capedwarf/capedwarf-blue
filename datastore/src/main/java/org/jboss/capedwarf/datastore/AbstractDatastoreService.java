@@ -47,7 +47,7 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractDatastoreService implements BaseDatastoreService {
+public abstract class AbstractDatastoreService implements BaseDatastoreService, CurrentTransactionProvider {
     private final DatastoreServiceInternal datastoreService;
     private volatile DatastoreCallbacks datastoreCallbacks;
 
@@ -67,11 +67,13 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService {
         return datastoreService;
     }
 
+    protected abstract CurrentTransactionProvider postTxProvider(final Transaction tx);
+
     protected abstract <T> Future<T> wrap(final Transaction transaction, final Callable<T> callable, final Runnable pre, final Function<T, Void> post);
 
     protected Future<Entity> doGet(final Transaction transaction, final Key key) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
-        final PreGetContext preGetContext = DatastoreCallbacks.createPreGetContext(transaction, Collections.singletonList(key), map);
+        final PreGetContext preGetContext = DatastoreCallbacks.createPreGetContext(this, Collections.singletonList(key), map);
         final Runnable pre = new Runnable() {
             public void run() {
                 getDatastoreCallbacks().executePreGetCallbacks(preGetContext);
@@ -79,7 +81,7 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService {
         };
         final Function<Entity, Void> post = new Function<Entity, Void>() {
             public Void apply(Entity input) {
-                getDatastoreCallbacks().executePostLoadCallbacks(DatastoreCallbacks.createPostLoadContext(transaction, input));
+                getDatastoreCallbacks().executePostLoadCallbacks(DatastoreCallbacks.createPostLoadContext(postTxProvider(transaction), input));
                 return null;
             }
         };
@@ -93,7 +95,7 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     protected Future<Key> doPut(final Transaction transaction, final Entity entity) {
-        final PutContext preContext = DatastoreCallbacks.createPutContext(transaction, Collections.singletonList(entity));
+        final PutContext preContext = DatastoreCallbacks.createPutContext(this, Collections.singletonList(entity));
         final Function<Entity, Void> preFn = new Function<Entity, Void>() {
             public Void apply(Entity input) {
                 getDatastoreCallbacks().executePrePutCallbacks(preContext);
@@ -105,7 +107,7 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService {
                 preFn.apply(null);
             }
         };
-        final PutContext postContext = DatastoreCallbacks.createPutContext(transaction, Collections.singletonList(entity));
+        final PutContext postContext = DatastoreCallbacks.createPutContext(postTxProvider(transaction), Collections.singletonList(entity));
         final Function<Key, Void> post = new Function<Key, Void>() {
             public Void apply(Key input) {
                 getDatastoreCallbacks().executePostPutCallbacks(postContext);
@@ -120,13 +122,13 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     public PreparedQuery prepare(Query query) {
-        final PreQueryContext context = DatastoreCallbacks.createPreQueryContext(getCurrentTransaction(null), query);
+        final PreQueryContext context = DatastoreCallbacks.createPreQueryContext(this, query);
         getDatastoreCallbacks().executePreQueryCallbacks(context);
         return getDelegate().prepare(query);
     }
 
     public PreparedQuery prepare(Transaction transaction, Query query) {
-        final PreQueryContext context = DatastoreCallbacks.createPreQueryContext(transaction, query);
+        final PreQueryContext context = DatastoreCallbacks.createPreQueryContext(this, query);
         getDatastoreCallbacks().executePreQueryCallbacks(context);
         return getDelegate().prepare(transaction, query);
     }
