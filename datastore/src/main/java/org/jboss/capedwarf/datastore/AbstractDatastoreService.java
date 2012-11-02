@@ -120,6 +120,8 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     public PreparedQuery prepare(Query query) {
+        final PreQueryContext context = DatastoreCallbacks.createPreQueryContext(getCurrentTransaction(null), query);
+        getDatastoreCallbacks().executePreQueryCallbacks(context);
         return getDelegate().prepare(query);
     }
 
