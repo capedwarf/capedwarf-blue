@@ -50,12 +50,12 @@ public class OpenShiftEnvironment implements Environment {
         return null;  // TODO
     }
 
-    public Long getRange(Key parent, String kind, long num) {
-        return null; // TODO
+    public Long getRange(String appId, Key parent, String sequenceName, long num) {
+        return null;  // TODO
     }
 
-    public DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String sequenceName) {
-        return null; // TODO
+    public DatastoreService.KeyRangeState checkRange(String appId, KeyRange keyRange, String sequenceName) {
+        return null;  // TODO
     }
 
     public String getTransactionId() {

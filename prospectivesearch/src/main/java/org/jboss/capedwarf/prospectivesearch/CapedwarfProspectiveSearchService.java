@@ -74,7 +74,7 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
     }
 
     private Cache<TopicAndSubId, SubscriptionHolder> createStore() {
-        return InfinispanUtils.getCache(CacheName.PROSPECTIVE_SEARCH);
+        return InfinispanUtils.getCache(Application.getAppId(), CacheName.PROSPECTIVE_SEARCH);
     }
 
     public void subscribe(String topic, String subId, long leaseDurationSeconds, String query, Map<String, FieldType> schema) {

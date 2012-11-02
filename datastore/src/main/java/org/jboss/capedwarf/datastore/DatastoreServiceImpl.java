@@ -104,7 +104,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     protected AllocationTuple getRangeStart(Key parent, String kind, long num) {
         final SequenceTuple st = getSequenceTuple(kind);
         long asNum = st.getAllocationSize() * num;
-        long start = KeyGenerator.generateRange(parent, st.getSequenceName(), asNum);
+        long start = KeyGenerator.generateRange(appId, parent, st.getSequenceName(), asNum);
         return new AllocationTuple(start, asNum);
     }
 
@@ -165,7 +165,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     public DatastoreService.KeyRangeState allocateIdRange(KeyRange keyRange) {
         final String kind = keyRange.getStart().getKind();
         final SequenceTuple st = getSequenceTuple(kind);
-        return KeyGenerator.checkRange(keyRange, st.getSequenceName());
+        return KeyGenerator.checkRange(appId, keyRange, st.getSequenceName());
     }
 
     public DatastoreAttributes getDatastoreAttributes() {

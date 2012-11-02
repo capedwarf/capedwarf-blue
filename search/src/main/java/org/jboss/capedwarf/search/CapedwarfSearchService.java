@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.search;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.search.GetIndexesRequest;
 import com.google.appengine.api.search.GetResponse;
@@ -37,9 +40,6 @@ import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.common.util.Util;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -64,8 +64,9 @@ public class CapedwarfSearchService implements SearchService {
     }
 
     private void initCache() {
+        String appId = Application.getAppId();
         ClassLoader classLoader = Application.getAppClassloader();
-        this.cache = InfinispanUtils.<CacheKey, CacheValue>getCache(CacheName.SEARCH).getAdvancedCache().with(classLoader);
+        this.cache = InfinispanUtils.<CacheKey, CacheValue>getCache(appId, CacheName.SEARCH).getAdvancedCache().with(classLoader);
     }
 
     public Index getIndex(IndexSpec indexSpec) {

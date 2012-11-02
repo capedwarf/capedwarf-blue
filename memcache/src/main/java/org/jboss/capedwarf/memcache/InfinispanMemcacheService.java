@@ -24,6 +24,15 @@
 
 package org.jboss.capedwarf.memcache;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.memcache.ErrorHandler;
 import com.google.appengine.api.memcache.Expiration;
@@ -33,18 +42,10 @@ import com.google.appengine.api.memcache.Stats;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.infinispan.WrapperTxCallable;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -65,7 +66,7 @@ public class InfinispanMemcacheService implements MemcacheService {
 
     public InfinispanMemcacheService(String namespace) {
         setNamespace(namespace);
-        this.cache = InfinispanUtils.getCache(CacheName.MEMCACHE);
+        this.cache = InfinispanUtils.getCache(Application.getAppId(), CacheName.MEMCACHE);
     }
 
     public String getNamespace() {

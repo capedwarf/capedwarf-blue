@@ -51,6 +51,7 @@ import com.google.appengine.api.files.GSFileOptions;
 import com.google.appengine.api.files.RecordReadChannel;
 import com.google.appengine.api.files.RecordWriteChannel;
 import org.infinispan.io.GridFilesystem;
+import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
@@ -213,7 +214,7 @@ public class JBossFileService implements FileService {
     }
 
     private GridFilesystem getGridFilesystem() {
-        return InfinispanUtils.getGridFilesystem();
+        return InfinispanUtils.getGridFilesystem(Application.getAppId());
     }
 
     public RecordWriteChannel openRecordWriteChannel(AppEngineFile file, boolean lock) throws IOException {

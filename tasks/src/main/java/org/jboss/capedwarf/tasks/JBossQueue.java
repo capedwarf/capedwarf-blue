@@ -87,7 +87,7 @@ public class JBossQueue implements Queue {
     }
 
     private Cache<String, Object> getCache() {
-        return InfinispanUtils.getCache(CacheName.TASKS);
+        return InfinispanUtils.getCache(Application.getAppId(), CacheName.TASKS);
     }
 
     private Cache<String, Object> getTasks() {

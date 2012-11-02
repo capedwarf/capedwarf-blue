@@ -22,10 +22,11 @@
 
 package org.jboss.capedwarf.channel.manager;
 
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 
 /**
  *
@@ -51,7 +52,7 @@ public class ChannelQueueManager {
 
     public ChannelQueue createChannelQueue(String channelToken) {
         Channel channel = ChannelManager.getInstance().getChannelByToken(channelToken);
-        channel.setConnectedNode(InfinispanUtils.getLocalNode());
+        channel.setConnectedNode(InfinispanUtils.getLocalNode(Application.getAppId()));
 
         ChannelQueue queue = new ChannelQueue();
         queues.put(channelToken, queue);

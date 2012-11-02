@@ -33,11 +33,11 @@ import org.jboss.capedwarf.environment.EnvironmentFactory;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class KeyGenerator {
-    static Long generateRange(Key parent, String kind, long num) {
-        return EnvironmentFactory.getEnvironment().getRange(parent, kind, num);
+    static Long generateRange(String appId, Key parent, String kind, long num) {
+        return EnvironmentFactory.getEnvironment().getRange(appId, parent, kind, num);
     }
 
-    static DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String seqName) {
-        return EnvironmentFactory.getEnvironment().checkRange(keyRange, seqName);
+    static DatastoreService.KeyRangeState checkRange(String appId, KeyRange keyRange, String seqName) {
+        return EnvironmentFactory.getEnvironment().checkRange(appId, keyRange, seqName);
     }
 }

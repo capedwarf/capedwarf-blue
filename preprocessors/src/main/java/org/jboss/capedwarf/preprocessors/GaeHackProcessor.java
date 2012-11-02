@@ -74,6 +74,11 @@ public class GaeHackProcessor extends DatastoreCallbacksProcessor {
     }
 
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        // TODO -- why it doesn't write down classes
+        final String osName = System.getProperty("os.name");
+        if (osName.contains("Windows") == false)
+            return false;
+
         try {
             final Object writter = loadCallbacksConfigWriter();
             if (writter != null) {

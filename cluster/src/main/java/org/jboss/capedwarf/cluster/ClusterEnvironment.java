@@ -44,12 +44,12 @@ public class ClusterEnvironment extends AbstractEnvironment {
         return "cluster-mode"; // TODO - per node?
     }
 
-    public Long getRange(Key parent, String sequenceName, long num) {
-        return InfinispanUtils.submit(CacheName.DIST, new KeyGeneratorTask(sequenceName, num), sequenceName);
+    public Long getRange(String appId, Key parent, String sequenceName, long num) {
+        return InfinispanUtils.submit(appId, CacheName.DIST, new KeyGeneratorTask(sequenceName, num), sequenceName);
     }
 
-    public DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String sequenceName) {
-        return InfinispanUtils.submit(CacheName.DIST, new KeyRangeCheckTask(keyRange, sequenceName), sequenceName);
+    public DatastoreService.KeyRangeState checkRange(String appId, KeyRange keyRange, String sequenceName) {
+        return InfinispanUtils.submit(appId, CacheName.DIST, new KeyRangeCheckTask(keyRange, sequenceName), sequenceName);
     }
 
     public String getTransactionId() {

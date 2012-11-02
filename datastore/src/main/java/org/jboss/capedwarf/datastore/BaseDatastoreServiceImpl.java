@@ -80,7 +80,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService {
     }
 
     protected Cache<Key, Entity> createStore() {
-        return InfinispanUtils.getCache(CacheName.DEFAULT);
+        return InfinispanUtils.getCache(appId, CacheName.DEFAULT);
     }
 
     public PreparedQuery prepare(Query query) {

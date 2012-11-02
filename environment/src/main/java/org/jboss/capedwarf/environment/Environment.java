@@ -62,21 +62,23 @@ public interface Environment {
     /**
      * Get range.
      *
+     * @param appId the app id
      * @param parent the parent
      * @param sequenceName the sequenceName
      * @param num the size of range
      * @return key range start
      */
-    Long getRange(Key parent, String sequenceName, long num);
+    Long getRange(String appId, Key parent, String sequenceName, long num);
 
     /**
      * Check key range.
      *
+     * @param appId the app id
      * @param keyRange the key range
      * @param sequenceName the sequence name
      * @return key range state
      */
-    DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String sequenceName);
+    DatastoreService.KeyRangeState checkRange(String appId, KeyRange keyRange, String sequenceName);
 
     /**
      * Get transaction id.

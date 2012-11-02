@@ -6,6 +6,7 @@ import org.infinispan.Cache;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
+import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.junit.Test;
@@ -21,7 +22,7 @@ public class InfinispanClusterCdCacheConfigTestCase extends AbstractInfinispanCl
 
     @Override
     protected Cache<String, String> getCache() {
-        return InfinispanUtils.getCache(CacheName.SEARCH);
+        return InfinispanUtils.getCache(Application.getAppId(), CacheName.SEARCH);
     }
 
     @InSequence(10)

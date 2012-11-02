@@ -34,7 +34,6 @@ import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 /**
@@ -63,21 +62,20 @@ public class InfinispanUtils {
         return template.getName() + "_" + appId;
     }
 
-    public static <K, V> Cache<K, V> getCache(CacheName template) {
+    public static <K, V> Cache<K, V> getCache(String appId, CacheName template) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
         if (template == null)
             throw new IllegalArgumentException("Null template!");
 
-        final String appId = Application.getAppId();
         return getCache(template, appId);
     }
 
-    public static <R> R submit(final CacheName template, final Callable<R> task, Object... keys) {
+    public static <R> R submit(final String appId, final CacheName template, final Callable<R> task, Object... keys) {
         if (cacheManager == null)
             throw new IllegalArgumentException("CacheManager is null, should not be here?!");
 
-        final Cache cache = getCache(template);
+        final Cache cache = getCache(appId, template);
         try {
             final DistributedExecutorService des = new DefaultExecutorService(cache);
             final Future<R> result = des.submit(task, keys);
@@ -87,15 +85,14 @@ public class InfinispanUtils {
         }
     }
 
-    public static GridFilesystem getGridFilesystem() {
-        final String appId = Application.getAppId();
+    public static GridFilesystem getGridFilesystem(String appId) {
         GridFilesystem gfs = gridFilesystems.get(appId);
         if (gfs == null) {
             synchronized (gridFilesystems) {
                 gfs = gridFilesystems.get(appId);
                 if (gfs == null) {
-                    final Cache<String, byte[]> data = getCache(CacheName.DATA);
-                    final Cache<String, GridFile.Metadata> metadata = getCache(CacheName.METADATA);
+                    final Cache<String, byte[]> data = getCache(appId, CacheName.DATA);
+                    final Cache<String, GridFile.Metadata> metadata = getCache(appId, CacheName.METADATA);
                     gfs = new GridFilesystem(data, metadata);
                     gridFilesystems.put(appId, gfs);
                 }
@@ -122,7 +119,7 @@ public class InfinispanUtils {
         }
     }
 
-    public static Address getLocalNode() {
-        return InfinispanUtils.getCache(CacheName.DEFAULT).getAdvancedCache().getRpcManager().getAddress();
+    public static Address getLocalNode(String appId) {
+        return getCache(appId, CacheName.DEFAULT).getAdvancedCache().getRpcManager().getAddress();
     }
 }

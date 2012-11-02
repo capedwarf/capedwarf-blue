@@ -73,11 +73,11 @@ public final class EnvironmentFactory {
             return "dummy";
         }
 
-        public Long getRange(Key parent, String sequenceName, long num) {
+        public Long getRange(String appId, Key parent, String sequenceName, long num) {
             return nextId.getAndAdd(num);
         }
 
-        public DatastoreService.KeyRangeState checkRange(KeyRange keyRange, String sequenceName) {
+        public DatastoreService.KeyRangeState checkRange(String appId, KeyRange keyRange, String sequenceName) {
             long start = keyRange.getStart().getId();
             long next = nextId.get();
             // no support for empty atm
