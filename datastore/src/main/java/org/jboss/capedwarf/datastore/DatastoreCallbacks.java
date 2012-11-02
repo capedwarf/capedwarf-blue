@@ -46,6 +46,20 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 final class DatastoreCallbacks {
+    private static final Class<?> ctpClass;
+
+    static Class<?> getCurrentTransactionProviderClass() {
+        try {
+            return DatastoreCallbacks.class.getClassLoader().loadClass("com.google.appengine.api.datastore.CurrentTransactionProvider");
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    static {
+        ctpClass = getCurrentTransactionProviderClass();
+    }
+
     private final MethodInvocation executePrePutCallbacks;
     private final MethodInvocation executePostPutCallbacks;
     private final MethodInvocation executePreDeleteCallbacks;
@@ -72,17 +86,8 @@ final class DatastoreCallbacks {
         }
     }
 
-    static Class<?> getCurrentTransactionProviderClass() {
-        try {
-            return DatastoreCallbacks.class.getClassLoader().loadClass("com.google.appengine.api.datastore.CurrentTransactionProvider");
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
     static Object getCurrentTransactionProvider(final CurrentTransactionProvider ctp) {
-        final Class<?> ctpClass = getCurrentTransactionProviderClass();
-        return Proxy.newProxyInstance(ctpClass.getClassLoader(), new Class<?>[]{getCurrentTransactionProviderClass()}, new InvocationHandler() {
+        return Proxy.newProxyInstance(ctpClass.getClassLoader(), new Class<?>[]{ctpClass}, new InvocationHandler() {
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 final String name = method.getName();
                 if ("toString".equals(name)) {
@@ -99,37 +104,37 @@ final class DatastoreCallbacks {
     }
 
     static PutContext createPutContext(final CurrentTransactionProvider ctp, List<Entity> entities) {
-        Class[] types = {getCurrentTransactionProviderClass(), List.class};
+        Class[] types = {ctpClass, List.class};
         Object[] args = {getCurrentTransactionProvider(ctp), entities};
         return ReflectionUtils.newInstance(PutContext.class, types, args);
     }
 
     static DeleteContext createDeleteContext(final CurrentTransactionProvider ctp, List<Key> keys) {
-        Class[] types = {getCurrentTransactionProviderClass(), List.class};
+        Class[] types = {ctpClass, List.class};
         Object[] args = {getCurrentTransactionProvider(ctp), keys};
         return ReflectionUtils.newInstance(DeleteContext.class, types, args);
     }
 
     static PreGetContext createPreGetContext(final CurrentTransactionProvider ctp, List<Key> keys, Map<Key,Entity> resultMap) {
-        Class[] types = {getCurrentTransactionProviderClass(), List.class, Map.class};
+        Class[] types = {ctpClass, List.class, Map.class};
         Object[] args = {getCurrentTransactionProvider(ctp), keys, resultMap};
         return ReflectionUtils.newInstance(PreGetContext.class, types, args);
     }
 
     static PostLoadContext createPostLoadContext(final CurrentTransactionProvider ctp, Entity result) {
-        Class[] types = {getCurrentTransactionProviderClass(), Entity.class};
+        Class[] types = {ctpClass, Entity.class};
         Object[] args = {getCurrentTransactionProvider(ctp), result};
         return ReflectionUtils.newInstance(PostLoadContext.class, types, args);
     }
 
     static PostLoadContext createPostLoadContext(final CurrentTransactionProvider ctp, List<Entity> results) {
-        Class[] types = {getCurrentTransactionProviderClass(), List.class};
+        Class[] types = {ctpClass, List.class};
         Object[] args = {getCurrentTransactionProvider(ctp), results};
         return ReflectionUtils.newInstance(PostLoadContext.class, types, args);
     }
 
     static PreQueryContext createPreQueryContext(final CurrentTransactionProvider ctp, Query query) {
-        Class[] types = {getCurrentTransactionProviderClass(), Query.class};
+        Class[] types = {ctpClass, Query.class};
         Object[] args = {getCurrentTransactionProvider(ctp), query};
         return ReflectionUtils.newInstance(PreQueryContext.class, types, args);
     }
