@@ -226,7 +226,12 @@ public class JBossTransaction implements Transaction {
     public Future<Void> commitAsync() {
         checkIfCurrent();
         final JBossTransaction previous = cleanup(false);
+
         final javax.transaction.Transaction tx = getTx();
+        if (tx == null) {
+            throw new IllegalArgumentException("No Tx -- should exist?!");
+        }
+
         final Future<Void> wrap = ExecutorFactory.wrap(new Callable<Void>() {
             public Void call() throws Exception {
                 tx.commit();
@@ -266,7 +271,12 @@ public class JBossTransaction implements Transaction {
     public Future<Void> rollbackAsync() {
         checkIfCurrent();
         final JBossTransaction previous = cleanup(false);
+
         final javax.transaction.Transaction tx = getTx();
+        if (tx == null) {
+            throw new IllegalArgumentException("No Tx -- should exist?!");
+        }
+
         final Future<Void> wrap = ExecutorFactory.wrap(new Callable<Void>() {
             public Void call() throws Exception {
                 tx.rollback();

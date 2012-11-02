@@ -61,6 +61,8 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
         final Transaction tx = service.beginTransaction().get();
         try {
             runSmokeOps();
+        } catch (Exception e) {
+            log.severe("Failed smoke ops: " + e.getMessage());
         } finally {
             tx.rollbackAsync().get();
         }

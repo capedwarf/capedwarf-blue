@@ -24,6 +24,7 @@ package org.jboss.test.capedwarf.common.test;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.logging.Logger;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -35,6 +36,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class BaseTest {
+    protected final Logger log = Logger.getLogger(getClass().getName());
+
     protected static WebArchive getCapedwarfDeployment(TestContext context) {
         final WebArchive war;
 
