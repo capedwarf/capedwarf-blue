@@ -36,6 +36,7 @@ import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -57,12 +58,14 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
     }
 
     @Test
+    @Ignore
     public void testSmokeWithTx() throws Exception {
         final Transaction tx = service.beginTransaction().get();
         try {
             runSmokeOps();
         } catch (Exception e) {
             log.severe("Failed smoke ops: " + e.getMessage());
+            e.printStackTrace();
         } finally {
             tx.rollbackAsync().get();
         }

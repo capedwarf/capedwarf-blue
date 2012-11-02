@@ -27,6 +27,7 @@ import javax.transaction.HeuristicRollbackException;
 import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
+import javax.transaction.Transaction;
 import javax.transaction.xa.XAResource;
 
 /**
@@ -38,9 +39,21 @@ class TransactionWrapper implements javax.transaction.Transaction {
     private javax.transaction.Transaction delegate;
     private JBossTransaction transaction;
 
+    private static Transaction check(Transaction tx) {
+        if (tx == null) {
+            throw new IllegalArgumentException("No Tx -- should exist?!");
+        }
+        return tx;
+    }
+
     TransactionWrapper(JBossTransaction transaction) {
+        this.delegate = check(transaction.getTransaction());
         this.transaction = transaction;
-        this.delegate = transaction.getTransaction();
+    }
+
+    TransactionWrapper(Transaction delegate, JBossTransaction transaction) {
+        this.delegate = check(delegate);
+        this.transaction = transaction;
     }
 
     JBossTransaction getTransaction() {
@@ -73,5 +86,21 @@ class TransactionWrapper implements javax.transaction.Transaction {
 
     public void registerSynchronization(Synchronization sync) throws RollbackException, IllegalStateException, SystemException {
         delegate.registerSynchronization(sync);
+    }
+
+    @Override
+    public int hashCode() {
+        return delegate.hashCode();
+    }
+
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+    @Override
+    public boolean equals(Object obj) {
+        return delegate.equals(obj);
+    }
+
+    @Override
+    public String toString() {
+        return delegate.toString();
     }
 }
