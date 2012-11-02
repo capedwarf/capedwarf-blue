@@ -79,9 +79,13 @@ public class JBossTransaction implements Transaction {
 
             throw new DatastoreFailureException("Cannot begin tx.", e);
         }
-        JBossTransaction tx = new JBossTransaction(options);
+        final JBossTransaction tx = new JBossTransaction(options);
         stack.push(tx);
         return tx;
+    }
+
+    javax.transaction.Transaction getTransaction() {
+        return transaction;
     }
 
     static javax.transaction.Transaction getTx() {
@@ -104,15 +108,14 @@ public class JBossTransaction implements Transaction {
         final Stack<JBossTransaction> stack = current.get();
         if (stack != null && stack.isEmpty() == false) {
             final JBossTransaction tx = stack.pop();
-            tx.suspend();
 
             if (stack.isEmpty()) {
                 current.remove();
             }
 
-            javax.transaction.Transaction result = tx.transaction;
-            tx.transaction = null;
-            return result;
+            tx.suspend();
+
+            return new TransactionWrapper(tx);
         } else {
             return null;
         }
@@ -120,8 +123,7 @@ public class JBossTransaction implements Transaction {
 
     static void resumeTx(javax.transaction.Transaction transaction) {
         try {
-            final JBossTransaction tx = new JBossTransaction(null);
-            tx.transaction = transaction;
+            final JBossTransaction tx = TransactionWrapper.class.cast(transaction).getTransaction();
             tx.resume(false);
 
             Stack<JBossTransaction> stack = current.get();
