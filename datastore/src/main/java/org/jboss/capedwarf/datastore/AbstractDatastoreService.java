@@ -34,6 +34,7 @@ import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreGetContext;
+import com.google.appengine.api.datastore.PreQueryContext;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.PutContext;
 import com.google.appengine.api.datastore.Query;
@@ -123,6 +124,8 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService {
     }
 
     public PreparedQuery prepare(Transaction transaction, Query query) {
+        final PreQueryContext context = DatastoreCallbacks.createPreQueryContext(transaction, query);
+        getDatastoreCallbacks().executePreQueryCallbacks(context);
         return getDelegate().prepare(transaction, query);
     }
 
