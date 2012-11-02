@@ -26,9 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Stack;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -103,16 +101,34 @@ public class JBossTransaction implements Transaction {
     }
 
     static javax.transaction.Transaction suspendTx() {
-        try {
-            return tm.suspend();
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+        final Stack<JBossTransaction> stack = current.get();
+        if (stack != null && stack.isEmpty() == false) {
+            final JBossTransaction tx = stack.pop();
+            tx.suspend();
+
+            if (stack.isEmpty()) {
+                current.remove();
+            }
+
+            return tx.transaction;
+        } else {
+            return null;
         }
     }
 
     static void resumeTx(javax.transaction.Transaction transaction) {
         try {
-            tm.resume(transaction);
+            final JBossTransaction tx = new JBossTransaction(null);
+            tx.transaction = transaction;
+            tx.resume(false);
+
+            Stack<JBossTransaction> stack = current.get();
+            if (stack == null) {
+                stack = new Stack<JBossTransaction>();
+                current.set(stack);
+            }
+
+            stack.push(tx);
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
@@ -196,14 +212,12 @@ public class JBossTransaction implements Transaction {
     public Future<Void> commitAsync() {
         checkIfCurrent();
         final javax.transaction.Transaction tx = getTx();
-        FutureTask<Void> task = new FutureTask<Void>(new Callable<Void>() {
+        return ExecutorFactory.wrap(new Callable<Void>() {
             public Void call() throws Exception {
                 tx.commit();
                 return null;
             }
         });
-        executeTask(task);
-        return task;
     }
 
     public void rollback() {
@@ -220,19 +234,12 @@ public class JBossTransaction implements Transaction {
     public Future<Void> rollbackAsync() {
         checkIfCurrent();
         final javax.transaction.Transaction tx = getTx();
-        FutureTask<Void> task = new FutureTask<Void>(new Callable<Void>() {
+        return ExecutorFactory.wrap(new Callable<Void>() {
             public Void call() throws Exception {
                 tx.rollback();
                 return null;
             }
         });
-        executeTask(task);
-        return task;
-    }
-
-    private void executeTask(FutureTask<Void> task) {
-        final Executor executor = ExecutorFactory.getInstance();
-        executor.execute(task);
     }
 
     public String getId() {
