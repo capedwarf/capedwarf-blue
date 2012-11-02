@@ -86,44 +86,38 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         if (pre != null) {
             pre.run();
         }
-        final javax.transaction.Transaction tx = (transaction != null) ? JBossTransaction.suspendTx() : null;
-        try {
-            final Future<T> wrap = wrap(new Callable<T>() {
-                public T call() throws Exception {
+        final javax.transaction.Transaction tx = JBossTransaction.getTx();
+        final Future<T> wrap = wrap(new Callable<T>() {
+            public T call() throws Exception {
+                if (tx != null) {
+                    JBossTransaction.resumeTx(tx);
+                }
+                try {
+                    return callable.call();
+                } finally {
                     if (tx != null) {
-                        JBossTransaction.resumeTx(tx);
-                    }
-                    try {
-                        return callable.call();
-                    } finally {
-                        if (tx != null) {
-                            JBossTransaction.suspendTx();
-                        }
+                        JBossTransaction.suspendTx();
                     }
                 }
-            });
-            return new FutureGetDelegate<T>(wrap) {
-                public T get() throws InterruptedException, ExecutionException {
-                    final T result = wrap.get();
-                    if (post != null) {
-                        post.apply(result);
-                    }
-                    return result;
-                }
-
-                public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    final T result = wrap.get(timeout, unit);
-                    if (post != null) {
-                        post.apply(result);
-                    }
-                    return result;
-                }
-            };
-        } finally {
-            if (tx != null) {
-                JBossTransaction.resumeTx(tx);
             }
-        }
+        });
+        return new FutureGetDelegate<T>(wrap) {
+            public T get() throws InterruptedException, ExecutionException {
+                final T result = wrap.get();
+                if (post != null) {
+                    post.apply(result);
+                }
+                return result;
+            }
+
+            public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                final T result = wrap.get(timeout, unit);
+                if (post != null) {
+                    post.apply(result);
+                }
+                return result;
+            }
+        };
     }
 
     public Future<Transaction> beginTransaction() {
@@ -169,57 +163,51 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         for (Key key : keyIterable) {
             pre.apply(key);
         }
-        final javax.transaction.Transaction tx = (transaction != null) ? JBossTransaction.suspendTx() : null;
-        try {
-            final Future<Map<Key, Entity>> wrap = wrap(new Callable<Map<Key, Entity>>() {
-                public Map<Key, Entity> call() throws Exception {
+        final javax.transaction.Transaction tx = JBossTransaction.getTx();
+        final Future<Map<Key, Entity>> wrap = wrap(new Callable<Map<Key, Entity>>() {
+            public Map<Key, Entity> call() throws Exception {
+                if (tx != null) {
+                    JBossTransaction.resumeTx(tx);
+                }
+                try {
+                    for (Key key : keyIterable) {
+                        Entity previous = map.get(key);
+                        if (previous == null) {
+                            final Entity entity = getDelegate().get(transaction, key);
+                            if (entity != null) {
+                                map.put(key, entity);
+                                previous = entity;
+                            }
+                        }
+                        if (previous != null) {
+                            results.add(previous);
+                        }
+                    }
+                    return map;
+                } finally {
                     if (tx != null) {
-                        JBossTransaction.resumeTx(tx);
-                    }
-                    try {
-                        for (Key key : keyIterable) {
-                            Entity previous = map.get(key);
-                            if (previous == null) {
-                                final Entity entity = getDelegate().get(transaction, key);
-                                if (entity != null) {
-                                    map.put(key, entity);
-                                    previous = entity;
-                                }
-                            }
-                            if (previous != null) {
-                                results.add(previous);
-                            }
-                        }
-                        return map;
-                    } finally {
-                        if (tx != null) {
-                            JBossTransaction.suspendTx();
-                        }
+                        JBossTransaction.suspendTx();
                     }
                 }
-            });
-            return new FutureGetDelegate<Map<Key, Entity>>(wrap) {
-                public Map<Key, Entity> get() throws InterruptedException, ExecutionException {
-                    wrap.get();
-                    for (Map.Entry<Key, Entity> entry : map.entrySet()) {
-                        post.apply(entry);
-                    }
-                    return map;
-                }
-
-                public Map<Key, Entity> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    wrap.get(timeout, unit);
-                    for (Map.Entry<Key, Entity> entry : map.entrySet()) {
-                        post.apply(entry);
-                    }
-                    return map;
-                }
-            };
-        } finally {
-            if (tx != null) {
-                JBossTransaction.resumeTx(tx);
             }
-        }
+        });
+        return new FutureGetDelegate<Map<Key, Entity>>(wrap) {
+            public Map<Key, Entity> get() throws InterruptedException, ExecutionException {
+                wrap.get();
+                for (Map.Entry<Key, Entity> entry : map.entrySet()) {
+                    post.apply(entry);
+                }
+                return map;
+            }
+
+            public Map<Key, Entity> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                wrap.get(timeout, unit);
+                for (Map.Entry<Key, Entity> entry : map.entrySet()) {
+                    post.apply(entry);
+                }
+                return map;
+            }
+        };
     }
 
     public Future<Key> put(final Entity entity) {
@@ -252,48 +240,42 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         for (Entity entity : entityIterable) {
             pre.apply(entity);
         }
-        final javax.transaction.Transaction tx = (transaction != null) ? JBossTransaction.suspendTx() : null;
-        try {
-            final Future<List<Key>> wrap = wrap(new Callable<List<Key>>() {
-                public List<Key> call() throws Exception {
+        final javax.transaction.Transaction tx = JBossTransaction.getTx();
+        final Future<List<Key>> wrap = wrap(new Callable<List<Key>>() {
+            public List<Key> call() throws Exception {
+                if (tx != null) {
+                    JBossTransaction.resumeTx(tx);
+                }
+                try {
+                    final List<Key> keys = new ArrayList<Key>();
+                    for (Entity entity : entityIterable) {
+                        keys.add(getDelegate().put(transaction, entity));
+                    }
+                    return keys;
+                } finally {
                     if (tx != null) {
-                        JBossTransaction.resumeTx(tx);
-                    }
-                    try {
-                        final List<Key> keys = new ArrayList<Key>();
-                        for (Entity entity : entityIterable) {
-                            keys.add(getDelegate().put(transaction, entity));
-                        }
-                        return keys;
-                    } finally {
-                        if (tx != null) {
-                            JBossTransaction.suspendTx();
-                        }
+                        JBossTransaction.suspendTx();
                     }
                 }
-            });
-            return new FutureGetDelegate<List<Key>>(wrap) {
-                public List<Key> get() throws InterruptedException, ExecutionException {
-                    final List<Key> result = wrap.get();
-                    for (Entity entity : entityIterable) {
-                        post.apply(entity);
-                    }
-                    return result;
-                }
-
-                public List<Key> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    final List<Key> result = wrap.get(timeout, unit);
-                    for (Entity entity : entityIterable) {
-                        post.apply(entity);
-                    }
-                    return result;
-                }
-            };
-        } finally {
-            if (tx != null) {
-                JBossTransaction.resumeTx(tx);
             }
-        }
+        });
+        return new FutureGetDelegate<List<Key>>(wrap) {
+            public List<Key> get() throws InterruptedException, ExecutionException {
+                final List<Key> result = wrap.get();
+                for (Entity entity : entityIterable) {
+                    post.apply(entity);
+                }
+                return result;
+            }
+
+            public List<Key> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                final List<Key> result = wrap.get(timeout, unit);
+                for (Entity entity : entityIterable) {
+                    post.apply(entity);
+                }
+                return result;
+            }
+        };
     }
 
     public Future<Void> delete(final Key... keys) {
@@ -326,47 +308,41 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         for (Key key : keyIterable) {
             pre.apply(key);
         }
-        final javax.transaction.Transaction tx = (transaction != null) ? JBossTransaction.suspendTx() : null;
-        try {
-            final Future<Void> wrap = wrap(new Callable<Void>() {
-                public Void call() throws Exception {
+        final javax.transaction.Transaction tx = JBossTransaction.getTx();
+        final Future<Void> wrap = wrap(new Callable<Void>() {
+            public Void call() throws Exception {
+                if (tx != null) {
+                    JBossTransaction.resumeTx(tx);
+                }
+                try {
+                    for (Key key : keyIterable) {
+                        getDelegate().delete(transaction, key);
+                    }
+                    return null;
+                } finally {
                     if (tx != null) {
-                        JBossTransaction.resumeTx(tx);
-                    }
-                    try {
-                        for (Key key : keyIterable) {
-                            getDelegate().delete(transaction, key);
-                        }
-                        return null;
-                    } finally {
-                        if (tx != null) {
-                            JBossTransaction.suspendTx();
-                        }
+                        JBossTransaction.suspendTx();
                     }
                 }
-            });
-            return new FutureGetDelegate<Void>(wrap) {
-                public Void get() throws InterruptedException, ExecutionException {
-                    wrap.get();
-                    for (Key key : keyIterable) {
-                        post.apply(key);
-                    }
-                    return null;
-                }
-
-                public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                    wrap.get(timeout, unit);
-                    for (Key key : keyIterable) {
-                        post.apply(key);
-                    }
-                    return null;
-                }
-            };
-        } finally {
-            if (tx != null) {
-                JBossTransaction.resumeTx(tx);
             }
-        }
+        });
+        return new FutureGetDelegate<Void>(wrap) {
+            public Void get() throws InterruptedException, ExecutionException {
+                wrap.get();
+                for (Key key : keyIterable) {
+                    post.apply(key);
+                }
+                return null;
+            }
+
+            public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                wrap.get(timeout, unit);
+                for (Key key : keyIterable) {
+                    post.apply(key);
+                }
+                return null;
+            }
+        };
     }
 
     public Future<KeyRange> allocateIds(final String s, final long l) {
