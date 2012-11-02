@@ -26,7 +26,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Stack;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,6 +42,7 @@ import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.common.threads.FutureGetDelegate;
 import org.jboss.capedwarf.common.tx.TxUtils;
 import org.jboss.capedwarf.environment.EnvironmentFactory;
 
@@ -179,21 +183,27 @@ public class JBossTransaction implements Transaction {
         return (to != null && to.isXG());
     }
 
-    private static void cleanup(JBossTransaction tx) {
-        Stack<JBossTransaction> stack = current.get();
+    private JBossTransaction cleanup(boolean resume) {
+        final Stack<JBossTransaction> stack = current.get();
         if (stack == null)
             throw new IllegalStateException("Illegal call to cleanup - stack should exist");
 
-        JBossTransaction jt = stack.peek();
-        if (jt != tx)
+        final JBossTransaction jt = stack.peek();
+        if (jt != this)
             throw new IllegalArgumentException("Cannot cleanup non-current tx!");
 
         stack.pop(); // remove current
 
-        if (stack.isEmpty())
+        JBossTransaction previous = null;
+        if (stack.isEmpty()) {
             current.remove();
-        else
-            stack.peek().resume(false); // resume previous
+        } else {
+            previous = stack.peek();
+            if (resume) {
+                previous.resume(false); // resume previous
+            }
+        }
+        return previous;
     }
 
     @SuppressWarnings({"unchecked"})
@@ -209,19 +219,37 @@ public class JBossTransaction implements Transaction {
         } catch (Exception e) {
             throw new DatastoreFailureException("Cannot commit tx.", e);
         } finally {
-            cleanup(this);
+            cleanup(true);
         }
     }
 
     public Future<Void> commitAsync() {
         checkIfCurrent();
+        final JBossTransaction previous = cleanup(false);
         final javax.transaction.Transaction tx = getTx();
-        return ExecutorFactory.wrap(new Callable<Void>() {
+        final Future<Void> wrap = ExecutorFactory.wrap(new Callable<Void>() {
             public Void call() throws Exception {
                 tx.commit();
                 return null;
             }
         });
+        return new FutureGetDelegate<Void>(wrap) {
+            public Void get() throws InterruptedException, ExecutionException {
+                final Void result = wrap.get();
+                if (previous != null) {
+                    previous.resume(false);
+                }
+                return result;
+            }
+
+            public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                final Void result = wrap.get(timeout, unit);
+                if (previous != null) {
+                    previous.resume(false);
+                }
+                return result;
+            }
+        };
     }
 
     public void rollback() {
@@ -231,19 +259,37 @@ public class JBossTransaction implements Transaction {
         } catch (Exception e) {
             throw new DatastoreFailureException("Cannot rollback tx.", e);
         } finally {
-            cleanup(this);
+            cleanup(true);
         }
     }
 
     public Future<Void> rollbackAsync() {
         checkIfCurrent();
+        final JBossTransaction previous = cleanup(false);
         final javax.transaction.Transaction tx = getTx();
-        return ExecutorFactory.wrap(new Callable<Void>() {
+        final Future<Void> wrap = ExecutorFactory.wrap(new Callable<Void>() {
             public Void call() throws Exception {
                 tx.rollback();
                 return null;
             }
         });
+        return new FutureGetDelegate<Void>(wrap) {
+            public Void get() throws InterruptedException, ExecutionException {
+                final Void result = wrap.get();
+                if (previous != null) {
+                    previous.resume(false);
+                }
+                return result;
+            }
+
+            public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                final Void result = wrap.get(timeout, unit);
+                if (previous != null) {
+                    previous.resume(false);
+                }
+                return result;
+            }
+        };
     }
 
     public String getId() {

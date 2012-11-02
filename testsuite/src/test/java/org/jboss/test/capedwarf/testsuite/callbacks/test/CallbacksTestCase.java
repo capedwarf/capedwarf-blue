@@ -22,6 +22,7 @@
 
 package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import com.google.appengine.api.datastore.AsyncDatastoreService;
@@ -31,6 +32,7 @@ import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -51,6 +53,20 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
 
     @Test
     public void testSmoke() throws Exception {
+        runSmokeOps();
+    }
+
+    @Test
+    public void testSmokeWithTx() throws Exception {
+        final Transaction tx = service.beginTransaction().get();
+        try {
+            runSmokeOps();
+        } finally {
+            tx.rollbackAsync().get();
+        }
+    }
+
+    protected void runSmokeOps() throws InterruptedException, ExecutionException {
         reset();
 
         Future<Key> f = service.put(new Entity(CallbackHandler.KIND));
