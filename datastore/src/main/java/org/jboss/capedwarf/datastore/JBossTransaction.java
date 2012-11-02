@@ -110,7 +110,9 @@ public class JBossTransaction implements Transaction {
                 current.remove();
             }
 
-            return tx.transaction;
+            javax.transaction.Transaction result = tx.transaction;
+            tx.transaction = null;
+            return result;
         } else {
             return null;
         }
