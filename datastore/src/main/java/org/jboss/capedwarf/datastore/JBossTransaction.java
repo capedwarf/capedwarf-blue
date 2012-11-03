@@ -100,10 +100,9 @@ public class JBossTransaction implements Transaction {
         }
     }
 
-    static javax.transaction.Transaction getTxWrapper() {
-        final JBossTransaction jtx = currentTransaction();
-        if (jtx != null) {
-            return new TransactionWrapper(getTx(), jtx);
+    static javax.transaction.Transaction getTxWrapper(Transaction tx) {
+        if (tx != null) {
+            return new TransactionWrapper(getTx(), JBossTransaction.class.cast(tx));
         } else {
             return null;
         }

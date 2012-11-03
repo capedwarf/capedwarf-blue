@@ -86,7 +86,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         if (pre != null) {
             pre.run();
         }
-        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper();
+        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper(transaction);
         final Future<T> wrap = wrap(new Callable<T>() {
             public T call() throws Exception {
                 if (tx != null) {
@@ -163,7 +163,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         for (Key key : keyIterable) {
             pre.apply(key);
         }
-        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper();
+        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper(transaction);
         final Future<Map<Key, Entity>> wrap = wrap(new Callable<Map<Key, Entity>>() {
             public Map<Key, Entity> call() throws Exception {
                 if (tx != null) {
@@ -240,7 +240,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         for (Entity entity : entityIterable) {
             pre.apply(entity);
         }
-        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper();
+        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper(transaction);
         final Future<List<Key>> wrap = wrap(new Callable<List<Key>>() {
             public List<Key> call() throws Exception {
                 if (tx != null) {
@@ -308,7 +308,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         for (Key key : keyIterable) {
             pre.apply(key);
         }
-        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper();
+        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper(transaction);
         final Future<Void> wrap = wrap(new Callable<Void>() {
             public Void call() throws Exception {
                 if (tx != null) {
