@@ -92,7 +92,7 @@ public class JBossTransaction implements Transaction {
         return transaction;
     }
 
-    static javax.transaction.Transaction getTxInternal() {
+    static javax.transaction.Transaction getTx() {
         try {
             return tm.getTransaction();
         } catch (SystemException e) {
@@ -100,10 +100,10 @@ public class JBossTransaction implements Transaction {
         }
     }
 
-    static javax.transaction.Transaction getTx() {
+    static javax.transaction.Transaction getTxWrapper() {
         final JBossTransaction jtx = currentTransaction();
         if (jtx != null) {
-            return new TransactionWrapper(getTxInternal(), jtx);
+            return new TransactionWrapper(getTx(), jtx);
         } else {
             return null;
         }
@@ -236,7 +236,7 @@ public class JBossTransaction implements Transaction {
         checkIfCurrent();
         final JBossTransaction previous = cleanup(false);
 
-        final javax.transaction.Transaction tx = getTxInternal();
+        final javax.transaction.Transaction tx = getTx();
         if (tx == null) {
             throw new IllegalArgumentException("No Tx -- should exist?!");
         }
@@ -281,7 +281,7 @@ public class JBossTransaction implements Transaction {
         checkIfCurrent();
         final JBossTransaction previous = cleanup(false);
 
-        final javax.transaction.Transaction tx = getTxInternal();
+        final javax.transaction.Transaction tx = getTx();
         if (tx == null) {
             throw new IllegalArgumentException("No Tx -- should exist?!");
         }
