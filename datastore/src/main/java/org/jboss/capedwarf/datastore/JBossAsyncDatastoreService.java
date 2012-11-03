@@ -86,18 +86,14 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         if (pre != null) {
             pre.run();
         }
-        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper(transaction);
+        final TransactionWrapper tw = JBossTransaction.getTxWrapper(transaction);
         final Future<T> wrap = wrap(new Callable<T>() {
             public T call() throws Exception {
-                if (tx != null) {
-                    JBossTransaction.resumeTx(tx);
-                }
+                JBossTransaction.attach(tw);
                 try {
                     return callable.call();
                 } finally {
-                    if (tx != null) {
-                        JBossTransaction.suspendTx();
-                    }
+                    JBossTransaction.detach(tw);
                 }
             }
         });
@@ -163,12 +159,10 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         for (Key key : keyIterable) {
             pre.apply(key);
         }
-        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper(transaction);
+        final TransactionWrapper tw = JBossTransaction.getTxWrapper(transaction);
         final Future<Map<Key, Entity>> wrap = wrap(new Callable<Map<Key, Entity>>() {
             public Map<Key, Entity> call() throws Exception {
-                if (tx != null) {
-                    JBossTransaction.resumeTx(tx);
-                }
+                JBossTransaction.attach(tw);
                 try {
                     for (Key key : keyIterable) {
                         Entity previous = map.get(key);
@@ -185,9 +179,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
                     }
                     return map;
                 } finally {
-                    if (tx != null) {
-                        JBossTransaction.suspendTx();
-                    }
+                    JBossTransaction.detach(tw);
                 }
             }
         });
@@ -240,12 +232,10 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         for (Entity entity : entityIterable) {
             pre.apply(entity);
         }
-        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper(transaction);
+        final TransactionWrapper tw = JBossTransaction.getTxWrapper(transaction);
         final Future<List<Key>> wrap = wrap(new Callable<List<Key>>() {
             public List<Key> call() throws Exception {
-                if (tx != null) {
-                    JBossTransaction.resumeTx(tx);
-                }
+                JBossTransaction.attach(tw);
                 try {
                     final List<Key> keys = new ArrayList<Key>();
                     for (Entity entity : entityIterable) {
@@ -253,9 +243,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
                     }
                     return keys;
                 } finally {
-                    if (tx != null) {
-                        JBossTransaction.suspendTx();
-                    }
+                    JBossTransaction.detach(tw);
                 }
             }
         });
@@ -308,21 +296,17 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         for (Key key : keyIterable) {
             pre.apply(key);
         }
-        final javax.transaction.Transaction tx = JBossTransaction.getTxWrapper(transaction);
+        final TransactionWrapper tw = JBossTransaction.getTxWrapper(transaction);
         final Future<Void> wrap = wrap(new Callable<Void>() {
             public Void call() throws Exception {
-                if (tx != null) {
-                    JBossTransaction.resumeTx(tx);
-                }
+                JBossTransaction.attach(tw);
                 try {
                     for (Key key : keyIterable) {
                         getDelegate().delete(transaction, key);
                     }
                     return null;
                 } finally {
-                    if (tx != null) {
-                        JBossTransaction.suspendTx();
-                    }
+                    JBossTransaction.detach(tw);
                 }
             }
         });

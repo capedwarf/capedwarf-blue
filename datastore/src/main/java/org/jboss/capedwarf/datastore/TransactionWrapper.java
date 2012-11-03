@@ -22,20 +22,14 @@
 
 package org.jboss.capedwarf.datastore;
 
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.RollbackException;
-import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-import javax.transaction.xa.XAResource;
 
 /**
  * Tx wrapper.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class TransactionWrapper implements javax.transaction.Transaction {
+class TransactionWrapper {
     private javax.transaction.Transaction delegate;
     private JBossTransaction transaction;
 
@@ -56,51 +50,11 @@ class TransactionWrapper implements javax.transaction.Transaction {
         this.transaction = transaction;
     }
 
+    Transaction getDelegate() {
+        return delegate;
+    }
+
     JBossTransaction getTransaction() {
         return transaction;
-    }
-
-    public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, SystemException {
-        delegate.commit();
-    }
-
-    public void rollback() throws IllegalStateException, SystemException {
-        delegate.rollback();
-    }
-
-    public void setRollbackOnly() throws IllegalStateException, SystemException {
-        delegate.setRollbackOnly();
-    }
-
-    public int getStatus() throws SystemException {
-        return delegate.getStatus();
-    }
-
-    public boolean enlistResource(XAResource xaRes) throws RollbackException, IllegalStateException, SystemException {
-        return delegate.enlistResource(xaRes);
-    }
-
-    public boolean delistResource(XAResource xaRes, int flag) throws IllegalStateException, SystemException {
-        return delegate.delistResource(xaRes, flag);
-    }
-
-    public void registerSynchronization(Synchronization sync) throws RollbackException, IllegalStateException, SystemException {
-        delegate.registerSynchronization(sync);
-    }
-
-    @Override
-    public int hashCode() {
-        return delegate.hashCode();
-    }
-
-    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-    @Override
-    public boolean equals(Object obj) {
-        return delegate.equals(obj);
-    }
-
-    @Override
-    public String toString() {
-        return delegate.toString();
     }
 }

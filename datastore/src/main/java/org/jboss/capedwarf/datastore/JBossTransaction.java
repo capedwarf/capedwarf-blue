@@ -33,6 +33,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.transaction.InvalidTransactionException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
@@ -100,7 +101,7 @@ public class JBossTransaction implements Transaction {
         }
     }
 
-    static javax.transaction.Transaction getTxWrapper(Transaction tx) {
+    static TransactionWrapper getTxWrapper(Transaction tx) {
         if (tx != null) {
             return new TransactionWrapper(getTx(), JBossTransaction.class.cast(tx));
         } else {
@@ -116,27 +117,14 @@ public class JBossTransaction implements Transaction {
         }
     }
 
-    static javax.transaction.Transaction suspendTx() {
-        final Stack<JBossTransaction> stack = current.get();
-        if (stack != null && stack.isEmpty() == false) {
-            final JBossTransaction tx = stack.pop();
+    static void attach(TransactionWrapper tw) {
+        if (tw == null)
+            return;
 
-            if (stack.isEmpty()) {
-                current.remove();
-            }
-
-            tx.suspend();
-
-            return new TransactionWrapper(tx);
-        } else {
-            return null;
-        }
-    }
-
-    static void resumeTx(javax.transaction.Transaction transaction) {
         try {
-            final JBossTransaction tx = TransactionWrapper.class.cast(transaction).getTransaction();
-            tx.resume(false);
+            tm.resume(tw.getDelegate());
+
+            final JBossTransaction tx = tw.getTransaction();
 
             Stack<JBossTransaction> stack = current.get();
             if (stack == null) {
@@ -147,6 +135,41 @@ public class JBossTransaction implements Transaction {
             stack.push(tx);
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
+        }
+    }
+
+    static void detach(TransactionWrapper tw) {
+        if (tw == null)
+            return;
+
+        final Stack<JBossTransaction> stack = current.get();
+        if (stack == null || stack.isEmpty())
+            throw new IllegalStateException("Illegal call to cleanup - stack should exist");
+
+        stack.pop();
+
+        if (stack.isEmpty()) {
+            current.remove();
+        }
+
+        suspendTx();
+    }
+
+    static javax.transaction.Transaction suspendTx() {
+        try {
+            return tm.suspend();
+        } catch (SystemException e) {
+            throw new DatastoreFailureException("Cannot suspend tx.", e);
+        }
+    }
+
+    static void resumeTx(javax.transaction.Transaction transaction) {
+        try {
+            tm.resume(transaction);
+        } catch (InvalidTransactionException e) {
+            throw new DatastoreFailureException("Cannot resume tx.", e);
+        } catch (SystemException e) {
+            throw new DatastoreFailureException("Cannot resume tx.", e);
         }
     }
 
