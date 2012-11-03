@@ -329,7 +329,7 @@ public class JBossTransaction implements Transaction {
         if (previous != null) {
             previous.resume(false);
         } else {
-            resumeTx(null); // reset current thread
+            suspendTx(); // reset current thread
         }
     }
 
