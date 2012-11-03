@@ -326,10 +326,9 @@ public class JBossTransaction implements Transaction {
     }
 
     private static void resumeAsync(JBossTransaction previous) {
+        suspendTx(); // reset current thread
         if (previous != null) {
-            previous.resume(false);
-        } else {
-            suspendTx(); // reset current thread
+            previous.resume(false); // resume previous
         }
     }
 
