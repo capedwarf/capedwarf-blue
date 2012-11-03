@@ -272,17 +272,13 @@ public class JBossTransaction implements Transaction {
         return new FutureGetDelegate<Void>(wrap) {
             public Void get() throws InterruptedException, ExecutionException {
                 final Void result = wrap.get();
-                if (previous != null) {
-                    previous.resume(false);
-                }
+                resumeAsync(previous);
                 return result;
             }
 
             public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 final Void result = wrap.get(timeout, unit);
-                if (previous != null) {
-                    previous.resume(false);
-                }
+                resumeAsync(previous);
                 return result;
             }
         };
@@ -317,20 +313,24 @@ public class JBossTransaction implements Transaction {
         return new FutureGetDelegate<Void>(wrap) {
             public Void get() throws InterruptedException, ExecutionException {
                 final Void result = wrap.get();
-                if (previous != null) {
-                    previous.resume(false);
-                }
+                resumeAsync(previous);
                 return result;
             }
 
             public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 final Void result = wrap.get(timeout, unit);
-                if (previous != null) {
-                    previous.resume(false);
-                }
+                resumeAsync(previous);
                 return result;
             }
         };
+    }
+
+    private static void resumeAsync(JBossTransaction previous) {
+        if (previous != null) {
+            previous.resume(false);
+        } else {
+            resumeTx(null); // reset current thread
+        }
     }
 
     public String getId() {
