@@ -22,7 +22,6 @@
 
 package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import com.google.appengine.api.datastore.AsyncDatastoreService;
@@ -36,7 +35,6 @@ import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -54,24 +52,6 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
 
     @Test
     public void testSmoke() throws Exception {
-        runSmokeOps();
-    }
-
-    @Test
-    @Ignore
-    public void testSmokeWithTx() throws Exception {
-        final Transaction tx = service.beginTransaction().get();
-        try {
-            runSmokeOps();
-        } catch (Exception e) {
-            log.severe("Failed smoke ops: " + e.getMessage());
-            e.printStackTrace();
-        } finally {
-            tx.rollbackAsync().get();
-        }
-    }
-
-    protected void runSmokeOps() throws InterruptedException, ExecutionException {
         reset();
 
         Future<Key> f = service.put(new Entity(CallbackHandler.KIND));
@@ -92,8 +72,48 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
         Assert.assertEquals("PreDelete", CallbackHandler.state);
         v.get();
         Assert.assertEquals("PostDelete", CallbackHandler.state);
-
-        reset();
     }
 
+    @Test
+    public void testSmokeWithTx() throws Exception {
+        reset();
+
+        boolean ok = false;
+        Key k;
+        Transaction tx = service.beginTransaction().get();
+        try {
+            Future<Key> f = service.put(new Entity(CallbackHandler.KIND));
+            Assert.assertEquals("PrePut", CallbackHandler.state);
+            k = f.get();
+            Assert.assertEquals("PostPut", CallbackHandler.state);
+
+            ok = true;
+        } finally {
+            Future<Void> f = (ok ? tx.commitAsync() : tx.rollbackAsync());
+            f.get();
+        }
+
+        ok = false;
+        tx = service.beginTransaction().get();
+        try {
+            Future<Entity> e = service.get(k);
+            Assert.assertEquals("PreGet", CallbackHandler.state);
+            e.get();
+            Assert.assertEquals("PostLoad", CallbackHandler.state);
+
+            PreparedQuery pq = service.prepare(new Query(CallbackHandler.KIND));
+            Assert.assertEquals("PreQuery", CallbackHandler.state);
+            pq.asList(FetchOptions.Builder.withDefaults());
+
+            Future<Void> v = service.delete(k);
+            Assert.assertEquals("PreDelete", CallbackHandler.state);
+            v.get();
+            Assert.assertEquals("PostDelete", CallbackHandler.state);
+
+            ok = true;
+        } finally {
+            Future<Void> f = (ok ? tx.commitAsync() : tx.rollbackAsync());
+            f.get();
+        }
+    }
 }

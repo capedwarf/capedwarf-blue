@@ -33,6 +33,7 @@ import com.google.appengine.api.datastore.BaseDatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.PostLoadContext;
 import com.google.appengine.api.datastore.PreGetContext;
 import com.google.appengine.api.datastore.PreQueryContext;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -81,7 +82,10 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
         };
         final Function<Entity, Void> post = new Function<Entity, Void>() {
             public Void apply(Entity input) {
-                getDatastoreCallbacks().executePostLoadCallbacks(DatastoreCallbacks.createPostLoadContext(postTxProvider(transaction), input));
+                if (input != null) {
+                    final PostLoadContext postLoadContext = DatastoreCallbacks.createPostLoadContext(postTxProvider(transaction), input);
+                    getDatastoreCallbacks().executePostLoadCallbacks(postLoadContext);
+                }
                 return null;
             }
         };

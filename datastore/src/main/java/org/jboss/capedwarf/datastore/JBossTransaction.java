@@ -59,7 +59,7 @@ public class JBossTransaction implements Transaction {
     private final static ThreadLocal<Stack<JBossTransaction>> current = new ThreadLocal<Stack<JBossTransaction>>();
 
     private final TransactionOptions options;
-    private javax.transaction.Transaction transaction;
+    private ThreadLocal<javax.transaction.Transaction> transactions = new ThreadLocal<javax.transaction.Transaction>();
 
     private JBossTransaction(TransactionOptions options) {
         this.options = options;
@@ -90,7 +90,7 @@ public class JBossTransaction implements Transaction {
     }
 
     javax.transaction.Transaction getTransaction() {
-        return transaction;
+        return transactions.get();
     }
 
     static javax.transaction.Transaction getTx() {
@@ -174,22 +174,22 @@ public class JBossTransaction implements Transaction {
     }
 
     private void checkIfCurrent() {
-        if (transaction != null)
+        if (getTransaction() != null)
             throw new IllegalStateException("Not current transaction -- other tx in progress!");
     }
 
     private void suspend() {
         try {
-            transaction = tm.suspend();
+            transactions.set(tm.suspend());
         } catch (SystemException e) {
             throw new DatastoreFailureException("Cannot suspend tx.", e);
         }
     }
 
     private void resume(boolean ignoreException) {
-        javax.transaction.Transaction t = transaction;
+        javax.transaction.Transaction t = getTransaction();
         try {
-            transaction = null; // cleanup
+            transactions.remove(); // cleanup
             tm.resume(t);
         } catch (Exception e) {
             if (ignoreException == false)
