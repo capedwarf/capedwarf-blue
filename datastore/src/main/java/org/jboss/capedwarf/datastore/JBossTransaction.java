@@ -52,7 +52,7 @@ import org.jboss.capedwarf.environment.EnvironmentFactory;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JBossTransaction implements Transaction {
+final class JBossTransaction implements Transaction {
     private static final Logger log = Logger.getLogger(JBossTransaction.class.getName());
 
     private final static TransactionManager tm = TxUtils.getTransactionManager();

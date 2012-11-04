@@ -732,7 +732,7 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <property>
-                    <name>gae</name>
+                    <name>appengine.sdk.root</name>
                 </property>
             </activation>
             <dependencies>
