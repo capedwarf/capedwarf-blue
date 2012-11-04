@@ -80,21 +80,25 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
 
         boolean ok = false;
         Key k;
+        Future<Key> f;
         Transaction tx = service.beginTransaction().get();
         try {
-            Future<Key> f = service.put(new Entity(CallbackHandler.KIND));
+            f = service.put(new Entity(CallbackHandler.KIND));
             Assert.assertEquals("PrePut", CallbackHandler.state);
-            k = f.get();
-            Assert.assertEquals("PostPut", CallbackHandler.state);
+            f.get();
+            Assert.assertEquals("PrePut", CallbackHandler.state);
 
             ok = true;
         } finally {
-            Future<Void> f = (ok ? tx.commitAsync() : tx.rollbackAsync());
-            f.get();
+            Future<Void> r = (ok ? tx.commitAsync() : tx.rollbackAsync());
+            r.get();
         }
+        k = f.get();
+        Assert.assertEquals("PostPut", CallbackHandler.state);
 
         ok = false;
         tx = service.beginTransaction().get();
+        Future<Void> v;
         try {
             Future<Entity> e = service.get(k);
             Assert.assertEquals("PreGet", CallbackHandler.state);
@@ -105,15 +109,18 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
             Assert.assertEquals("PreQuery", CallbackHandler.state);
             pq.asList(FetchOptions.Builder.withDefaults());
 
-            Future<Void> v = service.delete(k);
+            v = service.delete(k);
             Assert.assertEquals("PreDelete", CallbackHandler.state);
             v.get();
-            Assert.assertEquals("PostDelete", CallbackHandler.state);
+            // should still be pre
+            Assert.assertEquals("PreDelete", CallbackHandler.state);
 
             ok = true;
         } finally {
-            Future<Void> f = (ok ? tx.commitAsync() : tx.rollbackAsync());
-            f.get();
+            Future<Void> r = (ok ? tx.commitAsync() : tx.rollbackAsync());
+            r.get();
         }
+        v.get();
+        Assert.assertEquals("PostDelete", CallbackHandler.state);
     }
 }

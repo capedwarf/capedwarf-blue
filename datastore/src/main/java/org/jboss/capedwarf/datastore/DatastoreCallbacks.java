@@ -86,7 +86,7 @@ final class DatastoreCallbacks {
         }
     }
 
-    static Object getCurrentTransactionProvider(final CurrentTransactionProvider ctp) {
+    private static Object getCurrentTransactionProvider(final CurrentTransactionProvider ctp) {
         return Proxy.newProxyInstance(ctpClass.getClassLoader(), new Class<?>[]{ctpClass}, new InvocationHandler() {
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 final String name = method.getName();
@@ -103,67 +103,107 @@ final class DatastoreCallbacks {
         });
     }
 
-    static PutContext createPutContext(final CurrentTransactionProvider ctp, List<Entity> entities) {
+    private static PutContext createPutContext(final CurrentTransactionProvider ctp, List<Entity> entities) {
         Class[] types = {ctpClass, List.class};
         Object[] args = {getCurrentTransactionProvider(ctp), entities};
         return ReflectionUtils.newInstance(PutContext.class, types, args);
     }
 
-    static DeleteContext createDeleteContext(final CurrentTransactionProvider ctp, List<Key> keys) {
+    private static DeleteContext createDeleteContext(final CurrentTransactionProvider ctp, List<Key> keys) {
         Class[] types = {ctpClass, List.class};
         Object[] args = {getCurrentTransactionProvider(ctp), keys};
         return ReflectionUtils.newInstance(DeleteContext.class, types, args);
     }
 
-    static PreGetContext createPreGetContext(final CurrentTransactionProvider ctp, List<Key> keys, Map<Key,Entity> resultMap) {
+    private static PreGetContext createPreGetContext(final CurrentTransactionProvider ctp, List<Key> keys, Map<Key,Entity> resultMap) {
         Class[] types = {ctpClass, List.class, Map.class};
         Object[] args = {getCurrentTransactionProvider(ctp), keys, resultMap};
         return ReflectionUtils.newInstance(PreGetContext.class, types, args);
     }
 
-    static PostLoadContext createPostLoadContext(final CurrentTransactionProvider ctp, Entity result) {
+    private static PostLoadContext createPostLoadContext(final CurrentTransactionProvider ctp, Entity result) {
         Class[] types = {ctpClass, Entity.class};
         Object[] args = {getCurrentTransactionProvider(ctp), result};
         return ReflectionUtils.newInstance(PostLoadContext.class, types, args);
     }
 
-    static PostLoadContext createPostLoadContext(final CurrentTransactionProvider ctp, List<Entity> results) {
+    private static PostLoadContext createPostLoadContext(final CurrentTransactionProvider ctp, List<Entity> results) {
         Class[] types = {ctpClass, List.class};
         Object[] args = {getCurrentTransactionProvider(ctp), results};
         return ReflectionUtils.newInstance(PostLoadContext.class, types, args);
     }
 
-    static PreQueryContext createPreQueryContext(final CurrentTransactionProvider ctp, Query query) {
+    private static PreQueryContext createPreQueryContext(final CurrentTransactionProvider ctp, Query query) {
         Class[] types = {ctpClass, Query.class};
         Object[] args = {getCurrentTransactionProvider(ctp), query};
         return ReflectionUtils.newInstance(PreQueryContext.class, types, args);
     }
 
-    void executePrePutCallbacks(PutContext putContext) {
+    void executePrePutCallbacks(CurrentTransactionProvider ctp, List<Entity> entities) {
+        final PutContext context = createPutContext(ctp, entities);
+        executePrePutCallbacks(context);
+    }
+
+    private void executePrePutCallbacks(PutContext putContext) {
         execute(executePrePutCallbacks, putContext);
     }
 
-    void executePostPutCallbacks(PutContext putContext) {
+    void executePostPutCallbacks(CurrentTransactionProvider ctp, List<Entity> entities) {
+        final PutContext context = createPutContext(ctp, entities);
+        executePostPutCallbacks(context);
+    }
+
+    private void executePostPutCallbacks(PutContext putContext) {
         execute(executePostPutCallbacks, putContext);
     }
 
-    void executePreDeleteCallbacks(DeleteContext deleteContext) {
+    void executePreDeleteCallbacks(CurrentTransactionProvider ctp, List<Key> keys) {
+        final DeleteContext context = createDeleteContext(ctp, keys);
+        executePreDeleteCallbacks(context);
+    }
+
+    private void executePreDeleteCallbacks(DeleteContext deleteContext) {
         execute(executePreDeleteCallbacks, deleteContext);
     }
 
-    void executePostDeleteCallbacks(DeleteContext deleteContext) {
+    void executePostDeleteCallbacks(CurrentTransactionProvider ctp, List<Key> keys) {
+        final DeleteContext context = createDeleteContext(ctp, keys);
+        executePostDeleteCallbacks(context);
+    }
+
+    private void executePostDeleteCallbacks(DeleteContext deleteContext) {
         execute(executePostDeleteCallbacks, deleteContext);
     }
 
-    void executePreGetCallbacks(PreGetContext preGetContext) {
+    void executePreGetCallbacks(CurrentTransactionProvider ctp, List<Key> keys, Map<Key,Entity> resultMap) {
+        final PreGetContext context = createPreGetContext(ctp, keys, resultMap);
+        executePreGetCallbacks(context);
+    }
+
+    private void executePreGetCallbacks(PreGetContext preGetContext) {
         execute(executePreGetCallbacks, preGetContext);
     }
 
-    void executePostLoadCallbacks(PostLoadContext postLoadContext) {
+    void executePostLoadCallbacks(CurrentTransactionProvider ctp, Entity entity) {
+        final PostLoadContext context = createPostLoadContext(ctp, entity);
+        executePostLoadCallbacks(context);
+    }
+
+    void executePostLoadCallbacks(CurrentTransactionProvider ctp, List<Entity> entities) {
+        final PostLoadContext context = createPostLoadContext(ctp, entities);
+        executePostLoadCallbacks(context);
+    }
+
+    private void executePostLoadCallbacks(PostLoadContext postLoadContext) {
         execute(executePostLoadCallbacks, postLoadContext);
     }
 
-    void executePreQueryCallbacks(PreQueryContext preQueryContext) {
+    void executePreQueryCallbacks(CurrentTransactionProvider ctp, Query query) {
+        final PreQueryContext context = createPreQueryContext(ctp, query);
+        executePreQueryCallbacks(context);
+    }
+
+    private void executePreQueryCallbacks(PreQueryContext preQueryContext) {
         execute(executePreQueryCallbacks, preQueryContext);
     }
 }

@@ -34,15 +34,11 @@ import java.util.concurrent.Future;
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
-import com.google.appengine.api.datastore.DeleteContext;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
-import com.google.appengine.api.datastore.PostLoadContext;
-import com.google.appengine.api.datastore.PreGetContext;
-import com.google.appengine.api.datastore.PutContext;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import com.google.common.base.Function;
@@ -111,18 +107,16 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
 
     public Map<Key, Entity> get(final Transaction transaction, final Iterable<Key> keys) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
-        final PreGetContext preGetContext = DatastoreCallbacks.createPreGetContext(this, Lists.newArrayList(keys), map);
         final Function<Key, Void> pre = new Function<Key, Void>() {
             public Void apply(Key input) {
-                getDatastoreCallbacks().executePreGetCallbacks(preGetContext);
+                getDatastoreCallbacks().executePreGetCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys), map);
                 return null;
             }
         };
         final List<Entity> results = new ArrayList<Entity>();
-        final PostLoadContext postLoadContext = DatastoreCallbacks.createPostLoadContext(this, results);
         final Function<Map.Entry<Key, Entity>, Void> post = new Function<Map.Entry<Key, Entity>, Void>() {
             public Void apply(Map.Entry<Key, Entity> input) {
-                getDatastoreCallbacks().executePostLoadCallbacks(postLoadContext);
+                getDatastoreCallbacks().executePostLoadCallbacks(JBossDatastoreService.this, results);
                 return null;
             }
         };
@@ -160,18 +154,16 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         return put(getCurrentTransaction(null), entities);
     }
 
-    public List<Key> put(Transaction transaction, Iterable<Entity> entities) {
-        final PutContext preContext = DatastoreCallbacks.createPutContext(this, Lists.newArrayList(entities));
+    public List<Key> put(Transaction transaction, final Iterable<Entity> entities) {
         final Function<Entity, Void> pre = new Function<Entity, Void>() {
             public Void apply(Entity input) {
-                getDatastoreCallbacks().executePrePutCallbacks(preContext);
+                getDatastoreCallbacks().executePrePutCallbacks(JBossDatastoreService.this, Lists.newArrayList(entities));
                 return null;
             }
         };
-        final PutContext postContext = DatastoreCallbacks.createPutContext(this, Lists.newArrayList(entities));
-        final Function<Entity, Void> post = new Function<Entity, Void>() {
-            public Void apply(Entity input) {
-                getDatastoreCallbacks().executePostPutCallbacks(postContext);
+        final Function<Key, Void> post = new Function<Key, Void>() {
+            public Void apply(Key input) {
+                getDatastoreCallbacks().executePostPutCallbacks(JBossDatastoreService.this, Lists.newArrayList(entities));
                 return null;
             }
         };
@@ -180,10 +172,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         }
         final List<Key> keys = new ArrayList<Key>();
         for (Entity entity : entities) {
-            keys.add(getDelegate().put(transaction, entity));
-        }
-        for (Entity entity : entities) {
-            post.apply(entity);
+            keys.add(getDelegate().put(transaction, entity, post));
         }
         return keys;
     }
@@ -201,17 +190,15 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public void delete(final Transaction transaction, final Iterable<Key> keys) {
-        final DeleteContext preContext = DatastoreCallbacks.createDeleteContext(this, Lists.newArrayList(keys));
         final Function<Key, Void> pre = new Function<Key, Void>() {
             public Void apply(Key input) {
-                getDatastoreCallbacks().executePreDeleteCallbacks(preContext);
+                getDatastoreCallbacks().executePreDeleteCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys));
                 return null;
             }
         };
-        final DeleteContext postContext = DatastoreCallbacks.createDeleteContext(this, Lists.newArrayList(keys));
         final Function<Key, Void> post = new Function<Key, Void>() {
             public Void apply(Key input) {
-                getDatastoreCallbacks().executePostDeleteCallbacks(postContext);
+                getDatastoreCallbacks().executePostDeleteCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys));
                 return null;
             }
         };
@@ -219,10 +206,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             pre.apply(key);
         }
         for (Key key : keys) {
-            getDelegate().delete(transaction, key);
-        }
-        for (Key key : keys) {
-            post.apply(key);
+            getDelegate().delete(transaction, key, post);
         }
     }
 

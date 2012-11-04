@@ -34,6 +34,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+import com.google.common.base.Function;
 
 /**
  * DatastoreService impl SPI.
@@ -63,17 +64,19 @@ interface DatastoreServiceInternal extends BaseDatastoreService {
      *
      * @param tx current tx
      * @param entity entities
+     * @param post the post fn
      * @return key
      */
-    Key put(Transaction tx, Entity entity);
+    Key put(Transaction tx, Entity entity, Function<Key, Void> post);
 
     /**
      * Delete.
      *
      * @param tx current tx
      * @param key key
+     * @param post the post fn
      */
-    void delete(Transaction tx, Key key);
+    void delete(Transaction tx, Key key, Function<Key, Void> post);
 
     /**
      * Begin tx.

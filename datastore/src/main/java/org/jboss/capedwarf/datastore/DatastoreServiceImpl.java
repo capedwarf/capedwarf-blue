@@ -35,6 +35,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+import com.google.common.base.Function;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
@@ -122,7 +123,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         }
     }
 
-    public Key put(Transaction tx, Entity entity) {
+    public Key put(Transaction tx, Entity entity, Function<Key, Void> post) {
         javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             Key key = entity.getKey();
@@ -131,18 +132,18 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
                 ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
             }
             trackKey(key);
-            putInTx(key, entityModifier.modify(entity));
+            putInTx(key, entityModifier.modify(entity), post);
             return key;
         } finally {
             afterTx(transaction);
         }
     }
 
-    public void delete(Transaction tx, Key key) {
+    public void delete(Transaction tx, Key key, Function<Key, Void> post) {
         final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             trackKey(key);
-            removeInTx(key);
+            removeInTx(key, post);
         } finally {
             afterTx(transaction);
         }
@@ -179,16 +180,19 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
      *
      * @param key the key
      * @param entity the entity
+     * @param post the post fn
      */
-    protected void putInTx(final Key key, final Entity entity) {
+    protected void putInTx(final Key key, final Entity entity, final Function<Key, Void> post) {
         javax.transaction.Transaction tx = JBossTransaction.getTx();
         if (tx == null) {
             store.put(key, entity);
+            post.apply(key);
         } else {
             try {
                 tx.registerSynchronization(new Synchronization() {
                     public void beforeCompletion() {
                         store.put(key, entity);
+                        post.apply(key);
                     }
 
                     public void afterCompletion(int status) {
@@ -204,16 +208,19 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
      * Delay remove if the tx is active.
      *
      * @param key the key
+     * @param post the post fn
      */
-    protected void removeInTx(final Key key) {
+    protected void removeInTx(final Key key, final Function<Key, Void> post) {
         javax.transaction.Transaction tx = JBossTransaction.getTx();
         if (tx == null) {
             store.remove(key);
+            post.apply(key);
         } else {
             try {
                 tx.registerSynchronization(new Synchronization() {
                     public void beforeCompletion() {
                         store.remove(key);
+                        post.apply(key);
                     }
 
                     public void afterCompletion(int status) {
