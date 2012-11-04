@@ -237,11 +237,4 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     public Map<Index, Index.IndexState> getIndexes() {
         return getDelegate().getIndexes();
     }
-
-    /**
-     * Testing only!
-     */
-    public void clearCache() {
-        getDelegate().clearCache();
-    }
 }

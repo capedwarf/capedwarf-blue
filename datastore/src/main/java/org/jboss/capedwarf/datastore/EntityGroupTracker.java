@@ -25,7 +25,9 @@ package org.jboss.capedwarf.datastore;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
 import com.google.appengine.api.datastore.Key;
@@ -53,7 +55,10 @@ class EntityGroupTracker implements Synchronization {
         this.keys = new ConcurrentHashMap<Key, Key>();
     }
 
-    static EntityGroupTracker registerKey(Key key) throws Exception {
+    static EntityGroupTracker registerKey(Key key) {
+        if (key == null)
+            return null;
+
         final Transaction transaction = JBossTransaction.getTx();
         if (transaction == null)
             return null; // do not track w/o Tx
@@ -65,14 +70,27 @@ class EntityGroupTracker implements Synchronization {
         EntityGroupTracker egt = trackers.get(transaction);
         if (egt == null) {
             egt = new EntityGroupTracker(transaction);
-            transaction.registerSynchronization(egt);
+            egt.registerSynchronization(transaction);
             trackers.put(transaction, egt);
         }
         egt.addKey(key);
         return egt;
     }
 
-    static void trackKey(Key key) throws Exception {
+    private void registerSynchronization(Transaction tx) {
+        try {
+            tx.registerSynchronization(this);
+        } catch (RollbackException e) {
+            throw new RuntimeException(e);
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static void trackKey(Key key) {
+        if (key == null)
+            return;
+
         final EntityGroupTracker egt = registerKey(key);
         if (egt != null) {
             egt.checkRoot();

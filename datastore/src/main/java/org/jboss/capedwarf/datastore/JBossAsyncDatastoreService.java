@@ -283,11 +283,4 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
             }
         });
     }
-
-    /**
-     * Testing only!
-     */
-    public void clearCache() {
-        getDelegate().clearCache();
-    }
 }

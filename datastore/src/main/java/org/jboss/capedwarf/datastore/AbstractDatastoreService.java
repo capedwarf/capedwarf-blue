@@ -142,4 +142,11 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
     public DatastoreServiceConfig getDatastoreServiceConfig() {
         return getDelegate().getDatastoreServiceConfig();
     }
+
+    /**
+     * Testing only!
+     */
+    public void clearCache() {
+        getDelegate().clearCache();
+    }
 }

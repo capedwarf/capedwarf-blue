@@ -112,7 +112,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     public Entity get(Transaction tx, Key key) {
         final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
-            trackKey(key);
+            EntityGroupTracker.trackKey(key);
             Entity entity = store.get(key);
             if (entity == null)
                 return null;
@@ -131,7 +131,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
                 long id = getRangeStart(key.getParent(), key.getKind(), 1).getStart();
                 ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
             }
-            trackKey(key);
+            EntityGroupTracker.trackKey(key);
             putInTx(key, entityModifier.modify(entity), post);
             return key;
         } finally {
@@ -142,7 +142,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     public void delete(Transaction tx, Key key, Function<Key, Void> post) {
         final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
-            trackKey(key);
+            EntityGroupTracker.trackKey(key);
             removeInTx(key, post);
         } finally {
             afterTx(transaction);
@@ -183,7 +183,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
      * @param post the post fn
      */
     protected void putInTx(final Key key, final Entity entity, final Function<Key, Void> post) {
-        javax.transaction.Transaction tx = JBossTransaction.getTx();
+        final javax.transaction.Transaction tx = JBossTransaction.getTx();
         if (tx == null) {
             store.put(key, entity);
             post.apply(key);
@@ -211,7 +211,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
      * @param post the post fn
      */
     protected void removeInTx(final Key key, final Function<Key, Void> post) {
-        javax.transaction.Transaction tx = JBossTransaction.getTx();
+        final javax.transaction.Transaction tx = JBossTransaction.getTx();
         if (tx == null) {
             store.remove(key);
             post.apply(key);
@@ -237,50 +237,5 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
      */
     public void clearCache() {
         store.clear();
-    }
-
-    /**
-     * Register key.
-     *
-     * @param key the key to track
-     */
-    static void registerKey(Key key) {
-        try {
-            if (key != null) {
-                EntityGroupTracker.registerKey(key);
-            }
-        } catch (Throwable t) {
-            if (t instanceof RuntimeException) {
-                throw (RuntimeException) t;
-            } else {
-                throw new RuntimeException(t);
-            }
-        }
-    }
-
-    /**
-     * Track key.
-     *
-     * @param key the key to track
-     */
-    static void trackKey(Key key) {
-        try {
-            if (key != null) {
-                EntityGroupTracker.trackKey(key);
-            }
-        } catch (Throwable t) {
-            if (t instanceof RuntimeException) {
-                throw (RuntimeException) t;
-            } else {
-                throw new RuntimeException(t);
-            }
-        }
-    }
-
-    /**
-     * Check keys.
-     */
-    static void checkKeys() {
-        EntityGroupTracker.check();
     }
 }
