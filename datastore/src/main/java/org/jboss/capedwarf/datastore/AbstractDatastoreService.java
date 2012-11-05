@@ -26,7 +26,12 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import javax.transaction.Synchronization;
 
 import com.google.appengine.api.datastore.BaseDatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
@@ -38,6 +43,7 @@ import com.google.appengine.api.datastore.Transaction;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.common.threads.FutureGetDelegate;
 
 /**
  * Abstract base DatastoreService impl.
@@ -68,6 +74,45 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
 
     protected abstract <T> Future<T> wrap(final Transaction transaction, final Callable<T> callable, final Runnable pre, final Function<T, Void> post);
 
+    protected void handlePost(javax.transaction.Transaction tx, final Function<Key, Void> post, final Iterable<Key> keys) {
+        if (tx == null) {
+            for (Key key : keys) {
+                post.apply(key);
+            }
+        } else {
+            try {
+                tx.registerSynchronization(new Synchronization() {
+                    public void beforeCompletion() {
+                        for (Key key : keys) {
+                            post.apply(key);
+                        }
+                    }
+
+                    public void afterCompletion(int status) {
+                    }
+                });
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    protected <T> Future<T> getPost(final Future<T> wrap, final javax.transaction.Transaction tx, final Function<Key, Void> post, final Keyable<T> keyable) {
+        return new FutureGetDelegate<T>(wrap) {
+            public T get() throws InterruptedException, ExecutionException {
+                final T result = wrap.get();
+                handlePost(tx, post, keyable.toKeys(result));
+                return result;
+            }
+
+            public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                final T result = wrap.get(timeout, unit);
+                handlePost(tx, post, keyable.toKeys(result));
+                return result;
+            }
+        };
+    }
+
     protected Future<Entity> doGet(final Transaction transaction, final Key key) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
         final Runnable pre = new Runnable() {
@@ -92,7 +137,7 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
         }, pre, post);
     }
 
-    protected Future<Key> doPut(final Transaction transaction, final Entity entity) {
+    protected Future<Key> doPut(final Transaction transaction, final Entity entity, final boolean applyPost) {
         final Function<Entity, Void> preFn = new Function<Entity, Void>() {
             public Void apply(Entity input) {
                 getDatastoreCallbacks().executePrePutCallbacks(AbstractDatastoreService.this, Lists.newArrayList(entity));
@@ -110,11 +155,17 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
                 return null;
             }
         };
-        return wrap(transaction, new Callable<Key>() {
+        final Future<Key> wrap = wrap(transaction, new Callable<Key>() {
             public Key call() throws Exception {
-                return getDelegate().put(transaction, entity, post);
+                return getDelegate().put(transaction, entity, applyPost ? post : null);
             }
         }, pre, null); // do not add post!
+
+        if (applyPost) {
+            return wrap;
+        } else {
+            return getPost(wrap, JBossTransaction.getTx(), post, Keyable.SINGLE);
+        }
     }
 
     public PreparedQuery prepare(Query query) {

@@ -22,6 +22,9 @@
 
 package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.appengine.api.datastore.DeleteContext;
 import com.google.appengine.api.datastore.PostDelete;
 import com.google.appengine.api.datastore.PostLoad;
@@ -38,50 +41,50 @@ import com.google.appengine.api.datastore.PutContext;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CallbackHandler {
+public class SyncCallbackHandler {
     static final String KIND = "Data";
 
-    static String state;
+    static List<String> states = new ArrayList<String>();
 
     @PrePut(kinds = {KIND})
     public void prePut(PutContext context) {
-        state = "PrePut";
+        states.add("PrePut");
         System.out.println("context = " + context);
     }
 
     @PostPut(kinds = {KIND})
     public void postPut(PutContext context) {
-        state = "PostPut";
+        states.add("PostPut");
         System.out.println("context = " + context);
     }
 
     @PreGet(kinds = {KIND})
     public void preGet(PreGetContext context) {
-        state = "PreGet";
+        states.add("PreGet");
         System.out.println("context = " + context);
     }
 
     @PostLoad(kinds = {KIND})
     public void postLoad(PostLoadContext context) {
-        state = "PostLoad";
+        states.add("PostLoad");
         System.out.println("context = " + context);
     }
 
     @PreQuery(kinds = {KIND})
     public void preQuery(PreQueryContext context) {
-        state = "PreQuery";
+        states.add("PreQuery");
         System.out.println("context = " + context);
     }
 
     @PreDelete(kinds = {KIND})
     public void preDelete(DeleteContext context) {
-        state = "PreDelete";
+        states.add("PreDelete");
         System.out.println("context = " + context);
     }
 
     @PostDelete(kinds = {KIND})
     public void postDelete(DeleteContext context) {
-        state = "PostDelete";
+        states.add("PostDelete");
         System.out.println("context = " + context);
     }
 }

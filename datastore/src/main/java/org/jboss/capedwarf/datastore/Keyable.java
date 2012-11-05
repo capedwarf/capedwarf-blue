@@ -20,32 +20,28 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.testsuite.callbacks.test;
+package org.jboss.capedwarf.datastore;
 
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.test.capedwarf.testsuite.AbstractTest;
-import org.jboss.test.capedwarf.testsuite.LibUtils;
-import org.junit.runner.RunWith;
+import java.util.Collections;
+import java.util.List;
+
+import com.google.appengine.api.datastore.Key;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@RunWith(Arquillian.class)
-public abstract class AbstractCallbacksTest extends AbstractTest {
-    protected static WebArchive getDefaultDeployment() {
-        final WebArchive war = getCapedwarfDeployment();
-        war.addClass(AbstractCallbacksTest.class);
-        war.addClass(AbstractTest.class);
-        war.addClass(AsyncCallbackHandler.class);
-        war.addClass(SyncCallbackHandler.class);
-        war.addAsWebInfResource("META-INF/datastorecallbacks.xml", "classes/META-INF/datastorecallbacks.xml");
-        LibUtils.addGaeAsLibrary(war);
-        return war;
-    }
+interface Keyable<T> {
+    Iterable<Key> toKeys(T result);
 
-    protected void reset() {
-        AsyncCallbackHandler.state = null;
-        SyncCallbackHandler.states.clear();
-    }
+    static Keyable<Key> SINGLE = new Keyable<Key>() {
+        public Iterable<Key> toKeys(Key result) {
+            return Collections.singleton(result);
+        }
+    };
+
+    static Keyable<List<Key>> LIST = new Keyable<List<Key>>() {
+        public Iterable<Key> toKeys(List<Key> result) {
+            return result;
+        }
+    };
 }

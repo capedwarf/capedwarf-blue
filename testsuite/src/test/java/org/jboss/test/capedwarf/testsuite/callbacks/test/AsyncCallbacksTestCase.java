@@ -40,7 +40,7 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CallbacksTestCase extends AbstractCallbacksTest {
+public class AsyncCallbacksTestCase extends AbstractCallbacksTest {
     @Deployment
     public static WebArchive getDeployment() {
         return getDefaultDeployment();
@@ -52,30 +52,34 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
 
     @Test
     public void testSmoke() throws Exception {
+        AsyncDatastoreService service = DatastoreServiceFactory.getAsyncDatastoreService();
+
         reset();
 
-        Future<Key> f = service.put(new Entity(CallbackHandler.KIND));
-        Assert.assertEquals("PrePut", CallbackHandler.state);
+        Future<Key> f = service.put(new Entity(AsyncCallbackHandler.KIND));
+        Assert.assertEquals("PrePut", AsyncCallbackHandler.state);
         Key k = f.get();
-        Assert.assertEquals("PostPut", CallbackHandler.state);
+        Assert.assertEquals("PostPut", AsyncCallbackHandler.state);
 
         Future<Entity> e = service.get(k);
-        Assert.assertEquals("PreGet", CallbackHandler.state);
+        Assert.assertEquals("PreGet", AsyncCallbackHandler.state);
         e.get();
-        Assert.assertEquals("PostLoad", CallbackHandler.state);
+        Assert.assertEquals("PostLoad", AsyncCallbackHandler.state);
 
-        PreparedQuery pq = service.prepare(new Query(CallbackHandler.KIND));
-        Assert.assertEquals("PreQuery", CallbackHandler.state);
+        PreparedQuery pq = service.prepare(new Query(AsyncCallbackHandler.KIND));
+        Assert.assertEquals("PreQuery", AsyncCallbackHandler.state);
         pq.asList(FetchOptions.Builder.withDefaults());
 
         Future<Void> v = service.delete(k);
-        Assert.assertEquals("PreDelete", CallbackHandler.state);
+        Assert.assertEquals("PreDelete", AsyncCallbackHandler.state);
         v.get();
-        Assert.assertEquals("PostDelete", CallbackHandler.state);
+        Assert.assertEquals("PostDelete", AsyncCallbackHandler.state);
     }
 
     @Test
     public void testSmokeWithTx() throws Exception {
+        AsyncDatastoreService service = DatastoreServiceFactory.getAsyncDatastoreService();
+
         reset();
 
         boolean ok = false;
@@ -83,10 +87,10 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
         Future<Key> f;
         Transaction tx = service.beginTransaction().get();
         try {
-            f = service.put(new Entity(CallbackHandler.KIND));
-            Assert.assertEquals("PrePut", CallbackHandler.state);
+            f = service.put(new Entity(AsyncCallbackHandler.KIND));
+            Assert.assertEquals("PrePut", AsyncCallbackHandler.state);
             f.get();
-            Assert.assertEquals("PrePut", CallbackHandler.state);
+            Assert.assertEquals("PrePut", AsyncCallbackHandler.state);
 
             ok = true;
         } finally {
@@ -94,26 +98,26 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
             r.get();
         }
         k = f.get();
-        Assert.assertEquals("PostPut", CallbackHandler.state);
+        Assert.assertEquals("PostPut", AsyncCallbackHandler.state);
 
         ok = false;
         tx = service.beginTransaction().get();
         Future<Void> v;
         try {
             Future<Entity> e = service.get(k);
-            Assert.assertEquals("PreGet", CallbackHandler.state);
+            Assert.assertEquals("PreGet", AsyncCallbackHandler.state);
             e.get();
-            Assert.assertEquals("PostLoad", CallbackHandler.state);
+            Assert.assertEquals("PostLoad", AsyncCallbackHandler.state);
 
-            PreparedQuery pq = service.prepare(new Query(CallbackHandler.KIND));
-            Assert.assertEquals("PreQuery", CallbackHandler.state);
+            PreparedQuery pq = service.prepare(new Query(AsyncCallbackHandler.KIND));
+            Assert.assertEquals("PreQuery", AsyncCallbackHandler.state);
             pq.asList(FetchOptions.Builder.withDefaults());
 
             v = service.delete(k);
-            Assert.assertEquals("PreDelete", CallbackHandler.state);
+            Assert.assertEquals("PreDelete", AsyncCallbackHandler.state);
             v.get();
             // should still be pre
-            Assert.assertEquals("PreDelete", CallbackHandler.state);
+            Assert.assertEquals("PreDelete", AsyncCallbackHandler.state);
 
             ok = true;
         } finally {
@@ -121,6 +125,6 @@ public class CallbacksTestCase extends AbstractCallbacksTest {
             r.get();
         }
         v.get();
-        Assert.assertEquals("PostDelete", CallbackHandler.state);
+        Assert.assertEquals("PostDelete", AsyncCallbackHandler.state);
     }
 }

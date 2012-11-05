@@ -147,7 +147,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public Key put(Transaction transaction, Entity entity) {
-        return unwrap(doPut(transaction, entity));
+        return unwrap(doPut(transaction, entity, true));
     }
 
     public List<Key> put(Iterable<Entity> entities) {

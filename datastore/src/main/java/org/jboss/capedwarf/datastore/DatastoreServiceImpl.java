@@ -185,14 +185,12 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     protected void putInTx(final Key key, final Entity entity, final Function<Key, Void> post) {
         final javax.transaction.Transaction tx = JBossTransaction.getTx();
         if (tx == null) {
-            store.put(key, entity);
-            post.apply(key);
+            doPut(key, entity, post);
         } else {
             try {
                 tx.registerSynchronization(new Synchronization() {
                     public void beforeCompletion() {
-                        store.put(key, entity);
-                        post.apply(key);
+                        doPut(key, entity, post);
                     }
 
                     public void afterCompletion(int status) {
@@ -213,14 +211,12 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     protected void removeInTx(final Key key, final Function<Key, Void> post) {
         final javax.transaction.Transaction tx = JBossTransaction.getTx();
         if (tx == null) {
-            store.remove(key);
-            post.apply(key);
+            doRemove(key, post);
         } else {
             try {
                 tx.registerSynchronization(new Synchronization() {
                     public void beforeCompletion() {
-                        store.remove(key);
-                        post.apply(key);
+                        doRemove(key, post);
                     }
 
                     public void afterCompletion(int status) {
@@ -229,6 +225,20 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    private void doPut(Key key, Entity entity, Function<Key, Void> post) {
+        store.put(key, entity);
+        if (post != null) {
+            post.apply(key);
+        }
+    }
+
+    private void doRemove(Key key, Function<Key, Void> post) {
+        store.remove(key);
+        if (post != null) {
+            post.apply(key);
         }
     }
 
