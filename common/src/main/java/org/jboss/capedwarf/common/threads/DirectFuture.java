@@ -74,6 +74,7 @@ public class DirectFuture<T> implements Future<T> {
             } else if (e instanceof ExecutionException) {
                 throw ExecutionException.class.cast(e);
             } else if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
                 throw InterruptedException.class.cast(e);
             } else {
                 throw new ExecutionException(e);
