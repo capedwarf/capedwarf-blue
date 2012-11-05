@@ -210,7 +210,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
                 }
             }
         });
-        return getPost(wrap, JBossTransaction.getTx(), post, Keyable.LIST);
+        return handleGetWithPost(wrap, JBossTransaction.getTx(), post, Keyable.LIST);
     }
 
     public Future<Void> delete(final Key... keys) {
@@ -260,7 +260,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
                 return keyIterable;
             }
         };
-        return getPost(wrap, JBossTransaction.getTx(), post, keyable);
+        return handleGetWithPost(wrap, JBossTransaction.getTx(), post, keyable);
     }
 
     public Future<KeyRange> allocateIds(final String s, final long l) {

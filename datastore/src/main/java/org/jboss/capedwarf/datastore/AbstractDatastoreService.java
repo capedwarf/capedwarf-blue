@@ -31,7 +31,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import javax.transaction.Status;
 import javax.transaction.Synchronization;
+import javax.transaction.SystemException;
 
 import com.google.appengine.api.datastore.BaseDatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
@@ -74,12 +76,29 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
 
     protected abstract <T> Future<T> wrap(final Transaction transaction, final Callable<T> callable, final Runnable pre, final Function<T, Void> post);
 
+    protected int getStatus(javax.transaction.Transaction tx) {
+        try {
+            return tx.getStatus();
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected boolean isNotActive(javax.transaction.Transaction tx) {
+        final int status = getStatus(tx);
+        return (status != Status.STATUS_ACTIVE); // TODO -- more fine-grained?
+    }
+
+    protected boolean isActive(javax.transaction.Transaction tx) {
+        return (getStatus(tx) == Status.STATUS_ACTIVE);
+    }
+
     protected void handlePost(javax.transaction.Transaction tx, final Function<Key, Void> post, final Iterable<Key> keys) {
-        if (tx == null) {
+        if (tx == null || isNotActive(tx)) {
             for (Key key : keys) {
                 post.apply(key);
             }
-        } else {
+        } else if (isActive(tx)) {
             try {
                 tx.registerSynchronization(new Synchronization() {
                     public void beforeCompletion() {
@@ -97,7 +116,7 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
         }
     }
 
-    protected <T> Future<T> getPost(final Future<T> wrap, final javax.transaction.Transaction tx, final Function<Key, Void> post, final Keyable<T> keyable) {
+    protected <T> Future<T> handleGetWithPost(final Future<T> wrap, final javax.transaction.Transaction tx, final Function<Key, Void> post, final Keyable<T> keyable) {
         return new FutureGetDelegate<T>(wrap) {
             public T get() throws InterruptedException, ExecutionException {
                 final T result = wrap.get();
@@ -164,7 +183,7 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
         if (applyPost) {
             return wrap;
         } else {
-            return getPost(wrap, JBossTransaction.getTx(), post, Keyable.SINGLE);
+            return handleGetWithPost(wrap, JBossTransaction.getTx(), post, Keyable.SINGLE);
         }
     }
 
