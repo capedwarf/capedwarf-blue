@@ -69,21 +69,17 @@ final class DatastoreCallbacks {
     private final MethodInvocation executePreQueryCallbacks;
 
     DatastoreCallbacks(Object callbacks) {
-        executePrePutCallbacks = ReflectionUtils.cacheMethod(callbacks, "executePrePutCallbacks", PutContext.class);
-        executePostPutCallbacks = ReflectionUtils.cacheMethod(callbacks, "executePostPutCallbacks", PutContext.class);
-        executePreDeleteCallbacks = ReflectionUtils.cacheMethod(callbacks, "executePreDeleteCallbacks", DeleteContext.class);
-        executePostDeleteCallbacks = ReflectionUtils.cacheMethod(callbacks, "executePostDeleteCallbacks", DeleteContext.class);
-        executePreGetCallbacks = ReflectionUtils.cacheMethod(callbacks, "executePreGetCallbacks", PreGetContext.class);
-        executePostLoadCallbacks = ReflectionUtils.cacheMethod(callbacks, "executePostLoadCallbacks", PostLoadContext.class);
-        executePreQueryCallbacks = ReflectionUtils.cacheMethod(callbacks, "executePreQueryCallbacks", PreQueryContext.class);
+        executePrePutCallbacks = ReflectionUtils.cacheTargetMethod(callbacks, "executePrePutCallbacks", PutContext.class);
+        executePostPutCallbacks = ReflectionUtils.cacheTargetMethod(callbacks, "executePostPutCallbacks", PutContext.class);
+        executePreDeleteCallbacks = ReflectionUtils.cacheTargetMethod(callbacks, "executePreDeleteCallbacks", DeleteContext.class);
+        executePostDeleteCallbacks = ReflectionUtils.cacheTargetMethod(callbacks, "executePostDeleteCallbacks", DeleteContext.class);
+        executePreGetCallbacks = ReflectionUtils.cacheTargetMethod(callbacks, "executePreGetCallbacks", PreGetContext.class);
+        executePostLoadCallbacks = ReflectionUtils.cacheTargetMethod(callbacks, "executePostLoadCallbacks", PostLoadContext.class);
+        executePreQueryCallbacks = ReflectionUtils.cacheTargetMethod(callbacks, "executePreQueryCallbacks", PreQueryContext.class);
     }
 
     private static void execute(MethodInvocation mi, Object context) {
-        try {
-            mi.invoke(context);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        mi.invoke(context);
     }
 
     private static Object getCurrentTransactionProvider(final CurrentTransactionProvider ctp) {

@@ -37,6 +37,7 @@ import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import com.google.common.base.Function;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
@@ -46,6 +47,8 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements DatastoreServiceInternal {
+    private static final MethodInvocation<Void> setId = ReflectionUtils.cacheMethod(Key.class, "setId", Long.TYPE);
+
     private DatastoreAttributes datastoreAttributes;
     private volatile Map<String, Integer> allocationsMap;
 
@@ -126,10 +129,10 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     public Key put(Transaction tx, Entity entity, Function<Key, Void> post) {
         javax.transaction.Transaction transaction = beforeTx(tx);
         try {
-            Key key = entity.getKey();
+            final Key key = entity.getKey();
             if (key.isComplete() == false) {
-                long id = getRangeStart(key.getParent(), key.getKind(), 1).getStart();
-                ReflectionUtils.invokeInstanceMethod(key, "setId", Long.TYPE, id);
+                Long id = getRangeStart(key.getParent(), key.getKind(), 1).getStart();
+                setId.invoke(key, new Object[]{id});
             }
             EntityGroupTracker.trackKey(key);
             putInTx(key, entityModifier.modify(entity), post);

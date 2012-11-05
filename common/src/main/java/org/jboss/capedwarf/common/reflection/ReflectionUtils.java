@@ -197,8 +197,8 @@ public final class ReflectionUtils {
      * @param methodName the method name
      * @return cached target invocation
      */
-    public static <T> MethodInvocation<T> cacheMethod(Object target, String methodName) {
-        return cacheMethod(target, methodName, EMPTY_CLASSES);
+    public static <T> MethodInvocation<T> cacheTargetMethod(Object target, String methodName) {
+        return cacheTargetMethod(target, methodName, EMPTY_CLASSES);
     }
 
     /**
@@ -209,12 +209,39 @@ public final class ReflectionUtils {
      * @param types      the types
      * @return cached target invocation
      */
-    public static <T> MethodInvocation<T> cacheMethod(Object target, String methodName, Class... types) {
+    public static <T> MethodInvocation<T> cacheTargetMethod(Object target, String methodName, Class... types) {
         if (target == null)
             throw new IllegalArgumentException("Null target");
 
         final Method m = findMethod(target.getClass(), methodName, types);
         return new MethodInvocation<T>(target, m);
+    }
+
+    /**
+     * Cache method.
+     *
+     * @param clazz the class
+     * @param methodName the method name
+     * @return cached target invocation
+     */
+    public static <T> MethodInvocation<T> cacheMethod(Class<?> clazz, String methodName) {
+        return cacheMethod(clazz, methodName, EMPTY_CLASSES);
+    }
+
+    /**
+     * Cache method.
+     *
+     * @param clazz the class
+     * @param methodName the method name
+     * @param types      the types
+     * @return cached target invocation
+     */
+    public static <T> MethodInvocation<T> cacheMethod(Class<?> clazz, String methodName, Class... types) {
+        if (clazz == null)
+            throw new IllegalArgumentException("Null class");
+
+        final Method m = findMethod(clazz, methodName, types);
+        return new MethodInvocation<T>(m);
     }
 
     /**

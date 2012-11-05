@@ -34,13 +34,29 @@ public class MethodInvocation<T> {
     private Object target;
     private final Method method;
 
-    MethodInvocation(Object target, Method method) {
-        this.target = target;
+    MethodInvocation(Method method) {
         this.method = method;
     }
 
+    MethodInvocation(Object target, Method method) {
+        this(method);
+        this.target = target;
+    }
+
+    public T invoke(final Object... args) {
+        return invoke(target, args);
+    }
+
     @SuppressWarnings("unchecked")
-    public T invoke(final Object... args) throws Exception {
-        return (T) method.invoke(target, args);
+    public T invoke(final Object object , final Object[] args) {
+        try {
+            return (T) method.invoke(object, args);
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                throw RuntimeException.class.cast(e);
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }
