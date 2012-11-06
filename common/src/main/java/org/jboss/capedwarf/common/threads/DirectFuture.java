@@ -84,16 +84,11 @@ public class DirectFuture<T> implements Future<T> {
     }
 
     public T get() throws InterruptedException, ExecutionException {
-        lock.readLock().lock();
+        lock.writeLock().lock();
         try {
             if (canceled)
                 throw new CancellationException("Already canceled: " + callable);
-        } finally {
-            lock.readLock().unlock();
-        }
 
-        lock.writeLock().lock();
-        try {
             if (result == null) {
                 result = callable.call();
             }
