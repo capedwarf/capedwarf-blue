@@ -26,10 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Stack;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,7 +40,6 @@ import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
-import org.jboss.capedwarf.common.threads.FutureGetDelegate;
 import org.jboss.capedwarf.common.tx.TxUtils;
 import org.jboss.capedwarf.environment.EnvironmentFactory;
 
@@ -256,32 +252,20 @@ final class JBossTransaction implements Transaction {
 
     public Future<Void> commitAsync() {
         checkIfCurrent();
-        final JBossTransaction previous = cleanup(false);
 
-        final javax.transaction.Transaction tx = getTx();
+        final JBossTransaction previous = cleanup(false);
+        final javax.transaction.Transaction tx = resumeAsync(previous);
         if (tx == null) {
             throw new IllegalArgumentException("No Tx -- should exist?!");
         }
 
-        final Future<Void> wrap = ExecutorFactory.wrap(new Callable<Void>() {
+        return ExecutorFactory.wrap(new Callable<Void>() {
             public Void call() throws Exception {
+                resumeTx(tx);
                 tx.commit();
                 return null;
             }
         });
-        return new FutureGetDelegate<Void>(wrap) {
-            public Void get() throws InterruptedException, ExecutionException {
-                final Void result = wrap.get();
-                resumeAsync(previous);
-                return result;
-            }
-
-            public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                final Void result = wrap.get(timeout, unit);
-                resumeAsync(previous);
-                return result;
-            }
-        };
     }
 
     public void rollback() {
@@ -297,39 +281,28 @@ final class JBossTransaction implements Transaction {
 
     public Future<Void> rollbackAsync() {
         checkIfCurrent();
-        final JBossTransaction previous = cleanup(false);
 
-        final javax.transaction.Transaction tx = getTx();
+        final JBossTransaction previous = cleanup(false);
+        final javax.transaction.Transaction tx = resumeAsync(previous);
         if (tx == null) {
             throw new IllegalArgumentException("No Tx -- should exist?!");
         }
 
-        final Future<Void> wrap = ExecutorFactory.wrap(new Callable<Void>() {
+        return ExecutorFactory.wrap(new Callable<Void>() {
             public Void call() throws Exception {
+                resumeTx(tx);
                 tx.rollback();
                 return null;
             }
         });
-        return new FutureGetDelegate<Void>(wrap) {
-            public Void get() throws InterruptedException, ExecutionException {
-                final Void result = wrap.get();
-                resumeAsync(previous);
-                return result;
-            }
-
-            public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                final Void result = wrap.get(timeout, unit);
-                resumeAsync(previous);
-                return result;
-            }
-        };
     }
 
-    private static void resumeAsync(JBossTransaction previous) {
-        suspendTx(); // reset current thread
+    private static javax.transaction.Transaction resumeAsync(JBossTransaction previous) {
+        final javax.transaction.Transaction tx = suspendTx(); // reset current thread
         if (previous != null) {
             previous.resume(false); // resume previous
         }
+        return tx;
     }
 
     public String getId() {
