@@ -28,7 +28,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.DatastoreAttributes;
@@ -43,6 +46,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.threads.DirectFuture;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.common.threads.FutureGetDelegate;
 
 /**
  * JBoss async DatastoreService impl.
@@ -80,20 +84,33 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
             pre.run();
         }
         final TransactionWrapper tw = JBossTransaction.getTxWrapper(transaction);
-        return wrap(new Callable<T>() {
+        final Future<T> wrap = wrap(new Callable<T>() {
             public T call() throws Exception {
                 JBossTransaction.attach(tw);
                 try {
-                    final T result = callable.call();
-                    if (post != null) {
-                        post.apply(result);
-                    }
-                    return result;
+                    return callable.call();
                 } finally {
                     JBossTransaction.detach(tw);
                 }
             }
         });
+        return new FutureGetDelegate<T>(wrap) {
+            public T get() throws InterruptedException, ExecutionException {
+                final T result = wrap.get();
+                if (post != null) {
+                    post.apply(result);
+                }
+                return result;
+            }
+
+            public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                final T result = wrap.get(timeout, unit);
+                if (post != null) {
+                    post.apply(result);
+                }
+                return result;
+            }
+        };
     }
 
     public Future<Transaction> beginTransaction() {
@@ -131,7 +148,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         }
 
         final TransactionWrapper tw = JBossTransaction.getTxWrapper(transaction);
-        return wrap(new Callable<Map<Key, Entity>>() {
+        final Future<Map<Key, Entity>> wrap = wrap(new Callable<Map<Key, Entity>>() {
             public Map<Key, Entity> call() throws Exception {
                 JBossTransaction.attach(tw);
                 try {
@@ -141,15 +158,25 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
                             map.put(key, entity);
                         }
                     }
-
-                    getDatastoreCallbacks().executePostLoadCallbacks(postTxProvider(transaction), Lists.newArrayList(map.values()));
-
                     return map;
                 } finally {
                     JBossTransaction.detach(tw);
                 }
             }
         });
+        return new FutureGetDelegate<Map<Key, Entity>>(wrap) {
+            public Map<Key, Entity> get() throws InterruptedException, ExecutionException {
+                final Map<Key, Entity> result = wrap.get();
+                getDatastoreCallbacks().executePostLoadCallbacks(postTxProvider(transaction), Lists.newArrayList(map.values()));
+                return result;
+            }
+
+            public Map<Key, Entity> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                final Map<Key, Entity> result = wrap.get(timeout, unit);
+                getDatastoreCallbacks().executePostLoadCallbacks(postTxProvider(transaction), Lists.newArrayList(map.values()));
+                return result;
+            }
+        };
     }
 
     public Future<Key> put(final Entity entity) {
