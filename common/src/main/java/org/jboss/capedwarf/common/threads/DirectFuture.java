@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.common.threads;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -63,8 +64,11 @@ public class DirectFuture<T> implements Future<T> {
     }
 
     public T get() throws InterruptedException, ExecutionException {
+        if (canceled)
+            throw new CancellationException("Already canceled: " + callable);
+
         try {
-            if (canceled == false && result == null) {
+            if (result == null) {
                 result = callable.call();
             }
             return result;
@@ -84,7 +88,7 @@ public class DirectFuture<T> implements Future<T> {
 
     public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         long now = System.currentTimeMillis();
-        T tmp = get();
+        final T tmp = get();
         if (System.currentTimeMillis() - now > unit.toMillis(timeout)) {
             throw new TimeoutException("get() took too much time.");
         }
