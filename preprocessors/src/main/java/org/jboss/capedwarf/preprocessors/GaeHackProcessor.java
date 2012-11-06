@@ -80,10 +80,10 @@ public class GaeHackProcessor extends DatastoreCallbacksProcessor {
 
         try {
 
-            replaceCallbacksConfigWriter();
-
             if (roundEnv.processingOver()) {
                 replaceConfigOutputStream();
+            } else {
+                replaceCallbacksConfigWriter();
             }
 
             boolean process = super.process(annotations, roundEnv);
