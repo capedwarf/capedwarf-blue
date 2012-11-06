@@ -22,12 +22,8 @@
 
 package org.jboss.capedwarf.preprocessors;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.util.Set;
-import java.util.logging.Logger;
+import com.google.appengine.tools.compilation.DatastoreCallbacksProcessor;
+import org.kohsuke.MetaInfServices;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Processor;
@@ -39,12 +35,17 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-
-import com.google.appengine.tools.compilation.DatastoreCallbacksProcessor;
-import org.kohsuke.MetaInfServices;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @SupportedAnnotationTypes({
         "com.google.appengine.api.datastore.PrePut",
@@ -74,24 +75,18 @@ public class GaeHackProcessor extends DatastoreCallbacksProcessor {
     }
 
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        // TODO -- why it doesn't write down classes
-        final String osName = System.getProperty("os.name");
-        if (osName.contains("Windows") == false)
+        if (!isWindows())
             return false;
 
         try {
-            final Object writter = loadCallbacksConfigWriter();
-            if (writter != null) {
-                callbacksConfigWriterField.set(this, writter);
-            }
+
+            replaceCallbacksConfigWriter();
 
             if (roundEnv.processingOver()) {
-                final Filer filer = processingEnv.getFiler();
-                final FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "", CALLBACKS_FILE);
-                configOutputStream.set(this, fileObject.openOutputStream());
+                replaceConfigOutputStream();
             }
 
-            final boolean process = super.process(annotations, roundEnv);
+            boolean process = super.process(annotations, roundEnv);
             if (process) {
                 Logger.getLogger(GaeHackProcessor.class.getName()).info("Hacked around GAE DatastoreCallbacksProcessor Winz bug. ;-)");
             }
@@ -101,29 +96,52 @@ public class GaeHackProcessor extends DatastoreCallbacksProcessor {
         }
     }
 
+    private boolean isWindows() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        return osName.contains("win");
+    }
+
+    private void replaceConfigOutputStream() throws IOException, IllegalAccessException {
+        Filer filer = processingEnv.getFiler();
+        FileObject fileObject = filer.createResource(StandardLocation.CLASS_OUTPUT, "", CALLBACKS_FILE);
+        configOutputStream.set(this, fileObject.openOutputStream());
+    }
+
+    private void replaceCallbacksConfigWriter() throws IllegalAccessException {
+        Object writer = loadCallbacksConfigWriter();
+        if (writer != null) {
+            callbacksConfigWriterField.set(this, writer);
+        }
+    }
+
     private Object loadCallbacksConfigWriter() {
         try {
-            final FileObject existingFile = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", CALLBACKS_FILE);
-            if (existingFile != null) {
-                InputStream inputStream = null;
-                try {
-                    inputStream = existingFile.openInputStream();
-                } catch (IOException ignored) {
-                }
-                try {
-                    final Class<?> clazz = getClass().getClassLoader().loadClass("com.google.appengine.tools.compilation.DatastoreCallbacksConfigWriter");
-                    final Constructor<?> constructor = clazz.getDeclaredConstructor(InputStream.class);
-                    constructor.setAccessible(true);
-                    return constructor.newInstance(inputStream);
-                } finally {
-                    if (inputStream != null) {
-                        inputStream.close();
-                    }
+            FileObject existingFile = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", CALLBACKS_FILE);
+            if (existingFile == null) {
+                return null;
+            }
+
+            InputStream inputStream = null;
+            try {
+                inputStream = existingFile.openInputStream();
+            } catch (IOException ignored) {
+            }
+            try {
+                return newDatastoreCallbacksConfigWriter(inputStream);
+            } finally {
+                if (inputStream != null) {
+                    inputStream.close();
                 }
             }
-            return null;
         } catch (Exception e) {
             throw new RuntimeException(String.format("Unable to read %s", CALLBACKS_FILE), e);
         }
+    }
+
+    private Object newDatastoreCallbacksConfigWriter(InputStream inputStream) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        Class<?> clazz = getClass().getClassLoader().loadClass("com.google.appengine.tools.compilation.DatastoreCallbacksConfigWriter");
+        Constructor<?> constructor = clazz.getDeclaredConstructor(InputStream.class);
+        constructor.setAccessible(true);
+        return constructor.newInstance(inputStream);
     }
 }
