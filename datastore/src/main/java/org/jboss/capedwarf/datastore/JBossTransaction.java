@@ -261,6 +261,7 @@ final class JBossTransaction implements Transaction {
 
         return ExecutorFactory.wrap(new Callable<Void>() {
             public Void call() throws Exception {
+                suspendTx(); // TODO -- who left the tx?
                 resumeTx(tx);
                 tx.commit();
                 return null;
@@ -290,6 +291,7 @@ final class JBossTransaction implements Transaction {
 
         return ExecutorFactory.wrap(new Callable<Void>() {
             public Void call() throws Exception {
+                suspendTx(); // TODO -- who left the tx?
                 resumeTx(tx);
                 tx.rollback();
                 return null;
