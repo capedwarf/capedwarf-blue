@@ -126,7 +126,9 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         getDatastoreCallbacks().executePreGetCallbacks(JBossAsyncDatastoreService.this, Lists.newArrayList(keyIterable), map);
 
         final List<Key> requiredKeys = Lists.newArrayList(keyIterable);
-        requiredKeys.removeAll(map.keySet()); // remove manually added keys
+        if (map.isEmpty() == false) {
+            requiredKeys.removeAll(map.keySet()); // remove manually added keys
+        }
 
         final TransactionWrapper tw = JBossTransaction.getTxWrapper(transaction);
         return wrap(new Callable<Map<Key, Entity>>() {

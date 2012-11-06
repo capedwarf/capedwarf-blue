@@ -111,7 +111,9 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         getDatastoreCallbacks().executePreGetCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys), map);
 
         final List<Key> requiredKeys = Lists.newArrayList(keys);
-        requiredKeys.removeAll(map.keySet()); // remove manually added keys
+        if (map.isEmpty() == false) {
+            requiredKeys.removeAll(map.keySet()); // remove manually added keys
+        }
 
         for (Key key : requiredKeys) {
             final Entity entity = getDelegate().get(transaction, key);
