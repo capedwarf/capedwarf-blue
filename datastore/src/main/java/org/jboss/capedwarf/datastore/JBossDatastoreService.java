@@ -107,22 +107,8 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
 
     public Map<Key, Entity> get(final Transaction transaction, final Iterable<Key> keys) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
-        final Function<Key, Void> pre = new Function<Key, Void>() {
-            public Void apply(Key input) {
-                getDatastoreCallbacks().executePreGetCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys), map);
-                return null;
-            }
-        };
-        final List<Entity> results = new ArrayList<Entity>();
-        final Function<Map.Entry<Key, Entity>, Void> post = new Function<Map.Entry<Key, Entity>, Void>() {
-            public Void apply(Map.Entry<Key, Entity> input) {
-                getDatastoreCallbacks().executePostLoadCallbacks(JBossDatastoreService.this, results);
-                return null;
-            }
-        };
-        for (Key key : keys) {
-            pre.apply(key);
-        }
+
+        getDatastoreCallbacks().executePreGetCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys), map);
 
         final List<Key> requiredKeys = Lists.newArrayList(keys);
         requiredKeys.removeAll(map.keySet()); // remove manually added keys
@@ -131,12 +117,11 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             final Entity entity = getDelegate().get(transaction, key);
             if (entity != null) {
                 map.put(key, entity);
-                results.add(entity);
             }
         }
-        for (Map.Entry<Key, Entity> entry : map.entrySet()) {
-            post.apply(entry);
-        }
+
+        getDatastoreCallbacks().executePostLoadCallbacks(JBossDatastoreService.this, Lists.newArrayList(map.values()));
+
         return map;
     }
 
@@ -153,21 +138,14 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public List<Key> put(Transaction transaction, final Iterable<Entity> entities) {
-        final Function<Entity, Void> pre = new Function<Entity, Void>() {
-            public Void apply(Entity input) {
-                getDatastoreCallbacks().executePrePutCallbacks(JBossDatastoreService.this, Lists.newArrayList(entities));
-                return null;
-            }
-        };
-        final Function<Key, Void> post = new Function<Key, Void>() {
-            public Void apply(Key input) {
+        getDatastoreCallbacks().executePrePutCallbacks(JBossDatastoreService.this, Lists.newArrayList(entities));
+
+        final Runnable post = new Runnable() {
+            public void run() {
                 getDatastoreCallbacks().executePostPutCallbacks(JBossDatastoreService.this, Lists.newArrayList(entities));
-                return null;
             }
         };
-        for (Entity entity : entities) {
-            pre.apply(entity);
-        }
+
         final List<Key> keys = new ArrayList<Key>();
         for (Entity entity : entities) {
             keys.add(getDelegate().put(transaction, entity, post));
@@ -188,21 +166,14 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public void delete(final Transaction transaction, final Iterable<Key> keys) {
-        final Function<Key, Void> pre = new Function<Key, Void>() {
-            public Void apply(Key input) {
-                getDatastoreCallbacks().executePreDeleteCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys));
-                return null;
-            }
-        };
-        final Function<Key, Void> post = new Function<Key, Void>() {
-            public Void apply(Key input) {
+        getDatastoreCallbacks().executePreDeleteCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys));
+
+        final Runnable post = new Runnable() {
+            public void run() {
                 getDatastoreCallbacks().executePostDeleteCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys));
-                return null;
             }
         };
-        for (Key key : keys) {
-            pre.apply(key);
-        }
+
         for (Key key : keys) {
             getDelegate().delete(transaction, key, post);
         }

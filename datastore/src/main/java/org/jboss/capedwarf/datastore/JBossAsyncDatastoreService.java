@@ -122,22 +122,8 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
 
     public Future<Map<Key, Entity>> get(final Transaction transaction, final Iterable<Key> keyIterable) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
-        final Function<Key, Void> pre = new Function<Key, Void>() {
-            public Void apply(Key input) {
-                getDatastoreCallbacks().executePreGetCallbacks(JBossAsyncDatastoreService.this, Lists.newArrayList(keyIterable), map);
-                return null;
-            }
-        };
-        final List<Entity> results = new ArrayList<Entity>();
-        final Function<Map.Entry<Key, Entity>, Void> post = new Function<Map.Entry<Key, Entity>, Void>() {
-            public Void apply(Map.Entry<Key, Entity> input) {
-                getDatastoreCallbacks().executePostLoadCallbacks(postTxProvider(transaction), results);
-                return null;
-            }
-        };
-        for (Key key : keyIterable) {
-            pre.apply(key);
-        }
+
+        getDatastoreCallbacks().executePreGetCallbacks(JBossAsyncDatastoreService.this, Lists.newArrayList(keyIterable), map);
 
         final List<Key> requiredKeys = Lists.newArrayList(keyIterable);
         requiredKeys.removeAll(map.keySet()); // remove manually added keys
@@ -151,12 +137,11 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
                         final Entity entity = getDelegate().get(transaction, key);
                         if (entity != null) {
                             map.put(key, entity);
-                            results.add(entity);
                         }
                     }
-                    for (Map.Entry<Key, Entity> entry : map.entrySet()) {
-                        post.apply(entry);
-                    }
+
+                    getDatastoreCallbacks().executePostLoadCallbacks(postTxProvider(transaction), Lists.newArrayList(map.values()));
+
                     return map;
                 } finally {
                     JBossTransaction.detach(tw);
@@ -178,27 +163,20 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     }
 
     public Future<List<Key>> put(final Transaction transaction, final Iterable<Entity> entityIterable) {
-        final Function<Entity, Void> pre = new Function<Entity, Void>() {
-            public Void apply(Entity input) {
-                getDatastoreCallbacks().executePrePutCallbacks(JBossAsyncDatastoreService.this, Lists.newArrayList(entityIterable));
-                return null;
-            }
-        };
-        final Function<Key, Void> post = new Function<Key, Void>() {
-            public Void apply(Key input) {
+        getDatastoreCallbacks().executePrePutCallbacks(JBossAsyncDatastoreService.this, Lists.newArrayList(entityIterable));
+
+        final Runnable post = new Runnable() {
+            public void run() {
                 getDatastoreCallbacks().executePostPutCallbacks(postTxProvider(transaction), Lists.newArrayList(entityIterable));
-                return null;
             }
         };
-        for (Entity entity : entityIterable) {
-            pre.apply(entity);
-        }
+
         final TransactionWrapper tw = JBossTransaction.getTxWrapper(transaction);
-        final List<Key> keys = new ArrayList<Key>();
         final Future<List<Key>> wrap = wrap(new Callable<List<Key>>() {
             public List<Key> call() throws Exception {
                 JBossTransaction.attach(tw);
                 try {
+                    final List<Key> keys = new ArrayList<Key>();
                     for (Entity entity : entityIterable) {
                         keys.add(getDelegate().put(transaction, entity, null)); // do not post, until get is called
                     }
@@ -208,7 +186,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
                 }
             }
         });
-        return handleGetWithPost(wrap, JBossTransaction.getTx(), post, Keyable.LIST);
+        return handleGetWithPost(wrap, JBossTransaction.getTx(), post);
     }
 
     public Future<Void> delete(final Key... keys) {
@@ -224,21 +202,14 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
     }
 
     public Future<Void> delete(final Transaction transaction, final Iterable<Key> keyIterable) {
-        final Function<Key, Void> pre = new Function<Key, Void>() {
-            public Void apply(Key input) {
-                getDatastoreCallbacks().executePreDeleteCallbacks(JBossAsyncDatastoreService.this, Lists.newArrayList(keyIterable));
-                return null;
-            }
-        };
-        final Function<Key, Void> post = new Function<Key, Void>() {
-            public Void apply(Key input) {
+        getDatastoreCallbacks().executePreDeleteCallbacks(JBossAsyncDatastoreService.this, Lists.newArrayList(keyIterable));
+
+        final Runnable post = new Runnable() {
+            public void run() {
                 getDatastoreCallbacks().executePostDeleteCallbacks(postTxProvider(transaction), Lists.newArrayList(keyIterable));
-                return null;
             }
         };
-        for (Key key : keyIterable) {
-            pre.apply(key);
-        }
+
         final TransactionWrapper tw = JBossTransaction.getTxWrapper(transaction);
         final Future<Void> wrap = wrap(new Callable<Void>() {
             public Void call() throws Exception {
@@ -253,12 +224,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
                 }
             }
         });
-        final Keyable<Void> keyable = new Keyable<Void>() {
-            public Iterable<Key> toKeys(Void result) {
-                return keyIterable;
-            }
-        };
-        return handleGetWithPost(wrap, JBossTransaction.getTx(), post, keyable);
+        return handleGetWithPost(wrap, JBossTransaction.getTx(), post);
     }
 
     public Future<KeyRange> allocateIds(final String s, final long l) {

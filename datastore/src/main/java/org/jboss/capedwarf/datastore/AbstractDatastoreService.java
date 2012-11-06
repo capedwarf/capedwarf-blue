@@ -93,18 +93,14 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
         return (getStatus(tx) == Status.STATUS_ACTIVE);
     }
 
-    protected void handlePost(javax.transaction.Transaction tx, final Function<Key, Void> post, final Iterable<Key> keys) {
+    protected void handlePost(javax.transaction.Transaction tx, final Runnable post) {
         if (tx == null || isNotActive(tx)) {
-            for (Key key : keys) {
-                post.apply(key);
-            }
+            post.run();
         } else if (isActive(tx)) {
             try {
                 tx.registerSynchronization(new Synchronization() {
                     public void beforeCompletion() {
-                        for (Key key : keys) {
-                            post.apply(key);
-                        }
+                        post.run();
                     }
 
                     public void afterCompletion(int status) {
@@ -116,17 +112,17 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
         }
     }
 
-    protected <T> Future<T> handleGetWithPost(final Future<T> wrap, final javax.transaction.Transaction tx, final Function<Key, Void> post, final Keyable<T> keyable) {
+    protected <T> Future<T> handleGetWithPost(final Future<T> wrap, final javax.transaction.Transaction tx, final Runnable post) {
         return new FutureGetDelegate<T>(wrap) {
             public T get() throws InterruptedException, ExecutionException {
                 final T result = wrap.get();
-                handlePost(tx, post, keyable.toKeys(result));
+                handlePost(tx, post);
                 return result;
             }
 
             public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 final T result = wrap.get(timeout, unit);
-                handlePost(tx, post, keyable.toKeys(result));
+                handlePost(tx, post);
                 return result;
             }
         };
@@ -157,21 +153,14 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
     }
 
     protected Future<Key> doPut(final Transaction transaction, final Entity entity, final boolean applyPost) {
-        final Function<Entity, Void> preFn = new Function<Entity, Void>() {
-            public Void apply(Entity input) {
-                getDatastoreCallbacks().executePrePutCallbacks(AbstractDatastoreService.this, Lists.newArrayList(entity));
-                return null;
-            }
-        };
         final Runnable pre = new Runnable() {
             public void run() {
-                preFn.apply(null);
+                getDatastoreCallbacks().executePrePutCallbacks(AbstractDatastoreService.this, Lists.newArrayList(entity));
             }
         };
-        final Function<Key, Void> post = new Function<Key, Void>() {
-            public Void apply(Key input) {
+        final Runnable post = new Runnable() {
+            public void run() {
                 getDatastoreCallbacks().executePostPutCallbacks(postTxProvider(transaction), Lists.newArrayList(entity));
-                return null;
             }
         };
         final Future<Key> wrap = wrap(transaction, new Callable<Key>() {
@@ -183,7 +172,7 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
         if (applyPost) {
             return wrap;
         } else {
-            return handleGetWithPost(wrap, JBossTransaction.getTx(), post, Keyable.SINGLE);
+            return handleGetWithPost(wrap, JBossTransaction.getTx(), post);
         }
     }
 
