@@ -86,13 +86,7 @@ public class DirectFuture<T> implements Future<T> {
     public T get() throws InterruptedException, ExecutionException {
         lock.writeLock().lock();
         try {
-            if (canceled)
-                throw new CancellationException("Already canceled: " + callable);
-
-            if (result == null) {
-                result = callable.call();
-            }
-            return result;
+            return getInternal();
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw RuntimeException.class.cast(e);
@@ -110,11 +104,45 @@ public class DirectFuture<T> implements Future<T> {
     }
 
     public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        long now = System.currentTimeMillis();
-        final T tmp = get();
-        if (System.currentTimeMillis() - now > unit.toMillis(timeout)) {
-            throw new TimeoutException("get() took too much time.");
+        final long now = System.currentTimeMillis();
+        if (lock.writeLock().tryLock(timeout, unit) == false) {
+            throw new TimeoutException("Cannot get a lock in " + unit.toMillis(timeout) + "ms!");
         }
-        return tmp;
+        try {
+            final T result = getInternal();
+
+            if (System.currentTimeMillis() - now > unit.toMicros(timeout))
+                throw new TimeoutException("get() took too much time!");
+
+            return result;
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                throw RuntimeException.class.cast(e);
+            } else if (e instanceof TimeoutException) {
+                throw TimeoutException.class.cast(e);
+            } else if (e instanceof ExecutionException) {
+                throw ExecutionException.class.cast(e);
+            } else if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+                throw InterruptedException.class.cast(e);
+            } else {
+                throw new ExecutionException(e);
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /**
+     * Should be invoked with a lock.
+     */
+    protected T getInternal() throws Exception {
+        if (canceled)
+            throw new CancellationException("Already canceled: " + callable);
+
+        if (result == null) {
+            result = callable.call();
+        }
+        return result;
     }
 }
