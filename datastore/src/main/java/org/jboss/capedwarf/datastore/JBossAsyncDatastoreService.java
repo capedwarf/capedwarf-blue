@@ -138,22 +138,20 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
         for (Key key : keyIterable) {
             pre.apply(key);
         }
+
+        final List<Key> requiredKeys = Lists.newArrayList(keyIterable);
+        requiredKeys.removeAll(map.keySet()); // remove manually added keys
+
         final TransactionWrapper tw = JBossTransaction.getTxWrapper(transaction);
         return wrap(new Callable<Map<Key, Entity>>() {
             public Map<Key, Entity> call() throws Exception {
                 JBossTransaction.attach(tw);
                 try {
-                    for (Key key : keyIterable) {
-                        Entity previous = map.get(key);
-                        if (previous == null) {
-                            final Entity entity = getDelegate().get(transaction, key);
-                            if (entity != null) {
-                                map.put(key, entity);
-                                previous = entity;
-                            }
-                        }
-                        if (previous != null) {
-                            results.add(previous);
+                    for (Key key : requiredKeys) {
+                        final Entity entity = getDelegate().get(transaction, key);
+                        if (entity != null) {
+                            map.put(key, entity);
+                            results.add(entity);
                         }
                     }
                     for (Map.Entry<Key, Entity> entry : map.entrySet()) {

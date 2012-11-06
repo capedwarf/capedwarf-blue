@@ -123,17 +123,15 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
         for (Key key : keys) {
             pre.apply(key);
         }
-        for (Key key : keys) {
-            Entity previous = map.get(key);
-            if (previous == null) {
-                final Entity entity = getDelegate().get(transaction, key);
-                if (entity != null) {
-                    map.put(key, entity);
-                    previous = entity;
-                }
-            }
-            if (previous != null) {
-                results.add(previous);
+
+        final List<Key> requiredKeys = Lists.newArrayList(keys);
+        requiredKeys.removeAll(map.keySet()); // remove manually added keys
+
+        for (Key key : requiredKeys) {
+            final Entity entity = getDelegate().get(transaction, key);
+            if (entity != null) {
+                map.put(key, entity);
+                results.add(entity);
             }
         }
         for (Map.Entry<Key, Entity> entry : map.entrySet()) {
