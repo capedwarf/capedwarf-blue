@@ -28,14 +28,19 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
+ * Very simple direct future.
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class DirectFuture<T> implements Future<T> {
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
     private final Callable<T> callable;
-    private volatile T result;
-    private volatile boolean canceled;
+    private T result;
+    private boolean canceled;
 
     private DirectFuture(Callable<T> callable) {
         // should not return null
@@ -47,26 +52,47 @@ public class DirectFuture<T> implements Future<T> {
     }
 
     public boolean cancel(boolean mayInterruptIfRunning) {
-        if (result == null) {
-            canceled = true;
-            return true;
-        } else {
-            return false;
+        lock.writeLock().lock();
+        try {
+            if (result == null) {
+                canceled = true;
+                return true;
+            } else {
+                return false;
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
     public boolean isCancelled() {
-        return canceled;
+        lock.readLock().lock();
+        try {
+            return canceled;
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public boolean isDone() {
-        return (result != null);
+        lock.readLock().lock();
+        try {
+            return (result != null);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public T get() throws InterruptedException, ExecutionException {
-        if (canceled)
-            throw new CancellationException("Already canceled: " + callable);
+        lock.readLock().lock();
+        try {
+            if (canceled)
+                throw new CancellationException("Already canceled: " + callable);
+        } finally {
+            lock.readLock().unlock();
+        }
 
+        lock.writeLock().lock();
         try {
             if (result == null) {
                 result = callable.call();
@@ -83,6 +109,8 @@ public class DirectFuture<T> implements Future<T> {
             } else {
                 throw new ExecutionException(e);
             }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 

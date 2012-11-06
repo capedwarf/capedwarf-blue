@@ -22,12 +22,17 @@
 
 package org.jboss.capedwarf.common.threads;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class FutureGetDelegate<T> implements Future<T> {
+    private final AtomicBoolean invoked = new AtomicBoolean(false);
     private final Future<T> delegate;
 
     public FutureGetDelegate(Future<T> delegate) {
@@ -44,5 +49,33 @@ public abstract class FutureGetDelegate<T> implements Future<T> {
 
     public boolean isDone() {
         return delegate.isDone();
+    }
+
+    protected abstract void before();
+
+    protected abstract void after(T result);
+
+    public T get() throws InterruptedException, ExecutionException {
+        boolean previous = invoked.getAndSet(true);
+        if (previous == false) {
+            before();
+        }
+        final T result = delegate.get();
+        if (previous == false) {
+            after(result);
+        }
+        return result;
+    }
+
+    public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        boolean previous = invoked.getAndSet(true);
+        if (previous == false) {
+            before();
+        }
+        final T result = delegate.get(timeout, unit);
+        if (previous == false) {
+            after(result);
+        }
+        return result;
     }
 }

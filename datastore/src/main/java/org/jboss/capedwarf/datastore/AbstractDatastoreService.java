@@ -26,10 +26,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
@@ -45,7 +42,6 @@ import com.google.appengine.api.datastore.Transaction;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-import org.jboss.capedwarf.common.threads.FutureGetDelegate;
 
 /**
  * Abstract base DatastoreService impl.
@@ -113,17 +109,9 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
     }
 
     protected <T> Future<T> handleGetWithPost(final Future<T> wrap, final javax.transaction.Transaction tx, final Runnable post) {
-        return new FutureGetDelegate<T>(wrap) {
-            public T get() throws InterruptedException, ExecutionException {
-                final T result = wrap.get();
+        return new PostFuture<T>(wrap) {
+            protected void after(T result) {
                 handlePost(tx, post);
-                return result;
-            }
-
-            public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                final T result = wrap.get(timeout, unit);
-                handlePost(tx, post);
-                return result;
             }
         };
     }
