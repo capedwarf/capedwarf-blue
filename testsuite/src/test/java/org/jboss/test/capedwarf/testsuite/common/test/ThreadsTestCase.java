@@ -22,7 +22,14 @@
 
 package org.jboss.test.capedwarf.testsuite.common.test;
 
+import java.util.Collections;
+
 import com.google.appengine.api.ThreadManager;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Transaction;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -48,5 +55,49 @@ public class ThreadsTestCase extends BaseTest {
         thread.start();
         thread.join();
         Assert.assertEquals(1, runnable.x);
+    }
+
+    @Test
+    public void testDS() throws Exception {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                DatastoreService service = DatastoreServiceFactory.getDatastoreService();
+                Key key = service.put(new Entity("Threads"));
+                Assert.assertNotNull(key);
+                Entity entity = service.get(Collections.singleton(key)).get(key);
+                Assert.assertNotNull(entity);
+                service.delete(entity.getKey());
+                Assert.assertTrue(service.get(Collections.singleton(key)).isEmpty());
+            }
+        };
+        Thread thread = ThreadManager.createBackgroundThread(runnable);
+        thread.start();
+        thread.join();
+    }
+
+    @Test
+    public void testDSWithTx() throws Exception {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                DatastoreService service = DatastoreServiceFactory.getDatastoreService();
+
+                Transaction tx = service.beginTransaction();
+                Key key = service.put(new Entity("Threads"));
+                Assert.assertNotNull(key);
+                tx.commit();
+
+                Entity entity = service.get(Collections.singleton(key)).get(key);
+                Assert.assertNotNull(entity);
+
+                tx = service.beginTransaction();
+                service.delete(entity.getKey());
+                tx.commit();
+
+                Assert.assertTrue(service.get(Collections.singleton(key)).isEmpty());
+            }
+        };
+        Thread thread = ThreadManager.createBackgroundThread(runnable);
+        thread.start();
+        thread.join();
     }
 }
