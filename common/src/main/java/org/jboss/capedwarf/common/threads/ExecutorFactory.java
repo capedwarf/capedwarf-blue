@@ -27,6 +27,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -81,6 +83,12 @@ public class ExecutorFactory {
     }
 
     protected static Executor createDefaultExecutor() {
-        return new ThreadPoolExecutor(1, 3, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(3));
+        int maxPoolSize = Integer.parseInt(System.getProperty("jboss.capedwarf.maxPoolSize", "3"));
+        RejectedExecutionHandler handler = new RejectedExecutionHandler() {
+            public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+                throw new RejectedExecutionException("Current thread pool executor queue: " + executor.getQueue());
+            }
+        };
+        return new ThreadPoolExecutor(1, maxPoolSize, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(maxPoolSize), handler);
     }
 }
