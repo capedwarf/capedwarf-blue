@@ -24,8 +24,7 @@
 
 package org.jboss.capedwarf.appidentity;
 
-import com.google.apphosting.api.ApiProxy;
-import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
+import java.io.IOException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -34,7 +33,9 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
+
+import com.google.apphosting.api.ApiProxy;
+import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -48,8 +49,8 @@ public class GAEFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = new CapedwarfHttpServletRequestWrapper((HttpServletRequest) req);
 
-        ApiProxy.Delegate previous = ApiProxy.getDelegate();
-        JBossDelegate delegate = JBossDelegate.INSTANCE;
+        final ApiProxy.Delegate previous = ApiProxy.getDelegate();
+        final JBossDelegate delegate = JBossDelegate.INSTANCE;
         ApiProxy.setDelegate(delegate);
         try {
             delegate.addRequest(req);

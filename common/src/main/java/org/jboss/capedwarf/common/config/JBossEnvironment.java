@@ -165,5 +165,9 @@ public class JBossEnvironment implements ApiProxy.Environment {
     public static void clearThreadLocalInstance() {
         threadLocalInstance.set(null);
     }
+
+    static void setThreadLocalInstance(JBossEnvironment env) {
+        threadLocalInstance.set(env);
+    }
 }
 

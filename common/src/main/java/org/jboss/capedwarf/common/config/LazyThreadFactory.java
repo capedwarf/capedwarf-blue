@@ -24,18 +24,49 @@ package org.jboss.capedwarf.common.config;
 
 import java.util.concurrent.ThreadFactory;
 
+import com.google.apphosting.api.ApiProxy;
+import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class LazyThreadFactory implements ThreadFactory {
+class LazyThreadFactory implements ThreadFactory {
     private static String[] defaultJndiNames = {"java:jboss/threads/threadfactory/capedwarf"};
     static final ThreadFactory INSTANCE = new LazyThreadFactory();
 
     private ThreadFactory factory = JndiLookupUtils.lazyLookup("jndi.thread-factory", ThreadFactory.class, defaultJndiNames);
 
-    public Thread newThread(Runnable run) {
-        return factory.newThread(run);
+    private LazyThreadFactory() {
     }
+
+    public Thread newThread(final Runnable runnable) {
+        return factory.newThread(new RunnableWrapper(runnable));
+    }
+
+    private static class RunnableWrapper implements Runnable {
+        private final JBossEnvironment env;
+        private final Runnable runnable;
+
+        private RunnableWrapper(Runnable runnable) {
+            this.env = JBossEnvironment.getThreadLocalInstance();
+            this.runnable = runnable;
+        }
+
+        public void run() {
+            final ApiProxy.Delegate previous = ApiProxy.getDelegate();
+            ApiProxy.setDelegate(JBossDelegate.INSTANCE);
+            try {
+                JBossEnvironment.setThreadLocalInstance(env);
+                try {
+                    runnable.run();
+                } finally {
+                    JBossEnvironment.clearThreadLocalInstance();
+                }
+            } finally {
+                ApiProxy.setDelegate(previous);
+            }
+        }
+    }
+
 }

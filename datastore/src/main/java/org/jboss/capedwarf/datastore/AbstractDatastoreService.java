@@ -96,10 +96,12 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
             try {
                 tx.registerSynchronization(new Synchronization() {
                     public void beforeCompletion() {
-                        post.run();
                     }
 
                     public void afterCompletion(int status) {
+                        if (status == Status.STATUS_COMMITTED) {
+                            post.run();
+                        }
                     }
                 });
             } catch (Exception e) {
