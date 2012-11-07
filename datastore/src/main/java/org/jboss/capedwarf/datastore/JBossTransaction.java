@@ -117,21 +117,19 @@ final class JBossTransaction implements Transaction {
         if (tw == null)
             return;
 
-        try {
-            tm.resume(tw.getDelegate());
+        tw.setPrevious(suspendTx());
 
-            final JBossTransaction tx = tw.getTransaction();
+        resumeTx(tw.getDelegate());
 
-            Stack<JBossTransaction> stack = current.get();
-            if (stack == null) {
-                stack = new Stack<JBossTransaction>();
-                current.set(stack);
-            }
+        final JBossTransaction tx = tw.getTransaction();
 
-            stack.push(tx);
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+        Stack<JBossTransaction> stack = current.get();
+        if (stack == null) {
+            stack = new Stack<JBossTransaction>();
+            current.set(stack);
         }
+
+        stack.push(tx);
     }
 
     static void detach(TransactionWrapper tw) {
@@ -149,6 +147,11 @@ final class JBossTransaction implements Transaction {
         }
 
         suspendTx();
+
+        javax.transaction.Transaction previous = tw.getPrevious();
+        if (previous != null) {
+            resumeTx(previous);
+        }
     }
 
     static javax.transaction.Transaction suspendTx() {

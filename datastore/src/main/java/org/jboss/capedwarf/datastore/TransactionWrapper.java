@@ -33,6 +33,9 @@ class TransactionWrapper {
     private javax.transaction.Transaction delegate;
     private JBossTransaction transaction;
 
+    // previous existing tx
+    private javax.transaction.Transaction previous;
+
     private static Transaction check(Transaction tx) {
         if (tx == null) {
             throw new IllegalArgumentException("No Tx -- should exist?!");
@@ -56,5 +59,13 @@ class TransactionWrapper {
 
     JBossTransaction getTransaction() {
         return transaction;
+    }
+
+    Transaction getPrevious() {
+        return previous;
+    }
+
+    void setPrevious(Transaction previous) {
+        this.previous = previous;
     }
 }
