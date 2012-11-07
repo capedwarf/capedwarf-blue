@@ -22,14 +22,6 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-
 import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
@@ -43,6 +35,14 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.threads.DirectFuture;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 /**
  * JBoss async DatastoreService impl.
@@ -184,9 +184,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
                 JBossTransaction.attach(tw);
                 try {
                     final List<Key> keys = new ArrayList<Key>();
-                    for (Entity entity : entityIterable) {
-                        keys.add(getDelegate().put(transaction, entity, null)); // do not post, until get is called
-                    }
+                    keys.addAll(getDelegate().put(transaction, entityIterable, null)); // do not post, until get is called
                     return keys;
                 } finally {
                     JBossTransaction.detach(tw);
@@ -222,9 +220,7 @@ public class JBossAsyncDatastoreService extends AbstractDatastoreService impleme
             public Void call() throws Exception {
                 JBossTransaction.attach(tw);
                 try {
-                    for (Key key : keyIterable) {
-                        getDelegate().delete(transaction, key, null); // do not delete until get is called
-                    }
+                    getDelegate().delete(transaction, keyIterable, null); // do not delete until get is called
                     return null;
                 } finally {
                     JBossTransaction.detach(tw);
