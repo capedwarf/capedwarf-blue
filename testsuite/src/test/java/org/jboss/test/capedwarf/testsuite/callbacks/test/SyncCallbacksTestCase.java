@@ -22,19 +22,20 @@
 
 package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
-import java.util.Arrays;
-
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -49,74 +50,123 @@ public class SyncCallbacksTestCase extends AbstractCallbacksTest {
     public void testSmoke() throws Exception {
         DatastoreService service = createDatastoreService();
 
-        reset();
-
-        Key k = service.put(new Entity(SyncCallbackHandler.KIND));
-        Assert.assertEquals(Arrays.asList("PrePut", "PostPut"), SyncCallbackHandler.states);
-        reset();
+        Key k = service.put(new Entity(KIND));
+        assertCallbackInvoked("PrePut", "PostPut");
 
         service.get(k);
-        Assert.assertEquals(Arrays.asList("PreGet", "PostLoad"), SyncCallbackHandler.states);
-        reset();
+        assertCallbackInvoked("PreGet", "PostLoad");
 
-        PreparedQuery pq = service.prepare(new Query(SyncCallbackHandler.KIND));
-        Assert.assertEquals(Arrays.asList("PreQuery"), SyncCallbackHandler.states);
-        pq.asList(FetchOptions.Builder.withDefaults());
-        reset();
+        PreparedQuery pq = service.prepare(new Query(KIND));
+        assertCallbackInvoked("PreQuery");
+
+        List<Entity> list = pq.asList(FetchOptions.Builder.withDefaults());
+        list.get(0);
+        assertCallbackInvokedAtLeastOnce("PostLoad");
+
 
         service.delete(k);
-        Assert.assertEquals(Arrays.asList("PreDelete", "PostDelete"), SyncCallbackHandler.states);
-        reset();
+        assertCallbackInvoked("PreDelete", "PostDelete");
     }
 
     @Test
     public void testSmokeWithTx() throws Exception {
         DatastoreService service = createDatastoreService();
 
-        reset();
-
-        boolean ok = false;
         Key k;
         Transaction tx = service.beginTransaction();
         try {
-            k = service.put(new Entity(SyncCallbackHandler.KIND));
-            Assert.assertEquals(Arrays.asList("PrePut"), SyncCallbackHandler.states);
-            reset();
-
-            ok = true;
-        } finally {
-            if (ok)
-                tx.commit();
-            else
-                tx.rollback();
+            k = service.put(new Entity(KIND));
+            assertCallbackInvoked("PrePut");
+            tx.commit();
+            assertCallbackInvoked("PostPut");
+        } catch (Exception ex) {
+            tx.rollback();
+            throw ex;
         }
-        Assert.assertEquals(Arrays.asList("PostPut"), SyncCallbackHandler.states);
-        reset();
 
-        ok = false;
         tx = service.beginTransaction();
         try {
             service.get(k);
-            Assert.assertEquals(Arrays.asList("PreGet", "PostLoad"), SyncCallbackHandler.states);
-            reset();
+            assertCallbackInvoked("PreGet", "PostLoad");
 
-            PreparedQuery pq = service.prepare(new Query(SyncCallbackHandler.KIND));
-            Assert.assertEquals(Arrays.asList("PreQuery"), SyncCallbackHandler.states);
-            pq.asList(FetchOptions.Builder.withDefaults());
-            reset();
+            PreparedQuery pq = service.prepare(new Query(KIND));
+            assertCallbackInvoked("PreQuery");
+            List<Entity> list = pq.asList(FetchOptions.Builder.withDefaults());
+            list.get(0);
+            assertCallbackInvokedAtLeastOnce("PostLoad");
 
             service.delete(k);
-            Assert.assertEquals(Arrays.asList("PreDelete"), SyncCallbackHandler.states);
-            reset();
-
-            ok = true;
-        } finally {
-            if (ok)
-                tx.commit();
-            else
-                tx.rollback();
+            assertCallbackInvoked("PreDelete");
+            tx.commit();
+            assertCallbackInvoked("PostDelete");
+        } catch (Exception ex) {
+            tx.rollback();
         }
-        Assert.assertEquals(Arrays.asList("PostDelete"), SyncCallbackHandler.states);
-        reset();
     }
+
+
+    @Test
+    public void testBatch() throws Exception {
+        DatastoreService service = createDatastoreService();
+
+        List<Entity> entities = Arrays.asList(new Entity(KIND, "first"), new Entity(KIND, "second"), new Entity(KIND, "third"));
+
+        List<Key> keys = service.put(entities);
+        assertCallbackInvoked("PrePut", "PrePut", "PrePut", "PostPut", "PostPut", "PostPut");
+
+        service.get(keys);
+        assertCallbackInvoked("PreGet", "PreGet", "PreGet", "PostLoad", "PostLoad", "PostLoad");
+
+        PreparedQuery pq = service.prepare(new Query(KIND));
+        assertCallbackInvoked("PreQuery");
+        List<Entity> list = pq.asList(FetchOptions.Builder.withDefaults());
+        list.get(0);
+        assertCallbackInvokedAtLeastOnce("PostLoad");
+
+        service.delete(keys);
+        assertCallbackInvoked("PreDelete", "PreDelete", "PreDelete", "PostDelete", "PostDelete", "PostDelete");
+    }
+
+
+    @Test
+    public void testBatchWithTx() throws Exception {
+        DatastoreService service = createDatastoreService();
+
+        List<Key> keys;
+        Transaction tx = service.beginTransaction();
+        try {
+            Key first = KeyFactory.createKey(KIND, "first");
+            keys = service.put(Arrays.asList(new Entity(first), new Entity(KIND, "second", first), new Entity(KIND, "third", first)));
+            assertCallbackInvoked("PrePut", "PrePut", "PrePut");
+
+            tx.commit();
+            assertCallbackInvoked("PostPut", "PostPut", "PostPut");
+        } catch (Exception ex) {
+            tx.rollback();
+            throw ex;
+        }
+
+        tx = service.beginTransaction();
+        try {
+            service.get(keys);
+            assertCallbackInvoked("PreGet", "PreGet", "PreGet", "PostLoad", "PostLoad", "PostLoad");
+
+            PreparedQuery pq = service.prepare(new Query(KIND));
+            assertCallbackInvoked("PreQuery");
+            List<Entity> list = pq.asList(FetchOptions.Builder.withDefaults());
+            list.get(0);
+            assertCallbackInvokedAtLeastOnce("PostLoad");
+
+            service.delete(keys);
+            assertCallbackInvoked("PreDelete", "PreDelete", "PreDelete");
+
+            tx.commit();
+            assertCallbackInvoked("PostDelete", "PostDelete", "PostDelete");
+        } catch (Exception ex) {
+            tx.rollback();
+            throw ex;
+        }
+    }
+
+
 }

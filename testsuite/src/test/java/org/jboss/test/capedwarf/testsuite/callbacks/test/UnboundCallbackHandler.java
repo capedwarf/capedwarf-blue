@@ -22,9 +22,6 @@
 
 package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.appengine.api.datastore.DeleteContext;
 import com.google.appengine.api.datastore.PostDelete;
 import com.google.appengine.api.datastore.PostLoad;
@@ -38,53 +35,49 @@ import com.google.appengine.api.datastore.PreQuery;
 import com.google.appengine.api.datastore.PreQueryContext;
 import com.google.appengine.api.datastore.PutContext;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class SyncCallbackHandler {
-    static final String KIND = "Data";
+public class UnboundCallbackHandler {
 
     static List<String> states = new ArrayList<String>();
 
-    @PrePut(kinds = {KIND})
+    @PrePut
     public void prePut(PutContext context) {
         states.add("PrePut");
-        System.out.println("context = " + context);
     }
 
-    @PostPut(kinds = {KIND})
+    @PostPut
     public void postPut(PutContext context) {
         states.add("PostPut");
-        System.out.println("context = " + context);
     }
 
-    @PreGet(kinds = {KIND})
+    @PreGet
     public void preGet(PreGetContext context) {
         states.add("PreGet");
-        System.out.println("context = " + context);
     }
 
-    @PostLoad(kinds = {KIND})
+    @PostLoad
     public void postLoad(PostLoadContext context) {
         states.add("PostLoad");
-        System.out.println("context = " + context);
     }
 
-    @PreQuery(kinds = {KIND})
+    @PreQuery
     public void preQuery(PreQueryContext context) {
         states.add("PreQuery");
-        System.out.println("context = " + context);
     }
 
-    @PreDelete(kinds = {KIND})
+    @PreDelete
     public void preDelete(DeleteContext context) {
         states.add("PreDelete");
-        System.out.println("context = " + context);
     }
 
-    @PostDelete(kinds = {KIND})
+    @PostDelete
     public void postDelete(DeleteContext context) {
         states.add("PostDelete");
-        System.out.println("context = " + context);
     }
 }
