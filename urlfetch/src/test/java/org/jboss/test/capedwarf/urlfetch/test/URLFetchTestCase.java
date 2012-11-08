@@ -34,6 +34,7 @@ import com.google.appengine.api.urlfetch.URLFetchService;
 import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Assert;
@@ -85,22 +86,9 @@ public class URLFetchTestCase extends BaseTest {
         throw new IllegalArgumentException("No available url: " + Arrays.toString(urls));
     }
 
-    @Test
-    public void testBasicOps() throws Exception {
-        URLFetchService service = URLFetchServiceFactory.getURLFetchService();
-
-        URL adminConsole = findAvailableUrl("http://localhost:9990", "http://localhost:8080/_ah/admin", "http://capedwarf-test.appspot.com/index.html");
-        HTTPResponse response = service.fetch(adminConsole);
-        printResponse(response);
-
-        URL jbossOrg = new URL("http://www.jboss.org");
-        if (available(jbossOrg)) {
-            response = service.fetch(jbossOrg);
-            printResponse(response);
-        }
-    }
 
     @Test
+    @InSequence(1)
     public void testAsyncOps() throws Exception {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
 
@@ -112,6 +100,24 @@ public class URLFetchTestCase extends BaseTest {
         if (available(jbossOrg)) {
             response = service.fetchAsync(jbossOrg);
             printResponse(response.get(30, TimeUnit.SECONDS));
+        }
+
+        Thread.sleep(5000L); // wait a bit for async to finish
+    }
+
+    @Test
+    @InSequence(2)
+    public void testBasicOps() throws Exception {
+        URLFetchService service = URLFetchServiceFactory.getURLFetchService();
+
+        URL adminConsole = findAvailableUrl("http://localhost:9990", "http://localhost:8080/_ah/admin", "http://capedwarf-test.appspot.com/index.html");
+        HTTPResponse response = service.fetch(adminConsole);
+        printResponse(response);
+
+        URL jbossOrg = new URL("http://www.jboss.org");
+        if (available(jbossOrg)) {
+            response = service.fetch(jbossOrg);
+            printResponse(response);
         }
     }
 

@@ -37,6 +37,7 @@ import org.junit.runner.RunWith;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -75,21 +76,26 @@ public abstract class AbstractCallbacksTest extends AbstractTest {
     }
 
     protected void assertCallbackInvoked(String... states) {
+        assertCallbackInvoked(true, states);
+    }
+
+    protected void assertCallbackInvoked(boolean reset, String... states) {
         assertEquals(asList(states), UnboundCallbackHandler.states);
         assertEquals(asList(states), FooKindCallbackHandler.states);
         assertEquals(asList(states), FooBarKindCallbackHandler.states);
         assertEquals(emptyList(), BarKindCallbackHandler.states);
 
-        reset();
+        if (reset) {
+            reset();
+        }
     }
 
     protected void assertCallbackInvokedAtLeastOnce(String callBack) {
-        // TODO: not testing this yet, because it isn't implemented
-//        assertTrue(callBack + " was not invoked", UnboundCallbackHandler.states.contains(callBack));
-//        assertTrue(callBack + " was not invoked", FooKindCallbackHandler.states.contains(callBack));
-//        assertTrue(callBack + " was not invoked", FooBarKindCallbackHandler.states.contains(callBack));
-//        assertEquals(emptyList(), BarKindCallbackHandler.states);
-//
-//        reset();
+        assertTrue(callBack + " was not invoked", UnboundCallbackHandler.states.contains(callBack));
+        assertTrue(callBack + " was not invoked", FooKindCallbackHandler.states.contains(callBack));
+        assertTrue(callBack + " was not invoked", FooBarKindCallbackHandler.states.contains(callBack));
+        assertEquals(emptyList(), BarKindCallbackHandler.states);
+
+        reset();
     }
 }
