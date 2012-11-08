@@ -20,7 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.testsuite.callbacks.test;
+package org.jboss.test.capedwarf.testsuite.callbacks.support;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.appengine.api.datastore.DeleteContext;
 import com.google.appengine.api.datastore.PostDelete;
@@ -35,58 +38,46 @@ import com.google.appengine.api.datastore.PreQuery;
 import com.google.appengine.api.datastore.PreQueryContext;
 import com.google.appengine.api.datastore.PutContext;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.jboss.test.capedwarf.testsuite.callbacks.test.AbstractCallbacksTest.KIND;
-import static org.jboss.test.capedwarf.testsuite.callbacks.test.AbstractCallbacksTest.KIND2;
-
 /**
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class FooBarKindCallbackHandler {
+public class UnboundCallbackHandler {
 
-    static List<String> states = new ArrayList<String>();
+    public static List<String> states = new ArrayList<String>();
 
-    @PrePut(kinds = {KIND, KIND2})
+    @PrePut
     public void prePut(PutContext context) {
         states.add("PrePut");
-        System.out.println("context = " + context);
     }
 
-    @PostPut(kinds = {KIND, KIND2})
+    @PostPut
     public void postPut(PutContext context) {
         states.add("PostPut");
-        System.out.println("context = " + context);
     }
 
-    @PreGet(kinds = {KIND, KIND2})
+    @PreGet
     public void preGet(PreGetContext context) {
         states.add("PreGet");
-        System.out.println("context = " + context);
     }
 
-    @PostLoad(kinds = {KIND, KIND2})
+    @PostLoad
     public void postLoad(PostLoadContext context) {
         states.add("PostLoad");
-        System.out.println("context = " + context);
     }
 
-    @PreQuery(kinds = {KIND, KIND2})
+    @PreQuery
     public void preQuery(PreQueryContext context) {
         states.add("PreQuery");
-        System.out.println("context = " + context);
     }
 
-    @PreDelete(kinds = {KIND, KIND2})
+    @PreDelete
     public void preDelete(DeleteContext context) {
         states.add("PreDelete");
-        System.out.println("context = " + context);
     }
 
-    @PostDelete(kinds = {KIND, KIND2})
+    @PostDelete
     public void postDelete(DeleteContext context) {
         states.add("PostDelete");
-        System.out.println("context = " + context);
     }
 }

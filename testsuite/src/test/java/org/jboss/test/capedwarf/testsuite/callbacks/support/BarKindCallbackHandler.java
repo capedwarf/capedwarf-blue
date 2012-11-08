@@ -20,7 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.testsuite.callbacks.test;
+package org.jboss.test.capedwarf.testsuite.callbacks.support;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.appengine.api.datastore.DeleteContext;
 import com.google.appengine.api.datastore.PostDelete;
@@ -34,9 +37,7 @@ import com.google.appengine.api.datastore.PrePut;
 import com.google.appengine.api.datastore.PreQuery;
 import com.google.appengine.api.datastore.PreQueryContext;
 import com.google.appengine.api.datastore.PutContext;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.jboss.test.capedwarf.testsuite.callbacks.test.AbstractCallbacksTest;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -44,7 +45,7 @@ import java.util.List;
  */
 public class BarKindCallbackHandler {
 
-    static List<String> states = new ArrayList<String>();
+    public static List<String> states = new ArrayList<String>();
 
     @PrePut(kinds = {AbstractCallbacksTest.KIND2})
     public void prePut(PutContext context) {
