@@ -22,6 +22,15 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
@@ -34,13 +43,6 @@ import com.google.appengine.api.datastore.TransactionOptions;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-
-import javax.transaction.Synchronization;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * JBoss DatastoreService impl.
@@ -211,10 +213,13 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
             try {
                 tx.registerSynchronization(new Synchronization() {
                     public void beforeCompletion() {
-                        doPut(keyToEntityMap, post);
+                        doPut(keyToEntityMap, null);
                     }
 
                     public void afterCompletion(int status) {
+                        if (post != null && status == Status.STATUS_COMMITTED) {
+                            post.run();
+                        }
                     }
                 });
             } catch (Exception e) {
@@ -237,10 +242,13 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
             try {
                 tx.registerSynchronization(new Synchronization() {
                     public void beforeCompletion() {
-                        doRemove(keys, post);
+                        doRemove(keys, null);
                     }
 
                     public void afterCompletion(int status) {
+                        if (post != null && status == Status.STATUS_COMMITTED) {
+                            post.run();
+                        }
                     }
                 });
             } catch (Exception e) {
