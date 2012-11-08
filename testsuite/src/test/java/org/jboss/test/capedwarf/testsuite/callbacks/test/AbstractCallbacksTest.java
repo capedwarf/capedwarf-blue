@@ -51,6 +51,7 @@ public abstract class AbstractCallbacksTest extends AbstractTest {
         TestContext context = new TestContext().setIgnoreLogging(true);
         WebArchive war = getCapedwarfDeployment(context);
         war.addClass(AbstractTest.class);
+        war.addClass(AbstractCallbacksTest.class);
         war.addPackage(BarKindCallbackHandler.class.getPackage());
         war.addAsWebInfResource("META-INF/datastorecallbacks.xml", "classes/META-INF/datastorecallbacks.xml");
         LibUtils.addGaeAsLibrary(war);
