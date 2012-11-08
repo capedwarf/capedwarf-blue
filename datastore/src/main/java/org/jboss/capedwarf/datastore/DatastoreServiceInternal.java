@@ -22,8 +22,6 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.Map;
-
 import com.google.appengine.api.datastore.BaseDatastoreService;
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
@@ -34,6 +32,9 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * DatastoreService impl SPI.
@@ -68,14 +69,16 @@ interface DatastoreServiceInternal extends BaseDatastoreService {
      */
     Key put(Transaction tx, Entity entity, Runnable post);
 
+    List<Key> put(Transaction tx, Iterable<Entity> entities, Runnable post);
+
     /**
      * Delete.
      *
      * @param tx current tx
-     * @param key key
+     * @param keys keys
      * @param post the post fn
      */
-    void delete(Transaction tx, Key key, Runnable post);
+    void delete(Transaction tx, Iterable<Key> keys, Runnable post);
 
     /**
      * Begin tx.

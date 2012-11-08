@@ -22,10 +22,6 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.Map;
-
-import javax.transaction.Synchronization;
-
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
@@ -38,6 +34,13 @@ import com.google.appengine.api.datastore.TransactionOptions;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+
+import javax.transaction.Synchronization;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * JBoss DatastoreService impl.
@@ -126,26 +129,44 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     }
 
     public Key put(Transaction tx, Entity entity, Runnable post) {
+        return put(tx, Collections.singletonList(entity), post).get(0);
+    }
+
+    public List<Key> put(Transaction tx, Iterable<Entity> entities, Runnable post) {
         javax.transaction.Transaction transaction = beforeTx(tx);
         try {
-            final Key key = entity.getKey();
-            if (key.isComplete() == false) {
-                Long id = getRangeStart(key.getParent(), key.getKind(), 1).getStart();
-                setId.invoke(key, new Object[]{id});
+            List<Key> keys = new ArrayList<Key>();
+            Map<Key, Entity> keyToEntityMap = new HashMap<Key, Entity>();
+            for (Entity entity : entities) {
+                assignIdIfNeeded(entity);
+                Key key = entity.getKey();
+                EntityGroupTracker.trackKey(key);
+                keys.add(key);
+                keyToEntityMap.put(key, entityModifier.modify(entity));
             }
-            EntityGroupTracker.trackKey(key);
-            putInTx(key, entityModifier.modify(entity), post);
-            return key;
+            putInTx(keyToEntityMap, post);
+            return keys;
         } finally {
             afterTx(transaction);
         }
     }
 
-    public void delete(Transaction tx, Key key, Runnable post) {
+    private void assignIdIfNeeded(Entity entity) {
+        Key key = entity.getKey();
+        if (key.isComplete() == false) {
+            Long id = getRangeStart(key.getParent(), key.getKind(), 1).getStart();
+            setId.invoke(key, new Object[]{id});
+        }
+    }
+
+    @Override
+    public void delete(Transaction tx, Iterable<Key> keys, Runnable post) {
         final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
-            EntityGroupTracker.trackKey(key);
-            removeInTx(key, post);
+            for (Key key : keys) {
+                EntityGroupTracker.trackKey(key);
+            }
+            removeInTx(keys, post);
         } finally {
             afterTx(transaction);
         }
@@ -180,19 +201,17 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     /**
      * Delay put if the tx is active.
      *
-     * @param key the key
-     * @param entity the entity
      * @param post the post fn
      */
-    protected void putInTx(final Key key, final Entity entity, final Runnable post) {
+    protected void putInTx(final Map<Key, Entity> keyToEntityMap, final Runnable post) {
         final javax.transaction.Transaction tx = JBossTransaction.getTx();
         if (tx == null) {
-            doPut(key, entity, post);
+            doPut(keyToEntityMap, post);
         } else {
             try {
                 tx.registerSynchronization(new Synchronization() {
                     public void beforeCompletion() {
-                        doPut(key, entity, post);
+                        doPut(keyToEntityMap, post);
                     }
 
                     public void afterCompletion(int status) {
@@ -207,18 +226,18 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     /**
      * Delay remove if the tx is active.
      *
-     * @param key the key
+     * @param keys the keys to remove
      * @param post the post fn
      */
-    protected void removeInTx(final Key key, final Runnable post) {
+    protected void removeInTx(final Iterable<Key> keys, final Runnable post) {
         final javax.transaction.Transaction tx = JBossTransaction.getTx();
         if (tx == null) {
-            doRemove(key, post);
+            doRemove(keys, post);
         } else {
             try {
                 tx.registerSynchronization(new Synchronization() {
                     public void beforeCompletion() {
-                        doRemove(key, post);
+                        doRemove(keys, post);
                     }
 
                     public void afterCompletion(int status) {
@@ -230,15 +249,17 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         }
     }
 
-    private void doPut(Key key, Entity entity, Runnable post) {
-        store.put(key, entity);
+    private void doPut(Map<Key, Entity> keyToEntityMap, Runnable post) {
+        store.putAll(keyToEntityMap);
         if (post != null) {
             post.run();
         }
     }
 
-    private void doRemove(Key key, Runnable post) {
-        store.remove(key);
+    private void doRemove(Iterable<Key> keys, Runnable post) {
+        for (Key key : keys) {
+            store.remove(key);
+        }
         if (post != null) {
             post.run();
         }

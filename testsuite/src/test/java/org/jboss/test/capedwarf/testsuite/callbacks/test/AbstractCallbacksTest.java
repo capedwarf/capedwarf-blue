@@ -24,28 +24,67 @@ package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.jboss.test.capedwarf.testsuite.AbstractTest;
 import org.jboss.test.capedwarf.testsuite.LibUtils;
+import org.junit.Before;
 import org.junit.runner.RunWith;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
 public abstract class AbstractCallbacksTest extends AbstractTest {
+
+    public static final String KIND = "Foo";
+    public static final String KIND2 = "Bar";
+
     protected static WebArchive getDefaultDeployment() {
-        final WebArchive war = getCapedwarfDeployment();
-        war.addClass(AbstractCallbacksTest.class);
+        TestContext context = new TestContext().setIgnoreLogging(true);
+        WebArchive war = getCapedwarfDeployment(context);
         war.addClass(AbstractTest.class);
-        war.addClass(AsyncCallbackHandler.class);
-        war.addClass(SyncCallbackHandler.class);
+        war.addPackage(AbstractCallbacksTest.class.getPackage());
         war.addAsWebInfResource("META-INF/datastorecallbacks.xml", "classes/META-INF/datastorecallbacks.xml");
         LibUtils.addGaeAsLibrary(war);
         return war;
     }
 
+    @Before
+    public void setUp() {
+        reset();
+    }
+
     protected void reset() {
-        AsyncCallbackHandler.state = null;
-        SyncCallbackHandler.states.clear();
+        UnboundCallbackHandler.states.clear();
+        FooKindCallbackHandler.states.clear();
+        FooBarKindCallbackHandler.states.clear();
+        BarKindCallbackHandler.states.clear();
+    }
+
+    protected void assertNoCallbackInvoked() {
+        assertCallbackInvoked();    // note: states parameter is empty
+    }
+
+    protected void assertCallbackInvoked(String... states) {
+        assertEquals(asList(states), UnboundCallbackHandler.states);
+        assertEquals(asList(states), FooKindCallbackHandler.states);
+        assertEquals(asList(states), FooBarKindCallbackHandler.states);
+        assertEquals(emptyList(), BarKindCallbackHandler.states);
+
+        reset();
+    }
+
+    protected void assertCallbackInvokedAtLeastOnce(String callBack) {
+        // TODO: not testing this yet, because it isn't implemented
+//        assertTrue(callBack + " was not invoked", UnboundCallbackHandler.states.contains(callBack));
+//        assertTrue(callBack + " was not invoked", FooKindCallbackHandler.states.contains(callBack));
+//        assertTrue(callBack + " was not invoked", FooBarKindCallbackHandler.states.contains(callBack));
+//        assertEquals(emptyList(), BarKindCallbackHandler.states);
+//
+//        reset();
     }
 }

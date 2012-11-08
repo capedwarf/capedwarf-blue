@@ -22,15 +22,6 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
@@ -44,6 +35,14 @@ import com.google.appengine.api.datastore.TransactionOptions;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.threads.DirectFuture;
+
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * JBoss DatastoreService impl.
@@ -148,11 +147,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             }
         };
 
-        final List<Key> keys = new ArrayList<Key>();
-        for (Entity entity : entities) {
-            keys.add(getDelegate().put(transaction, entity, post));
-        }
-        return keys;
+        return getDelegate().put(transaction, entities, post);
     }
 
     public void delete(Key... keys) {
@@ -175,10 +170,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
                 getDatastoreCallbacks().executePostDeleteCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys));
             }
         };
-
-        for (Key key : keys) {
-            getDelegate().delete(transaction, key, post);
-        }
+        getDelegate().delete(transaction, keys, post);
     }
 
     public Transaction beginTransaction() {

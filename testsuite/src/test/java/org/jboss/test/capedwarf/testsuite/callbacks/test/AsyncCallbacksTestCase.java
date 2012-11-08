@@ -22,20 +22,23 @@
 
 package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
-import java.util.concurrent.Future;
-
 import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -46,85 +49,182 @@ public class AsyncCallbacksTestCase extends AbstractCallbacksTest {
         return getDefaultDeployment();
     }
 
-    protected AsyncDatastoreService createAsyncDatastoreService() {
-        return DatastoreServiceFactory.getAsyncDatastoreService();
-    }
-
     @Test
     public void testSmoke() throws Exception {
         AsyncDatastoreService service = DatastoreServiceFactory.getAsyncDatastoreService();
 
-        reset();
+        Future<Key> f = service.put(new Entity(KIND));
+        assertCallbackInvoked("PrePut");
 
-        Future<Key> f = service.put(new Entity(AsyncCallbackHandler.KIND));
-        Assert.assertEquals("PrePut", AsyncCallbackHandler.state);
         Key k = f.get();
-        Assert.assertEquals("PostPut", AsyncCallbackHandler.state);
+        assertCallbackInvoked("PostPut");
 
         Future<Entity> e = service.get(k);
-        Assert.assertEquals("PreGet", AsyncCallbackHandler.state);
-        e.get();
-        Assert.assertEquals("PostLoad", AsyncCallbackHandler.state);
+        assertCallbackInvoked("PreGet");
 
-        PreparedQuery pq = service.prepare(new Query(AsyncCallbackHandler.KIND));
-        Assert.assertEquals("PreQuery", AsyncCallbackHandler.state);
-        pq.asList(FetchOptions.Builder.withDefaults());
+        e.get();
+        assertCallbackInvoked("PostLoad");
+
+        PreparedQuery pq = service.prepare(new Query(KIND));
+        assertCallbackInvoked("PreQuery");
+
+        List<Entity> list = pq.asList(FetchOptions.Builder.withDefaults());
+        list.get(0);
+        assertCallbackInvokedAtLeastOnce("PostLoad");
 
         Future<Void> v = service.delete(k);
-        Assert.assertEquals("PreDelete", AsyncCallbackHandler.state);
+        assertCallbackInvoked("PreDelete");
+
         v.get();
-        Assert.assertEquals("PostDelete", AsyncCallbackHandler.state);
+        assertCallbackInvoked("PostDelete");
     }
 
     @Test
     public void testSmokeWithTx() throws Exception {
         AsyncDatastoreService service = DatastoreServiceFactory.getAsyncDatastoreService();
 
-        reset();
-
-        boolean ok = false;
-        Key k;
-        Future<Key> f;
+        Key key;
+        Future<Key> putFuture;
         Transaction tx = service.beginTransaction().get();
         try {
-            f = service.put(new Entity(AsyncCallbackHandler.KIND));
-            Assert.assertEquals("PrePut", AsyncCallbackHandler.state);
-            f.get();
-            Assert.assertEquals("PrePut", AsyncCallbackHandler.state);
+            putFuture = service.put(new Entity(KIND));
+            assertCallbackInvoked("PrePut");
+            putFuture.get();
+            assertNoCallbackInvoked();
 
-            ok = true;
-        } finally {
-            Future<Void> r = (ok ? tx.commitAsync() : tx.rollbackAsync());
-            r.get();
+            tx.commit();
+            assertCallbackInvoked("PostPut");
+            key = putFuture.get();
+            assertNoCallbackInvoked();
+
+        } catch (Exception ex) {
+            tx.rollback();
+            throw ex;
         }
-        k = f.get();
-        Assert.assertEquals("PostPut", AsyncCallbackHandler.state);
 
-        ok = false;
         tx = service.beginTransaction().get();
-        Future<Void> v;
+        Future<Void> deleteFuture;
         try {
-            Future<Entity> e = service.get(k);
-            Assert.assertEquals("PreGet", AsyncCallbackHandler.state);
-            e.get();
-            Assert.assertEquals("PostLoad", AsyncCallbackHandler.state);
+            Future<Entity> getFuture = service.get(key);
+            assertCallbackInvoked("PreGet");
+            getFuture.get();
+            assertCallbackInvoked("PostLoad");
 
-            PreparedQuery pq = service.prepare(new Query(AsyncCallbackHandler.KIND));
-            Assert.assertEquals("PreQuery", AsyncCallbackHandler.state);
-            pq.asList(FetchOptions.Builder.withDefaults());
+            PreparedQuery pq = service.prepare(new Query(KIND));
+            assertCallbackInvoked("PreQuery");
+            List<Entity> list = pq.asList(FetchOptions.Builder.withDefaults());
+            list.get(0);
+            assertCallbackInvokedAtLeastOnce("PostLoad");
 
-            v = service.delete(k);
-            Assert.assertEquals("PreDelete", AsyncCallbackHandler.state);
-            v.get();
-            // should still be pre
-            Assert.assertEquals("PreDelete", AsyncCallbackHandler.state);
+            deleteFuture = service.delete(key);
+            assertCallbackInvoked("PreDelete");
+            deleteFuture.get();
+            assertNoCallbackInvoked();
 
-            ok = true;
-        } finally {
-            Future<Void> r = (ok ? tx.commitAsync() : tx.rollbackAsync());
-            r.get();
+            tx.commit();
+            assertCallbackInvoked("PostDelete");
+            deleteFuture.get();
+            assertNoCallbackInvoked();
+
+        } catch (Exception ex) {
+            tx.rollback();
+            throw ex;
         }
-        v.get();
-        Assert.assertEquals("PostDelete", AsyncCallbackHandler.state);
     }
+
+    @Test
+    public void testBatch() throws Exception {
+        AsyncDatastoreService service = DatastoreServiceFactory.getAsyncDatastoreService();
+
+        List<Entity> entities = Arrays.asList(new Entity(KIND, "first"), new Entity(KIND, "second"), new Entity(KIND, "third"));
+
+        Future<List<Key>> putFuture = service.put(entities);
+        assertCallbackInvoked("PrePut", "PrePut", "PrePut");
+
+        List<Key> keys = putFuture.get();
+        assertCallbackInvoked("PostPut", "PostPut", "PostPut");
+
+        Future<Map<Key, Entity>> getFuture = service.get(keys);
+        assertCallbackInvoked("PreGet", "PreGet", "PreGet");
+
+        getFuture.get();
+        assertCallbackInvoked("PostLoad", "PostLoad", "PostLoad");
+
+        PreparedQuery pq = service.prepare(new Query(KIND));
+        assertCallbackInvoked("PreQuery");
+
+        List<Entity> list = pq.asList(FetchOptions.Builder.withDefaults());
+        list.get(0);
+        assertCallbackInvokedAtLeastOnce("PostLoad");
+
+        Future<Void> deleteFuture = service.delete(keys);
+        assertCallbackInvoked("PreDelete", "PreDelete", "PreDelete");
+
+        deleteFuture.get();
+        assertCallbackInvoked("PostDelete", "PostDelete", "PostDelete");
+    }
+
+    @Test
+    public void testBatchWithTx() throws Exception {
+        AsyncDatastoreService service = DatastoreServiceFactory.getAsyncDatastoreService();
+
+        List<Key> keys;
+        Future<List<Key>> putFuture;
+        Transaction tx = service.beginTransaction().get();
+        try {
+            Key first = KeyFactory.createKey(KIND, "first");
+            List<Entity> entities = Arrays.asList(new Entity(first), new Entity(KIND, "second", first), new Entity(KIND, "third", first));
+
+            putFuture = service.put(entities);
+            assertCallbackInvoked("PrePut", "PrePut", "PrePut");
+
+            putFuture.get();
+            assertNoCallbackInvoked();
+
+            tx.commit();
+            assertCallbackInvoked("PostPut", "PostPut", "PostPut");
+
+            keys = putFuture.get();
+            assertNoCallbackInvoked();
+
+        } catch (Exception ex) {
+            tx.rollback();
+            throw ex;
+        }
+
+        tx = service.beginTransaction().get();
+        Future<Void> deleteFuture;
+        try {
+            Future<Map<Key, Entity>> getFuture = service.get(keys);
+            assertCallbackInvoked("PreGet", "PreGet", "PreGet");
+
+            getFuture.get();
+            assertCallbackInvoked("PostLoad", "PostLoad", "PostLoad");
+
+            PreparedQuery pq = service.prepare(new Query(KIND));
+            assertCallbackInvoked("PreQuery");
+            List<Entity> list = pq.asList(FetchOptions.Builder.withDefaults());
+            list.get(0);
+            assertCallbackInvokedAtLeastOnce("PostLoad");
+
+            deleteFuture = service.delete(keys);
+            assertCallbackInvoked("PreDelete", "PreDelete", "PreDelete");
+
+            deleteFuture.get();
+            assertNoCallbackInvoked();
+
+            tx.commit();
+            assertCallbackInvoked("PostDelete", "PostDelete", "PostDelete");
+
+            deleteFuture.get();
+            assertNoCallbackInvoked();
+
+        } catch (Exception ex) {
+            tx.rollback();
+            throw ex;
+        }
+    }
+
+    // TODO: test if sync commit waits for background tasks to finish
+
 }
