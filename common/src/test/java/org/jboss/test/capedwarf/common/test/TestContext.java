@@ -30,7 +30,7 @@ import java.util.Properties;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class TestContext {
-    protected static final TestContext DEFAULT = new TestContext();
+    protected static final TestContext DEFAULT = new TestContext().setIgnoreLogging(true);
 
     private String archiveName = "capedwarf-tests.war";
 

@@ -7,9 +7,14 @@ import java.lang.reflect.Method;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.BaseTest;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -23,7 +28,21 @@ import com.google.appengine.api.log.RequestLogs;
  * @author Matej Lazar
  */
 @RunWith(Arquillian.class)
-public class LoggingTestCase extends AbstractClusteredTest {
+public class LoggingTestCase extends BaseTest {
+
+    @Deployment(name = "dep1") @TargetsContainer("container-1")
+    public static WebArchive getDeploymentA() {
+        return getDeployment();
+    }
+
+    @Deployment(name = "dep2") @TargetsContainer("container-2")
+    public static WebArchive getDeploymentB() {
+        return getDeployment();
+    }
+
+    public static WebArchive getDeployment() {
+        return getCapedwarfDeployment(new TestContext());
+    }
 
     @InSequence(10)
     @Test
