@@ -30,6 +30,7 @@ import java.util.ListIterator;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 class PostLoadList<E> implements List<E> {
     private List<E> delegate;
@@ -143,11 +144,10 @@ class PostLoadList<E> implements List<E> {
     }
 
     public List<E> subList(int fromIndex, int toIndex) {
+        get(toIndex - 1);
         List<E> sub = delegate.subList(fromIndex, toIndex);
         PostLoadList<E> post = new PostLoadList<E>(sub, fetchSize, holder);
-        if (index >= fromIndex) {
-            post.index = (index - fromIndex);
-        }
+        post.index = sub.size() - 1;
         return post;
     }
 
