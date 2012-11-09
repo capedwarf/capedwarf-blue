@@ -78,12 +78,22 @@ public class ExecutorFactory {
         }
     }
 
+    /**
+     * Register app.
+     *
+     * @param appId app id
+     */
     public static void registerApp(String appId) {
         synchronized (ExecutorFactory.class) {
             refCount++;
         }
     }
 
+    /**
+     * Unregister app.
+     *
+     * @param appId app id
+     */
     public static void unregisterApp(String appId) {
         synchronized (ExecutorFactory.class) {
             refCount--;

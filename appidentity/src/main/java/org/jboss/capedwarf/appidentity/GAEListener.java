@@ -43,6 +43,7 @@ import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
 import org.jboss.capedwarf.common.config.JBossEnvironment;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.io.IOUtils;
+import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.log.JBossLogService;
 
 /**
@@ -72,12 +73,17 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
         }
 
         final String appId = appEngineWebXml.getApplication();
+
         InfinispanUtils.initApplicationData(appId);
+        ExecutorFactory.registerApp(appId);
+
         servletContext.setAttribute("org.jboss.capedwarf.appId", appId);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
         final String appId = appEngineWebXml.getApplication();
+
+        ExecutorFactory.unregisterApp(appId);
         InfinispanUtils.clearApplicationData(appId);
     }
 
