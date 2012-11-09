@@ -22,18 +22,13 @@
 
 package org.jboss.capedwarf.common.threads;
 
-import java.util.concurrent.ArrayBlockingQueue;
+import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -41,6 +36,8 @@ import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 public class ExecutorFactory {
     private static String[] defaultJndiNames = {"java:jboss/threads/executor/capedwarf"};
     private static volatile Executor executor;
+
+    private static int refCount = 0;
 
     /**
      * Get Executor instance.
@@ -52,8 +49,7 @@ public class ExecutorFactory {
         if (executor == null) {
             synchronized (ExecutorFactory.class) {
                 if (executor == null) {
-                    final Executor tmp = doJndiLookup();
-                    executor = (tmp != null) ? tmp : createDefaultExecutor();
+                    executor = doJndiLookup();
                 }
             }
         }
@@ -82,13 +78,18 @@ public class ExecutorFactory {
         }
     }
 
-    protected static Executor createDefaultExecutor() {
-        int maxPoolSize = Integer.parseInt(System.getProperty("jboss.capedwarf.maxPoolSize", "3"));
-        RejectedExecutionHandler handler = new RejectedExecutionHandler() {
-            public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-                throw new RejectedExecutionException("Current thread pool executor queue: " + executor.getQueue());
+    public static void registerApp(String appId) {
+        synchronized (ExecutorFactory.class) {
+            refCount++;
+        }
+    }
+
+    public static void unregisterApp(String appId) {
+        synchronized (ExecutorFactory.class) {
+            refCount--;
+            if (refCount == 0) {
+                executor = null;
             }
-        };
-        return new ThreadPoolExecutor(1, maxPoolSize, 10, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(maxPoolSize), handler);
+        }
     }
 }
