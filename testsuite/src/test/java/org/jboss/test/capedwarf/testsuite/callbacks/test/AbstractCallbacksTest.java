@@ -41,6 +41,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
 public abstract class AbstractCallbacksTest extends AbstractTest {
@@ -76,18 +77,12 @@ public abstract class AbstractCallbacksTest extends AbstractTest {
     }
 
     protected void assertCallbackInvoked(String... states) {
-        assertCallbackInvoked(true, states);
-    }
-
-    protected void assertCallbackInvoked(boolean reset, String... states) {
         assertEquals(asList(states), UnboundCallbackHandler.states);
         assertEquals(asList(states), FooKindCallbackHandler.states);
         assertEquals(asList(states), FooBarKindCallbackHandler.states);
         assertEquals(emptyList(), BarKindCallbackHandler.states);
 
-        if (reset) {
-            reset();
-        }
+        reset();
     }
 
     protected void assertCallbackInvokedAtLeastOnce(String callBack) {

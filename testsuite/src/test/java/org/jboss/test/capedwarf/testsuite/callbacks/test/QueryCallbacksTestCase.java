@@ -22,12 +22,6 @@
 
 package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -38,12 +32,22 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+
+import static junit.framework.Assert.assertEquals;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class QueryCallbacksTestCase extends AbstractCallbacksTest {
+    public static final String POST_LOAD = "PostLoad";
     private final int N = 5;
-    private final String[] states = genStates(N);
+    private final String[] states = getPostLoadStates(N);
 
     @Deployment
     public static WebArchive getDeployment() {
@@ -75,11 +79,11 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
     public void testListGetWithChunk() throws Exception {
         List<Entity> list = asList(FetchOptions.Builder.withChunkSize(2));
         list.get(0);
-        assertCallbackInvoked(2);
+        assertPostLoadCallbackInvokedTimes(2);
         list.get(1);
-        assertCallbackInvoked(2);
+        assertNoCallbackInvoked();
         list.get(2);
-        assertCallbackInvoked(4);
+        assertPostLoadCallbackInvokedTimes(2);
     }
 
     @Test
@@ -122,7 +126,29 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
         Entity e2 = new Entity(KIND);
         e2.setProperty("x", 1);
         list.removeAll(Collections.singleton(e2));
-        assertCallbackInvokedFully();
+        assertNoCallbackInvoked();
+    }
+
+    @Test
+    public void testSubList() throws Exception {
+        List<Entity> list = asList(FetchOptions.Builder.withChunkSize(1));
+
+        List<Entity> subList = list.subList(1, 3);
+        assertPostLoadCallbackInvokedTimes(3);
+        assertEquals(2, subList.size());
+
+        list.get(0);
+        assertNoCallbackInvoked();
+        subList.get(0);
+        assertNoCallbackInvoked();
+
+        list.get(2);
+        assertNoCallbackInvoked();
+        subList.get(1);
+        assertNoCallbackInvoked();
+
+        list.get(3);
+        assertPostLoadCallbackInvokedTimes(1);
     }
 
     @Test
@@ -138,11 +164,11 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
         List<Entity> list = asList(FetchOptions.Builder.withChunkSize(1));
         ListIterator<Entity> iterator = list.listIterator();
         iterator.next();
-        assertCallbackInvoked(1);
+        assertPostLoadCallbackInvokedTimes(1);
         iterator.next();
-        assertCallbackInvoked(2);
+        assertPostLoadCallbackInvokedTimes(1);
         iterator.previous();
-        assertCallbackInvoked(2);
+        assertNoCallbackInvoked();
     }
 
     @Test
@@ -150,21 +176,21 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
         List<Entity> list = asList(FetchOptions.Builder.withChunkSize(2));
         ListIterator<Entity> iterator = list.listIterator();
         iterator.hasNext();
-        assertCallbackInvoked(2);
+        assertPostLoadCallbackInvokedTimes(2);
         iterator.next();
-        assertCallbackInvoked(2);
+        assertNoCallbackInvoked();
         iterator.hasNext();
-        assertCallbackInvoked(2);
+        assertNoCallbackInvoked();
         iterator.next();
-        assertCallbackInvoked(2);
+        assertNoCallbackInvoked();
         iterator.previous();
-        assertCallbackInvoked(2);
+        assertNoCallbackInvoked();
         iterator.next();
-        assertCallbackInvoked(2);
+        assertNoCallbackInvoked();
         iterator.hasNext();
-        assertCallbackInvoked(4);
+        assertPostLoadCallbackInvokedTimes(2);
         iterator.next();
-        assertCallbackInvoked(4);
+        assertNoCallbackInvoked();
     }
 
     @Test
@@ -178,36 +204,36 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
     public void testIteratorsWithChunk() throws Exception {
         Iterator<Entity> iterator = asIterator(FetchOptions.Builder.withChunkSize(1));
         iterator.next();
-        assertCallbackInvoked(1);
+        assertPostLoadCallbackInvokedTimes(1);
         iterator.next();
-        assertCallbackInvoked(2);
+        assertPostLoadCallbackInvokedTimes(1);
         iterator.next();
-        assertCallbackInvoked(3);
+        assertPostLoadCallbackInvokedTimes(1);
     }
 
     @Test
     public void testIteratorsWithChunkTwo() throws Exception {
         Iterator<Entity> iterator = asIterator(FetchOptions.Builder.withChunkSize(2));
         iterator.next();
-        assertCallbackInvoked(2);
+        assertPostLoadCallbackInvokedTimes(2);
         iterator.next();
-        assertCallbackInvoked(2);
+        assertNoCallbackInvoked();
         iterator.next();
-        assertCallbackInvoked(4);
+        assertPostLoadCallbackInvokedTimes(2);
     }
 
     protected void assertCallbackInvokedFully() {
-        assertCallbackInvoked(false, states);
+        assertCallbackInvoked(states);
     }
 
-    protected void assertCallbackInvoked(int num) {
-        assertCallbackInvoked(false, genStates(num));
+    protected void assertPostLoadCallbackInvokedTimes(int num) {
+        assertCallbackInvoked(getPostLoadStates(num));
     }
 
-    protected static String[] genStates(int num) {
+    protected static String[] getPostLoadStates(int num) {
         List<String> states = new ArrayList<String>();
         while(num > 0) {
-            states.add("PostLoad");
+            states.add(POST_LOAD);
             num--;
         }
         return states.toArray(new String[states.size()]);
