@@ -144,6 +144,7 @@ class PostLoadList<E> implements List<E> {
     }
 
     public List<E> subList(int fromIndex, int toIndex) {
+        get(toIndex - 1);
         List<E> sub = delegate.subList(fromIndex, toIndex);
         get(toIndex - 1);
         PostLoadList<E> post = new PostLoadList<E>(sub, fetchSize, holder);
