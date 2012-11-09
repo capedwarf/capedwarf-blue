@@ -25,9 +25,7 @@ package org.jboss.capedwarf.images;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.images.Composite;
@@ -96,16 +94,12 @@ public class JBossImagesService implements ImagesService {
     }
 
     public Future<Image> applyTransformAsync(final Transform transform, final Image image, final InputSettings inputSettings, final OutputSettings outputSettings) {
-        FutureTask<Image> task = new FutureTask<Image>(new Callable<Image>() {
+        return ExecutorFactory.wrap(new Callable<Image>() {
             public Image call() throws Exception {
                 return applyTransform(transform, image, inputSettings, outputSettings);
             }
         });
-        Executor executor = ExecutorFactory.getInstance();
-        executor.execute(task);
-        return task;
     }
-
 
     public Image composite(Collection<Composite> composites, int width, int height, long color) {
         return composite(composites, width, height, color, OutputEncoding.PNG);
@@ -120,7 +114,6 @@ public class JBossImagesService implements ImagesService {
         BufferedImage image = compositeImageBuilder.createBufferedImage();
         return createImage(image, outputSettings);
     }
-
 
     public int[][] histogram(Image image) {
         return ImageUtils.histogram(convertToBufferedImage(image));
@@ -173,6 +166,5 @@ public class JBossImagesService implements ImagesService {
                 throw new IllegalArgumentException("Unsupported OutputEncoding " + outputEncoding);
         }
     }
-
 
 }

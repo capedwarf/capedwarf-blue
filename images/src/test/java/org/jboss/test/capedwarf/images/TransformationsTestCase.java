@@ -22,15 +22,13 @@
 
 package org.jboss.test.capedwarf.images;
 
+import java.awt.image.Raster;
+import java.util.Arrays;
+
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
 import org.junit.Test;
-
-import java.awt.image.Raster;
-import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import static org.junit.Assert.assertEquals;
 
@@ -209,17 +207,5 @@ public class TransformationsTestCase extends JBossImagesServiceTest {
 
         assertImagesEqual(separatelyTransformedImage, imageTransformedWithComposite);
     }
-
-    @Test
-    public void asyncTransformRendersSameImageAsNonAsyncTransform() throws ExecutionException, InterruptedException {
-        Transform transform = ImagesServiceFactory.makeHorizontalFlip();
-
-        Image synchronouslyTransformedImage = imagesService.applyTransform(transform, createTestImage());
-        Future<Image> future = imagesService.applyTransformAsync(transform, createTestImage());
-        Image asynchronouslyTransformedImage = future.get();
-
-        assertImagesEqual(synchronouslyTransformedImage, asynchronouslyTransformedImage);
-    }
-
 
 }

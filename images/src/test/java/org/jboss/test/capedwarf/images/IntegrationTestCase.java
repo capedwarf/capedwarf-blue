@@ -25,8 +25,11 @@ package org.jboss.test.capedwarf.images;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import com.google.appengine.api.images.Image;
+import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -50,6 +53,7 @@ public class IntegrationTestCase extends BaseTest {
     @Deployment
     public static Archive getDeployment() {
         final WebArchive war = getCapedwarfDeployment();
+        war.addClass(AbstractImagesServiceTest.class);
         war.addAsResource(TEST_IMAGE_RESOURCE);
         return war;
     }
@@ -78,6 +82,22 @@ public class IntegrationTestCase extends BaseTest {
         Image flippedImage = ImagesServiceFactory.getImagesService().applyTransform(horizontalFlip, image);
 
         assertNotNull(flippedImage);
+    }
+
+
+    @Test
+    public void asyncTransformRendersSameImageAsNonAsyncTransform() throws ExecutionException, InterruptedException {
+        ImagesService imagesService = ImagesServiceFactory.getImagesService();
+
+        if (isJBossImpl(imagesService) == false)
+            return;
+
+        Transform transform = ImagesServiceFactory.makeHorizontalFlip();
+        Image synchronouslyTransformedImage = imagesService.applyTransform(transform, loadTestImage());
+        Future<Image> future = imagesService.applyTransformAsync(transform, loadTestImage());
+        Image asynchronouslyTransformedImage = future.get();
+
+        AbstractImagesServiceTest.assertImagesEqual(synchronouslyTransformedImage, asynchronouslyTransformedImage);
     }
 
     protected static byte[] toBytes(InputStream is, long start, long end, boolean closeStream) throws IOException {
