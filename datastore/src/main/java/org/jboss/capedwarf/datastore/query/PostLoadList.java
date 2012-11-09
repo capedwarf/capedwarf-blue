@@ -143,7 +143,9 @@ class PostLoadList<E> implements List<E> {
     public List<E> subList(int fromIndex, int toIndex) {
         List<E> sub = delegate.subList(fromIndex, toIndex);
         PostLoadList<E> post = new PostLoadList<E>(sub, fetchSize, holder);
-        post.index = (fromIndex > index ? 0 : index - fromIndex);
+        if (index >= fromIndex) {
+            post.index = (index - fromIndex);
+        }
         return post;
     }
 
@@ -163,6 +165,7 @@ class PostLoadList<E> implements List<E> {
 
     public <T> T[] toArray(T[] a) {
         size();
+        //noinspection SuspiciousToArrayCall
         return delegate.toArray(a);
     }
 
