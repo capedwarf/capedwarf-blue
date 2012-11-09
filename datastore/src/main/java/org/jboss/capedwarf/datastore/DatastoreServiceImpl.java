@@ -24,7 +24,6 @@ package org.jboss.capedwarf.datastore;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -138,13 +137,13 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         javax.transaction.Transaction transaction = beforeTx(tx);
         try {
             List<Key> keys = new ArrayList<Key>();
-            Map<Key, Entity> keyToEntityMap = new HashMap<Key, Entity>();
+            List<Tuple> keyToEntityMap = new ArrayList<Tuple>();
             for (Entity entity : entities) {
                 assignIdIfNeeded(entity);
                 Key key = entity.getKey();
                 EntityGroupTracker.trackKey(key);
                 keys.add(key);
-                keyToEntityMap.put(key, entityModifier.modify(entity));
+                keyToEntityMap.add(new Tuple(key, entityModifier.modify(entity)));
             }
             putInTx(keyToEntityMap, post);
             return keys;
@@ -205,7 +204,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
      *
      * @param post the post fn
      */
-    protected void putInTx(final Map<Key, Entity> keyToEntityMap, final Runnable post) {
+    protected void putInTx(final List<Tuple> keyToEntityMap, final Runnable post) {
         final javax.transaction.Transaction tx = JBossTransaction.getTx();
         if (tx == null) {
             doPut(keyToEntityMap, post);
@@ -257,8 +256,10 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         }
     }
 
-    private void doPut(Map<Key, Entity> keyToEntityMap, Runnable post) {
-        store.putAll(keyToEntityMap);
+    private void doPut(List<Tuple> keyToEntityMap, Runnable post) {
+        for (Tuple tuple : keyToEntityMap) {
+            store.put(tuple.key, tuple.entity);
+        }
         if (post != null) {
             post.run();
         }
@@ -278,5 +279,15 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
      */
     public void clearCache() {
         store.clear();
+    }
+
+    private static class Tuple {
+        Key key;
+        Entity entity;
+
+        private Tuple(Key key, Entity entity) {
+            this.key = key;
+            this.entity = entity;
+        }
     }
 }
