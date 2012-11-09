@@ -64,7 +64,9 @@ class PostLoadList<E> implements List<E> {
 
     public int size() {
         int size = delegate.size();
-        get(size - 1);
+        if (size > 0) {
+            get(size - 1);
+        }
         return size;
     }
 
