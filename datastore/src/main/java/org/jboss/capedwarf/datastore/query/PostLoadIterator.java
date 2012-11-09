@@ -22,15 +22,50 @@
 
 package org.jboss.capedwarf.datastore.query;
 
-import com.google.appengine.api.datastore.Query;
-import org.infinispan.query.CacheQuery;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class QueryHolder {
-    abstract Query getQuery();
-    abstract CacheQuery getCacheQuery();
-    abstract boolean isInTx();
-    abstract void executePostLoad(Object result);
+class PostLoadIterator<E> implements Iterator<E> {
+    private Iterator<E> delegate;
+    private int fetchSize;
+    private QueryHolder holder;
+    private int current;
+    private List<E> buffer = new ArrayList<E>();
+
+    PostLoadIterator(Iterator<E> delegate, int fetchSize, QueryHolder holder) {
+        this.delegate = delegate;
+        this.fetchSize = fetchSize;
+        this.holder = holder;
+    }
+
+    private void check() {
+        int size = buffer.size();
+        if (current == size) {
+            for (int i = 0; i < fetchSize && delegate.hasNext(); i++) {
+                E result = delegate.next();
+                holder.executePostLoad(result);
+                buffer.add(result);
+            }
+        }
+    }
+
+    public synchronized boolean hasNext() {
+        check();
+        return (current < buffer.size());
+    }
+
+    public synchronized E next() {
+        check();
+        return buffer.get(current++);
+    }
+
+    public synchronized void remove() {
+        check();
+        buffer.remove(--current);
+    }
 }

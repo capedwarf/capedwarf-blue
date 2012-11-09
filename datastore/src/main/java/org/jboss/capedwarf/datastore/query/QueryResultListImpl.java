@@ -24,24 +24,28 @@
 
 package org.jboss.capedwarf.datastore.query;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.QueryResultList;
+import com.google.common.collect.ForwardingList;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class QueryResultListImpl<E> extends ArrayList<E> implements QueryResultList<E> {
+class QueryResultListImpl<E> extends ForwardingList<E> implements QueryResultList<E> {
+    private final List<E> delegate;
     private final Cursor cursor;
 
-    public QueryResultListImpl(Collection<E> c, Cursor cursor) {
-        super(c);
+    public QueryResultListImpl(List<E> delegate, Cursor cursor) {
+        this.delegate = delegate;
         this.cursor = cursor;
+    }
+
+    protected List<E> delegate() {
+        return delegate;
     }
 
     public synchronized Cursor getCursor() {

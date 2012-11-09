@@ -33,6 +33,7 @@ import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.datastore.QueryResultList;
 import org.infinispan.query.CacheQuery;
+import org.jboss.capedwarf.datastore.PostLoadHandle;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 
@@ -43,11 +44,13 @@ import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaul
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class PreparedQueryImpl extends QueryHolder implements PreparedQuery {
+    private final PostLoadHandle callback;
     private final Query gaeQuery;
     private final CacheQuery cacheQuery;
     private final boolean inTx;
 
-    public PreparedQueryImpl(Query gaeQuery, CacheQuery cacheQuery, boolean inTx) {
+    public PreparedQueryImpl(PostLoadHandle callback, Query gaeQuery, CacheQuery cacheQuery, boolean inTx) {
+        this.callback = callback;
         this.gaeQuery = gaeQuery;
         this.cacheQuery = cacheQuery;
         this.inTx = inTx;
@@ -63,6 +66,12 @@ public class PreparedQueryImpl extends QueryHolder implements PreparedQuery {
 
     boolean isInTx() {
         return inTx;
+    }
+
+    void executePostLoad(Object result) {
+        if (result instanceof Entity) {
+            callback.execute((Entity) result);
+        }
     }
 
     public List<Entity> asList(FetchOptions fetchOptions) {

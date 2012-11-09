@@ -48,8 +48,10 @@ class LazyQueryResultIterator<E> extends LazyChecker implements QueryResultItera
                 if (delegate == null) {
                     apply();
                     EntityLoader entityLoader = new EntityLoader(holder.getQuery(), holder.getCacheQuery());
-                    Iterator iterator = entityLoader.getIterator(fetchOptions.getChunkSize());
+                    Integer chunkSize = fetchOptions.getChunkSize();
+                    Iterator iterator = entityLoader.getIterator(chunkSize);
                     iterator = new QueryResultProcessor(holder.getQuery()).process(iterator);
+                    iterator = new PostLoadIterator(iterator, (chunkSize != null ? chunkSize : Integer.MAX_VALUE), holder);
                     delegate = new QueryResultIteratorImpl<E>(iterator);
                 }
             }

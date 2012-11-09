@@ -20,17 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.Query;
-import org.infinispan.query.CacheQuery;
+import com.google.appengine.api.datastore.Entity;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class QueryHolder {
-    abstract Query getQuery();
-    abstract CacheQuery getCacheQuery();
-    abstract boolean isInTx();
-    abstract void executePostLoad(Object result);
+public interface PostLoadHandle {
+    void execute(Entity result);
 }

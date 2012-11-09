@@ -50,6 +50,8 @@ class LazyQueryResultList<E> extends LazyList<E> implements QueryResultList<E> {
                     EntityLoader entityLoader = new EntityLoader(holder.getQuery(), holder.getCacheQuery());
                     List objects = entityLoader.getList();
                     objects = new QueryResultProcessor(holder.getQuery()).process(objects);
+                    Integer chunkSize = fetchOptions.getChunkSize();
+                    objects = new PostLoadList(objects, (chunkSize == null ? objects.size() : chunkSize), holder);
                     delegate = new QueryResultListImpl<E>(objects, JBossCursorHelper.createListCursor(fetchOptions));
                 }
             }

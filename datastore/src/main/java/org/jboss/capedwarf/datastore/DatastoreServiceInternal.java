@@ -129,6 +129,13 @@ interface DatastoreServiceInternal extends BaseDatastoreService {
     DatastoreAttributes getDatastoreAttributes();
 
     /**
+     * Get callbacks.
+     *
+     * @return callbacks
+     */
+    DatastoreCallbacks getDatastoreCallbacks();
+
+    /**
      * Clear cache.
      */
     void clearCache();

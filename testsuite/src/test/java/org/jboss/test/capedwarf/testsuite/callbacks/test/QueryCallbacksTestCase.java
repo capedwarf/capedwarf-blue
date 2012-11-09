@@ -72,6 +72,17 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
     }
 
     @Test
+    public void testListGetWithChunk() throws Exception {
+        List<Entity> list = asList(FetchOptions.Builder.withChunkSize(2));
+        list.get(0);
+        assertCallbackInvoked(2);
+        list.get(1);
+        assertCallbackInvoked(2);
+        list.get(2);
+        assertCallbackInvoked(4);
+    }
+
+    @Test
     public void testListRemove() throws Exception {
         List<Entity> list = asList(FetchOptions.Builder.withDefaults());
         list.remove(0);
@@ -88,6 +99,13 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
     @Test
     public void testListSize() throws Exception {
         List<Entity> list = asList(FetchOptions.Builder.withDefaults());
+        list.size();
+        assertCallbackInvokedFully();
+    }
+
+    @Test
+    public void testListSizeWithChunk() throws Exception {
+        List<Entity> list = asList(FetchOptions.Builder.withChunkSize(2));
         list.size();
         assertCallbackInvokedFully();
     }
@@ -131,7 +149,11 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
     public void testListIteratorWithChunkTwo() throws Exception {
         List<Entity> list = asList(FetchOptions.Builder.withChunkSize(2));
         ListIterator<Entity> iterator = list.listIterator();
+        iterator.hasNext();
+        assertCallbackInvoked(2);
         iterator.next();
+        assertCallbackInvoked(2);
+        iterator.hasNext();
         assertCallbackInvoked(2);
         iterator.next();
         assertCallbackInvoked(2);
@@ -139,6 +161,8 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
         assertCallbackInvoked(2);
         iterator.next();
         assertCallbackInvoked(2);
+        iterator.hasNext();
+        assertCallbackInvoked(4);
         iterator.next();
         assertCallbackInvoked(4);
     }

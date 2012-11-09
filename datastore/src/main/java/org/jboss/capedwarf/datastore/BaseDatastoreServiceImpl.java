@@ -43,6 +43,7 @@ import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
 
@@ -52,13 +53,14 @@ import org.jboss.capedwarf.datastore.query.QueryConverter;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class BaseDatastoreServiceImpl implements BaseDatastoreService {
+public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTransactionProvider, PostLoadHandle {
     protected final Logger log = Logger.getLogger(getClass().getName());
     protected final String appId;
     protected final Cache<Key, Entity> store;
     protected final SearchManager searchManager;
     private final QueryConverter queryConverter;
     private DatastoreServiceConfig config;
+    private volatile DatastoreCallbacks datastoreCallbacks;
 
     public BaseDatastoreServiceImpl() {
         this(null);
@@ -83,6 +85,18 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService {
         return InfinispanUtils.getCache(appId, CacheName.DEFAULT);
     }
 
+    public DatastoreCallbacks getDatastoreCallbacks() {
+        if (datastoreCallbacks == null) {
+            Object callbacks = ReflectionUtils.invokeInstanceMethod(getDatastoreServiceConfig(), "getDatastoreCallbacks");
+            datastoreCallbacks = new DatastoreCallbacks(callbacks);
+        }
+        return datastoreCallbacks;
+    }
+
+    public void execute(Entity result) {
+        getDatastoreCallbacks().executePostLoadCallbacks(this, result);
+    }
+
     public PreparedQuery prepare(Query query) {
         return prepare(null, query);
     }
@@ -101,7 +115,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService {
                 cacheQuery.timeout(deadlineMicroseconds, TimeUnit.MICROSECONDS);
             }
 
-            return new PreparedQueryImpl(query, cacheQuery, tx != null);
+            return new PreparedQueryImpl(this, query, cacheQuery, tx != null);
         } finally {
             afterTx(transaction);
         }

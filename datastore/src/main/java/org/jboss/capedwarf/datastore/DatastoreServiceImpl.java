@@ -194,7 +194,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         return KeyGenerator.checkRange(appId, keyRange, st.getSequenceName());
     }
 
-    public DatastoreAttributes getDatastoreAttributes() {
+    public synchronized DatastoreAttributes getDatastoreAttributes() {
         if (datastoreAttributes == null)
             datastoreAttributes = ReflectionUtils.newInstance(DatastoreAttributes.class);
         return datastoreAttributes;

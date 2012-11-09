@@ -41,7 +41,6 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
  * Abstract base DatastoreService impl.
@@ -50,18 +49,13 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  */
 public abstract class AbstractDatastoreService implements BaseDatastoreService, CurrentTransactionProvider {
     private final DatastoreServiceInternal datastoreService;
-    private volatile DatastoreCallbacks datastoreCallbacks;
 
     public AbstractDatastoreService(DatastoreServiceInternal datastoreService) {
         this.datastoreService = datastoreService;
     }
 
     protected DatastoreCallbacks getDatastoreCallbacks() {
-        if (datastoreCallbacks == null) {
-            Object callbacks = ReflectionUtils.invokeInstanceMethod(datastoreService.getDatastoreServiceConfig(), "getDatastoreCallbacks");
-            datastoreCallbacks = new DatastoreCallbacks(callbacks);
-        }
-        return datastoreCallbacks;
+        return getDelegate().getDatastoreCallbacks();
     }
 
     DatastoreServiceInternal getDelegate() {
