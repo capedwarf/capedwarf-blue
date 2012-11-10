@@ -42,6 +42,8 @@ public class TestContext {
     private String compatibilityProperties;
     private Properties properties = new Properties();
 
+    private boolean callbacks;
+
     public TestContext() {
     }
 
@@ -96,6 +98,15 @@ public class TestContext {
 
     public Properties getProperties() {
         return properties;
+    }
+
+    public boolean hasCallbacks() {
+        return callbacks;
+    }
+
+    public TestContext setCallbacks(boolean callbacks) {
+        this.callbacks = callbacks;
+        return this;
     }
 
     public TestContext setIgnoreLogging(boolean ignoreLogging) {

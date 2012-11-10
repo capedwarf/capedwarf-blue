@@ -81,6 +81,10 @@ public class BaseTest {
             war.addAsResource(asset, "capedwarf-compatibility.properties");
         }
 
+        if (context.hasCallbacks()) {
+            war.addAsWebInfResource("META-INF/datastorecallbacks.xml", "classes/META-INF/datastorecallbacks.xml");
+        }
+
         return war;
     }
 

@@ -44,6 +44,7 @@ public class CapedwarfTransformerMojo {
                         "|([.]*ServiceFactory*)" +
                         "|([.]*.taskqueue.QueueFactory)" +
                         "|([.]*datastore.Cursor*)" +
+                        "|([.]*datastore.DatastoreServiceConfig*)" +
                         "|([.]*datastore.RawValue*)" +
                         "|([.]*datastore.Entity*)" +
                         "|([.]*datastore.Key*))"};

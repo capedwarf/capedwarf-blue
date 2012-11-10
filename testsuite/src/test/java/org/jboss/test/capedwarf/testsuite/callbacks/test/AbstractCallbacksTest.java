@@ -24,6 +24,7 @@ package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.jboss.test.capedwarf.testsuite.AbstractTest;
 import org.jboss.test.capedwarf.testsuite.LibUtils;
 import org.jboss.test.capedwarf.testsuite.callbacks.support.BarKindCallbackHandler;
@@ -49,11 +50,11 @@ public abstract class AbstractCallbacksTest extends AbstractTest {
     public static final String KIND2 = "Bar";
 
     protected static WebArchive getDefaultDeployment() {
-        WebArchive war = getCapedwarfDeployment();
+        TestContext context = new TestContext().setCallbacks(true).setIgnoreLogging(true);
+        WebArchive war = getCapedwarfDeployment(context);
         war.addClass(AbstractTest.class);
         war.addClass(AbstractCallbacksTest.class);
         war.addPackage(BarKindCallbackHandler.class.getPackage());
-        war.addAsWebInfResource("META-INF/datastorecallbacks.xml", "classes/META-INF/datastorecallbacks.xml");
         LibUtils.addGaeAsLibrary(war);
         return war;
     }
