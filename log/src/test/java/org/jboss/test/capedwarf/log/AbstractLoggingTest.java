@@ -47,7 +47,7 @@ import static org.junit.Assert.assertTrue;
 public class AbstractLoggingTest extends BaseTest {
 
     protected static TestContext newTextContext() {
-        return new TestContext("capedwarf-logging.war");
+        return new TestContext();
     }
 
     protected static WebArchive getDefaultDeployment(TestContext context) {
