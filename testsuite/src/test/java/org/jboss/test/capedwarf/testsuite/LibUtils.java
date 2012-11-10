@@ -56,9 +56,9 @@ public class LibUtils {
             if (absolutePath.contains("testsuite") == false)
                 path = "testsuite/" + path;
         } else {
-            // Or are we in CapeDwarf Testsuite
-            if (absolutePath.contains("tests") == false)
-                path = "tests/" + path;
+            // Or are we in CapeDwarf Testsuite Embedded
+            if (absolutePath.contains("embedded") == false)
+                path = "embedded/" + path;
         }
         return path;
     }
