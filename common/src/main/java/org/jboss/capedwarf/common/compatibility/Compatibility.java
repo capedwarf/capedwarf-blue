@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.common.compatibility;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
@@ -44,7 +45,6 @@ public class Compatibility {
 
         private String key;
         private String value;
-        private Boolean enabled;
 
         private Feature(String key) {
             this(key, Boolean.TRUE.toString());
@@ -59,6 +59,7 @@ public class Compatibility {
     private static Map<ClassLoader, Compatibility> instances = new WeakHashMap<ClassLoader, Compatibility>();
 
     private final Properties properties;
+    private final Map<Feature, Boolean> values = new HashMap<Feature, Boolean>();
 
     private Compatibility(Properties properties) {
         this.properties = properties;
@@ -92,13 +93,15 @@ public class Compatibility {
         return isEnabledInternal(Feature.ENABLE_ALL) || isEnabledInternal(feature);
     }
 
-    protected boolean isEnabledInternal(Feature feature) {
+    protected boolean isEnabledInternal(final Feature feature) {
         synchronized (feature) {
-            if (feature.enabled == null) {
+            Boolean result = values.get(feature);
+            if (result == null) {
                 final String value = properties.getProperty(feature.key);
-                feature.enabled = (value != null && value.equalsIgnoreCase(feature.value));
+                result = (value != null && value.equalsIgnoreCase(feature.value));
+                values.put(feature, result);
             }
+            return result;
         }
-        return feature.enabled;
     }
 }
