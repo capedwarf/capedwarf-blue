@@ -22,7 +22,10 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import java.lang.reflect.Modifier;
+
 import javassist.CtClass;
+import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.NotFoundException;
@@ -35,6 +38,9 @@ public class DatastoreServiceConfigTransformer extends RewriteTransformer {
     private final static String INTERNAL = DEFAULT + "Internal";
 
     protected void transformInternal(CtClass clazz) throws Exception {
+        CtField callbacks = clazz.getDeclaredField("CALLBACKS");
+        callbacks.setModifiers(Modifier.VOLATILE);
+
         // current
         CtMethod method = clazz.getDeclaredMethod(DEFAULT);
         // create new
