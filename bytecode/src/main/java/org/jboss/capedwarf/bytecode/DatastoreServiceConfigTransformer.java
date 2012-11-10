@@ -38,11 +38,9 @@ public class DatastoreServiceConfigTransformer extends RewriteTransformer {
     private final static String INTERNAL = DEFAULT + "Internal";
 
     protected void transformInternal(CtClass clazz) throws Exception {
-        CtField callbacks = clazz.getDeclaredField("CALLBACKS");
-        callbacks.setModifiers(Modifier.VOLATILE);
-
         // current
         CtMethod method = clazz.getDeclaredMethod(DEFAULT);
+
         // create new
         CtMethod newMethod = CtNewMethod.copy(method, INTERNAL, clazz, null);
         clazz.addMethod(newMethod);
@@ -50,11 +48,30 @@ public class DatastoreServiceConfigTransformer extends RewriteTransformer {
         String body = "{" +
                 "java.io.InputStream is = " + INTERNAL + "();" +
                 "if (is == null) {" +
-                "is = Thread.currentThread().getContextClassLoader().getResourceAsStream(\"/META-INF/datastorecallbacks.xml\");" +
+                "   is = Thread.currentThread().getContextClassLoader().getResourceAsStream(\"/META-INF/datastorecallbacks.xml\");" +
                 "}" +
                 "return is;" +
                 "}";
         method.setBody(body);
+
+        // remove final
+        CtField callbacksField = clazz.getDeclaredField("instanceDatastoreCallbacks");
+        callbacksField.setModifiers(Modifier.PRIVATE | Modifier.VOLATILE);
+
+        // use instance callbacks
+        CtMethod callbacks = clazz.getDeclaredMethod("getDatastoreCallbacks");
+        callbacks.setBody("{" +
+                "if (instanceDatastoreCallbacks == null) {" +
+                "   java.io.InputStream is = getCallbacksConfigInputStream();" +
+                "   if (is == null) {" +
+                "       instanceDatastoreCallbacks = com.google.appengine.api.datastore.DatastoreCallbacks.NoOpDatastoreCallbacks.INSTANCE;" +
+                "   } else {" +
+                "       instanceDatastoreCallbacks = new com.google.appengine.api.datastore.DatastoreCallbacksImpl(is, false);" +
+                "   }" +
+                "}" +
+                "return instanceDatastoreCallbacks;" +
+                "}");
+
     }
 
     protected boolean doCheck(CtClass clazz) throws NotFoundException {
