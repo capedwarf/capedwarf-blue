@@ -22,16 +22,16 @@
  *
  */
 
-package org.jboss.test.capedwarf.common.config;
+package org.jboss.test.capedwarf.testsuite.config.test;
 
 import org.jboss.capedwarf.common.config.AppEngineWebXml;
 import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
 import org.jboss.capedwarf.common.config.JBossEnvironment;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -61,27 +61,27 @@ public class JBossEnvironmentTestCase {
     @Test
     public void getAppId_ReturnsApplicationFromAppEngineWebXml() throws Exception {
         env.setAppEngineWebXml(new AppEngineWebXml("my-app", "my-version"));
-        assertEquals("my-app", env.getAppId());
+        Assert.assertEquals("my-app", env.getAppId());
     }
 
     @Test
     public void getVersionId_ReturnsApplicationFromAppEngineWebXml() throws Exception {
         env.setAppEngineWebXml(new AppEngineWebXml("my-app", "my-version"));
-        assertEquals("my-version", env.getVersionId());
+        Assert.assertEquals("my-version", env.getVersionId());
     }
 
     @Test
     public void getAdmins_ReturnsAdminsFromCapedwarfConfiguration() throws Exception {
         config.addAdmin(ADMIN_EMAIL);
 
-        assertEquals(1, env.getAdmins().size());
+        Assert.assertEquals(1, env.getAdmins().size());
         assertTrue(env.getAdmins().contains(ADMIN_EMAIL));
     }
 
     @Test
     public void getEmail_ReturnsSetEmail() throws Exception {
         env.setEmail(USER_EMAIL);
-        assertEquals(USER_EMAIL, env.getEmail());
+        Assert.assertEquals(USER_EMAIL, env.getEmail());
     }
 
     @Test
@@ -113,7 +113,7 @@ public class JBossEnvironmentTestCase {
     public void attributesContainDefaultVersionHostname() throws Exception {
         String BASE_URL = "http://myapp.capedwarf.com";
         env.setBaseApplicationUrl("http", "myapp.capedwarf.com", 80, "");
-        assertEquals(BASE_URL, env.getAttributes().get("com.google.appengine.runtime.default_version_hostname"));
+        Assert.assertEquals(BASE_URL, env.getAttributes().get("com.google.appengine.runtime.default_version_hostname"));
     }
 
 }

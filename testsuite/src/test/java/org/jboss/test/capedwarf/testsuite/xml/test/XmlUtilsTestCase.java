@@ -22,16 +22,17 @@
  *
  */
 
-package org.jboss.test.capedwarf.common.xml;
+package org.jboss.test.capedwarf.testsuite.xml.test;
+
+import java.io.ByteArrayInputStream;
+import java.util.List;
 
 import org.jboss.capedwarf.common.xml.XmlUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import java.io.ByteArrayInputStream;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -68,20 +69,20 @@ public class XmlUtilsTestCase {
     @Test
     public void getBody_ReturnsBodyOfGivenElement() throws Exception {
         Element child = (Element) docElement.getElementsByTagName("child").item(0);
-        assertEquals("foo", XmlUtils.getBody(child));
+        Assert.assertEquals("foo", XmlUtils.getBody(child));
     }
 
     @Test
     public void getChildElementBody_ReturnsBodyOfFirstChildWithGivenName() throws Exception {
-        assertEquals("foo", XmlUtils.getChildElementBody(docElement, "child"));
+        Assert.assertEquals("foo", XmlUtils.getChildElementBody(docElement, "child"));
     }
 
     @Test
     public void getChildren_ReturnsChildrenWithGivenName() throws Exception {
         List<Element> children = XmlUtils.getChildren(docElement, "child");
         assertEquals(2, children.size());
-        assertEquals("foo", XmlUtils.getBody(children.get(0)));
-        assertEquals("bar", XmlUtils.getBody(children.get(1)));
+        Assert.assertEquals("foo", XmlUtils.getBody(children.get(0)));
+        Assert.assertEquals("bar", XmlUtils.getBody(children.get(1)));
     }
 
 }

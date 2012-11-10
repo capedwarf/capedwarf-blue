@@ -22,14 +22,14 @@
  *
  */
 
-package org.jboss.test.capedwarf.common.config;
+package org.jboss.test.capedwarf.testsuite.config.test;
 
 
 import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -71,7 +71,7 @@ public class CapedwarfConfigurationTestCase {
     public void getAdminsReturnsAllAddedAdmins() throws Exception {
         config.addAdmin("admin@email.com");
         config.addAdmin("admin2@email.com");
-        assertEquals(2, config.getAdmins().size());
+        Assert.assertEquals(2, config.getAdmins().size());
         assertTrue(config.getAdmins().contains("admin@email.com"));
         assertTrue(config.getAdmins().contains("admin2@email.com"));
     }

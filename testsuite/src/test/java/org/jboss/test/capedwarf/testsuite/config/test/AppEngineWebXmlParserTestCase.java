@@ -22,14 +22,15 @@
  *
  */
 
-package org.jboss.test.capedwarf.common.config;
+package org.jboss.test.capedwarf.testsuite.config.test;
 
+
+import java.io.ByteArrayInputStream;
 
 import org.jboss.capedwarf.common.config.AppEngineWebXml;
 import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
+import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.ByteArrayInputStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -47,8 +48,8 @@ public class AppEngineWebXmlParserTestCase {
 
         AppEngineWebXml appEngineWebXml = AppEngineWebXmlParser.parse(new ByteArrayInputStream(xml.getBytes()));
 
-        assertEquals("appName", appEngineWebXml.getApplication());
-        assertEquals("2", appEngineWebXml.getVersion());
+        Assert.assertEquals("appName", appEngineWebXml.getApplication());
+        Assert.assertEquals("2", appEngineWebXml.getVersion());
     }
 
     @Test

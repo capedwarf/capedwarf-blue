@@ -22,18 +22,18 @@
  *
  */
 
-package org.jboss.test.capedwarf.common.config;
+package org.jboss.test.capedwarf.testsuite.config.test;
 
-
-import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
-import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
-import org.jboss.capedwarf.common.config.XmppConfiguration;
-import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
+import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
+import org.jboss.capedwarf.common.config.XmppConfiguration;
+import org.junit.Assert;
+import org.junit.Test;
+
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -49,8 +49,8 @@ public class CapedwarfConfigurationParserTestCase {
 
         CapedwarfConfiguration config = parseConfig(xml);
 
-        assertEquals(1, config.getAdmins().size());
-        assertEquals("admin1@email.com", config.getAdmins().iterator().next());
+        Assert.assertEquals(1, config.getAdmins().size());
+        Assert.assertEquals("admin1@email.com", config.getAdmins().iterator().next());
     }
 
     private CapedwarfConfiguration parseConfig(String xml) throws IOException {
@@ -67,7 +67,7 @@ public class CapedwarfConfigurationParserTestCase {
 
         CapedwarfConfiguration config = parseConfig(xml);
 
-        assertEquals(3, config.getAdmins().size());
+        Assert.assertEquals(3, config.getAdmins().size());
         assertTrue(config.getAdmins().contains("admin1@email.com"));
         assertTrue(config.getAdmins().contains("admin2@email.com"));
         assertTrue(config.getAdmins().contains("admin3@email.com"));
@@ -87,9 +87,9 @@ public class CapedwarfConfigurationParserTestCase {
         CapedwarfConfiguration config = parseConfig(xml);
         XmppConfiguration xmppConfig = config.getXmppConfiguration();
 
-        assertEquals("xmppHost", xmppConfig.getHost());
-        assertEquals(1234, xmppConfig.getPort());
-        assertEquals("xmppUser", xmppConfig.getUsername());
-        assertEquals("xmppPass", xmppConfig.getPassword());
+        Assert.assertEquals("xmppHost", xmppConfig.getHost());
+        Assert.assertEquals(1234, xmppConfig.getPort());
+        Assert.assertEquals("xmppUser", xmppConfig.getUsername());
+        Assert.assertEquals("xmppPass", xmppConfig.getPassword());
     }
 }
