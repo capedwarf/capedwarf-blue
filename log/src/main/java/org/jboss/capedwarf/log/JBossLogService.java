@@ -22,6 +22,18 @@
 
 package org.jboss.capedwarf.log;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -34,17 +46,6 @@ import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.RequestLogs;
 import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -260,7 +261,7 @@ public class JBossLogService implements LogService {
 
     public void clearLog() {
         final DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
-        Query query = new Query(LOG_LINE_ENTITY_KIND);
+        Query query = new Query(LOG_LINE_ENTITY_KIND).setKeysOnly();
         Iterable<Entity> entities = ds.prepare(query).asIterable();
         for (Entity entity : entities) {
             ds.delete(entity.getKey());

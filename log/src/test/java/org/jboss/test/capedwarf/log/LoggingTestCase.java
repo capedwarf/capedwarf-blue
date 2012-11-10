@@ -30,8 +30,7 @@ import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.log.RequestLogs;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.test.capedwarf.common.test.TestContext;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,8 +44,8 @@ import static org.junit.Assert.fail;
 public class LoggingTestCase extends AbstractLoggingTest {
 
     @Deployment
-    public static Archive getDeployment() {
-        return getCapedwarfDeployment(new TestContext()).addClass(AbstractLoggingTest.class);
+    public static WebArchive getDeployment() {
+        return getDefaultDeployment(newTextContext());
     }
 
     @Test

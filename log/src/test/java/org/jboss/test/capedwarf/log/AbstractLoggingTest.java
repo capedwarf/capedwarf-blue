@@ -31,7 +31,10 @@ import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.log.RequestLogs;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.BaseTest;
+import org.jboss.test.capedwarf.common.test.TestContext;
+import org.junit.After;
 import org.junit.Before;
 
 import static org.junit.Assert.assertFalse;
@@ -43,14 +46,28 @@ import static org.junit.Assert.assertTrue;
  */
 public class AbstractLoggingTest extends BaseTest {
 
-    @Before
-    public void clearLog() {
-        clear(LogServiceFactory.getLogService());
+    protected static TestContext newTextContext() {
+        return new TestContext("capedwarf-logging.war");
     }
 
-    protected void clear(LogService service) {
-        final Class<? extends LogService> clazz = service.getClass();
-        if (clazz.getName().contains("JBossLogService")) {
+    protected static WebArchive getDefaultDeployment(TestContext context) {
+        return getCapedwarfDeployment(context).addClass(AbstractLoggingTest.class);
+    }
+
+    @Before
+    public void before() {
+        clear();
+    }
+
+    @After
+    public void after() {
+        clear();
+    }
+
+    protected void clear() {
+        LogService service = LogServiceFactory.getLogService();
+        if (isJBossImpl(service)) {
+            final Class<? extends LogService> clazz = service.getClass();
             try {
                 Method clearLog = clazz.getMethod("clearLog");
                 clearLog.invoke(service);

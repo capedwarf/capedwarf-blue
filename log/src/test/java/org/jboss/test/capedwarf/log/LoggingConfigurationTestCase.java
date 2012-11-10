@@ -40,9 +40,8 @@ public class LoggingConfigurationTestCase extends AbstractLoggingTest {
 
     @Deployment
     public static Archive getDeployment() {
-        final TestContext context = new TestContext().setAppEngineWebXmlFile("appengine-web-with-logging-properties.xml");
-        final WebArchive war = getCapedwarfDeployment(context);
-        war.addClass(AbstractLoggingTest.class);
+        final TestContext context = newTextContext().setAppEngineWebXmlFile("appengine-web-with-logging-properties.xml");
+        final WebArchive war = getDefaultDeployment(context);
         war.addAsWebInfResource("logging.properties");
         return war;
     }
