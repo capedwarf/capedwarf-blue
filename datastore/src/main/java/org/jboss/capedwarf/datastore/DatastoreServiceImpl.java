@@ -39,6 +39,8 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
@@ -136,17 +138,15 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     public List<Key> put(Transaction tx, Iterable<Entity> entities, Runnable post) {
         javax.transaction.Transaction transaction = beforeTx(tx);
         try {
-            List<Key> keys = new ArrayList<Key>();
             List<Tuple> keyToEntityMap = new ArrayList<Tuple>();
             for (Entity entity : entities) {
                 assignIdIfNeeded(entity);
                 Key key = entity.getKey();
                 EntityGroupTracker.trackKey(key);
-                keys.add(key);
                 keyToEntityMap.add(new Tuple(key, entityModifier.modify(entity)));
             }
             putInTx(keyToEntityMap, post);
-            return keys;
+            return Lists.transform(keyToEntityMap, FN);
         } finally {
             afterTx(transaction);
         }
@@ -288,6 +288,14 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         private Tuple(Key key, Entity entity) {
             this.key = key;
             this.entity = entity;
+        }
+    }
+
+    private static final Tuple2Key FN = new Tuple2Key();
+
+    private static class Tuple2Key implements Function<Tuple, Key> {
+        public Key apply(Tuple input) {
+            return input.key;
         }
     }
 }
