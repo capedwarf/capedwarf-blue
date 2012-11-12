@@ -32,17 +32,18 @@ import javassist.CtMethod;
  */
 public class DatastoreServiceConfigBuilderTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
-        CtClass nested = getNestedClass(clazz, "Builder");
-        CtMethod method = nested.getDeclaredMethod("withDefaults");
+        CtMethod method = clazz.getDeclaredMethod("withDefaults");
         method.setBody("{" +
                 "com.google.appengine.api.datastore.DatastoreCallbacks callbacks = null;" +
-                "java.io.InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(\"/META-INF/datastorecallbacks.xml\");" +
+                "ClassLoader cl = Thread.currentThread().getContextClassLoader();" +
+                "java.io.InputStream is = cl.getResourceAsStream(\"/META-INF/datastorecallbacks.xml\");" +
                 "if (is != null) {" +
                 "   callbacks = new com.google.appengine.api.datastore.DatastoreCallbacksImpl(is, false);" +
                 "}" +
                 "try {" +
                 "   Class clazz = com.google.appengine.api.datastore.DatastoreCallbacks.class.getClassLoader().loadClass(\"com.google.appengine.api.datastore.DatastoreServiceConfig\");" +
                 "   java.lang.reflect.Constructor ctor = clazz.getDeclaredConstructor(new Class[]{com.google.appengine.api.datastore.DatastoreCallbacks.class});" +
+                "   ctor.setAccessible(true);" +
                 "   return ((com.google.appengine.api.datastore.DatastoreServiceConfig)ctor.newInstance(new Object[]{callbacks}));" +
                 "} catch (Exception e) {" +
                 "   throw new RuntimeException(e);" +
