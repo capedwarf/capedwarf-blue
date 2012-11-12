@@ -26,6 +26,7 @@ import java.util.concurrent.ThreadFactory;
 
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
+import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 /**
@@ -45,26 +46,33 @@ class LazyThreadFactory implements ThreadFactory {
     }
 
     private static class RunnableWrapper implements Runnable {
+        private final ClassLoader appCL;
         private final JBossEnvironment env;
         private final Runnable runnable;
 
         private RunnableWrapper(Runnable runnable) {
+            this.appCL = Application.getAppClassloader();
             this.env = JBossEnvironment.getThreadLocalInstance();
             this.runnable = runnable;
         }
 
         public void run() {
-            final ApiProxy.Delegate previous = ApiProxy.getDelegate();
-            ApiProxy.setDelegate(JBossDelegate.INSTANCE);
+            final ClassLoader old = SecurityActions.setThreadContextClassLoader(appCL);
             try {
-                JBossEnvironment.setThreadLocalInstance(env);
+                final ApiProxy.Delegate previous = ApiProxy.getDelegate();
+                ApiProxy.setDelegate(JBossDelegate.INSTANCE);
                 try {
-                    runnable.run();
+                    JBossEnvironment.setThreadLocalInstance(env);
+                    try {
+                        runnable.run();
+                    } finally {
+                        JBossEnvironment.clearThreadLocalInstance();
+                    }
                 } finally {
-                    JBossEnvironment.clearThreadLocalInstance();
+                    ApiProxy.setDelegate(previous);
                 }
             } finally {
-                ApiProxy.setDelegate(previous);
+                SecurityActions.setThreadContextClassLoader(old);
             }
         }
     }
