@@ -23,7 +23,9 @@
 package org.jboss.capedwarf.datastore;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -54,6 +56,8 @@ import org.jboss.capedwarf.datastore.query.QueryConverter;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTransactionProvider, PostLoadHandle {
+    private static final Map<ClassLoader, DatastoreServiceConfig> configs = new WeakHashMap<ClassLoader, DatastoreServiceConfig>();
+
     protected final Logger log = Logger.getLogger(getClass().getName());
     protected final String appId;
     protected final Cache<Key, Entity> store;
@@ -62,13 +66,29 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
     private DatastoreServiceConfig config;
     private volatile DatastoreCallbacks datastoreCallbacks;
 
+    /**
+     * Cache default config.
+     * No need to parse potential callbacks on every new default instance.
+     *
+     * @return config
+     */
+    private static synchronized DatastoreServiceConfig withDefaults() {
+        ClassLoader cl = Application.getAppClassloader();
+        DatastoreServiceConfig dsc = configs.get(cl);
+        if (dsc == null) {
+            dsc = DatastoreServiceConfig.Builder.withDefaults();
+            configs.put(cl, dsc);
+        }
+        return dsc;
+    }
+
     public BaseDatastoreServiceImpl() {
         this(null);
     }
 
     public BaseDatastoreServiceImpl(DatastoreServiceConfig config) {
         this.appId = Application.getAppId();
-        this.config = (config == null ? DatastoreServiceConfig.Builder.withDefaults() : config);
+        this.config = (config == null ? withDefaults() : config);
         ClassLoader classLoader = Application.getAppClassloader();
         this.store = createStore().getAdvancedCache().with(classLoader);
         this.searchManager = Search.getSearchManager(store);
