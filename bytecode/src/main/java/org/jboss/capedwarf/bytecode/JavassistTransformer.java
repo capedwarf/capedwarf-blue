@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+import java.util.Arrays;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -48,4 +49,30 @@ public abstract class JavassistTransformer implements ClassFileTransformer {
     }
 
     protected abstract void transform(CtClass clazz) throws Exception;
+
+    /**
+     * Get nested class.
+     *
+     * @param outer outer class
+     * @param name nested class name
+     * @return nested class or exception if not found
+     * @throws Exception for any error
+     */
+    protected static CtClass getNestedClass(CtClass outer, String name) throws Exception {
+        // all nested
+        CtClass[] allNested = outer.getNestedClasses();
+        // get nested class
+        CtClass nested = null;
+        for (CtClass n : allNested) {
+            String nestedName = n.getName();
+            if (nestedName.endsWith("$" + name)) {
+                nested = n;
+                break;
+            }
+        }
+        if (nested == null) {
+            throw new IllegalArgumentException("No such nested class: " + name + " - " + Arrays.toString(allNested));
+        }
+        return nested;
+    }
 }
