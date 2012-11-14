@@ -61,7 +61,7 @@ class AppEngineFileAdapter {
             return cached;
         }
 
-        return new BlobKey(file.getFullPath());
+        return new BlobKey(file.getNamePart());
     }
 
     private void assertBlobStoreFileSystem() {

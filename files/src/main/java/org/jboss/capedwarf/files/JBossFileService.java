@@ -237,7 +237,7 @@ public class JBossFileService implements FileService {
     }
 
     public AppEngineFile getBlobFile(BlobKey blobKey) {
-        return new AppEngineFile(blobKey.getKeyString());
+        return new AppEngineFile(AppEngineFile.FileSystem.BLOBSTORE, blobKey.getKeyString());
     }
 
     protected Entity getFileInfo(Key key) {
