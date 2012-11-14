@@ -41,6 +41,7 @@
         <module>search</module>
         <module>tasks</module>
         <module>testsuite</module>
+        <module>tools</module>
         <module>urlfetch</module>
         <module>users</module>
         <module>xmpp</module>
@@ -70,6 +71,7 @@
         <version.net.jcip>1.0</version.net.jcip>
         <version.metainf>1.1</version.metainf>
         <version.org.apache.httpcomponents>4.1.1</version.org.apache.httpcomponents>
+        <version.org.xerial.sqlite>3.7.2</version.org.xerial.sqlite>
         <!-- DataNucleus -->
         <version.org.datanucleus>3.1.2</version.org.datanucleus>
         <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
@@ -681,6 +683,13 @@
                 <groupId>org.jboss.maven.plugins</groupId>
                 <artifactId>arquillian-transformer</artifactId>
                 <version>${version.jboss.maven.arquillian}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>3.7.2</version>
+                <!--<version>#{version.org.xerial.sqlite}</version>-->
             </dependency>
 
             <!-- Testing MapReduce -->
