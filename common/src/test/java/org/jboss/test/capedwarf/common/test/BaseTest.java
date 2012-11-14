@@ -61,7 +61,7 @@ public class BaseTest {
         }
 
         // jboss-web.xml
-        if (context.isAsRoot()) {
+        if (context.isContextRoot()) {
             war.addAsWebInfResource("jboss-web.xml");
         }
 

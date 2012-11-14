@@ -35,6 +35,10 @@ import com.google.appengine.tools.mapreduce.Mapper;
 public class CountMapper extends Mapper<Entity, String, Long> {
     private static final long serialVersionUID = 1L;
 
+    public static String toKey(char ch) {
+        return "occurrences of character " + ch + " in payload";
+    }
+
     private void incrementCounter(String name, long delta) {
         getContext().getCounter(name).increment(delta);
     }
@@ -78,7 +82,7 @@ public class CountMapper extends Mapper<Entity, String, Long> {
         emit("total entity payload size", payload.length());
         emit("total entity key size", name.length());
         for (char c = 'a'; c <= 'z'; c++) {
-            emit("occurrences of character " + c + " in payload", countChar(payload, c));
+            emit(toKey(c), countChar(payload, c));
         }
         for (char c = '0'; c <= '9'; c++) {
             emit("occurrences of digit " + c + " in key", countChar(name, c));

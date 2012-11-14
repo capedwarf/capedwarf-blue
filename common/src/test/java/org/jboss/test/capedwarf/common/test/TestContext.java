@@ -29,7 +29,7 @@ import java.util.Properties;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class TestContext {
+public class TestContext implements Cloneable {
     private static final String ROOT = "ROOT.war";
 
     protected static final TestContext DEFAULT = new TestContext().setIgnoreLogging(true);
@@ -40,6 +40,8 @@ public class TestContext {
     private String webXmlFile;
 
     private String appEngineWebXmlFile;
+
+    private boolean contextRoot;
 
     private String compatibilityProperties;
     private Properties properties = new Properties();
@@ -53,12 +55,12 @@ public class TestContext {
         this.archiveName = archiveName;
     }
 
-    public static TestContext asRoot() {
-        return new TestContext(ROOT);
+    public static TestContext asDefault() {
+        return DEFAULT.clone();
     }
 
-    public boolean isAsRoot() {
-        return ROOT.equals(getArchiveName());
+    public static TestContext asRoot() {
+        return new TestContext(ROOT).setContextRoot(true);
     }
 
     public String getArchiveName() {
@@ -97,6 +99,15 @@ public class TestContext {
         return this;
     }
 
+    public boolean isContextRoot() {
+        return contextRoot;
+    }
+
+    public TestContext setContextRoot(boolean contextRoot) {
+        this.contextRoot = contextRoot;
+        return this;
+    }
+
     public String getCompatibilityProperties() {
         return compatibilityProperties;
     }
@@ -122,5 +133,14 @@ public class TestContext {
     public TestContext setIgnoreLogging(boolean ignoreLogging) {
         properties.put("ignore.logging", String.valueOf(ignoreLogging));
         return this;
+    }
+
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    protected TestContext clone()  {
+        try {
+            return (TestContext) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

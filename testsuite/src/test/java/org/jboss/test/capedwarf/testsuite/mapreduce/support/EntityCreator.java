@@ -22,6 +22,7 @@
 
 package org.jboss.test.capedwarf.testsuite.mapreduce.support;
 
+import java.util.List;
 import java.util.Random;
 
 import com.google.appengine.api.datastore.Entity;
@@ -39,24 +40,17 @@ public class EntityCreator extends Mapper<Long, Void, Void> {
     private static final long serialVersionUID = 1L;
 
     private final String kind;
-    private final int payloadBytesPerEntity;
+    private final List<String> payloads;
     private final Random random = new Random();
+
     private transient DatastoreMutationPool pool;
 
-    public EntityCreator(String kind, int payloadBytesPerEntity) {
+    public EntityCreator(String kind, List<String> payloads) {
         if (kind == null)
             throw new IllegalArgumentException("Null kind");
 
         this.kind = kind;
-        this.payloadBytesPerEntity = payloadBytesPerEntity;
-    }
-
-    private String randomString(int length) {
-        StringBuilder out = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            out.append((char) ('a' + random.nextInt(26)));
-        }
-        return out.toString();
+        this.payloads = payloads;
     }
 
     @Override
@@ -64,10 +58,10 @@ public class EntityCreator extends Mapper<Long, Void, Void> {
         pool = DatastoreMutationPool.forWorker(this);
     }
 
-    public void map(Long ignored) {
-        String name = "" + (random.nextLong() & Long.MAX_VALUE);
+    public void map(Long index) {
+        String name = String.valueOf(random.nextLong() & Long.MAX_VALUE);
         Entity e = new Entity(kind, name);
-        e.setProperty("payload", new Text(randomString(payloadBytesPerEntity)));
+        e.setProperty("payload", new Text(payloads.get((int)(index % payloads.size()))));
         pool.put(e);
     }
 }

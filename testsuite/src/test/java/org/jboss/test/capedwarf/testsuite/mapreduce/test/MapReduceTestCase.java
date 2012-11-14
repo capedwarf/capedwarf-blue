@@ -22,11 +22,14 @@
 
 package org.jboss.test.capedwarf.testsuite.mapreduce.test;
 
-import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.List;
 
+import com.google.appengine.tools.mapreduce.Counter;
+import com.google.appengine.tools.mapreduce.Counters;
 import com.google.appengine.tools.mapreduce.KeyValue;
 import com.google.appengine.tools.mapreduce.MapReduceJob;
-import com.google.appengine.tools.mapreduce.MapReduceSettings;
+import com.google.appengine.tools.mapreduce.MapReduceResult;
 import com.google.appengine.tools.mapreduce.MapReduceSpecification;
 import com.google.appengine.tools.mapreduce.Marshallers;
 import com.google.appengine.tools.mapreduce.inputs.ConsecutiveLongInput;
@@ -35,63 +38,35 @@ import com.google.appengine.tools.mapreduce.outputs.InMemoryOutput;
 import com.google.appengine.tools.mapreduce.outputs.NoOutput;
 import com.google.appengine.tools.mapreduce.reducers.NoReducer;
 import com.google.appengine.tools.pipeline.JobInfo;
-import com.google.appengine.tools.pipeline.PipelineService;
-import com.google.appengine.tools.pipeline.PipelineServiceFactory;
+import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.test.capedwarf.common.test.TestContext;
-import org.jboss.test.capedwarf.testsuite.AbstractTest;
-import org.jboss.test.capedwarf.testsuite.LibUtils;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountMapper;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountReducer;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.EntityCreator;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@RunWith(Arquillian.class)
-public class MapReduceTestCase extends AbstractTest {
-    private Logger log = Logger.getLogger(MapReduceTestCase.class.getName());
-
+public class MapReduceTestCase extends AbstractMapReduceTest {
     @Deployment
     public static WebArchive getDeployment() {
-        TestContext context = TestContext.asRoot();
-        context.setWebXmlFile("mapreduce/web.xml");
-        context.setAppEngineWebXmlFile("mapreduce/appengine-web.xml");
-
-        WebArchive war = getCapedwarfDeployment(context);
-        war.addClass(AbstractTest.class);
-
-        war.addAsWebInfResource("mapreduce/queue.xml", "queue.xml");
-        war.addAsWebInfResource("mapreduce/logging.properties", "logging.properties");
-
+        WebArchive war = getDefaultDeployment();
         war.addPackage(EntityCreator.class.getPackage());
-
-        LibUtils.addGaeAsLibrary(war);
-        LibUtils.addLibrary(war, "com.google.appengine", "appengine-mapper");
-        LibUtils.addLibrary(war, "com.google.guava", "guava");
-        LibUtils.addLibrary(war, "com.googlecode.charts4j", "charts4j");
-        LibUtils.addLibrary(war, "commons-logging", "commons-logging");
-        LibUtils.addLibrary(war, "org.apache.hadoop", "hadoop-core");
-        LibUtils.addLibrary(war, "org.json", "json");
-
         return war;
     }
 
     @Test
     public void testCountJob() throws Exception {
-        int bytesPerEntity = 10;
-        int entitiesPerShard = 1;
+        List<String> payloads = Arrays.asList("capedwarf", "jboss", "redhat");
         int shardCount = 1;
 
         final String createHandle = MapReduceJob.start(
                 MapReduceSpecification.of(
                         "Create MapReduce entities",
-                        new ConsecutiveLongInput(0, entitiesPerShard * (long) shardCount, shardCount),
-                        new EntityCreator("MapReduceTest", bytesPerEntity),
+                        new ConsecutiveLongInput(0, payloads.size() * (long) shardCount, shardCount),
+                        new EntityCreator("MapReduceTest", payloads),
                         Marshallers.getVoidMarshaller(),
                         Marshallers.getVoidMarshaller(),
                         NoReducer.<Void, Void, Void>create(),
@@ -119,34 +94,24 @@ public class MapReduceTestCase extends AbstractTest {
         JobInfo countJI = waitToFinish("COUNT", countHandle);
         Object count = countJI.getOutput();
         log.warning("----- Count: " + count);
+
+        Assert.assertTrue(count instanceof MapReduceResult);
+        MapReduceResult result = MapReduceResult.class.cast(count);
+        int[] chars = toChars(payloads);
+        Counters counters = result.getCounters();
+        for (int i = 0; i < chars.length; i++) {
+            Counter c = counters.getCounter(CountMapper.toKey((char)('a' + i)));
+            Assert.assertEquals(chars[i], c.getValue());
+        }
     }
 
-    protected JobInfo waitToFinish(final String phase, final String handle) throws Exception {
-        PipelineService pipelineService = PipelineServiceFactory.newPipelineService();
-        JobInfo jobInfo = pipelineService.getJobInfo(handle);
-        JobInfo.State state = jobInfo.getJobState();
-        int N = 10;
-        while (isRunning(state) && N > 0) {
-            N--;
-            Thread.sleep(30 * 1000L); // 30sec
-            // new info lookup
-            jobInfo = pipelineService.getJobInfo(handle);
-            state = jobInfo.getJobState();
+    protected static int[] toChars(List<String> payloads) {
+        int[] chars = new int['z' - 'a' + 1];
+        for (String payload : payloads) {
+            for (int i = 0; i < payload.length(); i++) {
+                chars[payload.charAt(i) - 'a']++;
+            }
         }
-        if (N == 0 && isRunning(state)) {
-            throw new IllegalStateException("Failed to finish the job [ " + phase + " ]: " + handle);
-        }
-        if (state != JobInfo.State.COMPLETED_SUCCESSFULLY) {
-            throw new IllegalStateException("Job " + handle + " failed [ " + phase + " ]: " + jobInfo + " - error: " + jobInfo.getError());
-        }
-        return jobInfo;
-    }
-
-    protected boolean isRunning(JobInfo.State state) {
-        return (state == null || state == JobInfo.State.RUNNING);
-    }
-
-    protected MapReduceSettings getSettings() {
-        return new MapReduceSettings().setWorkerQueueName("mapreduce-workers").setControllerQueueName("default");
+        return chars;
     }
 }
