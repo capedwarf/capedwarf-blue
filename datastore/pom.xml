@@ -17,6 +17,11 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.jboss.capedwarf.blue</groupId>
+            <artifactId>capedwarf-preprocessors</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.appengine</groupId>
             <artifactId>appengine-api-1.0-sdk</artifactId>
         </dependency>
