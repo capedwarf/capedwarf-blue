@@ -22,15 +22,6 @@
 
 package org.jboss.capedwarf.files;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
@@ -54,6 +45,15 @@ import org.infinispan.io.GridFilesystem;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * JBoss GAE File service.
@@ -206,7 +206,7 @@ public class JBossFileService implements FileService {
     }
 
     private String getFilePath(BlobKey blobKey) {
-        return removeLeadingSeparator(blobKey.getKeyString());
+        return getFilePath(getBlobFile(blobKey));
     }
 
     private String removeLeadingSeparator(String fullPath) {
