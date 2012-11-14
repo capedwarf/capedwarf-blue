@@ -60,6 +60,11 @@ public class BaseTest {
             war.setWebXML(new StringAsset(context.getWebXmlContent()));
         }
 
+        // jboss-web.xml
+        if (context.isAsRoot()) {
+            war.addAsWebInfResource("jboss-web.xml");
+        }
+
         // appengine-web.xml
         if (context.getAppEngineWebXmlFile() != null) {
             war.addAsWebInfResource(context.getAppEngineWebXmlFile(), "appengine-web.xml");

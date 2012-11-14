@@ -100,6 +100,7 @@ class PostLoadList<E> implements List<E> {
     public ListIterator<E> listIterator(final int index) {
         return new ListIterator<E>() {
             private int current = index;
+            private int previous = index - 1;
 
             public boolean hasNext() {
                 boolean result = (current < delegate.size());
@@ -110,6 +111,7 @@ class PostLoadList<E> implements List<E> {
             }
 
             public E next() {
+                previous = current;
                 return get(current++);
             }
 
@@ -118,6 +120,7 @@ class PostLoadList<E> implements List<E> {
             }
 
             public E previous() {
+                previous = current;
                 return get(--current);
             }
 
@@ -130,11 +133,12 @@ class PostLoadList<E> implements List<E> {
             }
 
             public void remove() {
+                if (previous > current) --previous;
                 PostLoadList.this.remove(--current);
             }
 
             public void set(E e) {
-                delegate.set(current, e);
+                delegate.set(previous, e);
             }
 
             public void add(E e) {

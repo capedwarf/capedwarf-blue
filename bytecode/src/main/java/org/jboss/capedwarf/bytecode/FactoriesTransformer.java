@@ -31,6 +31,7 @@ public class FactoriesTransformer extends MultipleTransformer {
     // -- Keep lexicographical order --
 
     public FactoriesTransformer() {
+        // GAE API
         register("com.google.appengine.api.appidentity.AppIdentityServiceFactory", new AppIdentityServiceFactoryTransformer());
         register("com.google.appengine.api.blobstore.BlobstoreServiceFactory", new BlobstoreServiceFactoryTransformer());
         register("com.google.appengine.api.capabilities.CapabilitiesServiceFactory", new CapabilitiesServiceFactoryTransformer());
@@ -55,5 +56,7 @@ public class FactoriesTransformer extends MultipleTransformer {
         register("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
         register("com.google.appengine.api.xmpp.XMPPServiceFactory", new XMPPServiceFactoryTransformer());
         register("com.google.apphosting.api.ApiProxy", new ApiProxyTransformer());
+        // GAE MapReduce
+        register("com.google.appengine.tools.mapreduce.impl.ShuffleServiceImpl", new ShuffleServiceTransformer());
     }
 }

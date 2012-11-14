@@ -30,6 +30,8 @@ import java.util.Properties;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class TestContext {
+    private static final String ROOT = "ROOT.war";
+
     protected static final TestContext DEFAULT = new TestContext().setIgnoreLogging(true);
 
     private String archiveName = "capedwarf-tests.war";
@@ -49,6 +51,14 @@ public class TestContext {
 
     public TestContext(String archiveName) {
         this.archiveName = archiveName;
+    }
+
+    public static TestContext asRoot() {
+        return new TestContext(ROOT);
+    }
+
+    public boolean isAsRoot() {
+        return ROOT.equals(getArchiveName());
     }
 
     public String getArchiveName() {

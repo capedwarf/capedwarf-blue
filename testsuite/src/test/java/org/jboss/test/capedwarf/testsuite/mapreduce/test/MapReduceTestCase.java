@@ -46,7 +46,6 @@ import org.jboss.test.capedwarf.testsuite.LibUtils;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountMapper;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountReducer;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.EntityCreator;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,7 +58,7 @@ public class MapReduceTestCase extends AbstractTest {
 
     @Deployment
     public static WebArchive getDeployment() {
-        TestContext context = new TestContext();
+        TestContext context = TestContext.asRoot();
         context.setWebXmlFile("mapreduce/web.xml");
         context.setAppEngineWebXmlFile("mapreduce/appengine-web.xml");
 
@@ -83,7 +82,6 @@ public class MapReduceTestCase extends AbstractTest {
     }
 
     @Test
-    @Ignore
     public void testCountJob() throws Exception {
         int bytesPerEntity = 10;
         int entitiesPerShard = 1;
@@ -139,7 +137,7 @@ public class MapReduceTestCase extends AbstractTest {
             throw new IllegalStateException("Failed to finish the job [ " + phase + " ]: " + handle);
         }
         if (state != JobInfo.State.COMPLETED_SUCCESSFULLY) {
-            throw new IllegalStateException("Job " + handle + " failed [ " + phase + " ]: " + jobInfo);
+            throw new IllegalStateException("Job " + handle + " failed [ " + phase + " ]: " + jobInfo + " - error: " + jobInfo.getError());
         }
         return jobInfo;
     }
