@@ -22,9 +22,7 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
@@ -48,14 +46,10 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-import org.jboss.capedwarf.datastore.query.DefaultQueryTypeFactory;
-import org.jboss.capedwarf.datastore.query.MetadataQueryTypeFactory;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
-import org.jboss.capedwarf.datastore.query.QueryHandle;
 import org.jboss.capedwarf.datastore.query.QueryHandleService;
-import org.jboss.capedwarf.datastore.query.QueryTypeFactory;
-import org.jboss.capedwarf.datastore.query.StatsQueryTypeFactory;
+import org.jboss.capedwarf.datastore.query.QueryTypeFactories;
 
 /**
  * Base Datastore service.
@@ -73,8 +67,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
     private final QueryConverter queryConverter;
     private DatastoreServiceConfig config;
     private volatile DatastoreCallbacks datastoreCallbacks;
-
-    private final List<QueryTypeFactory> factories = new ArrayList<QueryTypeFactory>();
+    private final QueryTypeFactories factories;
 
     /**
      * Cache default config.
@@ -109,14 +102,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         });
 
         this.queryConverter = new QueryConverter(searchManager);
-        // query type factories
-        factories.add(new StatsQueryTypeFactory());
-        factories.add(MetadataQueryTypeFactory.INSTANCE);
-        factories.add(DefaultQueryTypeFactory.INSTANCE);
-        // initialize
-        for (QueryTypeFactory factory : factories) {
-            factory.initialize(this);
-        }
+        this.factories = new QueryTypeFactories(this);
     }
 
     protected Cache<Key, Entity> createStore() {
@@ -168,13 +154,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
     }
 
     public PreparedQuery prepare(Transaction tx, Query query) {
-        for (QueryTypeFactory factory : factories) {
-            if (factory.handleQuery(tx, query)) {
-                QueryHandle handle = factory.createQueryHandle(this);
-                return handle.createQuery(tx, query);
-            }
-        }
-        throw new IllegalArgumentException("No matching query type: " + query);
+        return factories.prepare(tx, query);
     }
 
     public Transaction getCurrentTransaction() {

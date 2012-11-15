@@ -22,25 +22,47 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+
 import com.google.appengine.api.datastore.Entity;
 
 /**
- * Total stats put update
+ * Total stats update
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class TotalStatsPutUpdate extends TotalStatsUpdate {
-    public TotalStatsPutUpdate(Entity trigger) {
-        super(trigger);
+public abstract class AbstractUpdate implements Update {
+    protected final Entity trigger;
+
+    protected AbstractUpdate(Entity trigger) {
+        this.trigger = trigger;
     }
 
-    protected void doUpdate(Entity current, Entity newEntity) {
-        super.doUpdate(current, newEntity);
+    public Entity update(Entity entity) {
+        Entity updated = new Entity(entity.getKind());
+        doUpdate(entity, updated);
+        return updated;
+    }
 
-        long count = toLong(current, "count");
-        newEntity.setProperty("count", count + 1);
+    protected abstract void doUpdate(Entity current, Entity newEntity);
 
-        long bytes = toLong(current, "bytes");
-        newEntity.setProperty("bytes", bytes + countBytes(trigger));
+    // TODO -- better impl
+    protected static long countBytes(Entity entity) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(baos);
+            out.writeObject(entity);
+            out.flush();
+            return baos.size();
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Cannot count entity: " + entity);
+        }
+    }
+
+    protected static Long toLong(Entity entity, String property) {
+        Object value = entity.getProperty(property);
+        return (value != null) ? Number.class.cast(value).longValue() : null;
     }
 }

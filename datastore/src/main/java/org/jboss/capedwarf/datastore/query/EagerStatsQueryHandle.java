@@ -30,10 +30,13 @@ import com.google.appengine.api.datastore.Transaction;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
-import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.infinispan.CacheName;
+import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 
 /**
  * Eager query handle.
@@ -61,13 +64,39 @@ class EagerStatsQueryHandle extends AbstractQueryHandle {
 
     @Listener
     public static class EagerListener {
-        @CacheEntryCreated
-        public void onPut(CacheEntryCreatedEvent<Key, Entity> event) {
+        @CacheEntryModified
+        public void onPut(CacheEntryModifiedEvent<Key, Entity> event) {
+            final Key key = event.getKey();
+            if (QueryTypeFactories.isSpecialKind(key.getKind()))
+                return;
 
+            Entity trigger = event.getValue();
+            if (event.isPre()) {
+                // was existing entity modified
+                if (trigger != null) {
+                    Update update = new TotalStatsRemoveUpdate(trigger);
+                    UpdateKeyTask task = new UpdateKeyTask(update);
+                    InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, task, update.statsKind());
+                }
+            } else {
+                Update update = new TotalStatsPutUpdate(trigger);
+                UpdateKeyTask task = new UpdateKeyTask(update);
+                InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, task, update.statsKind());
+            }
         }
 
         @CacheEntryRemoved
         public void onRemove(CacheEntryRemovedEvent<Key, Entity> event) {
+            if (event.isPre() == false)
+                return;
+
+            Key key = event.getKey();
+            if (QueryTypeFactories.isSpecialKind(key.getKind()) == false) {
+                Entity trigger = event.getValue();
+                Update update = new TotalStatsRemoveUpdate(trigger);
+                UpdateKeyTask task = new UpdateKeyTask(update);
+                InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, task, update.statsKind());
+            }
         }
     }
 }

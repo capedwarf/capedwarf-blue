@@ -34,6 +34,10 @@ import org.jboss.capedwarf.common.compatibility.Compatibility;
 public class StatsQueryTypeFactory implements QueryTypeFactory {
     private QueryHandle queryHandle;
 
+    static boolean isStatsKind(String kind) {
+        return kind.startsWith("__Stat_") && kind.endsWith("__");
+    }
+
     protected boolean isEager() {
         Compatibility compatibility = Compatibility.getInstance();
         return compatibility.isEnabled(Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
@@ -50,8 +54,7 @@ public class StatsQueryTypeFactory implements QueryTypeFactory {
     }
 
     public boolean handleQuery(Transaction tx, Query query) {
-        String kind = query.getKind();
-        return kind.startsWith("__Stat_") && kind.endsWith("__");
+        return isStatsKind(query.getKind());
     }
 
     public QueryHandle createQueryHandle(QueryHandleService service) {

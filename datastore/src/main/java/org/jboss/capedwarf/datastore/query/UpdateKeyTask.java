@@ -55,8 +55,9 @@ public class UpdateKeyTask extends BaseTxTask<String, Key, Entity> {
             entity = new Entity(update.statsKind());
             update.initialize(entity);
         } else {
-            entity = update.update(service.get(key));
+            entity = service.get(key);
         }
+        entity = update.update(entity);
         service.put(entity);
         getCache().put(cacheKey, entity.getKey());
         return entity;

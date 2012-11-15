@@ -23,18 +23,28 @@
 package org.jboss.capedwarf.datastore.query;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityTranslator;
 
 /**
  * Total stats update
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class TotalStatsUpdate implements Update {
+public abstract class TotalStatsUpdate extends AbstractUpdate {
+    protected TotalStatsUpdate(Entity trigger) {
+        super(trigger);
+    }
+
     public String statsKind() {
         return "__Stat_Total__";
     }
 
     public void initialize(Entity entity) {
-        // TODO
+        entity.setProperty("count", 0L);
+        entity.setProperty("bytes", 0L);
+    }
+
+    protected void doUpdate(Entity current, Entity newEntity) {
+        newEntity.setProperty("timestamp", System.currentTimeMillis());
     }
 }
