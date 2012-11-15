@@ -62,6 +62,11 @@ class EagerStatsQueryHandle extends AbstractQueryHandle {
         return service.createQuery(tx, query); // just run the query
     }
 
+    protected static void executeUpdate(Update update) {
+        UpdateKeyTask task = new UpdateKeyTask(update);
+        InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, task, update.statsKind());
+    }
+
     @Listener
     public static class EagerListener {
         @CacheEntryModified
@@ -71,17 +76,11 @@ class EagerStatsQueryHandle extends AbstractQueryHandle {
                 return;
 
             Entity trigger = event.getValue();
-            if (event.isPre()) {
+            if (event.isPre() == false) {
+                executeUpdate(new TotalStatsPutUpdate(trigger));
+            } else if (trigger != null) {
                 // was existing entity modified
-                if (trigger != null) {
-                    Update update = new TotalStatsRemoveUpdate(trigger);
-                    UpdateKeyTask task = new UpdateKeyTask(update);
-                    InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, task, update.statsKind());
-                }
-            } else {
-                Update update = new TotalStatsPutUpdate(trigger);
-                UpdateKeyTask task = new UpdateKeyTask(update);
-                InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, task, update.statsKind());
+                executeUpdate(new TotalStatsRemoveUpdate(trigger));
             }
         }
 
@@ -93,9 +92,7 @@ class EagerStatsQueryHandle extends AbstractQueryHandle {
             Key key = event.getKey();
             if (QueryTypeFactories.isSpecialKind(key.getKind()) == false) {
                 Entity trigger = event.getValue();
-                Update update = new TotalStatsRemoveUpdate(trigger);
-                UpdateKeyTask task = new UpdateKeyTask(update);
-                InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, task, update.statsKind());
+                executeUpdate(new TotalStatsRemoveUpdate(trigger));
             }
         }
     }
