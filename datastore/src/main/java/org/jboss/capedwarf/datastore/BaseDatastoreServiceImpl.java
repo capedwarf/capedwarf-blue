@@ -22,7 +22,9 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
@@ -46,8 +48,14 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.datastore.query.DefaultQueryTypeFactory;
+import org.jboss.capedwarf.datastore.query.MetadataQueryTypeFactory;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
+import org.jboss.capedwarf.datastore.query.QueryHandle;
+import org.jboss.capedwarf.datastore.query.QueryHandleService;
+import org.jboss.capedwarf.datastore.query.QueryTypeFactory;
+import org.jboss.capedwarf.datastore.query.StatsQueryTypeFactory;
 
 /**
  * Base Datastore service.
@@ -55,7 +63,7 @@ import org.jboss.capedwarf.datastore.query.QueryConverter;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTransactionProvider, PostLoadHandle {
+public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTransactionProvider, PostLoadHandle, QueryHandleService {
     private static final Map<ClassLoader, DatastoreServiceConfig> configs = new WeakHashMap<ClassLoader, DatastoreServiceConfig>();
 
     protected final Logger log = Logger.getLogger(getClass().getName());
@@ -65,6 +73,8 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
     private final QueryConverter queryConverter;
     private DatastoreServiceConfig config;
     private volatile DatastoreCallbacks datastoreCallbacks;
+
+    private final List<QueryTypeFactory> factories = new ArrayList<QueryTypeFactory>();
 
     /**
      * Cache default config.
@@ -99,6 +109,14 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         });
 
         this.queryConverter = new QueryConverter(searchManager);
+        // query type factories
+        factories.add(new StatsQueryTypeFactory());
+        factories.add(MetadataQueryTypeFactory.INSTANCE);
+        factories.add(DefaultQueryTypeFactory.INSTANCE);
+        // initialize
+        for (QueryTypeFactory factory : factories) {
+            factory.initialize(this);
+        }
     }
 
     protected Cache<Key, Entity> createStore() {
@@ -117,11 +135,15 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         getDatastoreCallbacks().executePostLoadCallbacks(this, result);
     }
 
-    public PreparedQuery prepare(Query query) {
-        return prepare(null, query);
+    public Cache<Key, Entity> getCache() {
+        return store;
     }
 
-    public PreparedQuery prepare(Transaction tx, Query query) {
+    public SearchManager getSearchManager() {
+        return searchManager;
+    }
+
+    public PreparedQuery createQuery(Transaction tx, Query query) {
         if (tx != null && query.getAncestor() == null) {
             throw new IllegalArgumentException("Only ancestor queries are allowed inside transactions.");
         }
@@ -139,6 +161,20 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         } finally {
             afterTx(transaction);
         }
+    }
+
+    public PreparedQuery prepare(Query query) {
+        return prepare(null, query);
+    }
+
+    public PreparedQuery prepare(Transaction tx, Query query) {
+        for (QueryTypeFactory factory : factories) {
+            if (factory.handleQuery(tx, query)) {
+                QueryHandle handle = factory.createQueryHandle(this);
+                return handle.createQuery(tx, query);
+            }
+        }
+        throw new IllegalArgumentException("No matching query type: " + query);
     }
 
     public Transaction getCurrentTransaction() {

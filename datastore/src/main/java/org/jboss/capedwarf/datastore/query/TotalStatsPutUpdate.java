@@ -20,28 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore;
+package org.jboss.capedwarf.datastore.query;
 
-import java.util.Collections;
-import java.util.List;
-
-import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Entity;
 
 /**
+ * Total stats put update
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-interface Keyable<T> {
-    Iterable<Key> toKeys(T result);
-
-    static Keyable<Key> SINGLE = new Keyable<Key>() {
-        public Iterable<Key> toKeys(Key result) {
-            return Collections.singleton(result);
-        }
-    };
-
-    static Keyable<List<Key>> LIST = new Keyable<List<Key>>() {
-        public Iterable<Key> toKeys(List<Key> result) {
-            return result;
-        }
-    };
+public class TotalStatsPutUpdate extends TotalStatsUpdate {
+    public Entity update(Entity entity) {
+        return null;
+    }
 }

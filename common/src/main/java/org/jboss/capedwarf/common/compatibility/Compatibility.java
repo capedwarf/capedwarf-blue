@@ -41,7 +41,8 @@ public class Compatibility {
         ENABLE_ALL("enable.all"),
         DISABLE_ENTITY_GROUPS("disable.entity.groups"),
         IGNORE_TO_LONG_CONVERSION("ignore.long.conversion"),
-        IGNORE_LOGGING("ignore.logging");
+        IGNORE_LOGGING("ignore.logging"),
+        ENABLE_EAGER_DATASTORE_STATS("enable.eager.datastore.stats");
 
         private String key;
         private String value;
