@@ -22,10 +22,9 @@
 
 package org.jboss.capedwarf.datastore.query;
 
-import java.util.Map;
+import java.util.concurrent.Callable;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
 
 /**
  * Abstract multiple update.
@@ -39,5 +38,9 @@ public abstract class AbstractMultipleUpdate extends AbstractUpdate implements M
 
     public String triggerKind() {
         return trigger.getKind();
+    }
+
+    public Callable<Entity> toCallable() {
+        return new UpdateKeysTask(this);
     }
 }

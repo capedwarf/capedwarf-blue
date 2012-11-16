@@ -25,6 +25,7 @@ package org.jboss.capedwarf.datastore.query;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.concurrent.Callable;
 
 import com.google.appengine.api.datastore.Entity;
 
@@ -70,6 +71,10 @@ public abstract class AbstractUpdate implements Update {
 
         long bytes = toLong(current, "bytes");
         newEntity.setProperty("bytes", bytes + (signum.x * countBytes(trigger)));
+    }
+
+    public Callable<Entity> toCallable() {
+        return new UpdateKeyTask(this);
     }
 
     // TODO -- better impl

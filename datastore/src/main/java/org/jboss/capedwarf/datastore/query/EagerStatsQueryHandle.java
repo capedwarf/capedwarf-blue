@@ -22,8 +22,6 @@
 
 package org.jboss.capedwarf.datastore.query;
 
-import java.util.concurrent.Callable;
-
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -36,6 +34,8 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
+import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
+import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
@@ -65,13 +65,7 @@ class EagerStatsQueryHandle extends AbstractQueryHandle {
     }
 
     protected static void executeUpdate(Update update) {
-        Callable<Entity> task;
-        if (update instanceof MultipleUpdate) {
-            task = new UpdateKeysTask((MultipleUpdate) update);
-        } else {
-            task = new UpdateKeyTask(update);
-        }
-        InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, task, update.statsKind());
+        InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, update.toCallable(), update.statsKind());
     }
 
     @Listener
@@ -104,6 +98,13 @@ class EagerStatsQueryHandle extends AbstractQueryHandle {
                 executeUpdate(new TotalStatsRemoveUpdate(trigger));
                 executeUpdate(new KindStatsRemoveUpdate(trigger));
             }
+        }
+
+        @CacheStopped
+        public void cacheStopped(CacheStoppedEvent event) {
+            Cache<Key, Entity> cache = event.getCacheManager().getCache(event.getCacheName(), false);
+            AdvancedCache<Key, Entity> ac = cache.getAdvancedCache();
+            ac.removeListener(this);
         }
     }
 }

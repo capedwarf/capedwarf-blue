@@ -23,9 +23,9 @@
 package org.jboss.capedwarf.datastore.query;
 
 import java.io.Serializable;
+import java.util.concurrent.Callable;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
 
 /**
  * Updater.
@@ -36,4 +36,5 @@ public interface Update extends Serializable {
     String statsKind();
     void initialize(Entity entity);
     Entity update(Entity entity);
+    Callable<Entity> toCallable();
 }
