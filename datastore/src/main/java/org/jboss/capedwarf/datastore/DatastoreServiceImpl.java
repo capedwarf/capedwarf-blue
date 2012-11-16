@@ -24,6 +24,7 @@ package org.jboss.capedwarf.datastore;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -279,6 +280,11 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
      */
     public void clearCache() {
         store.clear();
+    }
+
+    @Override
+    public Iterator<Entity> getAllEntitiesIterator() {
+        return store.values().iterator();   // TODO: temp impl, which only returns entities on current node
     }
 
     private static class Tuple {

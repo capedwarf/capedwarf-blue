@@ -26,19 +26,53 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityTranslator;
+import com.google.storage.onestore.v3.OnestoreEntity;
+import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.datastore.JBossDatastoreService;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class RemoteApiServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        JBossDatastoreService datastore = (JBossDatastoreService) DatastoreServiceFactory.getDatastoreService();
+        Compatibility.enable(Compatibility.Feature.IGNORE_LOGGING);
+        try {
+            DataOutputStream out = new DataOutputStream(resp.getOutputStream());
+            try {
+                Iterator<Entity> entities = datastore.getAllEntitiesIterator();
+                while (entities.hasNext()) {
+                    Entity entity = entities.next();
+                    OnestoreEntity.EntityProto entityProto = EntityTranslator.convertToPb(entity);
+                    byte[] pbBytes = entityProto.toByteArray();
+                    writeArray(out, entityProto.getKey().toByteArray());   // TODO: id
+                    writeArray(out, pbBytes);
+                    writeArray(out, new byte[0]);   // TODO: sort_key
+                }
+            } finally {
+                out.close();
+            }
+        } finally {
+            Compatibility.disable(Compatibility.Feature.IGNORE_LOGGING);
+        }
+    }
+
+    private void writeArray(DataOutputStream out, byte[] pbBytes) throws IOException {
+        out.writeInt(pbBytes.length);
+        out.write(pbBytes);
+    }
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -62,7 +96,5 @@ public class RemoteApiServlet extends HttpServlet {
         } finally {
             in.close();
         }
-
-
     }
 }

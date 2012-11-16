@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.datastore;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -191,5 +192,9 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
      */
     public void clearCache() {
         getDelegate().clearCache();
+    }
+
+    public Iterator<Entity> getAllEntitiesIterator() {
+        return getDelegate().getAllEntitiesIterator();
     }
 }
