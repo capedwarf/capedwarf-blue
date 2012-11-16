@@ -69,16 +69,31 @@ public class StatsQueryTestCase extends BaseTest {
         }
     }
 
-    protected static Entity getStatsEntity(String statsKind) {
+    protected static List<Entity> getStatsList(String statsKind) {
+        return getStatsList(statsKind, null);
+    }
+
+    protected static List<Entity> getStatsList(String statsKind, Query.Filter filter) {
         DatastoreService service = DatastoreServiceFactory.getDatastoreService();
         Query query = new Query(statsKind).addSort("timestamp", Query.SortDirection.DESCENDING);
-        List<Entity> list = service.prepare(query).asList(FetchOptions.Builder.withDefaults());
+        if (filter != null) {
+            query.setFilter(filter);
+        }
+        return service.prepare(query).asList(FetchOptions.Builder.withDefaults());
+    }
+
+    protected static Entity getStatsEntity(String statsKind) {
+        return getStatsEntity(statsKind, null);
+    }
+
+    protected static Entity getStatsEntity(String statsKind, Query.Filter filter) {
+        List<Entity> list = getStatsList(statsKind, filter);
         Assert.assertFalse(list.isEmpty());
         return list.get(0);
     }
 
     @Test
-    public void testAllStats() throws Exception {
+    public void testTotalStats() throws Exception {
         DatastoreService service = DatastoreServiceFactory.getDatastoreService();
 
         Entity e1 = new Entity("SC");
@@ -109,5 +124,47 @@ public class StatsQueryTestCase extends BaseTest {
         Assert.assertEquals(bytes, bytes3);
 
         service.delete(k1);
+    }
+
+    @Test
+    public void testKindStats() throws Exception {
+        DatastoreService service = DatastoreServiceFactory.getDatastoreService();
+
+        Entity e1 = new Entity("SCK");
+        e1.setProperty("x", "original");
+        Key k1 = service.put(e1);
+
+        Entity e3 = new Entity("QWE");
+        e3.setProperty("foo", "bar");
+        Key k3 = service.put(e3);
+
+        Query.FilterPredicate filter = new Query.FilterPredicate("kind_name", Query.FilterOperator.EQUAL, "SCK");
+
+        Entity kindStats = getStatsEntity("__Stat_Kind__", filter);
+        long count = (Long) kindStats.getProperty("count");
+        Assert.assertEquals(1L, count);
+
+        Entity e2 = new Entity("SCK");
+        e2.setProperty("y", "replacement");
+        Key k2 = service.put(e2);
+
+        kindStats = getStatsEntity("__Stat_Kind__", filter);
+        long count2 = (Long) kindStats.getProperty("count");
+        Assert.assertEquals(count + 1, count2);
+
+        int qwes = 0;
+        for (Entity stat : getStatsList("__Stat_Kind__")) {
+            String kindName = stat.getProperty("kind_name").toString();
+            if ("QWE".equals(kindName)) qwes++;
+        }
+        Assert.assertEquals(1, qwes);
+
+        service.delete(k2);
+
+        kindStats = getStatsEntity("__Stat_Kind__", filter);
+        long count3 = (Long) kindStats.getProperty("count");
+        Assert.assertEquals(count, count3);
+
+        service.delete(k1, k3);
     }
 }
