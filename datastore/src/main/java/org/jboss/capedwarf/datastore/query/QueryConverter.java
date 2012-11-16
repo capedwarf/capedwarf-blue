@@ -1,8 +1,5 @@
 package org.jboss.capedwarf.datastore.query;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
@@ -10,6 +7,10 @@ import org.apache.lucene.search.Sort;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.SearchManager;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 
@@ -21,6 +22,7 @@ import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 public class QueryConverter {
 
     public static final String KIND_PROPERTY_KEY = "____capedwarf.entity.kind___";
+    public static final String NAMESPACE_PROPERTY_KEY = "____capedwarf.entity.namespace___";
     public static final String ANCESTOR_PROPERTY_KEY = "____capedwarf.entity.ancestor.key___";
 
     private SearchManager searchManager;
@@ -81,6 +83,7 @@ public class QueryConverter {
     @SuppressWarnings("deprecation")
     private List<Query.Filter> getAllFilterPredicates(Query gaeQuery) {
         List<Query.Filter> list = new ArrayList<Query.Filter>();
+        addNamespaceFilterPredicate(list, getNamespace(gaeQuery));
         addEntityKindFilterPredicate(list, gaeQuery.getKind());
         addAncestorFilterPredicate(list, gaeQuery.getAncestor());
         if (gaeQuery.getFilter() != null) {
@@ -88,6 +91,11 @@ public class QueryConverter {
         }
         list.addAll(gaeQuery.getFilterPredicates());
         return list;
+    }
+
+    private String getNamespace(Query gaeQuery) {
+        Object appIdNamespace = ReflectionUtils.invokeInstanceMethod(gaeQuery, "getAppIdNamespace");
+        return (String) ReflectionUtils.invokeInstanceMethod(appIdNamespace, "getNamespace");
     }
 
     private void addAncestorFilterPredicate(List<Query.Filter> list, Key ancestor) {
@@ -99,6 +107,12 @@ public class QueryConverter {
     private void addEntityKindFilterPredicate(List<Query.Filter> list, String kind) {
         if (kind != null) {
             list.add(new Query.FilterPredicate(KIND_PROPERTY_KEY, EQUAL, kind));
+        }
+    }
+
+    private void addNamespaceFilterPredicate(List<Query.Filter> list, String namespace) {
+        if (namespace != null) {
+            list.add(new Query.FilterPredicate(NAMESPACE_PROPERTY_KEY, EQUAL, NamespaceBridge.objectToString(namespace)));
         }
     }
 

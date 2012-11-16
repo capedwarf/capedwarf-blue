@@ -29,11 +29,15 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -95,4 +99,23 @@ public class DatastoreMultitenancyTestCase extends SimpleTest {
         NamespaceManager.set("one");
         assertEquals(entity1, service.get(key1));
     }
+
+    @Test
+    public void testQueriesOnlyReturnResultsInCurrentNamespace() {
+        NamespaceManager.set("one");
+        Entity fooOne = new Entity("foo");
+        service.put(fooOne);
+
+        NamespaceManager.set("two");
+        Entity fooTwo = new Entity("foo");
+        service.put(fooTwo);
+
+        List<Entity> listTwo = service.prepare(new Query("foo")).asList(withDefaults());
+        assertEquals(Collections.singletonList(fooTwo), listTwo);
+
+        NamespaceManager.set("one");
+        List<Entity> listOne = service.prepare(new Query("foo")).asList(withDefaults());
+        assertEquals(Collections.singletonList(fooOne), listOne);
+    }
+
 }
