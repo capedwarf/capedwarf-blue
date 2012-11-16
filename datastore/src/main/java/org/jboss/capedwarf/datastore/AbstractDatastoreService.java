@@ -187,14 +187,14 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
         return getDelegate().getDatastoreServiceConfig();
     }
 
+    public Iterator<Entity> getAllEntitiesIterator() {
+        return getDelegate().getAllEntitiesIterator();
+    }
+
     /**
      * Testing only!
      */
     public void clearCache() {
         getDelegate().clearCache();
-    }
-
-    public Iterator<Entity> getAllEntitiesIterator() {
-        return getDelegate().getAllEntitiesIterator();
     }
 }

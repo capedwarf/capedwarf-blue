@@ -22,6 +22,17 @@
 
 package org.jboss.capedwarf.admin.remote;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.Iterator;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -30,16 +41,6 @@ import com.google.storage.onestore.v3.OnestoreEntity;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
 import org.jboss.capedwarf.datastore.JBossDatastoreService;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.util.Iterator;
-
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
@@ -47,9 +48,9 @@ public class RemoteApiServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        JBossDatastoreService datastore = (JBossDatastoreService) DatastoreServiceFactory.getDatastoreService();
         Compatibility.enable(Compatibility.Feature.IGNORE_LOGGING);
         try {
+            JBossDatastoreService datastore = (JBossDatastoreService) DatastoreServiceFactory.getDatastoreService();
             DataOutputStream out = new DataOutputStream(resp.getOutputStream());
             try {
                 Iterator<Entity> entities = datastore.getAllEntitiesIterator();
@@ -69,7 +70,7 @@ public class RemoteApiServlet extends HttpServlet {
         }
     }
 
-    private void writeArray(DataOutputStream out, byte[] pbBytes) throws IOException {
+    private static void writeArray(DataOutputStream out, byte[] pbBytes) throws IOException {
         out.writeInt(pbBytes.length);
         out.write(pbBytes);
     }
@@ -77,7 +78,6 @@ public class RemoteApiServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-
         DataInputStream in = new DataInputStream(req.getInputStream());
         try {
             while (true) {

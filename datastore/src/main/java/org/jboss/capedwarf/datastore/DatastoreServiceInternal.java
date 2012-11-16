@@ -137,13 +137,14 @@ interface DatastoreServiceInternal extends BaseDatastoreService {
     DatastoreCallbacks getDatastoreCallbacks();
 
     /**
+     * Returns an iterator over all the entities in the datastore. Only used for exporting entities.
+     *
+     * @return all local entities
+     */
+    Iterator<Entity> getAllEntitiesIterator();
+
+    /**
      * Clear cache.
      */
     void clearCache();
-
-    /**
-     * Returns an iterator over all the entities in the datastore. Only used for exporting entities.
-     * @return
-     */
-    Iterator<Entity> getAllEntitiesIterator();
 }

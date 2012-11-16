@@ -275,16 +275,15 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         }
     }
 
+    public Iterator<Entity> getAllEntitiesIterator() {
+        return store.values().iterator();   // TODO: temp impl, which only returns entities on current node
+    }
+
     /**
      * Testing only!
      */
     public void clearCache() {
         store.clear();
-    }
-
-    @Override
-    public Iterator<Entity> getAllEntitiesIterator() {
-        return store.values().iterator();   // TODO: temp impl, which only returns entities on current node
     }
 
     private static class Tuple {

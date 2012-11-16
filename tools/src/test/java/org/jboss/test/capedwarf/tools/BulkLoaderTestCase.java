@@ -26,6 +26,7 @@ package org.jboss.test.capedwarf.tools;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.DatastoreService;
@@ -34,6 +35,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -54,7 +56,8 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 /**
- *
+ * @author Marko Luksa
+ * @author Ales Justin
  */
 @RunWith(Arquillian.class)
 public class BulkLoaderTestCase extends BaseTest {
@@ -114,28 +117,28 @@ public class BulkLoaderTestCase extends BaseTest {
     @Test
     @InSequence(30)
     public void deleteAllEntities() {
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-        for (int i = 0; i < 10; i++) {
-            String namespace = "namespace" + i;
-            NamespaceManager.set(namespace);
-            for (int j = 0; j < 10; j++) {
-                String kind = "kind" + i;
-                for (int id = 1; id <= 10; id++) {
-                    datastore.delete(KeyFactory.createKey(kind, id));
-                }
-            }
-        }
+        cleanup();
     }
 
     @Test
     @InSequence(40)
+    public void testEntityDoesntExist() {
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        // take middle key
+        NamespaceManager.set("namespace5");
+        Key key = KeyFactory.createKey("kind5", 5);
+        Assert.assertTrue(datastore.get(Collections.singleton(key)).isEmpty());
+    }
+
+    @Test
+    @InSequence(50)
     @RunAsClient
     public void upload(@ArquillianResource URL url) throws IOException {
         BulkLoader.main(new String[]{"upload", "--url=" + url + "/remote_api", "--filename=" + dumpFile.getAbsolutePath()});
     }
 
     @Test
-    @InSequence(50)
+    @InSequence(60)
     public void checkAllEntitiesExist() {
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         for (int i = 0; i < 10; i++) {
@@ -155,10 +158,29 @@ public class BulkLoaderTestCase extends BaseTest {
         }
     }
 
-    @AfterClass
-    public static void afterClass() {
-        dumpFile.delete();
+    @Test
+    @InSequence(70)
+    public void cleanupEntities() {
+        cleanup();
     }
 
+    @AfterClass
+    public static void afterClass() {
+        Assert.assertTrue(dumpFile.delete());
+    }
+
+    protected void cleanup() {
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        for (int i = 0; i < 10; i++) {
+            String namespace = "namespace" + i;
+            NamespaceManager.set(namespace);
+            for (int j = 0; j < 10; j++) {
+                String kind = "kind" + i;
+                for (int id = 1; id <= 10; id++) {
+                    datastore.delete(KeyFactory.createKey(kind, id));
+                }
+            }
+        }
+    }
 
 }
