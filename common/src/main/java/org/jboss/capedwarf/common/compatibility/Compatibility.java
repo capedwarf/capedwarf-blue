@@ -23,8 +23,10 @@
 package org.jboss.capedwarf.common.compatibility;
 
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -58,6 +60,7 @@ public class Compatibility {
     }
 
     private static Map<ClassLoader, Compatibility> instances = new WeakHashMap<ClassLoader, Compatibility>();
+    private static ThreadLocal<Set<Feature>> temps = new ThreadLocal<Set<Feature>>();
 
     private final Properties properties;
     private final Map<Feature, Boolean> values = new ConcurrentHashMap<Feature, Boolean>();
@@ -91,7 +94,7 @@ public class Compatibility {
     }
 
     public boolean isEnabled(Feature feature) {
-        return isEnabledInternal(Feature.ENABLE_ALL) || isEnabledInternal(feature);
+        return isTempEnabled(feature) || isEnabledInternal(Feature.ENABLE_ALL) || isEnabledInternal(feature);
     }
 
     protected boolean isEnabledInternal(Feature feature) {
@@ -102,5 +105,39 @@ public class Compatibility {
             values.put(feature, result);
         }
         return result;
+    }
+
+    private static boolean isTempEnabled(Feature feature) {
+        Set<Feature> features = temps.get();
+        return features != null && features.contains(feature);
+    }
+
+    /**
+     * Temp enable feature.
+     *
+     * @param feature the feature
+     */
+    public static void enable(Feature feature) {
+        Set<Feature> features = temps.get();
+        if (features == null) {
+            features = new HashSet<Feature>();
+            temps.set(features);
+        }
+        features.add(feature);
+    }
+
+    /**
+     * Disable feature.
+     *
+     * @param feature the feature
+     */
+    public static void disable(Feature feature) {
+        Set<Feature> features = temps.get();
+        if (features != null) {
+            features.remove(feature);
+            if (features.isEmpty()) {
+                temps.remove();
+            }
+        }
     }
 }
