@@ -29,6 +29,7 @@ import javassist.CtClass;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.ProvidedId;
 import org.jboss.capedwarf.datastore.query.EntityKeyBridge;
+import org.jboss.capedwarf.datastore.query.NamespaceBridge;
 import org.jboss.capedwarf.datastore.query.PropertyMapBridge;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
 
@@ -52,6 +53,7 @@ public class EntityTransformer extends JavassistTransformer {
             //noinspection unchecked
             addAnnotationsToClass(ProvidedId.class, Indexed.class);
             addAnnotationsToMethod("getKind", createFieldAnnotation(QueryConverter.KIND_PROPERTY_KEY));
+            addAnnotationsToMethod("getNamespace", createFieldAnnotation(QueryConverter.NAMESPACE_PROPERTY_KEY), createFieldBridgeAnnotation(NamespaceBridge.class));
             addAnnotationsToMethod("getKey", createFieldAnnotation(Entity.KEY_RESERVED_PROPERTY), createFieldBridgeAnnotation(EntityKeyBridge.class));
             addAnnotationsToField("propertyMap", createFieldAnnotation(), createFieldBridgeAnnotation(PropertyMapBridge.class));
         }

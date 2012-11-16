@@ -22,9 +22,6 @@
 
 package org.jboss.capedwarf.datastore.query;
 
-import java.util.Collection;
-import java.util.Date;
-
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Category;
@@ -44,6 +41,9 @@ import org.hibernate.search.bridge.builtin.BooleanBridge;
 import org.hibernate.search.bridge.builtin.DateBridge;
 import org.hibernate.search.bridge.builtin.FloatBridge;
 import org.hibernate.search.bridge.builtin.StringBridge;
+
+import java.util.Collection;
+import java.util.Date;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -137,8 +137,8 @@ public enum Bridge implements TwoWayStringBridge {
         throw new IllegalArgumentException("No matching bridge. Value was " + value);
     }
 
-    private static class NullBridge implements TwoWayStringBridge {
-        private static final String NULL_TOKEN = "__capedwarf___NULL___";
+    public static class NullBridge implements TwoWayStringBridge {
+        public static final String NULL_TOKEN = "__capedwarf___NULL___";
 
         public Object stringToObject(String stringValue) {
             return null;
