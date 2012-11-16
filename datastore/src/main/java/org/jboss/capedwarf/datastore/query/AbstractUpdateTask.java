@@ -45,13 +45,14 @@ public abstract class AbstractUpdateTask<V> extends BaseTxTask<String, V, Entity
     }
 
     protected Entity callInTx() throws Exception {
+        final DatastoreService service = DatastoreServiceFactory.getDatastoreService();
+
         final AdvancedCache<String, V> ac = getCache().getAdvancedCache();
         final String cacheKey = update.statsKind();
 
         if (ac.lock(cacheKey) == false)
             throw new IllegalArgumentException("Cannot get a lock on key for " + cacheKey);
 
-        DatastoreService service = DatastoreServiceFactory.getDatastoreService();
         Entity entity;
         V value = getCache().get(cacheKey);
         Key key = provideKey(value);
