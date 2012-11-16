@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.Collections;
+import java.util.Map;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -56,7 +59,13 @@ public abstract class AbstractUpdateTask<V> extends BaseTxTask<String, V, Entity
             entity = new Entity(update.statsKind());
             update.initialize(entity);
         } else {
-            entity = service.get(key);
+            Map<Key, Entity> map = service.get(Collections.singleton(key));
+            if (map.isEmpty()) {
+                entity = new Entity(update.statsKind());
+                update.initialize(entity);
+            } else {
+                entity = map.values().iterator().next();
+            }
         }
         entity = update.update(entity);
         key = service.put(entity);
