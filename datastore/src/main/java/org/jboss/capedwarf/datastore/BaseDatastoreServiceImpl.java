@@ -72,10 +72,10 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
      * Cache default config.
      * No need to parse potential callbacks on every new default instance.
      *
+     * @param cl the app classloader
      * @return config
      */
-    private static synchronized DatastoreServiceConfig withDefaults() {
-        ClassLoader cl = Application.getAppClassloader();
+    private static synchronized DatastoreServiceConfig withDefaults(ClassLoader cl) {
         DatastoreServiceConfig dsc = configs.get(cl);
         if (dsc == null) {
             dsc = DatastoreServiceConfig.Builder.withDefaults();
@@ -90,8 +90,8 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
 
     public BaseDatastoreServiceImpl(DatastoreServiceConfig config) {
         this.appId = Application.getAppId();
-        this.config = (config == null ? withDefaults() : config);
-        ClassLoader classLoader = Application.getAppClassloader();
+        final ClassLoader classLoader = Application.getAppClassloader();
+        this.config = (config == null ? withDefaults(classLoader) : config);
         this.store = createStore().getAdvancedCache().with(classLoader);
         this.searchManager = Search.getSearchManager(store);
         this.searchManager.setTimeoutExceptionFactory(new TimeoutExceptionFactory() {
