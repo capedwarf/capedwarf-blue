@@ -34,10 +34,26 @@ import com.google.appengine.api.datastore.Entity;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractUpdate implements Update {
-    protected final Entity trigger;
+    protected static enum Signum {
+        PLUS(1), MINUS(-1);
+        private final int x;
 
-    protected AbstractUpdate(Entity trigger) {
+        private Signum(int x) {
+            this.x = x;
+        }
+    }
+
+    protected final Entity trigger;
+    protected final Signum signum;
+
+    protected AbstractUpdate(Entity trigger, Signum signum) {
         this.trigger = trigger;
+        this.signum = signum;
+    }
+
+    public void initialize(Entity entity) {
+        entity.setProperty("count", 0L);
+        entity.setProperty("bytes", 0L);
     }
 
     public Entity update(Entity entity) {
@@ -46,7 +62,15 @@ public abstract class AbstractUpdate implements Update {
         return updated;
     }
 
-    protected abstract void doUpdate(Entity current, Entity newEntity);
+    protected void doUpdate(Entity current, Entity newEntity) {
+        newEntity.setProperty("timestamp", System.currentTimeMillis());
+
+        long count = toLong(current, "count");
+        newEntity.setProperty("count", count + signum.x);
+
+        long bytes = toLong(current, "bytes");
+        newEntity.setProperty("bytes", bytes + (signum.x * countBytes(trigger)));
+    }
 
     // TODO -- better impl
     protected static long countBytes(Entity entity) {

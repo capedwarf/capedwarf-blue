@@ -25,22 +25,12 @@ package org.jboss.capedwarf.datastore.query;
 import com.google.appengine.api.datastore.Entity;
 
 /**
- * Total stats put update
+ * Total stats remove update
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class TotalStatsRemoveUpdate extends TotalStatsUpdate {
     public TotalStatsRemoveUpdate(Entity trigger) {
-        super(trigger);
-    }
-
-    protected void doUpdate(Entity current, Entity newEntity) {
-        super.doUpdate(current, newEntity);
-
-        long count = toLong(current, "count");
-        newEntity.setProperty("count", count - 1);
-
-        long bytes = toLong(current, "bytes");
-        newEntity.setProperty("bytes", bytes - countBytes(trigger));
+        super(trigger, Signum.MINUS);
     }
 }

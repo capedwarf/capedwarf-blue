@@ -22,19 +22,33 @@
 
 package org.jboss.capedwarf.datastore.query;
 
-import com.google.appengine.api.datastore.Entity;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.appengine.api.datastore.Key;
 
 /**
- * Total stats update
+ * Update last entity keys.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class TotalStatsUpdate extends AbstractUpdate {
-    protected TotalStatsUpdate(Entity trigger, Signum signum) {
-        super(trigger, signum);
+public class UpdateKeysTask extends AbstractUpdateTask<Map<String, Key>> {
+    private MultipleUpdate update;
+
+    public UpdateKeysTask(MultipleUpdate update) {
+        super(update);
+        this.update = update;
     }
 
-    public String statsKind() {
-        return "__Stat_Total__";
+    protected Key provideKey(Map<String, Key> value) {
+        return value != null ? value.get(update.triggerKind()) : null;
+    }
+
+    protected Map<String, Key> updateValue(Map<String, Key> value, Key key) {
+        if (value == null) {
+            value = new HashMap<String, Key>();
+        }
+        value.put(update.triggerKind(), key);
+        return value;
     }
 }

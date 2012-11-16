@@ -25,16 +25,21 @@ package org.jboss.capedwarf.datastore.query;
 import com.google.appengine.api.datastore.Entity;
 
 /**
- * Total stats update
+ * Kind stats update
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class TotalStatsUpdate extends AbstractUpdate {
-    protected TotalStatsUpdate(Entity trigger, Signum signum) {
+public abstract class KindStatsUpdate extends AbstractMultipleUpdate {
+    protected KindStatsUpdate(Entity trigger, Signum signum) {
         super(trigger, signum);
     }
 
     public String statsKind() {
-        return "__Stat_Total__";
+        return "__Stat_Kind__";
+    }
+
+    protected void doUpdate(Entity current, Entity newEntity) {
+        super.doUpdate(current, newEntity);
+        newEntity.setProperty("kind_name", triggerKind());
     }
 }

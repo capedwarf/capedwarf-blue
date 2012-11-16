@@ -31,16 +31,6 @@ import com.google.appengine.api.datastore.Entity;
  */
 public class TotalStatsPutUpdate extends TotalStatsUpdate {
     public TotalStatsPutUpdate(Entity trigger) {
-        super(trigger);
-    }
-
-    protected void doUpdate(Entity current, Entity newEntity) {
-        super.doUpdate(current, newEntity);
-
-        long count = toLong(current, "count");
-        newEntity.setProperty("count", count + 1);
-
-        long bytes = toLong(current, "bytes");
-        newEntity.setProperty("bytes", bytes + countBytes(trigger));
+        super(trigger, Signum.PLUS);
     }
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.concurrent.Callable;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -63,7 +65,12 @@ class EagerStatsQueryHandle extends AbstractQueryHandle {
     }
 
     protected static void executeUpdate(Update update) {
-        UpdateKeyTask task = new UpdateKeyTask(update);
+        Callable<Entity> task;
+        if (update instanceof MultipleUpdate) {
+            task = new UpdateKeysTask((MultipleUpdate) update);
+        } else {
+            task = new UpdateKeyTask(update);
+        }
         InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, task, update.statsKind());
     }
 
@@ -78,9 +85,11 @@ class EagerStatsQueryHandle extends AbstractQueryHandle {
             Entity trigger = event.getValue();
             if (event.isPre() == false) {
                 executeUpdate(new TotalStatsPutUpdate(trigger));
+                executeUpdate(new KindStatsPutUpdate(trigger));
             } else if (trigger != null) {
                 // was existing entity modified
                 executeUpdate(new TotalStatsRemoveUpdate(trigger));
+                executeUpdate(new KindStatsRemoveUpdate(trigger));
             }
         }
 
@@ -93,6 +102,7 @@ class EagerStatsQueryHandle extends AbstractQueryHandle {
             if (QueryTypeFactories.isSpecialKind(key.getKind()) == false) {
                 Entity trigger = event.getValue();
                 executeUpdate(new TotalStatsRemoveUpdate(trigger));
+                executeUpdate(new KindStatsRemoveUpdate(trigger));
             }
         }
     }

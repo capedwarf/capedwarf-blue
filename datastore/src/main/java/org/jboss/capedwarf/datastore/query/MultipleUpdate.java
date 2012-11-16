@@ -22,19 +22,11 @@
 
 package org.jboss.capedwarf.datastore.query;
 
-import com.google.appengine.api.datastore.Entity;
-
 /**
- * Total stats update
+ * Multiple updater.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class TotalStatsUpdate extends AbstractUpdate {
-    protected TotalStatsUpdate(Entity trigger, Signum signum) {
-        super(trigger, signum);
-    }
-
-    public String statsKind() {
-        return "__Stat_Total__";
-    }
+public interface MultipleUpdate extends Update {
+    String triggerKind();
 }

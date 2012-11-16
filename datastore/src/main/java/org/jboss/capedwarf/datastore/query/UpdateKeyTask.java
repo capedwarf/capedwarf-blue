@@ -22,44 +22,23 @@
 
 package org.jboss.capedwarf.datastore.query;
 
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
-import org.infinispan.AdvancedCache;
-import org.jboss.capedwarf.common.infinispan.BaseTxTask;
 
 /**
  * Update last entity key.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class UpdateKeyTask extends BaseTxTask<String, Key, Entity> {
-    private Update update;
-
+public class UpdateKeyTask extends AbstractUpdateTask<Key> {
     public UpdateKeyTask(Update update) {
-        this.update = update;
+        super(update);
     }
 
-    protected Entity callInTx() throws Exception {
-        final AdvancedCache<String, Key> ac = getCache().getAdvancedCache();
-        final String cacheKey = update.statsKind();
+    protected Key provideKey(Key value) {
+        return value;
+    }
 
-        if (ac.lock(cacheKey) == false)
-            throw new IllegalArgumentException("Cannot get a lock on key for " + cacheKey);
-
-        DatastoreService service = DatastoreServiceFactory.getDatastoreService();
-        Entity entity;
-        Key key = getCache().get(cacheKey);
-        if (key == null) {
-            entity = new Entity(update.statsKind());
-            update.initialize(entity);
-        } else {
-            entity = service.get(key);
-        }
-        entity = update.update(entity);
-        service.put(entity);
-        getCache().put(cacheKey, entity.getKey());
-        return entity;
+    protected Key updateValue(Key value, Key key) {
+        return key;
     }
 }
