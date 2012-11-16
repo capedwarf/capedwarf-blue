@@ -22,16 +22,19 @@
 
 package org.jboss.capedwarf.tools;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.SingleClientConnManager;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -43,10 +46,12 @@ public class BulkLoader {
             printUsage();
         }
 
+        Arguments arguments = new Arguments(args);
         String command = args[0];
         if (command.equals("upload")) {
-            Arguments arguments = new Arguments(args);
             doUpload(arguments);
+        } else if (command.equals("dump")) {
+            doDump(arguments);
         } else {
             System.out.println("Unknown command " + command);
             printUsage();
@@ -59,14 +64,14 @@ public class BulkLoader {
     }
 
     private static void doUpload(Arguments args) {
-        String url = args.get("--url");
-        String filename = args.get("--filename");
-        int packetSize = Integer.valueOf(args.get("--packetSize", "1000"));
+        String url = getUrl(args);
+        String filename = getFilename(args);
+        int packetSize = getPacketSize(args);
         System.out.println("Uploading data from " + filename + " to " + url + " in packets of size " + packetSize);
 
-        DumpFileReader dumpFileReader = new DumpFileReader(new File(filename));
+        DumpFileFacade dumpFileFacade = new DumpFileFacade(new File(filename));
         try {
-            Iterator<byte[]> iterator = dumpFileReader.iterator();
+            Iterator<byte[]> iterator = dumpFileFacade.iterator();
 
             DefaultHttpClient client = new DefaultHttpClient(new SingleClientConnManager());
             try {
@@ -89,7 +94,7 @@ public class BulkLoader {
                 throw new RuntimeException(e);
             }
         } finally {
-            dumpFileReader.close();
+            dumpFileFacade.close();
         }
     }
 
@@ -100,6 +105,76 @@ public class BulkLoader {
         HttpResponse response = client.execute(put);
         response.getEntity().writeTo(new ByteArrayOutputStream());
         System.out.println("Received response " + response);
+    }
+
+    private static void doDump(Arguments args) {
+        String url = getUrl(args);
+        String filename = getFilename(args);
+        int packetSize = getPacketSize(args);
+
+        File file = new File(filename);
+        if (file.exists()) {
+            System.out.println("WARNING: File " + filename + " already exists!");
+            System.exit(1);
+        }
+
+        System.out.println("Dumping data from " + url + " to " + filename + " in packets of size " + packetSize);
+
+        DumpFileFacade dumpFileFacade = new DumpFileFacade(file);
+        try {
+            DefaultHttpClient client = new DefaultHttpClient(new SingleClientConnManager());
+            try {
+                HttpGet get = new HttpGet(url);
+                get.getParams().setParameter("action", "dump");
+                System.out.println("Downloading packet of " + packetSize + " entities");
+                HttpResponse response = client.execute(get);
+                DataInputStream in = new DataInputStream(response.getEntity().getContent());
+                while (true) {
+                    byte[] idBytes = readArray(in);
+                    if (idBytes == null) {
+                        break;
+                    }
+                    byte[] entityPbBytes = readArray(in);
+                    byte[] sortKeyBytes = readArray(in);
+
+                    dumpFileFacade.add(idBytes, entityPbBytes, sortKeyBytes);
+                }
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } finally {
+            dumpFileFacade.close();
+        }
+
+    }
+
+    private static byte[] readArray(DataInputStream in) {
+        try {
+            int arraySize;
+            try {
+                arraySize = in.readInt();
+            } catch (EOFException e) {
+                return null;
+            }
+            byte[] array = new byte[arraySize];
+            in.readFully(array);
+            return array;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Integer getPacketSize(Arguments args) {
+        return Integer.valueOf(args.get("--packetSize", "1000"));
+    }
+
+    private static String getFilename(Arguments args) {
+        return args.get("--filename");
+    }
+
+    private static String getUrl(Arguments args) {
+        return args.get("--url");
     }
 
 

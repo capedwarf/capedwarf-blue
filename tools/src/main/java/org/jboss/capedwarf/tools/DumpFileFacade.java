@@ -25,31 +25,75 @@ package org.jboss.capedwarf.tools;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 
 /**
-* @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
-*/
-public class DumpFileReader {
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ */
+public class DumpFileFacade {
 
-    private final ResultSet rset;
-    private final Connection connection;
+    private Connection connection;
+    private File sqliteFile;
+    private PreparedStatement insertStatement;
 
-    public DumpFileReader(File sqliteFile) {
+    public DumpFileFacade(File sqliteFile) {
+        this.sqliteFile = sqliteFile;
+        loadJdbcDriver();
+        openConnection();
+        createResultsTableIfNotExists();
+    }
+
+    private void createResultsTableIfNotExists() {
+        try {
+            connection.createStatement().execute("CREATE TABLE IF NOT EXISTS result (\n" +
+                "id BLOB primary key,\n" +
+                "value BLOB not null,\n" +
+                "sort_key BLOB);");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void openConnection() {
+        try {
+            connection = DriverManager.getConnection("jdbc:sqlite:" + sqliteFile.getAbsolutePath());
+        } catch (SQLException e) {
+            throw new RuntimeException("Error reading sqlite file " + sqliteFile.getAbsolutePath(), e);
+        }
+    }
+
+    private void loadJdbcDriver() {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load sqlite JDBC driver class", e);
         }
+    }
 
+    public void add(byte[] id, byte[] entityPb, byte[] sortKey) {
+        System.out.println("DumpFileFacade.add");
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite:" + sqliteFile.getAbsolutePath());
-            rset = connection.createStatement().executeQuery("SELECT * FROM result");
-
+            if (insertStatement == null) {
+                insertStatement = connection.prepareStatement("INSERT INTO result (id, value, sort_key) VALUES (?, ?, ?)");
+            }
+            insertStatement.setBytes(1, id);
+            insertStatement.setBytes(2, entityPb);
+            insertStatement.setBytes(3, sortKey);
+            insertStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Error reading sqlite file " + sqliteFile.getAbsolutePath(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Iterator<byte[]> iterator() {
+        try {
+            ResultSet rset = connection.createStatement().executeQuery("SELECT * FROM result");
+            return new ResultSetIterator(rset);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -61,9 +105,6 @@ public class DumpFileReader {
         }
     }
 
-    public Iterator<byte[]> iterator() {
-        return new ResultSetIterator(rset);
-    }
 
     private static class ResultSetIterator implements Iterator<byte[]> {
 
@@ -77,7 +118,7 @@ public class DumpFileReader {
 
         @Override
         public boolean hasNext() {
-            return next() != null;
+            return next != null;
         }
 
         @Override

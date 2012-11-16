@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -139,4 +140,10 @@ interface DatastoreServiceInternal extends BaseDatastoreService {
      * Clear cache.
      */
     void clearCache();
+
+    /**
+     * Returns an iterator over all the entities in the datastore. Only used for exporting entities.
+     * @return
+     */
+    Iterator<Entity> getAllEntitiesIterator();
 }
