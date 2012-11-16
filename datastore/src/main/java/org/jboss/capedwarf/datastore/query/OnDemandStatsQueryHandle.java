@@ -37,6 +37,6 @@ class OnDemandStatsQueryHandle extends AbstractQueryHandle {
     }
 
     public PreparedQuery createQuery(Transaction tx, Query query) {
-        return null; // TODO
+        throw new UnsupportedOperationException("Not yet implemented - use eager stats: -Denable.eager.datastore.stats=true");
     }
 }
