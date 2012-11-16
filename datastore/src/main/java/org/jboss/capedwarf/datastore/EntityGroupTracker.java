@@ -64,7 +64,7 @@ class EntityGroupTracker implements Synchronization {
             return null; // do not track w/o Tx
 
         final String kind = key.getKind();
-        if (LOG_LINE_ENTITY_KIND.equals(kind) || LOG_REQUEST_ENTITY_KIND.equals(kind))
+        if (LOG_LINE_ENTITY_KIND.equals(kind) || LOG_REQUEST_ENTITY_KIND.equals(kind) || QueryTypeFactories.isSpecialKind(kind))
             return null; // TODO - hack, do not count logs
 
         EntityGroupTracker egt = trackers.get(transaction);

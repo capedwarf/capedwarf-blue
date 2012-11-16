@@ -34,7 +34,7 @@ import org.jboss.capedwarf.common.compatibility.Compatibility;
 public class StatsQueryTypeFactory implements QueryTypeFactory {
     private QueryHandle queryHandle;
 
-    static boolean isStatsKind(String kind) {
+    public static boolean isStatsKind(String kind) {
         return kind != null && kind.startsWith("__Stat_") && kind.endsWith("__");
     }
 

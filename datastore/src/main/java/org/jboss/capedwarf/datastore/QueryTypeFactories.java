@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +28,12 @@ import java.util.List;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
+import org.jboss.capedwarf.datastore.query.DefaultQueryTypeFactory;
+import org.jboss.capedwarf.datastore.query.MetadataQueryTypeFactory;
+import org.jboss.capedwarf.datastore.query.QueryHandle;
+import org.jboss.capedwarf.datastore.query.QueryHandleService;
+import org.jboss.capedwarf.datastore.query.QueryTypeFactory;
+import org.jboss.capedwarf.datastore.query.StatsQueryTypeFactory;
 
 /**
  * Query type factory.

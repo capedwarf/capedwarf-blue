@@ -37,6 +37,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.datastore.QueryTypeFactories;
 
 /**
  * Eager query handle.

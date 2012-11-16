@@ -49,7 +49,6 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
 import org.jboss.capedwarf.datastore.query.QueryHandleService;
-import org.jboss.capedwarf.datastore.query.QueryTypeFactories;
 
 /**
  * Base Datastore service.

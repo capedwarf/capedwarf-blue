@@ -59,7 +59,7 @@ public abstract class AbstractUpdateTask<V> extends BaseTxTask<String, V, Entity
             entity = new Entity(update.statsKind());
             update.initialize(entity);
         } else {
-            Map<Key, Entity> map = service.get(Collections.singleton(key));
+            Map<Key, Entity> map = service.get(null, Collections.singleton(key));
             if (map.isEmpty()) {
                 entity = new Entity(update.statsKind());
                 update.initialize(entity);
