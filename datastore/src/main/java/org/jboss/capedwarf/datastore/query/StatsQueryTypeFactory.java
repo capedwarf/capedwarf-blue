@@ -35,7 +35,7 @@ public class StatsQueryTypeFactory implements QueryTypeFactory {
     private QueryHandle queryHandle;
 
     static boolean isStatsKind(String kind) {
-        return kind.startsWith("__Stat_") && kind.endsWith("__");
+        return kind != null && kind.startsWith("__Stat_") && kind.endsWith("__");
     }
 
     protected boolean isEager() {
