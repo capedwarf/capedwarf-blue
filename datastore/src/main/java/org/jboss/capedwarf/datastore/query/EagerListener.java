@@ -73,6 +73,9 @@ public class EagerListener {
 
     @CacheEntryModified
     public void onPut(CacheEntryModifiedEvent<Key, Entity> event) {
+        if (event.isOriginLocal() == false)
+            return;
+
         final Key key = event.getKey();
         if (QueryTypeFactories.isSpecialKind(key.getKind()))
             return;
@@ -90,7 +93,7 @@ public class EagerListener {
 
     @CacheEntryRemoved
     public void onRemove(CacheEntryRemovedEvent<Key, Entity> event) {
-        if (event.isPre() == false)
+        if (event.isPre() == false || event.isOriginLocal() == false)
             return;
 
         Key key = event.getKey();
