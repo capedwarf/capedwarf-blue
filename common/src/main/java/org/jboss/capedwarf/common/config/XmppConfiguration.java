@@ -22,10 +22,13 @@
 
 package org.jboss.capedwarf.common.config;
 
+import java.io.Serializable;
+
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class XmppConfiguration {
+public class XmppConfiguration implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private String host;
     private int port;

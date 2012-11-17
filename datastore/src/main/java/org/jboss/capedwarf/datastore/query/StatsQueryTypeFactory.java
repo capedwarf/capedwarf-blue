@@ -45,9 +45,7 @@ public class StatsQueryTypeFactory implements QueryTypeFactory {
 
     public void initialize(QueryHandleService service) {
         if (isEager()) {
-            EagerStatsQueryHandle esqh = new EagerStatsQueryHandle(service);
-            esqh.initialize(service);
-            queryHandle = esqh;
+            queryHandle = new EagerStatsQueryHandle(service);
         } else {
             queryHandle = new OnDemandStatsQueryHandle(service);
         }

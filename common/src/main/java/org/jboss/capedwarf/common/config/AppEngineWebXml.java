@@ -24,10 +24,13 @@
 
 package org.jboss.capedwarf.common.config;
 
+import java.io.Serializable;
+
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class AppEngineWebXml {
+public class AppEngineWebXml implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private String application;
     private String version;

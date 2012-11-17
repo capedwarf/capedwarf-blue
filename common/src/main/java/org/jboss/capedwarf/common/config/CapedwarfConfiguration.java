@@ -24,6 +24,7 @@
 
 package org.jboss.capedwarf.common.config;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,7 +32,8 @@ import java.util.Set;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfConfiguration {
+public class CapedwarfConfiguration implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private Set<String> admins = new HashSet<String>();
 

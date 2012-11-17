@@ -24,10 +24,13 @@
 
 package org.jboss.capedwarf.common.config;
 
+import java.io.Serializable;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.appengine.api.NamespaceManager;
 import com.google.apphosting.api.ApiProxy;
@@ -36,7 +39,8 @@ import com.google.apphosting.api.ApiProxy;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JBossEnvironment implements ApiProxy.Environment {
+public class JBossEnvironment implements ApiProxy.Environment, Serializable {
+    private static final long serialVersionUID = 1L;
 
     private static final ThreadLocal<JBossEnvironment> threadLocalInstance = new ThreadLocal<JBossEnvironment>();
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
@@ -52,7 +56,7 @@ public class JBossEnvironment implements ApiProxy.Environment {
 
     private String email;
     private String authDomain;
-    private Map<String, Object> attributes = new HashMap<String, Object>();
+    private Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
 
     private CapedwarfConfiguration capedwarfConfiguration;
     private AppEngineWebXml appEngineWebXml;
@@ -166,8 +170,21 @@ public class JBossEnvironment implements ApiProxy.Environment {
         threadLocalInstance.set(null);
     }
 
-    static void setThreadLocalInstance(JBossEnvironment env) {
-        threadLocalInstance.set(env);
+    public static JBossEnvironment setThreadLocalInstance(final JBossEnvironment env) {
+        SecurityManager sm = System.getSecurityManager();
+        if (sm == null) {
+            JBossEnvironment previous = threadLocalInstance.get();
+            threadLocalInstance.set(env);
+            return previous;
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<JBossEnvironment>() {
+                public JBossEnvironment run() {
+                    JBossEnvironment previous = threadLocalInstance.get();
+                    threadLocalInstance.set(env);
+                    return previous;
+                }
+            });
+        }
     }
 }
 

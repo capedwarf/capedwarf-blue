@@ -39,7 +39,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
-import org.jboss.test.capedwarf.datastore.support.SimpleCallback;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,9 +51,7 @@ public class StatsQueryTestCase extends BaseTest {
     public static WebArchive getDeployment() {
         TestContext context = TestContext.asDefault();
         context.getProperties().put("enable.eager.datastore.stats", "true");
-        WebArchive war = getCapedwarfDeployment(context);
-        war.addClass(SimpleCallback.class);
-        return war;
+        return getCapedwarfDeployment(context);
     }
 
     protected static long countBytes(Entity entity) {

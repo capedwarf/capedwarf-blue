@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.common.config;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.concurrent.ThreadFactory;
 
 import com.google.apphosting.api.ApiProxy;
@@ -32,17 +34,34 @@ import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class LazyThreadFactory implements ThreadFactory {
+class LazyThreadFactory implements ThreadFactory, Serializable {
+    private static final long serialVersionUID = 1L;
+
     private static String[] defaultJndiNames = {"java:jboss/threads/threadfactory/capedwarf"};
     static final ThreadFactory INSTANCE = new LazyThreadFactory();
 
-    private ThreadFactory factory = JndiLookupUtils.lazyLookup("jndi.thread-factory", ThreadFactory.class, defaultJndiNames);
+    private transient volatile ThreadFactory factory;
 
     private LazyThreadFactory() {
     }
 
+    private ThreadFactory getFactory() {
+        if (factory == null) {
+            synchronized (this) {
+                if (factory == null) {
+                    factory = JndiLookupUtils.lookup("jndi.thread-factory", ThreadFactory.class, defaultJndiNames);
+                }
+            }
+        }
+        return factory;
+    }
+
+    Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }
+
     public Thread newThread(final Runnable runnable) {
-        return factory.newThread(new RunnableWrapper(runnable));
+        return getFactory().newThread(new RunnableWrapper(runnable));
     }
 
     private static class RunnableWrapper implements Runnable {

@@ -30,7 +30,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import org.infinispan.AdvancedCache;
-import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.config.JBossEnvironment;
 import org.jboss.capedwarf.common.infinispan.BaseTxTask;
 
 /**
@@ -39,20 +39,24 @@ import org.jboss.capedwarf.common.infinispan.BaseTxTask;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractUpdateTask<V> extends BaseTxTask<String, V, Entity> {
-    private final String appId;
+    private final JBossEnvironment env;
     private final Update update;
 
     public AbstractUpdateTask(Update update) {
-        this.appId = Application.getAppId();
+        this.env = JBossEnvironment.getThreadLocalInstance();
         this.update = update;
     }
 
     protected Entity callInTx() throws Exception {
-        Application.setAppId(appId);
+        JBossEnvironment previous = JBossEnvironment.setThreadLocalInstance(env);
         try {
             return callInTxInternal();
         } finally {
-            Application.setAppId(null);
+            if (previous != null) {
+                JBossEnvironment.setThreadLocalInstance(previous);
+            } else {
+                JBossEnvironment.clearThreadLocalInstance();
+            }
         }
     }
 

@@ -22,9 +22,6 @@
 
 package org.jboss.capedwarf.common.app;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
 import com.google.apphosting.api.ApiProxy;
 
 /**
@@ -35,45 +32,13 @@ import com.google.apphosting.api.ApiProxy;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public final class Application {
-    // allow to temp override appId setting
-    private static ThreadLocal<String> ids = new ThreadLocal<String>();
-
-    private static void setAppIdInternal(String appId) {
-        if (appId != null) {
-            ids.set(appId);
-        } else {
-            ids.remove();
-        }
-    }
-
-    /**
-     * Set temp appId.
-     * Null to reset it.
-     *
-     * @param appId appId
-     */
-    public static void setAppId(final String appId) {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm == null) {
-            setAppIdInternal(appId);
-        } else {
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                public Void run() {
-                    setAppIdInternal(appId);
-                    return null;
-                }
-            });
-        }
-    }
-
     /**
      * Get app id.
      *
      * @return the app id
      */
     public static String getAppId() {
-        String appId = ids.get();
-        return (appId != null) ? appId : getJBossEnvironment().getAppId();
+        return getJBossEnvironment().getAppId();
     }
 
     private static ApiProxy.Environment getJBossEnvironment() {
