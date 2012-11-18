@@ -32,10 +32,32 @@ import org.jboss.shrinkwrap.resolver.api.maven.PomEquippedResolveStage;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class LibUtils {
-
+    private static ThreadLocal<String> tlModule = new ThreadLocal<String>();
     private static PomEquippedResolveStage resolver;
 
-    public static PomEquippedResolveStage getResolver() {
+    public static void addGaeAsLibrary(WebArchive war) {
+        addLibrary(war, "com.google.appengine:appengine-api-1.0-sdk");
+    }
+
+    public static void addLibrary(WebArchive war, String groupId, String artifactId) {
+        addLibrary(war, groupId + ":" + artifactId);
+    }
+
+    public static void addLibrary(WebArchive war, String coordinate) {
+        war.addAsLibraries(getDependency(coordinate));
+    }
+
+    public static void applyTempModule(String module) {
+        if (module != null) {
+            tlModule.set(module);
+        } else {
+            tlModule.remove();
+        }
+    }
+
+    // ------------
+
+    protected synchronized static PomEquippedResolveStage getResolver() {
         if (resolver == null)
             resolver = Maven.resolver().loadPomFromFile(getPomPath());
         return resolver;
@@ -49,30 +71,25 @@ public class LibUtils {
 
     // we need testsuite/pom.xml file
     protected static String getPomPath() {
+        String module = tlModule.get();
+        if (module == null)
+            module = "testsuite";
+        return buildPomPath(module);
+    }
+
+    protected static String buildPomPath(String module) {
         final File root = new File(".");
         String path = "pom.xml";
         final String absolutePath = root.getAbsolutePath();
         if (isBlue(absolutePath)) {
-            if (absolutePath.contains("testsuite") == false)
-                path = "testsuite/" + path;
+            if (absolutePath.contains(module) == false)
+                path = module + "/" + path;
         } else {
             // Or are we in CapeDwarf Testsuite Embedded
             if (absolutePath.contains("embedded") == false)
                 path = "embedded/" + path;
         }
         return path;
-    }
-
-    public static void addGaeAsLibrary(WebArchive war) {
-        addLibrary(war, "com.google.appengine:appengine-api-1.0-sdk");
-    }
-
-    public static void addLibrary(WebArchive war, String groupId, String artifactId) {
-        addLibrary(war, groupId + ":" + artifactId);
-    }
-
-    public static void addLibrary(WebArchive war, String coordinate) {
-        war.addAsLibraries(getDependency(coordinate));
     }
 
     private static File getDependency(final String coordinates){
