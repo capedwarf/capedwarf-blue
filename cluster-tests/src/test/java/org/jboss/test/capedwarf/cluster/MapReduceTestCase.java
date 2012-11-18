@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.tools.mapreduce.Counter;
@@ -68,6 +67,10 @@ import org.junit.runner.RunWith;
 public class MapReduceTestCase extends AbstractMapReduceTest {
     private List<String> payloads = Arrays.asList("capedwarf", "jboss", "redhat");
 
+    public MapReduceTestCase() {
+        ignoreTearDown = true;
+    }
+
     @Deployment(name = "dep1") @TargetsContainer("container-1")
     public static WebArchive getDeploymentA() {
         return getModuleDeployment();
@@ -104,14 +107,14 @@ public class MapReduceTestCase extends AbstractMapReduceTest {
 
         Entity entity = new Entity("CMR", 1L);
         entity.setProperty("handle", createHandle);
-        DatastoreServiceFactory.getDatastoreService().put(entity);
+        createDatastoreService().put(entity);
 
         sync();
     }
 
     @Test @OperateOnDeployment("dep2") @InSequence(20)
     public void waitForDataInB() throws Exception {
-        DatastoreService service = DatastoreServiceFactory.getDatastoreService();
+        DatastoreService service = createDatastoreService();
         Entity entity = service.get(KeyFactory.createKey("CMR", 1L));
         String createHandle = entity.getProperty("handle").toString();
         service.delete(entity.getKey()); // cleanup
@@ -140,7 +143,7 @@ public class MapReduceTestCase extends AbstractMapReduceTest {
 
         Entity entity = new Entity("CMR", 2);
         entity.setProperty("handle", countHandle);
-        DatastoreServiceFactory.getDatastoreService().put(entity);
+        createDatastoreService().put(entity);
 
         sync();
     }
@@ -148,7 +151,7 @@ public class MapReduceTestCase extends AbstractMapReduceTest {
     @Test
     @OperateOnDeployment("dep1") @InSequence(40)
     public void waitForCountInA() throws Exception {
-        Entity entity = DatastoreServiceFactory.getDatastoreService().get(KeyFactory.createKey("CMR", 2));
+        Entity entity = createDatastoreService().get(KeyFactory.createKey("CMR", 2));
         String countHandle = entity.getProperty("handle").toString();
 
         JobInfo countJI = waitToFinish("COUNT", countHandle);
@@ -159,7 +162,7 @@ public class MapReduceTestCase extends AbstractMapReduceTest {
     @Test
     @OperateOnDeployment("dep2") @InSequence(50)
     public void verifyInB() throws Exception {
-        DatastoreService service = DatastoreServiceFactory.getDatastoreService();
+        DatastoreService service = createDatastoreService();
         Entity entity = service.get(KeyFactory.createKey("CMR", 2));
         String countHandle = entity.getProperty("handle").toString();
         service.delete(entity.getKey()); // cleanup
@@ -176,6 +179,11 @@ public class MapReduceTestCase extends AbstractMapReduceTest {
             Counter c = counters.getCounter(CountMapper.toKey((char)('a' + i)));
             Assert.assertEquals(chars[i], c.getValue());
         }
+    }
+
+    @Test @OperateOnDeployment("dep1") @InSequence(60)
+    public void cleanupOnA() throws Exception {
+        cleanup();
     }
 
     protected static int[] toChars(List<String> payloads) {
