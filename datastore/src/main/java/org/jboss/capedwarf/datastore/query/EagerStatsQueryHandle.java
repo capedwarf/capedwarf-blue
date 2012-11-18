@@ -25,13 +25,10 @@ package org.jboss.capedwarf.datastore.query;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
-import org.infinispan.AdvancedCache;
-import org.infinispan.Cache;
+import org.infinispan.notifications.Listenable;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
 
@@ -43,21 +40,20 @@ import org.jboss.capedwarf.common.compatibility.Compatibility;
 class EagerStatsQueryHandle extends AbstractQueryHandle {
     private static final Map<ClassLoader, Boolean> MARKER = new WeakHashMap<ClassLoader, Boolean>();
 
-    protected static synchronized void registerListener(AdvancedCache<Key, Entity> cache) {
+    protected static synchronized void registerListener(QueryHandleService service) {
         ClassLoader cl = Application.getAppClassloader();
         if (MARKER.containsKey(cl) == false) {
             MARKER.put(cl, true);
             Compatibility c = Compatibility.getInstance(cl);
             String value = c.getValue(Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
-            cache.addListener("async".equals(value) ? new AsyncEagerListener() : new EagerListener());
+            Listenable listenable = service.getCache();
+            listenable.addListener("async".equals(value) ? new AsyncEagerListener() : new EagerListener());
         }
     }
 
     EagerStatsQueryHandle(QueryHandleService service) {
         super(service);
-        Cache<Key, Entity> cache = service.getCache();
-        AdvancedCache<Key, Entity> ac = cache.getAdvancedCache();
-        registerListener(ac);
+        registerListener(service);
     }
 
     public PreparedQuery createQuery(Transaction tx, Query query) {
