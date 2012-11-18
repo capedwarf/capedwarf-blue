@@ -49,12 +49,8 @@ public abstract class AbstractAsyncTest extends AbstractTest {
             else
                 tx.rollbackAsync();
 
-            sleep(); // wait for tx to finish
+            sync(); // wait for tx to finish
         }
-    }
-
-    protected void sleep() throws Exception {
-        Thread.sleep(2000L);
     }
 
     protected static interface Action<T> {

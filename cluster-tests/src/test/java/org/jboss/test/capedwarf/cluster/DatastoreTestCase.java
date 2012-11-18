@@ -199,7 +199,7 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     }
 
     private void waitForSync() throws InterruptedException {
-        Thread.sleep(5000L);
+        sync(5000L);
     }
 
 }

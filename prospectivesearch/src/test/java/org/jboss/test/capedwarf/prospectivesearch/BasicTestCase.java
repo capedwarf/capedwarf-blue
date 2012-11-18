@@ -221,7 +221,7 @@ public class BasicTestCase extends AbstractTest {
     }
 
     private void sleepSeconds(int seconds) throws Exception {
-        Thread.sleep(1000L * seconds);
+        sync(1000L * seconds);
     }
 
 }

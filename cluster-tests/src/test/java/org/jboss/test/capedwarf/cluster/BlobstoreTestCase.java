@@ -1,16 +1,6 @@
 package org.jboss.test.capedwarf.cluster;
 
-import static org.junit.Assert.fail;
-
 import java.nio.ByteBuffer;
-
-import junit.framework.Assert;
-
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreService;
@@ -24,6 +14,14 @@ import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileService;
 import com.google.appengine.api.files.FileServiceFactory;
 import com.google.appengine.api.files.FileWriteChannel;
+import junit.framework.Assert;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.junit.Assert.fail;
 
 /**
  * @author Matej Lazar
@@ -86,14 +84,6 @@ public class BlobstoreTestCase extends AbstractClusteredTest {
     }
 
     private void waitForSync() {
-        sleep(3000);
-    }
-
-    private void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        sync();
     }
 }

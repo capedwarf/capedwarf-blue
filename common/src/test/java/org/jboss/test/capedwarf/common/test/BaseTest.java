@@ -36,6 +36,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class BaseTest {
+    protected static final long DEFAULT_SLEEP = 3000L;
+
     protected final Logger log = Logger.getLogger(getClass().getName());
 
     protected static WebArchive getCapedwarfDeployment(TestContext context) {
@@ -104,4 +106,17 @@ public class BaseTest {
         // good enough?
         return service.getClass().getName().contains(".jboss.");
     }
+
+    protected static void sync() {
+        sync(DEFAULT_SLEEP);
+    }
+
+    protected static void sync(final long sleep) {
+        try {
+            Thread.sleep(sleep);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
 }

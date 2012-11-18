@@ -126,7 +126,7 @@ public class AbstractMatchTest extends AbstractTest {
     }
 
     protected void waitForJMSToKickIn() throws InterruptedException {
-        Thread.sleep(3000);
+        sync(3000);
     }
 
 }

@@ -68,11 +68,6 @@ public class TasksTestCase extends BaseTest {
             " </servlet-mapping>" +
             "</web>";
 
-    // we wait for JMS to kick-in
-    private static void sleep() throws InterruptedException {
-        Thread.sleep(3000L); // sleep for 3secs
-    }
-
     @Deployment
     public static Archive getDeployment() {
         final TestContext context = new TestContext();
@@ -92,7 +87,7 @@ public class TasksTestCase extends BaseTest {
     public void testSmoke() throws Exception {
         final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(TaskOptions.Builder.withUrl(URL));
-        sleep();
+        sync();
         assertNotNull(PrintServlet.getLastRequest());
     }
 
@@ -100,7 +95,7 @@ public class TasksTestCase extends BaseTest {
     public void testPayload() throws Exception {
         final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(TaskOptions.Builder.withPayload("payload").url(URL));
-        sleep();
+        sync();
     }
 
     @Test
@@ -119,7 +114,7 @@ public class TasksTestCase extends BaseTest {
 
         final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(TaskOptions.Builder.withHeader("header_key", "header_value").url(URL));
-        sleep();
+        sync();
 
         assertEquals("header_value", handler.headerValue);
     }
@@ -139,7 +134,7 @@ public class TasksTestCase extends BaseTest {
 
         final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(TaskOptions.Builder.withParam("single_value", "param_value").url(URL));
-        sleep();
+        sync();
 
         assertEquals("param_value", handler.paramValue);
     }
@@ -163,7 +158,7 @@ public class TasksTestCase extends BaseTest {
                 .withParam("multi_value", "param_value1")
                 .param("multi_value", "param_value2")
                 .url(URL));
-        sleep();
+        sync();
 
         assertNotNull(handler.paramValues);
         assertEquals(

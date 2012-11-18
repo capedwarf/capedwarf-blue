@@ -89,14 +89,6 @@ public class StatsQueryTestCase extends BaseTest {
         return list.get(0);
     }
 
-    protected void sync() {
-        try {
-            Thread.sleep(2000L);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
     @Test
     @OperateOnDeployment("dep1") @InSequence(10)
     public void testPutInA() throws Exception {

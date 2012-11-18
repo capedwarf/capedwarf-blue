@@ -48,7 +48,7 @@ public class FilesTestCase extends AbstractClusteredTest {
 
     @Test @OperateOnDeployment("dep2") @InSequence(20)
     public void testReadFromNodeB() throws Exception {
-        Thread.sleep(3000L);
+        sync();
 
         MemcacheService ms = MemcacheServiceFactory.getMemcacheService();
         String string = (String) ms.get(FilesTestCase.class.getSimpleName());

@@ -59,7 +59,7 @@ public class SlowMatchTestCase extends AbstractMatchTest {
     }
 
     protected void waitForJMSToKickIn() throws InterruptedException {
-        Thread.sleep(10000);
+        sync(10000);
     }
 
 }

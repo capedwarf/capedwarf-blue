@@ -146,7 +146,7 @@ public class ProspectiveSearchTestCase extends BaseTest {
     @OperateOnDeployment("dep2")
     public void testSubscriptionIsAutomaticallyRemovedAfterLeaseDurationSecondsOnDep2() throws Exception {
         assertSubscriptionExists("foo", "bar");
-        sleep(8000);
+        sync(8000);
         assertSubscriptionNotExists("foo", "bar");
     }
 
@@ -397,15 +397,7 @@ public class ProspectiveSearchTestCase extends BaseTest {
     }
 
     private void waitForSync() {
-        sleep(3000);
-    }
-
-    private void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        sync();
     }
 
     private void clear() {

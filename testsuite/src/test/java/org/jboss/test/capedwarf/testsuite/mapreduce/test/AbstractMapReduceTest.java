@@ -73,7 +73,7 @@ public class AbstractMapReduceTest extends AbstractTest {
         int N = 10;
         while (isRunning(state) && N > 0) {
             N--;
-            Thread.sleep(30 * 1000L); // 30sec
+            sync(30 * 1000L); // 30sec
             // new info lookup
             jobInfo = pipelineService.getJobInfo(handle);
             state = jobInfo.getJobState();

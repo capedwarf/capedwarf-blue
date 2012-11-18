@@ -20,45 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.tasks.test;
+package org.jboss.test.capedwarf.datastore.test;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.TaskHandle;
-import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.test.capedwarf.common.test.BaseTest;
-import org.junit.Assert;
-import org.junit.Test;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-public class SmokeTestCase extends BaseTest {
+public class SyncStatsQueryTestCase extends AbstractStatsQueryTest {
     @Deployment
-    public static Archive getDeployment() {
-        return getCapedwarfDeployment().addAsWebInfResource("queue.xml");
+    public static WebArchive getDeployment() {
+        return getDefaultDeployment(true);
     }
 
-    @Test
-    public void testBasics() throws Exception {
-        final Queue queue = QueueFactory.getQueue("pull-queue");
-        TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).param("foo", "bar").etaMillis(15000));
-        try {
-            List<TaskHandle> handles = queue.leaseTasks(30, TimeUnit.MINUTES, 100);
-            Assert.assertFalse(handles.isEmpty());
-            TaskHandle lh = handles.get(0);
-            Assert.assertEquals(th.getName(), lh.getName());
-            sync(5000L);
-        } finally {
-            queue.deleteTask(th);
-        }
+    protected void doSync() {
+        // do nothing
     }
 }

@@ -87,14 +87,6 @@ public class MapReduceTestCase extends AbstractMapReduceTest {
         }
     }
 
-    protected void sync() {
-        try {
-            Thread.sleep(2000L);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
     @Test
     @OperateOnDeployment("dep1") @InSequence(10)
     public void putDataInA() throws Exception {

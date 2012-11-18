@@ -248,7 +248,7 @@ public class MemcacheTestCase extends BaseTest {
     public void testPutExpiration() {
         service.put("key", "value", Expiration.byDeltaMillis(1000));
         assertTrue(service.contains("key"));
-        sleep(2000);
+        sync();
         assertFalse(service.contains("key"));
     }
 
@@ -261,7 +261,7 @@ public class MemcacheTestCase extends BaseTest {
         service.putAll(map, Expiration.byDeltaMillis(1000));
         assertTrue(service.contains("key1"));
         assertTrue(service.contains("key2"));
-        sleep(2000);
+        sync();
         assertFalse(service.contains("key1"));
         assertFalse(service.contains("key2"));
     }
@@ -315,13 +315,5 @@ public class MemcacheTestCase extends BaseTest {
         x = service.increment("long-key", 5);
         assertEquals(20L, x);
         assertEquals(20L, service.get("long-key"));
-    }
-
-    private void sleep(int millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

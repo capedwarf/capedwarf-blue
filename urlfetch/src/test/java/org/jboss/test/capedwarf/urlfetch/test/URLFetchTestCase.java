@@ -102,7 +102,7 @@ public class URLFetchTestCase extends BaseTest {
             printResponse(response.get(30, TimeUnit.SECONDS));
         }
 
-        Thread.sleep(5000L); // wait a bit for async to finish
+        sync(5000L); // wait a bit for async to finish
     }
 
     @Test

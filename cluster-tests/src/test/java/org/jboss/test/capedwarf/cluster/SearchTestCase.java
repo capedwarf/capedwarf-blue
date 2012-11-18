@@ -383,17 +383,8 @@ public class SearchTestCase extends AbstractClusteredTest {
         }
     }
 
-    private void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private void waitForSync() {
-        sleep(3000);
+        sync();
     }
-
 
 }

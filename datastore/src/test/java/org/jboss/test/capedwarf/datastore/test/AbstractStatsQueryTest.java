@@ -34,24 +34,19 @@ import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@RunWith(Arquillian.class)
-public class StatsQueryTestCase extends BaseTest {
-    @Deployment
-    public static WebArchive getDeployment() {
+public abstract class AbstractStatsQueryTest extends BaseTest {
+    protected static WebArchive getDefaultDeployment(boolean sync) {
         TestContext context = TestContext.asDefault();
-        context.getProperties().put("enable.eager.datastore.stats", "sync");
-        return getCapedwarfDeployment(context);
+        context.getProperties().put("enable.eager.datastore.stats", sync ? "sync" : "async");
+        return getCapedwarfDeployment(context).addClass(AbstractStatsQueryTest.class);
     }
 
     protected static long countBytes(Entity entity) {
@@ -89,6 +84,8 @@ public class StatsQueryTestCase extends BaseTest {
         return list.get(0);
     }
 
+    protected abstract void doSync();
+
     @Test
     public void testTotalStats() throws Exception {
         DatastoreService service = DatastoreServiceFactory.getDatastoreService();
@@ -96,6 +93,8 @@ public class StatsQueryTestCase extends BaseTest {
         Entity e1 = new Entity("SC");
         e1.setProperty("x", "original");
         Key k1 = service.put(e1);
+
+        doSync();
 
         Entity allStats = getStatsEntity("__Stat_Total__");
         long count = (Long) allStats.getProperty("count");
@@ -105,6 +104,8 @@ public class StatsQueryTestCase extends BaseTest {
         e2.setProperty("y", "replacement");
         Key k2 = service.put(e2);
 
+        doSync();
+
         allStats = getStatsEntity("__Stat_Total__");
         long count2 = (Long) allStats.getProperty("count");
         Assert.assertEquals(count + 1, count2);
@@ -113,6 +114,8 @@ public class StatsQueryTestCase extends BaseTest {
         Assert.assertEquals(bytes + cb, bytes2);
 
         service.delete(k2);
+
+        doSync();
 
         allStats = getStatsEntity("__Stat_Total__");
         long count3 = (Long) allStats.getProperty("count");
@@ -131,9 +134,13 @@ public class StatsQueryTestCase extends BaseTest {
         e1.setProperty("x", "original");
         Key k1 = service.put(e1);
 
+        doSync();
+
         Entity e3 = new Entity("QWE");
         e3.setProperty("foo", "bar");
         Key k3 = service.put(e3);
+
+        doSync();
 
         Query.FilterPredicate filter = new Query.FilterPredicate("kind_name", Query.FilterOperator.EQUAL, "SCK");
 
@@ -144,6 +151,8 @@ public class StatsQueryTestCase extends BaseTest {
         Entity e2 = new Entity("SCK");
         e2.setProperty("y", "replacement");
         Key k2 = service.put(e2);
+
+        doSync();
 
         kindStats = getStatsEntity("__Stat_Kind__", filter);
         long count2 = (Long) kindStats.getProperty("count");
@@ -157,6 +166,8 @@ public class StatsQueryTestCase extends BaseTest {
         Assert.assertEquals(1, qwes);
 
         service.delete(k2);
+
+        doSync();
 
         kindStats = getStatsEntity("__Stat_Kind__", filter);
         long count3 = (Long) kindStats.getProperty("count");

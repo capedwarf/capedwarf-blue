@@ -45,7 +45,7 @@ public class TasksTestCase extends BaseTest {
         System.out.println(">>> testSmokeOnDepA");
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withUrl(URL));
-        sleep();
+        sync();
     }
 
     @InSequence(20)
@@ -55,7 +55,7 @@ public class TasksTestCase extends BaseTest {
         System.out.println(">>> testSmokeOnDepB");
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withUrl(URL));
-        sleep();
+        sync();
     }
 
 
@@ -65,12 +65,7 @@ public class TasksTestCase extends BaseTest {
     public void testOnDepA() throws Exception {
         final Queue queue = QueueFactory.getQueue("default");
         queue.add(TaskOptions.Builder.withUrl(URL));
-        sleep();
-    }
-
-    // we wait for JMS to kick-in
-    private static void sleep() throws InterruptedException {
-        Thread.sleep(3000L); // sleep for 3secs
+        sync();
     }
 
     @Deployment (name = "dep1") @TargetsContainer("container-1")
