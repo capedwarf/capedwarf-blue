@@ -50,7 +50,7 @@ public class StatsQueryTestCase extends BaseTest {
     @Deployment
     public static WebArchive getDeployment() {
         TestContext context = TestContext.asDefault();
-        context.getProperties().put("enable.eager.datastore.stats", "true");
+        context.getProperties().put("enable.eager.datastore.stats", "sync");
         return getCapedwarfDeployment(context);
     }
 

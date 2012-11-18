@@ -29,6 +29,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import org.jboss.capedwarf.common.app.Application;
 
@@ -44,16 +45,20 @@ public class Compatibility {
         DISABLE_ENTITY_GROUPS("disable.entity.groups"),
         IGNORE_TO_LONG_CONVERSION("ignore.long.conversion"),
         IGNORE_LOGGING("ignore.logging"),
-        ENABLE_EAGER_DATASTORE_STATS("enable.eager.datastore.stats");
+        ENABLE_EAGER_DATASTORE_STATS("enable.eager.datastore.stats", new RegexpValue("(sync|async)"));
 
         private String key;
-        private String value;
+        private Value value;
 
         private Feature(String key) {
             this(key, Boolean.TRUE.toString());
         }
 
         private Feature(String key, String value) {
+            this(key, new DefaultValue(value));
+        }
+
+        private Feature(String key, Value value) {
             this.key = key;
             this.value = value;
         }
@@ -69,9 +74,13 @@ public class Compatibility {
         this.properties = properties;
     }
 
-    public static synchronized Compatibility getInstance() {
+    public static Compatibility getInstance() {
+        final ClassLoader cl = Application.getAppClassloader();
+        return getInstance(cl);
+    }
+
+    public static synchronized Compatibility getInstance(final ClassLoader cl) {
         try {
-            final ClassLoader cl = Application.getAppClassloader();
             Compatibility compatibility = instances.get(cl);
             if (compatibility == null) {
                 final Properties properties = new Properties();
@@ -97,11 +106,15 @@ public class Compatibility {
         return isTempEnabled(feature) || isEnabledInternal(Feature.ENABLE_ALL) || isEnabledInternal(feature);
     }
 
+    public String getValue(Feature feature) {
+        return properties.getProperty(feature.key);
+    }
+
     protected boolean isEnabledInternal(Feature feature) {
         Boolean result = values.get(feature);
         if (result == null) {
             final String value = properties.getProperty(feature.key);
-            result = (value != null && value.equalsIgnoreCase(feature.value));
+            result = (value != null && feature.value.match(value));
             values.put(feature, result);
         }
         return result;
@@ -138,6 +151,34 @@ public class Compatibility {
             if (features.isEmpty()) {
                 temps.remove();
             }
+        }
+    }
+
+    private static interface Value {
+        boolean match(String value);
+    }
+
+    private static class DefaultValue implements Value {
+        private String value;
+
+        private DefaultValue(String value) {
+            this.value = value;
+        }
+
+        public boolean match(String v) {
+            return value.equalsIgnoreCase(v);
+        }
+    }
+
+    private static class RegexpValue implements Value {
+        private Pattern pattern;
+
+        private RegexpValue(String value) {
+            this.pattern = Pattern.compile(value);
+        }
+
+        public boolean match(String v) {
+            return pattern.matcher(v).matches();
         }
     }
 }

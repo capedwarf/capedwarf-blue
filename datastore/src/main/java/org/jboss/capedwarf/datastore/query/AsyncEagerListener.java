@@ -25,10 +25,10 @@ package org.jboss.capedwarf.datastore.query;
 import org.infinispan.notifications.Listener;
 
 /**
- * Eager Listener.
+ * Async Eager Listener.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@Listener
-public class EagerListener extends AbstractEagerListener {
+@Listener(sync = false)
+public class AsyncEagerListener extends AbstractEagerListener {
 }
