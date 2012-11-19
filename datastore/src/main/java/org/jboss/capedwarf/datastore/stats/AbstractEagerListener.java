@@ -25,24 +25,32 @@ package org.jboss.capedwarf.datastore.stats;
 import com.google.appengine.api.datastore.Entity;
 import org.jboss.capedwarf.datastore.notifications.AbstractPutRemoveCacheListener;
 
+import static org.jboss.capedwarf.datastore.stats.AbstractUpdate.Signum.MINUS;
+import static org.jboss.capedwarf.datastore.stats.AbstractUpdate.Signum.PLUS;
+
 /**
  * Abstract Eager Listener.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public abstract class AbstractEagerListener extends AbstractPutRemoveCacheListener {
     protected void onPrePut(Entity trigger) {
-        executeCallable(new TotalStatsRemoveUpdate(trigger));
-        executeCallable(new KindStatsRemoveUpdate(trigger));
+        executeCallables(trigger, MINUS);
     }
 
     protected void onPostPut(Entity trigger) {
-        executeCallable(new TotalStatsPutUpdate(trigger));
-        executeCallable(new KindStatsPutUpdate(trigger));
+        executeCallables(trigger, PLUS);
     }
 
     protected void onPreRemove(Entity trigger) {
-        executeCallable(new TotalStatsRemoveUpdate(trigger));
-        executeCallable(new KindStatsRemoveUpdate(trigger));
+        executeCallables(trigger, MINUS);
+    }
+
+    private void executeCallables(Entity trigger, AbstractUpdate.Signum signum) {
+        executeCallable(new TotalStatsUpdate(trigger, signum));
+        executeCallable(new NsTotalStatsUpdate(trigger, signum));
+        executeCallable(new KindStatsUpdate(trigger, signum));
+        executeCallable(new NsKindStatsUpdate(trigger, signum));
     }
 }

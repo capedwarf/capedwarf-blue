@@ -23,11 +23,15 @@
 package org.jboss.capedwarf.datastore.ns;
 
 import com.google.appengine.api.datastore.Entity;
+import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class NamespaceKindAddTask extends AbstractNamespaceAddTask {
+    static final String KINDS = NamespaceServiceInternal.KINDS;
+
     public NamespaceKindAddTask(Entity trigger) {
         super(trigger);
     }

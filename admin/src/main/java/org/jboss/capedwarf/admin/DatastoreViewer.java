@@ -22,13 +22,23 @@
 
 package org.jboss.capedwarf.admin;
 
-import com.google.appengine.api.datastore.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.*;
+
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query;
 
 /**
  * @author Marko Luksa
@@ -41,7 +51,7 @@ public class DatastoreViewer {
     private String selectedEntityKind;
 
     private static List<String> properties = new ArrayList<String>();
-    private static List<Row> rows = new ArrayList<Row>();
+    private static List<Row> rows;
 
     public String getSelectedEntityKind() {
         return selectedEntityKind;
@@ -66,6 +76,9 @@ public class DatastoreViewer {
     }
 
     public List<Row> getRows() {
+        if (rows == null) {
+            loadEntities();
+        }
         return rows;
     }
 
@@ -75,7 +88,7 @@ public class DatastoreViewer {
 
     @PostConstruct
     private void loadEntities() {
-        rows.clear();
+        rows = new ArrayList<Row>();
         SortedSet<String> propertyNameSet = new TreeSet<String>();
         for (Entity entity : getDatastore().prepare(new Query(getSelectedEntityKind())).asIterable()) {
             propertyNameSet.addAll(entity.getProperties().keySet());

@@ -25,6 +25,7 @@ package org.jboss.capedwarf.datastore.stats;
 import java.util.Collections;
 import java.util.Map;
 
+import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -37,6 +38,7 @@ import org.jboss.capedwarf.common.infinispan.BaseTxTask;
  * Abstract update task.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public abstract class AbstractUpdateTask<V> extends BaseTxTask<String, V, Entity> {
     private final JBossEnvironment env;
@@ -63,30 +65,50 @@ public abstract class AbstractUpdateTask<V> extends BaseTxTask<String, V, Entity
     private Entity callInTxInternal() throws Exception {
         final DatastoreService service = DatastoreServiceFactory.getDatastoreService();
 
-        final AdvancedCache<String, V> ac = getCache().getAdvancedCache();
-        final String cacheKey = update.statsKind();
+        final String cacheKey = update.statsKind() + update.statsNamespace();
 
-        if (ac.lock(cacheKey) == false)
-            throw new IllegalArgumentException("Cannot get a lock on key for " + cacheKey);
+        lock(cacheKey);
 
-        Entity entity;
         V value = getCache().get(cacheKey);
         Key key = provideKey(value);
+        Entity entity;
+
+        String oldNamespace = NamespaceManager.get();
+        NamespaceManager.set(update.statsNamespace());
+        try {
+            entity = getOrCreateEntity(service, key);
+            entity = update.update(entity);
+            key = service.put(entity);
+        } finally {
+            NamespaceManager.set(oldNamespace);
+        }
+
+        getCache().put(cacheKey, updateValue(value, key));
+        return entity;
+    }
+
+    private void lock(String cacheKey) {
+        AdvancedCache<String, V> ac = getCache().getAdvancedCache();
+        if (ac.lock(cacheKey) == false)
+            throw new IllegalArgumentException("Cannot get a lock on key for " + cacheKey);
+    }
+
+    private Entity getOrCreateEntity(DatastoreService service, Key key) {
         if (key == null) {
-            entity = new Entity(update.statsKind());
-            update.initialize(entity);
+            return createNewEntity();
         } else {
             Map<Key, Entity> map = service.get(null, Collections.singleton(key));
             if (map.isEmpty()) {
-                entity = new Entity(update.statsKind());
-                update.initialize(entity);
+                return createNewEntity();
             } else {
-                entity = map.values().iterator().next();
+                return map.values().iterator().next();
             }
         }
-        entity = update.update(entity);
-        key = service.put(entity);
-        getCache().put(cacheKey, updateValue(value, key));
+    }
+
+    private Entity createNewEntity() {
+        Entity entity = new Entity(update.statsKind());
+        update.initialize(entity);
         return entity;
     }
 

@@ -30,6 +30,7 @@ import com.google.common.collect.SetMultimap;
  * Namespaces service.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public interface NamespaceServiceInternal {
     public static final String NAMESPACES = "__Namespaces__";

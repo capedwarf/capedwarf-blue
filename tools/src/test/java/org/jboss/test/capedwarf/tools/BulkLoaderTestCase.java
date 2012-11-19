@@ -95,7 +95,7 @@ public class BulkLoaderTestCase extends BaseTest {
             String namespace = "namespace" + i;
             NamespaceManager.set(namespace);
             for (int j = 0; j < 10; j++) {
-                String kind = "kind" + i;
+                String kind = "kind" + j;
                 for (int id = 1; id <= 10; id++) {
                     Entity entity = new Entity(kind, id);
                     entity.setProperty("foo", id);
@@ -145,7 +145,7 @@ public class BulkLoaderTestCase extends BaseTest {
             String namespace = "namespace" + i;
             NamespaceManager.set(namespace);
             for (int j = 0; j < 10; j++) {
-                String kind = "kind" + i;
+                String kind = "kind" + j;
                 for (int id = 1; id <= 10; id++) {
                     Key key = KeyFactory.createKey(kind, id);
                     try {
@@ -175,7 +175,7 @@ public class BulkLoaderTestCase extends BaseTest {
             String namespace = "namespace" + i;
             NamespaceManager.set(namespace);
             for (int j = 0; j < 10; j++) {
-                String kind = "kind" + i;
+                String kind = "kind" + j;
                 for (int id = 1; id <= 10; id++) {
                     datastore.delete(KeyFactory.createKey(kind, id));
                 }

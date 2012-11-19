@@ -29,6 +29,7 @@ import org.jboss.capedwarf.datastore.notifications.CacheListenerHandle;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @Listener
 public class NamespaceListener extends AbstractPutRemoveCacheListener implements CacheListenerHandle {

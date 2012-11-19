@@ -1,0 +1,63 @@
+#include("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Datastore statistics</h2>
+<form action="datastoreStatistics.vm">
+    <label for="entityKindSelect">Namespace:</label>
+    <select id="namespaceSelect" name="selectedNamespace" onchange="this.form.submit()">
+        <option value="!">All namespaces</option>
+        #foreach($namespace in $datastoreStatistics.namespaces)
+            <option value="$namespace" #if($namespace.equals($datastoreStatistics.selectedNamespace)) selected="selected" #end>
+                #if($namespace.equals("")) Empty namespace #end
+                $namespace
+            </option>
+        #end
+    </select>
+
+    <label for="entityKindSelect">Entity kind:</label>
+    <select id="entityKindSelect" name="selectedEntityKind" onchange="this.form.submit()">
+        <option value="">All entities</option>
+        #foreach($kind in $datastoreStatistics.entityKinds)
+            <option value="$kind" #if($kind.equals($datastoreStatistics.selectedEntityKind)) selected="selected" #end>$kind</option>
+        #end
+    </select>
+</form>
+
+<br/><br/>
+
+#if($datastoreStatistics.selectedEntityKind)
+    <table width="100%">
+        <tr>
+            <th></th>
+            <th>Entities</th>
+            <th>Built-in indexes</th>
+            <th>Composite indexes</th>
+            <th>Total</th>
+        </tr>
+
+        <tr>
+            <td>Total size:</td>
+            <td>$datastoreStatistics.entities.totalSize</td>
+            <td>$datastoreStatistics.builtInIndexes.totalSize</td>
+            <td>$datastoreStatistics.compositeIndexes.totalSize</td>
+            <td>$datastoreStatistics.total.totalSize</td>
+        </tr>
+
+        <tr>
+            <td>Entry count:</td>
+            <td>$datastoreStatistics.entities.entryCount</td>
+            <td>$datastoreStatistics.builtInIndexes.entryCount</td>
+            <td>$datastoreStatistics.compositeIndexes.entryCount</td>
+            <td></td>
+        </tr>
+
+        <tr>
+            <td>Average size:</td>
+            <td>$datastoreStatistics.entities.averageSize</td>
+            <td>$datastoreStatistics.builtInIndexes.averageSize</td>
+            <td>$datastoreStatistics.compositeIndexes.averageSize</td>
+            <td></td>
+        </tr>
+    </table>
+#end
+
+#include("/org/jboss/capedwarf/admin/footer.vm")

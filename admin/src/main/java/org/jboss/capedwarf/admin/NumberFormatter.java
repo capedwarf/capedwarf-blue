@@ -20,17 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.stats;
-
-import com.google.appengine.api.datastore.Entity;
+package org.jboss.capedwarf.admin;
 
 /**
- * Total stats put update
- *
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class TotalStatsPutUpdate extends TotalStatsUpdate {
-    public TotalStatsPutUpdate(Entity trigger) {
-        super(trigger, Signum.PLUS);
+public class NumberFormatter {
+    public static final long K = 1000;
+
+    public static String formatCount(long count) {
+        return String.valueOf(count);
     }
+
+    public static String formatBytes(long bytes) {
+        if (bytes < K) {
+            return bytes + " " + singularOrPlural("Byte", bytes);
+        } else if (bytes < K * K) {
+            long kbytes = bytes / K;
+            return kbytes + " " + singularOrPlural("KByte", kbytes);
+        } else {
+            long mbytes = bytes / (K * K);
+            return mbytes + " " + singularOrPlural("MByte", mbytes);
+        }
+    }
+
+    private static String singularOrPlural(String unit, long count) {
+        return count == 1 ? unit : (unit + "s");
+    }
+
+
+
+
 }
