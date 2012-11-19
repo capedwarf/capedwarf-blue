@@ -38,6 +38,6 @@ public abstract class AbstractNamespaceRemoveTask extends AbstractNamespaceTask<
         if (set != null) {
             set.remove(getElement());
         }
-        return (set.isEmpty() ? null : set);
+        return (set == null || set.isEmpty() ? null : set);
     }
 }
