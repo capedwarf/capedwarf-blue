@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.Collections;
 import java.util.Set;
 
 import com.google.appengine.api.NamespaceManager;
@@ -39,13 +40,7 @@ import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class NamespaceServiceImpl implements NamespaceServiceInternal {
-    private static final NamespaceServiceInternal INSTANCE = new NamespaceServiceImpl();
-
-    private NamespaceServiceImpl() {
-    }
-
-    public static NamespaceServiceInternal getInstance() {
-        return INSTANCE;
+    NamespaceServiceImpl() {
     }
 
     public SetMultimap<String, String> getKindsPerNamespaces() {
@@ -59,6 +54,7 @@ public class NamespaceServiceImpl implements NamespaceServiceInternal {
     }
 
     public Set<String> getKindsPerNamespace(String namespace) {
-        return getKindsPerNamespaces().get(namespace);
+        Set<String> kinds = getKindsPerNamespaces().get(namespace);
+        return (kinds != null) ? Collections.unmodifiableSet(kinds) : Collections.<String>emptySet();
     }
 }
