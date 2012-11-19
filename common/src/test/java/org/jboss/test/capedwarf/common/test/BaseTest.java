@@ -116,6 +116,7 @@ public class BaseTest {
             Thread.sleep(sleep);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
         }
     }
 
