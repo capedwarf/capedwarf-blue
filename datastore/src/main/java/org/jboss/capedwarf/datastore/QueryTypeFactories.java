@@ -44,16 +44,6 @@ public class QueryTypeFactories {
     private final List<QueryTypeFactory> factories = new ArrayList<QueryTypeFactory>();
     private final QueryHandleService service;
 
-    /**
-     * Is stats, metadata, ...
-     *
-     * @param kind the kind
-     * @return true if special, false otherwise
-     */
-    public static boolean isSpecialKind(String kind) {
-        return StatsQueryTypeFactory.isStatsKind(kind);
-    }
-
     public QueryTypeFactories(QueryHandleService service) {
         this.service = service;
         // query type factories

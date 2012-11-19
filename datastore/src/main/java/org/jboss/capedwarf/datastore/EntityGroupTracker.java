@@ -41,10 +41,6 @@ class EntityGroupTracker implements Synchronization {
 
     private static Map<Transaction, EntityGroupTracker> trackers = new ConcurrentHashMap<Transaction, EntityGroupTracker>();
 
-    // TODO -- remove this
-    private static final String LOG_REQUEST_ENTITY_KIND = "__org.jboss.capedwarf.LogRequest__";
-    private static final String LOG_LINE_ENTITY_KIND = "__org.jboss.capedwarf.LogLine__";
-
     private final Transaction tx;
     private final TxChecker checker;
     private final Map<Key, Key> keys;
@@ -63,9 +59,8 @@ class EntityGroupTracker implements Synchronization {
         if (transaction == null)
             return null; // do not track w/o Tx
 
-        final String kind = key.getKind();
-        if (LOG_LINE_ENTITY_KIND.equals(kind) || LOG_REQUEST_ENTITY_KIND.equals(kind) || QueryTypeFactories.isSpecialKind(kind))
-            return null; // TODO - hack, do not count logs
+        if (KindUtils.isSpecial(key.getKind()))
+            return null;
 
         EntityGroupTracker egt = trackers.get(transaction);
         if (egt == null) {

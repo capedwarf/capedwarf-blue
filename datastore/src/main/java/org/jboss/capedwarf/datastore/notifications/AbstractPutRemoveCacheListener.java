@@ -29,7 +29,7 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
-import org.jboss.capedwarf.datastore.QueryTypeFactories;
+import org.jboss.capedwarf.datastore.KindUtils;
 
 /**
  * Abstract put/remove cache listener
@@ -82,7 +82,7 @@ public abstract class AbstractPutRemoveCacheListener extends AbstractCacheListen
      * @return true if we ignore entry, false otherwise
      */
     protected boolean isIgnoreEntry(Key key) {
-        return QueryTypeFactories.isSpecialKind(key.getKind());
+        return KindUtils.match(key.getKind(), KindUtils.Type.STATS, KindUtils.Type.METADATA);
     }
 
     /**
