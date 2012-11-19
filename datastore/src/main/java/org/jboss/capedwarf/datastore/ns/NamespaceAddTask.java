@@ -20,23 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.notifications;
+package org.jboss.capedwarf.datastore.ns;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.common.collect.SetMultimap;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class NamespaceRemoveTask extends AbstractNamespaceTask {
-    public NamespaceRemoveTask(Entity trigger) {
+public class NamespaceAddTask extends AbstractNamespaceAddTask {
+    public NamespaceAddTask(Entity trigger) {
         super(trigger);
     }
 
-    protected void applyTrigger(SetMultimap<String, String> namespaces) {
-        if (namespaces.isEmpty())
-            return;
+    protected String lockKey() {
+        return NAMESPACES;
+    }
 
-        namespaces.remove(trigger.getNamespace(), trigger.getKey());
+    protected String getElement() {
+        return trigger.getNamespace();
     }
 }

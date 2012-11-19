@@ -20,10 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.notifications;
+package org.jboss.capedwarf.datastore.ns;
 
 import com.google.appengine.api.datastore.Entity;
-import com.google.common.collect.SetMultimap;
 import org.infinispan.AdvancedCache;
 import org.jboss.capedwarf.common.infinispan.BaseTxTask;
 import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
@@ -31,28 +30,35 @@ import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractNamespaceTask extends BaseTxTask<String, SetMultimap<String, String>, Void> {
+public abstract class AbstractNamespaceTask<V> extends BaseTxTask<String, V, Void> {
     static final String NAMESPACES = NamespaceServiceInternal.NAMESPACES;
 
     protected final Entity trigger;
 
-    public AbstractNamespaceTask(Entity trigger) {
+    protected AbstractNamespaceTask(Entity trigger) {
         this.trigger = trigger;
     }
 
+    protected abstract String lockKey();
+
+    protected abstract String getElement();
+
     protected Void callInTx() throws Exception {
-        final AdvancedCache<String, SetMultimap<String, String>> ac = getCache().getAdvancedCache();
+        final AdvancedCache<String, V> ac = getCache().getAdvancedCache();
+        final String lockKey = lockKey();
+        if (ac.lock(lockKey) == false)
+            throw new IllegalArgumentException("Cannot get a lock on key for " + lockKey);
 
-        if (ac.lock(NAMESPACES) == false)
-            throw new IllegalArgumentException("Cannot get a lock on key for " + NAMESPACES);
-
-        SetMultimap<String, String> namespaces = getCache().get(NAMESPACES);
-        applyTrigger(namespaces);
-        if (namespaces.isEmpty() == false) {
-            getCache().put(NAMESPACES, namespaces);
+        final V previous = getCache().get(lockKey);
+        V value = applyTrigger(previous);
+        if (value != null) {
+            getCache().put(lockKey, value);
+        } else {
+            getCache().remove(lockKey);
         }
+
         return null;
     }
 
-    protected abstract void applyTrigger(SetMultimap<String, String> namespaces);
+    protected abstract V applyTrigger(V value);
 }

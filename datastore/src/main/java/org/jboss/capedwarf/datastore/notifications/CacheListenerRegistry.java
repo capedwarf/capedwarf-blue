@@ -29,6 +29,7 @@ import java.util.WeakHashMap;
 
 import org.infinispan.notifications.Listenable;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.datastore.ns.NamespaceListener;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>

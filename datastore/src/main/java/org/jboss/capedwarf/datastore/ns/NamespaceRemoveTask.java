@@ -20,45 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore;
+package org.jboss.capedwarf.datastore.ns;
 
-import java.util.Set;
-
-import com.google.common.collect.SetMultimap;
+import com.google.appengine.api.datastore.Entity;
 
 /**
- * Namespaces service.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public interface NamespaceServiceInternal {
-    public static final String NAMESPACES = "__Namespaces__";
+public class NamespaceRemoveTask extends AbstractNamespaceRemoveTask {
+    public NamespaceRemoveTask(Entity trigger) {
+        super(trigger);
+    }
 
-    /**
-     * Get namespaces.
-     *
-     * @return the namespaces
-     */
-    Set<String> getNamespaces();
+    protected String lockKey() {
+        return NAMESPACES;
+    }
 
-    /**
-     * Get kinds per namespace.
-     *
-     * @return kinds per namespace
-     */
-    Set<String> getKindsPerNamespace();
-
-    /**
-     * Get kinds per namespace.
-     *
-     * @return kinds per namespace
-     */
-    Set<String> getKindsPerNamespace(String namespace);
-
-    /**
-     * Get kinds per namespaces.
-     *
-     * @return kinds per namespaces
-     */
-    SetMultimap<String, String> getKindsPerNamespaces();
+    protected String getElement() {
+        return trigger.getNamespace();
+    }
 }

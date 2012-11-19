@@ -20,29 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.notifications;
+package org.jboss.capedwarf.datastore.ns;
 
 import com.google.appengine.api.datastore.Entity;
-import org.infinispan.notifications.Listener;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@Listener(sync = false)
-public class NamespaceListener extends AbstractPutRemoveCacheListener implements CacheListenerHandle {
-    public Object createListener(ClassLoader cl) {
-        return new NamespaceListener();
+public class NamespaceKindAddTask extends AbstractNamespaceAddTask {
+    public NamespaceKindAddTask(Entity trigger) {
+        super(trigger);
     }
 
-    protected void onPrePut(Entity trigger) {
-        executeCallable(new NamespaceRemoveTask(trigger), AbstractNamespaceTask.NAMESPACES);
+    protected String lockKey() {
+        return NAMESPACES + trigger.getNamespace();
     }
 
-    protected void onPostPut(Entity trigger) {
-        executeCallable(new NamespaceAddTask(trigger), AbstractNamespaceTask.NAMESPACES);
-    }
-
-    protected void onPreRemove(Entity trigger) {
-        executeCallable(new NamespaceRemoveTask(trigger), AbstractNamespaceTask.NAMESPACES);
+    protected String getElement() {
+        return trigger.getKind();
     }
 }

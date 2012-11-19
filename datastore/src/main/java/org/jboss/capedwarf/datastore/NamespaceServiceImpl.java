@@ -26,8 +26,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.google.appengine.api.NamespaceManager;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import org.infinispan.Cache;
 import org.jboss.capedwarf.common.app.Application;
@@ -43,10 +42,14 @@ public class NamespaceServiceImpl implements NamespaceServiceInternal {
     NamespaceServiceImpl() {
     }
 
-    public SetMultimap<String, String> getKindsPerNamespaces() {
-        Cache<String, SetMultimap<String, String>> cache = InfinispanUtils.getCache(Application.getAppId(), CacheName.DIST);
-        SetMultimap<String, String> result = cache.get(NAMESPACES);
-        return (result != null) ? Multimaps.unmodifiableSetMultimap(result) : ImmutableSetMultimap.<String, String>of();
+    protected Set<String> getCachedSet(String key) {
+        Cache<String, Set<String>> cache = InfinispanUtils.getCache(Application.getAppId(), CacheName.DIST);
+        Set<String> result = cache.get(key);
+        return (result != null) ? Collections.unmodifiableSet(result) : Collections.<String>emptySet();
+    }
+
+    public Set<String> getNamespaces() {
+        return getCachedSet(NAMESPACES);
     }
 
     public Set<String> getKindsPerNamespace() {
@@ -54,7 +57,14 @@ public class NamespaceServiceImpl implements NamespaceServiceInternal {
     }
 
     public Set<String> getKindsPerNamespace(String namespace) {
-        Set<String> kinds = getKindsPerNamespaces().get(namespace);
-        return (kinds != null) ? Collections.unmodifiableSet(kinds) : Collections.<String>emptySet();
+        return getCachedSet(NAMESPACES + namespace);
+    }
+
+    public SetMultimap<String, String> getKindsPerNamespaces() {
+        SetMultimap<String, String> multimap = HashMultimap.create();
+        for (String namespace : getNamespaces()) {
+            multimap.putAll(namespace, getKindsPerNamespace(namespace));
+        }
+        return multimap;
     }
 }
