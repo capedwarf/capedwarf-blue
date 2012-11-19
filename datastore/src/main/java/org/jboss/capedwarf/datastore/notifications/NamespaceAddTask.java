@@ -20,17 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.notifications;
+
+import com.google.appengine.api.datastore.Entity;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
 
 /**
- * Query handle.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractQueryHandle implements QueryHandle {
-    protected final QueryHandleService service;
+public class NamespaceAddTask extends AbstractNamespaceTask {
+    public NamespaceAddTask(Entity trigger) {
+        super(trigger);
+    }
 
-    protected AbstractQueryHandle(QueryHandleService service) {
-        this.service = service;
+    protected void applyTrigger(SetMultimap<String, String> namespaces) {
+        if (namespaces == null) {
+            namespaces = HashMultimap.create();
+        }
+        namespaces.put(trigger.getNamespace(), trigger.getKind());
     }
 }

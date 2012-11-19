@@ -20,42 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.stats;
 
-import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.datastore.Transaction;
-import org.jboss.capedwarf.common.compatibility.Compatibility;
+import java.util.concurrent.Callable;
+
+import com.google.appengine.api.datastore.Entity;
 
 /**
- * Query type factory.
+ * Abstract multiple update.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class StatsQueryTypeFactory implements QueryTypeFactory {
-    private QueryHandle queryHandle;
-
-    public static boolean isStatsKind(String kind) {
-        return kind != null && kind.startsWith("__Stat_") && kind.endsWith("__");
+public abstract class AbstractMultipleUpdate extends AbstractUpdate implements MultipleUpdate {
+    protected AbstractMultipleUpdate(Entity trigger, Signum signum) {
+        super(trigger, signum);
     }
 
-    protected boolean isEager() {
-        Compatibility compatibility = Compatibility.getInstance();
-        return compatibility.isEnabled(Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
+    public String triggerKind() {
+        return trigger.getKind();
     }
 
-    public void initialize(QueryHandleService service) {
-        if (isEager()) {
-            queryHandle = new EagerStatsQueryHandle(service);
-        } else {
-            queryHandle = new OnDemandStatsQueryHandle(service);
-        }
-    }
-
-    public boolean handleQuery(Transaction tx, Query query) {
-        return isStatsKind(query.getKind());
-    }
-
-    public QueryHandle createQueryHandle(QueryHandleService service) {
-        return queryHandle;
+    public Callable<Entity> toCallable() {
+        return new UpdateKeysTask(this);
     }
 }

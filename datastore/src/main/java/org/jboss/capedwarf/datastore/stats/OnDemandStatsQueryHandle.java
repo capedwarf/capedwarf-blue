@@ -20,35 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.stats;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Transaction;
+import org.jboss.capedwarf.datastore.query.AbstractQueryHandle;
+import org.jboss.capedwarf.datastore.query.QueryHandleService;
 
 /**
- * Update last entity keys.
+ * Query type factory.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class UpdateKeysTask extends AbstractUpdateTask<Map<String, Key>> {
-    private MultipleUpdate update;
-
-    public UpdateKeysTask(MultipleUpdate update) {
-        super(update);
-        this.update = update;
+class OnDemandStatsQueryHandle extends AbstractQueryHandle {
+    OnDemandStatsQueryHandle(QueryHandleService service) {
+        super(service);
     }
 
-    protected Key provideKey(Map<String, Key> value) {
-        return value != null ? value.get(update.triggerKind()) : null;
-    }
-
-    protected Map<String, Key> updateValue(Map<String, Key> value, Key key) {
-        if (value == null) {
-            value = new HashMap<String, Key>();
-        }
-        value.put(update.triggerKind(), key);
-        return value;
+    public PreparedQuery createQuery(Transaction tx, Query query) {
+        throw new UnsupportedOperationException("Not yet implemented - use eager stats: -Denable.eager.datastore.stats=true");
     }
 }

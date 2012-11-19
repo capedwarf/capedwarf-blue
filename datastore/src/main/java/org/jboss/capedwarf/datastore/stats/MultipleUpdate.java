@@ -20,15 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
-
-import org.infinispan.notifications.Listener;
+package org.jboss.capedwarf.datastore.stats;
 
 /**
- * Async Eager Listener.
+ * Multiple updater.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@Listener(sync = false)
-public class AsyncEagerListener extends AbstractEagerListener {
+public interface MultipleUpdate extends Update {
+    String triggerKind();
 }

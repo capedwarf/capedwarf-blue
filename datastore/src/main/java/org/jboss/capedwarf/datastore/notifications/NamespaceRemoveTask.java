@@ -20,30 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.notifications;
 
-import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.datastore.Entity;
+import com.google.common.collect.SetMultimap;
 
 /**
- * Metadata Query type factory.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class MetadataQueryTypeFactory implements QueryTypeFactory {
-    public static QueryTypeFactory INSTANCE = new MetadataQueryTypeFactory();
-
-    private MetadataQueryTypeFactory() {
+public class NamespaceRemoveTask extends AbstractNamespaceTask {
+    public NamespaceRemoveTask(Entity trigger) {
+        super(trigger);
     }
 
-    public void initialize(QueryHandleService service) {
-    }
+    protected void applyTrigger(SetMultimap<String, String> namespaces) {
+        if (namespaces.isEmpty())
+            return;
 
-    public boolean handleQuery(Transaction tx, Query query) {
-        return false; // TODO
-    }
-
-    public QueryHandle createQueryHandle(QueryHandleService service) {
-        throw new UnsupportedOperationException("Not yet implemented!");
+        namespaces.remove(trigger.getNamespace(), trigger.getKey());
     }
 }

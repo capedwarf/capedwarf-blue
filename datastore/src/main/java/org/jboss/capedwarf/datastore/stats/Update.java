@@ -20,27 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.stats;
 
-import java.util.concurrent.Callable;
+import java.io.Serializable;
 
 import com.google.appengine.api.datastore.Entity;
+import org.jboss.capedwarf.datastore.notifications.Taskable;
 
 /**
- * Abstract multiple update.
+ * Updater.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractMultipleUpdate extends AbstractUpdate implements MultipleUpdate {
-    protected AbstractMultipleUpdate(Entity trigger, Signum signum) {
-        super(trigger, signum);
-    }
-
-    public String triggerKind() {
-        return trigger.getKind();
-    }
-
-    public Callable<Entity> toCallable() {
-        return new UpdateKeysTask(this);
-    }
+public interface Update extends Serializable, Taskable<Entity> {
+    String statsKind();
+    void initialize(Entity entity);
+    Entity update(Entity entity);
 }

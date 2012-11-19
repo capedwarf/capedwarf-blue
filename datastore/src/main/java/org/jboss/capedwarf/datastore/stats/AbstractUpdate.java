@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.stats;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -50,6 +50,10 @@ public abstract class AbstractUpdate implements Update {
     protected AbstractUpdate(Entity trigger, Signum signum) {
         this.trigger = trigger;
         this.signum = signum;
+    }
+
+    public Object taskKey() {
+        return statsKind();
     }
 
     public void initialize(Entity entity) {

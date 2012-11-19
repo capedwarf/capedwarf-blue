@@ -20,15 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.stats;
 
-import org.infinispan.notifications.Listener;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.appengine.api.datastore.Key;
 
 /**
- * Eager Listener.
+ * Update last entity keys.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@Listener
-public class EagerListener extends AbstractEagerListener {
+public class UpdateKeysTask extends AbstractUpdateTask<Map<String, Key>> {
+    private MultipleUpdate update;
+
+    public UpdateKeysTask(MultipleUpdate update) {
+        super(update);
+        this.update = update;
+    }
+
+    protected Key provideKey(Map<String, Key> value) {
+        return value != null ? value.get(update.triggerKind()) : null;
+    }
+
+    protected Map<String, Key> updateValue(Map<String, Key> value, Key key) {
+        if (value == null) {
+            value = new HashMap<String, Key>();
+        }
+        value.put(update.triggerKind(), key);
+        return value;
+    }
 }

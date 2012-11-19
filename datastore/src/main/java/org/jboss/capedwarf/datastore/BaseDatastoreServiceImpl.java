@@ -46,6 +46,7 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.datastore.notifications.CacheListenerRegistry;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
 import org.jboss.capedwarf.datastore.query.QueryHandleService;
@@ -102,6 +103,8 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
 
         this.queryConverter = new QueryConverter(searchManager);
         this.factories = new QueryTypeFactories(this);
+        // register namespaces listener
+        CacheListenerRegistry.registerListener(store, CacheListenerRegistry.NAMESPACES);
     }
 
     protected Cache<Key, Entity> createStore() {

@@ -20,17 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
-
-import java.util.Map;
-import java.util.WeakHashMap;
+package org.jboss.capedwarf.datastore.stats;
 
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
-import org.infinispan.notifications.Listenable;
-import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.datastore.notifications.CacheListenerHandle;
+import org.jboss.capedwarf.datastore.notifications.CacheListenerRegistry;
+import org.jboss.capedwarf.datastore.query.AbstractQueryHandle;
+import org.jboss.capedwarf.datastore.query.QueryHandleService;
 
 /**
  * Eager query handle.
@@ -38,25 +37,22 @@ import org.jboss.capedwarf.common.compatibility.Compatibility;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class EagerStatsQueryHandle extends AbstractQueryHandle {
-    private static final Map<ClassLoader, Boolean> MARKER = new WeakHashMap<ClassLoader, Boolean>();
-
-    protected static synchronized void registerListener(QueryHandleService service) {
-        ClassLoader cl = Application.getAppClassloader();
-        if (MARKER.containsKey(cl) == false) {
-            MARKER.put(cl, true);
-            Compatibility c = Compatibility.getInstance(cl);
-            String value = c.getValue(Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
-            Listenable listenable = service.getCache();
-            listenable.addListener("async".equals(value) ? new AsyncEagerListener() : new EagerListener());
-        }
-    }
+    private static final CacheListenerHandle HANDLE = new EagerListenerHandle();
 
     EagerStatsQueryHandle(QueryHandleService service) {
         super(service);
-        registerListener(service);
+        CacheListenerRegistry.registerListener(service.getCache(), HANDLE);
     }
 
     public PreparedQuery createQuery(Transaction tx, Query query) {
         return service.createQuery(tx, query); // just run the query
+    }
+
+    private static class EagerListenerHandle implements CacheListenerHandle {
+        public Object createListener(ClassLoader cl) {
+            Compatibility c = Compatibility.getInstance(cl);
+            String value = c.getValue(Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
+            return "async".equals(value) ? new AsyncEagerListener() : new EagerListener();
+        }
     }
 }

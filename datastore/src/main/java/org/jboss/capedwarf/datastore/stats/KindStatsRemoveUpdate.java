@@ -20,21 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
-
-import java.io.Serializable;
-import java.util.concurrent.Callable;
+package org.jboss.capedwarf.datastore.stats;
 
 import com.google.appengine.api.datastore.Entity;
 
 /**
- * Updater.
+ * Kind stats update
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public interface Update extends Serializable {
-    String statsKind();
-    void initialize(Entity entity);
-    Entity update(Entity entity);
-    Callable<Entity> toCallable();
+public class KindStatsRemoveUpdate extends KindStatsUpdate {
+    public KindStatsRemoveUpdate(Entity trigger) {
+        super(trigger, Signum.MINUS);
+    }
 }

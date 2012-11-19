@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.notifications;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
@@ -28,34 +28,14 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
-import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.config.JBossEnvironment;
-import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.datastore.QueryTypeFactories;
 
 /**
- * Abstract Eager Listener.
+ * Abstract put/remove cache listener
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractEagerListener {
-    private final JBossEnvironment env = JBossEnvironment.getThreadLocalInstance();
-
-    // can be invoked async, from jgroups
-    protected void executeUpdate(Update update) {
-        JBossEnvironment previous = JBossEnvironment.setThreadLocalInstance(env);
-        try {
-            InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, update.toCallable(), update.statsKind());
-        } finally {
-            if (previous != null) {
-                JBossEnvironment.setThreadLocalInstance(previous);
-            } else {
-                JBossEnvironment.clearThreadLocalInstance();
-            }
-        }
-    }
-
+public abstract class AbstractPutRemoveCacheListener extends AbstractCacheListener {
     @CacheEntryModified
     public void onPut(CacheEntryModifiedEvent<Key, Entity> event) {
         if (event.isOriginLocal() == false)
@@ -67,14 +47,15 @@ public abstract class AbstractEagerListener {
 
         Entity trigger = event.getValue();
         if (event.isPre() == false) {
-            executeUpdate(new TotalStatsPutUpdate(trigger));
-            executeUpdate(new KindStatsPutUpdate(trigger));
+            onPostPut(trigger);
         } else if (trigger != null) {
             // was existing entity modified
-            executeUpdate(new TotalStatsRemoveUpdate(trigger));
-            executeUpdate(new KindStatsRemoveUpdate(trigger));
+            onPrePut(trigger);
         }
     }
+
+    protected abstract void onPrePut(Entity trigger);
+    protected abstract void onPostPut(Entity trigger);
 
     @CacheEntryRemoved
     public void onRemove(CacheEntryRemovedEvent<Key, Entity> event) {
@@ -84,8 +65,9 @@ public abstract class AbstractEagerListener {
         Key key = event.getKey();
         if (QueryTypeFactories.isSpecialKind(key.getKind()) == false) {
             Entity trigger = event.getValue();
-            executeUpdate(new TotalStatsRemoveUpdate(trigger));
-            executeUpdate(new KindStatsRemoveUpdate(trigger));
+            onPreRemove(trigger);
         }
     }
+
+    protected abstract void onPreRemove(Entity trigger);
 }

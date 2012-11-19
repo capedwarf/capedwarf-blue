@@ -20,17 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.notifications;
 
 /**
- * Query handle.
+ * Should be single instance per listener.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractQueryHandle implements QueryHandle {
-    protected final QueryHandleService service;
-
-    protected AbstractQueryHandle(QueryHandleService service) {
-        this.service = service;
-    }
+public interface CacheListenerHandle {
+    /**
+     * Create listener.
+     *
+     * @param cl the app cl
+     * @return new listener
+     */
+    Object createListener(ClassLoader cl);
 }

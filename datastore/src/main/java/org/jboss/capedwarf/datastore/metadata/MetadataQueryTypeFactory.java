@@ -20,17 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.metadata;
 
-import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Transaction;
+import org.jboss.capedwarf.datastore.query.QueryHandle;
+import org.jboss.capedwarf.datastore.query.QueryHandleService;
+import org.jboss.capedwarf.datastore.query.QueryTypeFactory;
 
 /**
- * Total stats put update
+ * Metadata Query type factory.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class TotalStatsPutUpdate extends TotalStatsUpdate {
-    public TotalStatsPutUpdate(Entity trigger) {
-        super(trigger, Signum.PLUS);
+public class MetadataQueryTypeFactory implements QueryTypeFactory {
+    public static QueryTypeFactory INSTANCE = new MetadataQueryTypeFactory();
+
+    private MetadataQueryTypeFactory() {
+    }
+
+    public void initialize(QueryHandleService service) {
+    }
+
+    public boolean handleQuery(Transaction tx, Query query) {
+        return false; // TODO
+    }
+
+    public QueryHandle createQueryHandle(QueryHandleService service) {
+        throw new UnsupportedOperationException("Not yet implemented!");
     }
 }

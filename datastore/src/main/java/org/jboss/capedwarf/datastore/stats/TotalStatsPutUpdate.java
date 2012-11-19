@@ -20,13 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.stats;
+
+import com.google.appengine.api.datastore.Entity;
 
 /**
- * Multiple updater.
+ * Total stats put update
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public interface MultipleUpdate extends Update {
-    String triggerKind();
+public class TotalStatsPutUpdate extends TotalStatsUpdate {
+    public TotalStatsPutUpdate(Entity trigger) {
+        super(trigger, Signum.PLUS);
+    }
 }

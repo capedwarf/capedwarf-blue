@@ -20,23 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.datastore.Transaction;
+import java.util.Set;
+
+import com.google.common.collect.SetMultimap;
 
 /**
- * Query type factory.
+ * Namespaces service.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class OnDemandStatsQueryHandle extends AbstractQueryHandle {
-    OnDemandStatsQueryHandle(QueryHandleService service) {
-        super(service);
-    }
+public interface NamespaceServiceInternal {
+    public static final String NAMESPACES = "__Namespaces__";
 
-    public PreparedQuery createQuery(Transaction tx, Query query) {
-        throw new UnsupportedOperationException("Not yet implemented - use eager stats: -Denable.eager.datastore.stats=true");
-    }
+    /**
+     * Get kinds per namespaces.
+     *
+     * @return kinds per namespaces
+     */
+    SetMultimap<String, String> getKindsPerNamespaces();
+
+    /**
+     * Get kinds per namespace.
+     *
+     * @return kinds per namespace
+     */
+    Set<String> getKindsPerNamespace();
+
+    /**
+     * Get kinds per namespace.
+     *
+     * @return kinds per namespace
+     */
+    Set<String> getKindsPerNamespace(String namespace);
 }

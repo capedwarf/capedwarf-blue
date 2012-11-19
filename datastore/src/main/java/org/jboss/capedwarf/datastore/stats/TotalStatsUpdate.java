@@ -20,17 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.stats;
+
+import com.google.appengine.api.datastore.Entity;
 
 /**
- * Query handle.
+ * Total stats update
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractQueryHandle implements QueryHandle {
-    protected final QueryHandleService service;
+public abstract class TotalStatsUpdate extends AbstractUpdate {
+    protected TotalStatsUpdate(Entity trigger, Signum signum) {
+        super(trigger, signum);
+    }
 
-    protected AbstractQueryHandle(QueryHandleService service) {
-        this.service = service;
+    public String statsKind() {
+        return "__Stat_Total__";
     }
 }

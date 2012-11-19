@@ -20,17 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.stats;
 
 import com.google.appengine.api.datastore.Entity;
+import org.jboss.capedwarf.datastore.notifications.AbstractPutRemoveCacheListener;
 
 /**
- * Kind stats update
+ * Abstract Eager Listener.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class KindStatsRemoveUpdate extends KindStatsUpdate {
-    public KindStatsRemoveUpdate(Entity trigger) {
-        super(trigger, Signum.MINUS);
+public abstract class AbstractEagerListener extends AbstractPutRemoveCacheListener {
+    protected void onPrePut(Entity trigger) {
+        executeCallable(new TotalStatsRemoveUpdate(trigger));
+        executeCallable(new KindStatsRemoveUpdate(trigger));
+    }
+
+    protected void onPostPut(Entity trigger) {
+        executeCallable(new TotalStatsPutUpdate(trigger));
+        executeCallable(new KindStatsPutUpdate(trigger));
+    }
+
+    protected void onPreRemove(Entity trigger) {
+        executeCallable(new TotalStatsRemoveUpdate(trigger));
+        executeCallable(new KindStatsRemoveUpdate(trigger));
     }
 }

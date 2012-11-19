@@ -20,25 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.query;
+package org.jboss.capedwarf.datastore.notifications;
 
-import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Entity;
+import org.infinispan.notifications.Listener;
 
 /**
- * Update last entity key.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class UpdateKeyTask extends AbstractUpdateTask<Key> {
-    public UpdateKeyTask(Update update) {
-        super(update);
+@Listener(sync = false)
+public class NamespaceListener extends AbstractPutRemoveCacheListener implements CacheListenerHandle {
+    public Object createListener(ClassLoader cl) {
+        return new NamespaceListener();
     }
 
-    protected Key provideKey(Key value) {
-        return value;
+    protected void onPrePut(Entity trigger) {
+        executeCallable(new NamespaceRemoveTask(trigger), AbstractNamespaceTask.NAMESPACES);
     }
 
-    protected Key updateValue(Key value, Key key) {
-        return key;
+    protected void onPostPut(Entity trigger) {
+        executeCallable(new NamespaceAddTask(trigger), AbstractNamespaceTask.NAMESPACES);
+    }
+
+    protected void onPreRemove(Entity trigger) {
+        executeCallable(new NamespaceRemoveTask(trigger), AbstractNamespaceTask.NAMESPACES);
     }
 }
