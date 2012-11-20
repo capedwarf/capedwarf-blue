@@ -41,8 +41,6 @@ import com.google.appengine.tools.mapreduce.outputs.InMemoryOutput;
 import com.google.appengine.tools.mapreduce.outputs.NoOutput;
 import com.google.appengine.tools.mapreduce.reducers.NoReducer;
 import com.google.appengine.tools.pipeline.JobInfo;
-import com.google.appengine.tools.pipeline.PipelineService;
-import com.google.appengine.tools.pipeline.PipelineServiceFactory;
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -121,7 +119,7 @@ public class MapReduceTestCase extends AbstractMapReduceTest {
 
         JobInfo createJI = waitToFinish("CREATE", createHandle);
         Object create = createJI.getOutput();
-        log.warning("----- Create: " + create);
+        log.severe("----- Create: " + create);
     }
 
     @Test
@@ -156,7 +154,7 @@ public class MapReduceTestCase extends AbstractMapReduceTest {
 
         JobInfo countJI = waitToFinish("COUNT", countHandle);
         Object count = countJI.getOutput();
-        log.warning("----- Count: " + count);
+        log.severe("----- Count: " + count);
     }
 
     @Test
@@ -167,10 +165,10 @@ public class MapReduceTestCase extends AbstractMapReduceTest {
         String countHandle = entity.getProperty("handle").toString();
         service.delete(entity.getKey()); // cleanup
 
-        PipelineService ps = PipelineServiceFactory.newPipelineService();
-        JobInfo jobInfo = ps.getJobInfo(countHandle);
-        Object count = jobInfo.getOutput();
+        JobInfo jobInfo = getJobInfo("VERIFY", countHandle);
+        Assert.assertTrue("Not finished: " + toInfo(jobInfo), jobInfo.getJobState() == JobInfo.State.COMPLETED_SUCCESSFULLY);
 
+        Object count = jobInfo.getOutput();
         Assert.assertTrue(count instanceof MapReduceResult);
         MapReduceResult result = MapReduceResult.class.cast(count);
         int[] chars = toChars(payloads);

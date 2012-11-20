@@ -22,12 +22,11 @@
 
 package org.jboss.test.capedwarf.testsuite.mapreduce.test;
 
-import java.util.logging.Logger;
-
 import com.google.appengine.tools.mapreduce.MapReduceSettings;
 import com.google.appengine.tools.pipeline.JobInfo;
 import com.google.appengine.tools.pipeline.PipelineService;
 import com.google.appengine.tools.pipeline.PipelineServiceFactory;
+import junit.framework.Assert;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.TestContext;
@@ -40,7 +39,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class AbstractMapReduceTest extends AbstractTest {
-    protected Logger log = Logger.getLogger(getClass().getName());
 
     protected static WebArchive getDefaultDeployment() {
         TestContext context = TestContext.asDefault();
@@ -66,16 +64,27 @@ public class AbstractMapReduceTest extends AbstractTest {
         return war;
     }
 
+    protected JobInfo getJobInfo(final String phase, final String handle) throws Exception {
+        PipelineService pipelineService = PipelineServiceFactory.newPipelineService();
+        return getJobInfo(pipelineService, phase, handle);
+    }
+
+    protected JobInfo getJobInfo(PipelineService pipelineService, String phase, final String handle) throws Exception {
+        JobInfo jobInfo = pipelineService.getJobInfo(handle);
+        Assert.assertNotNull("Missing JobInfo - [ " + phase + " ] - handle: " + handle, jobInfo);
+        return jobInfo;
+    }
+
     protected JobInfo waitToFinish(final String phase, final String handle) throws Exception {
         PipelineService pipelineService = PipelineServiceFactory.newPipelineService();
-        JobInfo jobInfo = pipelineService.getJobInfo(handle);
+        JobInfo jobInfo = getJobInfo(pipelineService, phase, handle);
         JobInfo.State state = jobInfo.getJobState();
         int N = 24; // 2min
         while (isRunning(state) && N > 0) {
             N--;
             sync(5 * 1000L); // 5sec
             // new info lookup
-            jobInfo = pipelineService.getJobInfo(handle);
+            jobInfo = getJobInfo(pipelineService, phase, handle);
             state = jobInfo.getJobState();
         }
         if (N == 0 && isRunning(state)) {
