@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.cluster;
+package org.jboss.test.capedwarf.cluster.support;
 
 import java.io.IOException;
 

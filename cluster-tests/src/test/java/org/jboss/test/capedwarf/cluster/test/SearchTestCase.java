@@ -1,4 +1,4 @@
-package org.jboss.test.capedwarf.cluster;
+package org.jboss.test.capedwarf.cluster.test;
 
 import java.util.Arrays;
 import java.util.Collection;

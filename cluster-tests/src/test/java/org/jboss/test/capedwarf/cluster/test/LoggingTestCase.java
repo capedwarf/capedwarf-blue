@@ -1,4 +1,4 @@
-package org.jboss.test.capedwarf.cluster;
+package org.jboss.test.capedwarf.cluster.test;
 
 import java.lang.reflect.Method;
 import java.util.logging.Handler;

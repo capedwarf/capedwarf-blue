@@ -1,4 +1,4 @@
-package org.jboss.test.capedwarf.cluster.infinispan;
+package org.jboss.test.capedwarf.cluster.test.infinispan;
 
 import java.io.BufferedReader;
 import java.io.IOException;

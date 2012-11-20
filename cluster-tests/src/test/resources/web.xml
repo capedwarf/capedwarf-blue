@@ -3,11 +3,11 @@
          xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-         metadata-complete="false">
+         metadata-complete="true">
 
     <servlet>
         <servlet-name>matches</servlet-name>
-        <servlet-class>org.jboss.test.capedwarf.cluster.ProspectiveSearchMatchResponseServlet</servlet-class>
+        <servlet-class>org.jboss.test.capedwarf.cluster.support.ProspectiveSearchMatchResponseServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>matches</servlet-name>

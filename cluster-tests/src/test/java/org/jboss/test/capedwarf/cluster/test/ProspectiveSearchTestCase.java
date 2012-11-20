@@ -1,4 +1,4 @@
-package org.jboss.test.capedwarf.cluster;
+package org.jboss.test.capedwarf.cluster.test;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -23,7 +23,8 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.test.capedwarf.cluster.ProspectiveSearchMatchResponseServlet.InvocationData;
+import org.jboss.test.capedwarf.cluster.support.ProspectiveSearchMatchResponseServlet;
+import org.jboss.test.capedwarf.cluster.support.ProspectiveSearchMatchResponseServlet.InvocationData;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Before;

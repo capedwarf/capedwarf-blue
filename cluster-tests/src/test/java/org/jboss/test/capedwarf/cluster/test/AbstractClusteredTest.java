@@ -1,4 +1,4 @@
-package org.jboss.test.capedwarf.cluster;
+package org.jboss.test.capedwarf.cluster.test;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;

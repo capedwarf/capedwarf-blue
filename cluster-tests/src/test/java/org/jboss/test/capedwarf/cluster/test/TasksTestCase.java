@@ -1,4 +1,4 @@
-package org.jboss.test.capedwarf.cluster;
+package org.jboss.test.capedwarf.cluster.test;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
@@ -9,10 +9,10 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.cluster.support.PrintListener;
+import org.jboss.test.capedwarf.cluster.support.PrintServlet;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
-import org.jboss.test.capedwarf.tasks.support.PrintListener;
-import org.jboss.test.capedwarf.tasks.support.PrintServlet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
