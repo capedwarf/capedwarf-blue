@@ -22,6 +22,15 @@
 
 package org.jboss.capedwarf.files;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
@@ -45,15 +54,6 @@ import org.infinispan.io.GridFilesystem;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
 
 /**
  * JBoss GAE File service.
@@ -261,7 +261,7 @@ public class JBossFileService implements FileService {
         } else {
             final FileStat stat = new FileStat();
             stat.setFinalized(true);
-            stat.setFilename(info.getProperty(BlobInfoFactory.FILENAME).toString());
+            stat.setFilename(file.getFullPath());
             stat.setLength((Long)info.getProperty(BlobInfoFactory.SIZE));
             // TODO -- setMtime, setCtime
             return stat;

@@ -175,7 +175,7 @@ public class FilesTestCase extends BaseTest {
         FileStat stat = service.stat(file);
         Assert.assertNotNull(stat);
         Assert.assertTrue(stat.isFinalized());
-        Assert.assertEquals("records123.txt", stat.getFilename());
+        Assert.assertEquals(file.getFullPath(), stat.getFilename());
         Assert.assertTrue(stat.getLength() > 0);
     }
 
