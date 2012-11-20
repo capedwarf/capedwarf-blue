@@ -30,7 +30,7 @@ import org.jboss.capedwarf.datastore.notifications.CacheListenerHandle;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@Listener(sync = false)
+@Listener
 public class NamespaceListener extends AbstractPutRemoveCacheListener implements CacheListenerHandle {
     public Object createListener(ClassLoader cl) {
         return new NamespaceListener();
@@ -41,8 +41,7 @@ public class NamespaceListener extends AbstractPutRemoveCacheListener implements
     }
 
     protected void onPrePut(Entity trigger) {
-        executeCallable(new NamespaceRemoveTask(trigger));
-        executeCallable(new NamespaceKindRemoveTask(trigger));
+        // namespace and kind are immutable
     }
 
     protected void onPostPut(Entity trigger) {

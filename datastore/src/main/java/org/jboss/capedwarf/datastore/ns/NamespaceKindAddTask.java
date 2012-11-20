@@ -33,7 +33,7 @@ public class NamespaceKindAddTask extends AbstractNamespaceAddTask {
     }
 
     protected String lockKey() {
-        return NAMESPACES + trigger.getNamespace();
+        return KINDS + trigger.getNamespace();
     }
 
     protected String getElement() {

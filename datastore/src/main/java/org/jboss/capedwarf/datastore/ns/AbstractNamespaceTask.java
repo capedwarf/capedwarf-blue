@@ -32,6 +32,7 @@ import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
  */
 public abstract class AbstractNamespaceTask<V> extends BaseTxTask<String, V, Void> {
     static final String NAMESPACES = NamespaceServiceInternal.NAMESPACES;
+    static final String KINDS = NamespaceServiceInternal.KINDS;
 
     protected final Entity trigger;
 

@@ -33,7 +33,7 @@ public class NamespaceKindRemoveTask extends AbstractNamespaceRemoveTask {
     }
 
     protected String lockKey() {
-        return NAMESPACES + trigger.getNamespace();
+        return KINDS + trigger.getNamespace();
     }
 
     protected String getElement() {

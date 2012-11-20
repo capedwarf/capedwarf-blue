@@ -70,10 +70,10 @@ public class AbstractMapReduceTest extends AbstractTest {
         PipelineService pipelineService = PipelineServiceFactory.newPipelineService();
         JobInfo jobInfo = pipelineService.getJobInfo(handle);
         JobInfo.State state = jobInfo.getJobState();
-        int N = 10;
+        int N = 24; // 2min
         while (isRunning(state) && N > 0) {
             N--;
-            sync(30 * 1000L); // 30sec
+            sync(5 * 1000L); // 5sec
             // new info lookup
             jobInfo = pipelineService.getJobInfo(handle);
             state = jobInfo.getJobState();

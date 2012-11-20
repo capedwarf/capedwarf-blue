@@ -57,7 +57,7 @@ public class NamespaceServiceImpl implements NamespaceServiceInternal {
     }
 
     public Set<String> getKindsPerNamespace(String namespace) {
-        return getCachedSet(NAMESPACES + namespace);
+        return getCachedSet(KINDS + namespace);
     }
 
     public SetMultimap<String, String> getKindsPerNamespaces() {

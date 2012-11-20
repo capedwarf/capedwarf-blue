@@ -33,6 +33,7 @@ import com.google.common.collect.SetMultimap;
  */
 public interface NamespaceServiceInternal {
     public static final String NAMESPACES = "__Namespaces__";
+    public static final String KINDS = "__Kinds__";
 
     /**
      * Get namespaces.
