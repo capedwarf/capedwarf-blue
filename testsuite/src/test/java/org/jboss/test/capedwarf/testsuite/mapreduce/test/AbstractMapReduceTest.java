@@ -79,12 +79,24 @@ public class AbstractMapReduceTest extends AbstractTest {
             state = jobInfo.getJobState();
         }
         if (N == 0 && isRunning(state)) {
-            throw new IllegalStateException("Failed to finish the job [ " + phase + " ]: " + handle);
+            throw new IllegalStateException("Failed to finish the job [ " + phase + " ]: " + handle + ", info: " + toInfo(jobInfo));
         }
         if (state != JobInfo.State.COMPLETED_SUCCESSFULLY) {
-            throw new IllegalStateException("Job " + handle + " failed [ " + phase + " ]: " + jobInfo + " - error: " + jobInfo.getError());
+            throw new IllegalStateException("Job " + handle + " failed [ " + phase + " ]: " + toInfo(jobInfo));
         }
         return jobInfo;
+    }
+
+    protected static String toInfo(JobInfo info) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("JobInfo[ ").append(info).append( "]");
+        if (info != null) {
+            sb.append(" --> ");
+            sb.append("state - ").append(info.getJobState()).append(", ");
+            sb.append("output - ").append(info.getOutput()).append(", ");
+            sb.append("error - ").append(info.getError());
+        }
+        return sb.toString();
     }
 
     protected boolean isRunning(JobInfo.State state) {
