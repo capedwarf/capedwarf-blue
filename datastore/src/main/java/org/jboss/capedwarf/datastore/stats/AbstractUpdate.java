@@ -61,6 +61,11 @@ public abstract class AbstractUpdate implements Update {
         entity.setProperty("bytes", 0L);
     }
 
+    @Override
+    public String statsNamespace() {
+        return "";
+    }
+
     public Entity update(Entity entity) {
         Entity updated = new Entity(entity.getKind());
         doUpdate(entity, updated);

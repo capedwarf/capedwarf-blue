@@ -25,12 +25,22 @@ package org.jboss.capedwarf.datastore.stats;
 import com.google.appengine.api.datastore.Entity;
 
 /**
- * Total stats remove update
+ * Ns_Kind stats update
  *
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class TotalStatsRemoveUpdate extends TotalStatsUpdate {
-    public TotalStatsRemoveUpdate(Entity trigger) {
-        super(trigger, Signum.MINUS);
+public class NsKindStatsUpdate extends KindStatsUpdate {
+    protected NsKindStatsUpdate(Entity trigger, Signum signum) {
+        super(trigger, signum);
     }
+
+    public String statsKind() {
+        return "__Stat_Ns_Kind__";
+    }
+
+    @Override
+    public String statsNamespace() {
+        return trigger.getNamespace();
+    }
+
 }

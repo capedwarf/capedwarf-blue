@@ -37,6 +37,7 @@ import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
  * Namespaces service.
  * 
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class NamespaceServiceImpl implements NamespaceServiceInternal {
     NamespaceServiceImpl() {

@@ -29,7 +29,7 @@ import com.google.appengine.api.datastore.Entity;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class KindStatsUpdate extends AbstractMultipleUpdate {
+public class KindStatsUpdate extends AbstractMultipleUpdate {
     protected KindStatsUpdate(Entity trigger, Signum signum) {
         super(trigger, signum);
     }

@@ -22,6 +22,7 @@ public class AdminExtension implements Extension {
     public void register(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
         addAnnotatedType(bbd, bm, DatastoreEntityViewer.class);
         addAnnotatedType(bbd, bm, DatastoreViewer.class);
+        addAnnotatedType(bbd, bm, DatastoreStatistics.class);
         addAnnotatedType(bbd, bm, HttpParamProducer.class);
         addAnnotatedType(bbd, bm, LogViewer.class);
         addAnnotatedType(bbd, bm, TimeFormatter.class);

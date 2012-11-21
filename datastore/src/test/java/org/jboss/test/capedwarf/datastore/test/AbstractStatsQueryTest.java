@@ -25,24 +25,38 @@ package org.jboss.test.capedwarf.datastore.test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
+import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
-import junit.framework.Assert;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
 
+import static junit.framework.Assert.assertEquals;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public abstract class AbstractStatsQueryTest extends BaseTest {
+
+    public static final String STAT_KIND = "__Stat_Kind__";
+    public static final String STAT_TOTAL = "__Stat_Total__";
+    public static final String STAT_NS_KIND = "__Stat_Ns_Kind__";
+    public static final String STAT_NS_TOTAL = "__Stat_Ns_Total__";
+
+    private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
     protected static WebArchive getDefaultDeployment(boolean sync) {
         TestContext context = TestContext.asDefault();
         context.getProperties().put("enable.eager.datastore.stats", sync ? "sync" : "async");
@@ -61,118 +75,190 @@ public abstract class AbstractStatsQueryTest extends BaseTest {
         }
     }
 
-    protected static List<Entity> getStatsList(String statsKind) {
+    protected List<Entity> getStatsList(String statsKind) {
         return getStatsList(statsKind, null);
     }
 
-    protected static List<Entity> getStatsList(String statsKind, Query.Filter filter) {
-        DatastoreService service = DatastoreServiceFactory.getDatastoreService();
+    protected List<Entity> getStatsList(String statsKind, Query.Filter filter) {
         Query query = new Query(statsKind).addSort("timestamp", Query.SortDirection.DESCENDING);
         if (filter != null) {
             query.setFilter(filter);
         }
-        return service.prepare(query).asList(FetchOptions.Builder.withDefaults());
+        return datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
     }
 
-    protected static Entity getStatsEntity(String statsKind) {
+    protected Entity getStatsEntity(String statsKind) {
         return getStatsEntity(statsKind, null);
     }
 
-    protected static Entity getStatsEntity(String statsKind, Query.Filter filter) {
+    protected Entity getStatsEntity(String statsKind, Query.Filter filter) {
         List<Entity> list = getStatsList(statsKind, filter);
-        Assert.assertFalse(list.isEmpty());
-        return list.get(0);
+        if (list.isEmpty()) {
+            Entity stats = new Entity(statsKind);
+            stats.setProperty("count", 0L);
+            stats.setProperty("bytes", 0L);
+            return stats;
+        } else {
+            return list.get(0);
+        }
     }
 
     protected abstract void doSync();
 
     @Test
     public void testTotalStats() throws Exception {
-        DatastoreService service = DatastoreServiceFactory.getDatastoreService();
+        Key k1 = null;
+        Key k2 = null;
+        try {
+            Entity initialStats = currentTotalStats();
 
-        Entity e1 = new Entity("SC");
-        e1.setProperty("x", "original");
-        Key k1 = service.put(e1);
+            NamespaceManager.set("namespace1");
+            Entity initialNs1Stats = currentNsTotalStats();
 
-        doSync();
+            NamespaceManager.set("namespace2");
+            Entity initialNs2Stats = currentNsTotalStats();
 
-        Entity allStats = getStatsEntity("__Stat_Total__");
-        long count = (Long) allStats.getProperty("count");
-        long bytes = (Long) allStats.getProperty("bytes");
+            Entity e2 = new Entity("SC");
+            k2 = datastore.put(e2);
+            doSync();
+            assertStatsLargerBy(e2, initialNs2Stats, currentNsTotalStats());
+            assertStatsLargerBy(e2, initialStats, currentTotalStats());
 
-        Entity e2 = new Entity("SC");
-        e2.setProperty("y", "replacement");
-        Key k2 = service.put(e2);
+            NamespaceManager.set("namespace1");
+            assertStatsEqual(initialNs1Stats, currentNsTotalStats());
 
-        doSync();
+            Entity e1 = new Entity("SC");
+            k1 = datastore.put(e1);
+            doSync();
+            assertStatsLargerBy(e1, initialNs1Stats, currentNsTotalStats());
+            assertStatsLargerBy(Arrays.asList(e1, e2), initialStats, currentTotalStats());
 
-        allStats = getStatsEntity("__Stat_Total__");
-        long count2 = (Long) allStats.getProperty("count");
-        Assert.assertEquals(count + 1, count2);
-        long bytes2 = (Long) allStats.getProperty("bytes");
-        long cb = countBytes(e2);
-        Assert.assertEquals(bytes + cb, bytes2);
+            NamespaceManager.set("namespace2");
+            assertStatsLargerBy(e2, initialNs2Stats, currentNsTotalStats());
 
-        service.delete(k2);
+            datastore.delete(k2);
+            doSync();
+            assertStatsEqual(initialNs2Stats, currentNsTotalStats());
+            assertStatsLargerBy(e1, initialStats, currentTotalStats());
 
-        doSync();
-
-        allStats = getStatsEntity("__Stat_Total__");
-        long count3 = (Long) allStats.getProperty("count");
-        Assert.assertEquals(count, count3);
-        long bytes3 = (Long) allStats.getProperty("bytes");
-        Assert.assertEquals(bytes, bytes3);
-
-        service.delete(k1);
+            NamespaceManager.set("namespace1");
+            datastore.delete(k1);
+            doSync();
+            assertStatsEqual(initialNs1Stats, currentNsTotalStats());
+            assertStatsEqual(initialStats, currentTotalStats());
+        } finally {
+            cleanup(k1, k2);
+        }
     }
 
     @Test
     public void testKindStats() throws Exception {
-        DatastoreService service = DatastoreServiceFactory.getDatastoreService();
-
         Entity e1 = new Entity("SCK");
         e1.setProperty("x", "original");
-        Key k1 = service.put(e1);
+        Key k1 = datastore.put(e1);
 
         doSync();
 
         Entity e3 = new Entity("QWE");
         e3.setProperty("foo", "bar");
-        Key k3 = service.put(e3);
+        Key k3 = datastore.put(e3);
 
         doSync();
 
         Query.FilterPredicate filter = new Query.FilterPredicate("kind_name", Query.FilterOperator.EQUAL, "SCK");
 
-        Entity kindStats = getStatsEntity("__Stat_Kind__", filter);
-        long count = (Long) kindStats.getProperty("count");
-        Assert.assertEquals(1L, count);
+        Entity kindStats = getStatsEntity(STAT_KIND, filter);
+        long count = getCount(kindStats);
+        assertEquals(1L, count);
 
         Entity e2 = new Entity("SCK");
         e2.setProperty("y", "replacement");
-        Key k2 = service.put(e2);
+        Key k2 = datastore.put(e2);
 
         doSync();
 
-        kindStats = getStatsEntity("__Stat_Kind__", filter);
-        long count2 = (Long) kindStats.getProperty("count");
-        Assert.assertEquals(count + 1, count2);
+        kindStats = getStatsEntity(STAT_KIND, filter);
+        assertEquals(count + 1, getCount(kindStats));
 
-        int qwes = 0;
-        for (Entity stat : getStatsList("__Stat_Kind__")) {
-            String kindName = stat.getProperty("kind_name").toString();
-            if ("QWE".equals(kindName)) qwes++;
+        assertEquals(1, countEntitiesMatching(getStatsList(STAT_KIND), "kind_name", "QWE"));
+
+        datastore.delete(k2);
+
+        doSync();
+
+        kindStats = getStatsEntity(STAT_KIND, filter);
+        assertEquals(count, getCount(kindStats));
+
+        datastore.delete(k1, k3);
+    }
+
+
+    private void cleanup(Key... keys) {
+        String ns = NamespaceManager.get();
+        for (Key key : keys) {
+            if (key != null) {
+                NamespaceManager.set(key.getNamespace());
+                datastore.delete(key);
+            }
         }
-        Assert.assertEquals(1, qwes);
+        NamespaceManager.set(ns);
+    }
 
-        service.delete(k2);
+    private Entity currentTotalStats() {
+        String ns = NamespaceManager.get();
+        if (ns == null || !ns.equals("")) {
+            NamespaceManager.set("");
+        }
+        try {
+            return getStatsEntity(STAT_TOTAL);
+        } finally {
+            if (ns == null || !ns.equals("")) {
+                NamespaceManager.set(ns);
+            }
+        }
+    }
 
-        doSync();
+    private Entity currentNsTotalStats() {
+        return getStatsEntity(STAT_NS_TOTAL);
+    }
 
-        kindStats = getStatsEntity("__Stat_Kind__", filter);
-        long count3 = (Long) kindStats.getProperty("count");
-        Assert.assertEquals(count, count3);
 
-        service.delete(k1, k3);
+    private void assertStatsEqual(Entity expected, Entity actual) {
+        assertEquals(getCount(expected), getCount(actual));
+        assertEquals(getBytes(expected), getBytes(actual));
+    }
+
+    private void assertStatsLargerBy(Entity entity, Entity previousStats, Entity newStats) {
+        assertStatsLargerBy(Collections.singleton(entity), previousStats, newStats);
+    }
+
+    private void assertStatsLargerBy(Collection<Entity> entities, Entity previousStats, Entity newStats) {
+        assertEquals("count", getCount(previousStats) + entities.size(), getCount(newStats));
+        assertEquals("bytes", getBytes(previousStats) + countBytes(entities), getBytes(newStats));
+    }
+
+    private long getBytes(Entity allStats) {
+        return (Long) allStats.getProperty("bytes");
+    }
+
+    private long getCount(Entity allStats) {
+        return (Long) allStats.getProperty("count");
+    }
+
+    private int countBytes(Collection<Entity> entities) {
+        int bytes = 0;
+        for (Entity entity : entities) {
+            bytes += countBytes(entity);
+        }
+        return bytes;
+    }
+
+    private int countEntitiesMatching(List<Entity> stats, String propertyName, String propertyValue) {
+        int count = 0;
+        for (Entity stat : stats) {
+            String kindName = stat.getProperty(propertyName).toString();
+            if (propertyValue.equals(kindName)) count++;
+        }
+        return count;
     }
 }

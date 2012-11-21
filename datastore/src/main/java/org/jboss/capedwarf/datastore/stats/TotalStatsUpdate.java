@@ -29,7 +29,7 @@ import com.google.appengine.api.datastore.Entity;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class TotalStatsUpdate extends AbstractUpdate {
+public class TotalStatsUpdate extends AbstractUpdate {
     protected TotalStatsUpdate(Entity trigger, Signum signum) {
         super(trigger, signum);
     }
