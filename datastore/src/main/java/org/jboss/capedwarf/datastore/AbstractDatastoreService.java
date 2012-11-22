@@ -157,7 +157,7 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
         if (applyPost) {
             return wrap;
         } else {
-            return handleGetWithPost(wrap, JBossTransaction.getTx(), post);
+            return handleGetWithPost(wrap, CapedwarfTransaction.getTx(), post);
         }
     }
 

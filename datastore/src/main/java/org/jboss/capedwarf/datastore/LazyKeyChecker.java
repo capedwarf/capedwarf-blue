@@ -43,7 +43,7 @@ public abstract class LazyKeyChecker {
 
     protected void check() {
         if (inTx) {
-            if (JBossTransaction.getTxStatus() != Status.STATUS_ACTIVE) {
+            if (CapedwarfTransaction.getTxStatus() != Status.STATUS_ACTIVE) {
                 throw new IllegalStateException("Transaction with which this operation is associated is not active.");
             }
 

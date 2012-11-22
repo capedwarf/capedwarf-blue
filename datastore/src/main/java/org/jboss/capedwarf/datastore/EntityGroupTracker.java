@@ -47,7 +47,7 @@ class EntityGroupTracker implements Synchronization {
 
     private EntityGroupTracker(Transaction tx) {
         this.tx = tx;
-        this.checker = JBossTransaction.isXG() ? new XGTxChecker() : new SingleTxChecker();
+        this.checker = CapedwarfTransaction.isXG() ? new XGTxChecker() : new SingleTxChecker();
         this.keys = new ConcurrentHashMap<Key, Key>();
     }
 
@@ -55,7 +55,7 @@ class EntityGroupTracker implements Synchronization {
         if (key == null)
             return null;
 
-        final Transaction transaction = JBossTransaction.getTx();
+        final Transaction transaction = CapedwarfTransaction.getTx();
         if (transaction == null)
             return null; // do not track w/o Tx
 
@@ -93,7 +93,7 @@ class EntityGroupTracker implements Synchronization {
     }
 
     static void check() {
-        final Transaction transaction = JBossTransaction.getTx();
+        final Transaction transaction = CapedwarfTransaction.getTx();
         if (transaction == null)
             return; // nothing to check
 

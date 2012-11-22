@@ -34,18 +34,18 @@ public class DatastoreServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         // w/o config
         CtMethod method = clazz.getDeclaredMethod("getDatastoreService");
-        method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService();");
+        method.setBody("return new org.jboss.capedwarf.datastore.CapedwarfDatastoreService();");
 
         method = clazz.getDeclaredMethod("getAsyncDatastoreService");
-        method.setBody("return new org.jboss.capedwarf.datastore.JBossAsyncDatastoreService();");
+        method.setBody("return new org.jboss.capedwarf.datastore.CapedwarfAsyncDatastoreService();");
 
         // with config
         final ClassPool pool = clazz.getClassPool();
         final CtClass[] params = {pool.get("com.google.appengine.api.datastore.DatastoreServiceConfig")};
         method = clazz.getDeclaredMethod("getDatastoreService", params);
-        method.setBody("return new org.jboss.capedwarf.datastore.JBossDatastoreService($1);");
+        method.setBody("return new org.jboss.capedwarf.datastore.CapedwarfDatastoreService($1);");
 
         method = clazz.getDeclaredMethod("getAsyncDatastoreService", params);
-        method.setBody("return new org.jboss.capedwarf.datastore.JBossAsyncDatastoreService($1);");
+        method.setBody("return new org.jboss.capedwarf.datastore.CapedwarfAsyncDatastoreService($1);");
     }
 }

@@ -53,7 +53,7 @@ public class LazyChecker extends LazyKeyChecker {
         Integer cursorOffset = null;
         Cursor startCursor = fetchOptions.getStartCursor();
         if (startCursor != null) {
-            cursorOffset = JBossCursorHelper.readIndex(startCursor);
+            cursorOffset = CapedwarfCursorHelper.readIndex(startCursor);
         }
         if (offset != null || cursorOffset != null) {
             offset = (offset == null ? 0 : offset)
@@ -65,7 +65,7 @@ public class LazyChecker extends LazyKeyChecker {
         Integer cursorLimit = null;
         Cursor endCursor = fetchOptions.getEndCursor();
         if (endCursor != null) {
-            int last = JBossCursorHelper.readIndex(endCursor)-1;
+            int last = CapedwarfCursorHelper.readIndex(endCursor)-1;
             int first = (offset == null) ? 0 : offset;
             cursorLimit = last - first + 1;
         }

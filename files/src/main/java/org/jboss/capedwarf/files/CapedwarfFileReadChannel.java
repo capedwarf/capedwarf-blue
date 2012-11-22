@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,45 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.datancleus;
+package org.jboss.capedwarf.files;
 
-import org.jboss.vfs.VirtualFile;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import com.google.appengine.api.files.FileReadChannel;
+import org.infinispan.io.ReadableGridFileChannel;
 
 /**
- * Hack around the GAE DN tests.
+ * JBoss file read channel.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class TestJBossMetaDataScanner extends JBossMetaDataScanner {
-    public TestJBossMetaDataScanner() {
+class CapedwarfFileReadChannel implements FileReadChannel {
+    private final ReadableGridFileChannel delegate;
+
+    CapedwarfFileReadChannel(ReadableGridFileChannel channel) {
+        delegate = channel;
     }
 
-    public TestJBossMetaDataScanner(String appId) {
-        super(appId);
+    public long position() throws IOException {
+        return delegate.position();
     }
 
-    @Override
-    protected boolean accept(VirtualFile file) {
-        return super.accept(file) && file.getName().contains("Test") == false;
+    public FileReadChannel position(long newPosition) throws IOException {
+        delegate.position(newPosition);
+        return this;
+    }
+
+    public int read(ByteBuffer dst) throws IOException {
+        return delegate.read(dst);
+    }
+
+    public boolean isOpen() {
+        return delegate.isOpen();
+    }
+
+    public void close() throws IOException {
+        delegate.close();
     }
 }

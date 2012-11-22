@@ -22,15 +22,6 @@
 
 package org.jboss.test.capedwarf.images;
 
-import com.google.appengine.api.images.Composite;
-import com.google.appengine.api.images.Image;
-import com.google.appengine.api.images.ImagesServiceFactory;
-import org.jboss.capedwarf.images.util.ColorUtils;
-import org.jboss.capedwarf.images.util.ImageUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
@@ -39,6 +30,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import javax.imageio.ImageIO;
+
+import com.google.appengine.api.images.Composite;
+import com.google.appengine.api.images.Image;
+import com.google.appengine.api.images.ImagesServiceFactory;
+import org.jboss.capedwarf.images.util.ColorUtils;
+import org.jboss.capedwarf.images.util.ImageUtils;
+import org.junit.Assert;
+import org.junit.Test;
 
 import static com.google.appengine.api.images.Composite.Anchor.BOTTOM_CENTER;
 import static com.google.appengine.api.images.Composite.Anchor.BOTTOM_LEFT;
@@ -53,7 +54,7 @@ import static com.google.appengine.api.images.Composite.Anchor.TOP_RIGHT;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CompositeImagesTestCase extends JBossImagesServiceTest {
+public class CompositeImagesTestCase extends CapedwarfImagesServiceTest {
 
     private static final long BLACK_ARGB = 0xFF000000L;
     private static final long BLUE_ARGB = 0xFF0000FFL;

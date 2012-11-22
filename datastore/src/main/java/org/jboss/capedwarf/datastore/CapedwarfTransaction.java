@@ -48,26 +48,26 @@ import org.jboss.capedwarf.environment.EnvironmentFactory;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-final class JBossTransaction implements Transaction {
-    private static final Logger log = Logger.getLogger(JBossTransaction.class.getName());
+final class CapedwarfTransaction implements Transaction {
+    private static final Logger log = Logger.getLogger(CapedwarfTransaction.class.getName());
 
     private final static TransactionManager tm = TxUtils.getTransactionManager();
-    private final static ThreadLocal<Stack<JBossTransaction>> current = new ThreadLocal<Stack<JBossTransaction>>();
+    private final static ThreadLocal<Stack<CapedwarfTransaction>> current = new ThreadLocal<Stack<CapedwarfTransaction>>();
 
     private final TransactionOptions options;
     private ThreadLocal<javax.transaction.Transaction> transactions = new ThreadLocal<javax.transaction.Transaction>();
 
-    private JBossTransaction(TransactionOptions options) {
+    private CapedwarfTransaction(TransactionOptions options) {
         this.options = options;
     }
 
     static Transaction newTransaction(TransactionOptions options) {
-        Stack<JBossTransaction> stack = current.get();
+        Stack<CapedwarfTransaction> stack = current.get();
         if (stack == null) {
-            stack = new Stack<JBossTransaction>();
+            stack = new Stack<CapedwarfTransaction>();
             current.set(stack);
         } else {
-            JBossTransaction jt = stack.peek();
+            CapedwarfTransaction jt = stack.peek();
             jt.suspend(); // suspend existing
         }
         try {
@@ -80,7 +80,7 @@ final class JBossTransaction implements Transaction {
 
             throw new DatastoreFailureException("Cannot begin tx.", e);
         }
-        final JBossTransaction tx = new JBossTransaction(options);
+        final CapedwarfTransaction tx = new CapedwarfTransaction(options);
         stack.push(tx);
         return tx;
     }
@@ -99,7 +99,7 @@ final class JBossTransaction implements Transaction {
 
     static TransactionWrapper getTxWrapper(Transaction tx) {
         if (tx != null) {
-            return new TransactionWrapper(getTx(), JBossTransaction.class.cast(tx));
+            return new TransactionWrapper(getTx(), CapedwarfTransaction.class.cast(tx));
         } else {
             return null;
         }
@@ -121,11 +121,11 @@ final class JBossTransaction implements Transaction {
 
         resumeTx(tw.getDelegate());
 
-        final JBossTransaction tx = tw.getTransaction();
+        final CapedwarfTransaction tx = tw.getTransaction();
 
-        Stack<JBossTransaction> stack = current.get();
+        Stack<CapedwarfTransaction> stack = current.get();
         if (stack == null) {
-            stack = new Stack<JBossTransaction>();
+            stack = new Stack<CapedwarfTransaction>();
             current.set(stack);
         }
 
@@ -136,7 +136,7 @@ final class JBossTransaction implements Transaction {
         if (tw == null)
             return;
 
-        final Stack<JBossTransaction> stack = current.get();
+        final Stack<CapedwarfTransaction> stack = current.get();
         if (stack == null || stack.isEmpty())
             throw new IllegalStateException("Illegal call to cleanup - stack should exist");
 
@@ -198,13 +198,13 @@ final class JBossTransaction implements Transaction {
         }
     }
 
-    static JBossTransaction currentTransaction() {
-        final Stack<JBossTransaction> stack = current.get();
+    static CapedwarfTransaction currentTransaction() {
+        final Stack<CapedwarfTransaction> stack = current.get();
         return (stack != null) ? stack.peek() : null;
     }
 
     static TransactionOptions currentTransactionOptions() {
-        final Stack<JBossTransaction> stack = current.get();
+        final Stack<CapedwarfTransaction> stack = current.get();
         return (stack != null) ? stack.peek().options : null;
     }
 
@@ -213,18 +213,18 @@ final class JBossTransaction implements Transaction {
         return (to != null && to.isXG());
     }
 
-    private JBossTransaction cleanup(boolean resume) {
-        final Stack<JBossTransaction> stack = current.get();
+    private CapedwarfTransaction cleanup(boolean resume) {
+        final Stack<CapedwarfTransaction> stack = current.get();
         if (stack == null)
             throw new IllegalStateException("Illegal call to cleanup - stack should exist");
 
-        final JBossTransaction jt = stack.peek();
+        final CapedwarfTransaction jt = stack.peek();
         if (jt != this)
             throw new IllegalArgumentException("Cannot cleanup non-current tx!");
 
         stack.pop(); // remove current
 
-        JBossTransaction previous = null;
+        CapedwarfTransaction previous = null;
         if (stack.isEmpty()) {
             current.remove();
         } else {
@@ -256,7 +256,7 @@ final class JBossTransaction implements Transaction {
     public Future<Void> commitAsync() {
         checkIfCurrent();
 
-        final JBossTransaction previous = cleanup(false);
+        final CapedwarfTransaction previous = cleanup(false);
         final javax.transaction.Transaction tx = resumeAsync(previous);
         if (tx == null) {
             throw new IllegalArgumentException("No Tx -- should exist?!");
@@ -289,7 +289,7 @@ final class JBossTransaction implements Transaction {
     public Future<Void> rollbackAsync() {
         checkIfCurrent();
 
-        final JBossTransaction previous = cleanup(false);
+        final CapedwarfTransaction previous = cleanup(false);
         final javax.transaction.Transaction tx = resumeAsync(previous);
         if (tx == null) {
             throw new IllegalArgumentException("No Tx -- should exist?!");
@@ -308,7 +308,7 @@ final class JBossTransaction implements Transaction {
         });
     }
 
-    private static javax.transaction.Transaction resumeAsync(JBossTransaction previous) {
+    private static javax.transaction.Transaction resumeAsync(CapedwarfTransaction previous) {
         final javax.transaction.Transaction tx = suspendTx(); // reset current thread
         if (previous != null) {
             previous.resume(false); // resume previous

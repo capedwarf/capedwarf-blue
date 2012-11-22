@@ -31,6 +31,6 @@ import javassist.CtMethod;
 public class AppIdentityServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getAppIdentityService");
-        method.setBody("return new org.jboss.capedwarf.appidentity.JBossAppIdentityService();");
+        method.setBody("return new org.jboss.capedwarf.appidentity.CapedwarfAppIdentityService();");
     }
 }

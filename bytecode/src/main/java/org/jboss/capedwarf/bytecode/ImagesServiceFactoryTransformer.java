@@ -31,7 +31,7 @@ import javassist.CtMethod;
 public class ImagesServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getImagesService");
-        method.setBody("return new org.jboss.capedwarf.images.JBossImagesService();");
+        method.setBody("return new org.jboss.capedwarf.images.CapedwarfImagesService();");
     }
 
 }

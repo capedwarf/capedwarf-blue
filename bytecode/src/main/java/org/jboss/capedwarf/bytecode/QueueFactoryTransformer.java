@@ -33,6 +33,6 @@ public class QueueFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         final ClassPool pool = clazz.getClassPool();
         final CtMethod method = clazz.getDeclaredMethod("getQueue", new CtClass[]{pool.get(String.class.getName())});
-        method.setBody("return org.jboss.capedwarf.tasks.JBossQueue.getQueue($1);");
+        method.setBody("return org.jboss.capedwarf.tasks.CapedwarfQueue.getQueue($1);");
     }
 }

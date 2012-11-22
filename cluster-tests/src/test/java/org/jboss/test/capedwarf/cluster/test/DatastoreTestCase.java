@@ -14,7 +14,7 @@ import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.capedwarf.datastore.JBossDatastoreService;
+import org.jboss.capedwarf.datastore.CapedwarfDatastoreService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -182,7 +182,7 @@ public class DatastoreTestCase extends AbstractClusteredTest {
     }
 
     private void tearDown() {
-        ((JBossDatastoreService) getService()).clearCache();
+        ((CapedwarfDatastoreService) getService()).clearCache();
     }
 
     private Entity createTestEntity(String kind, int id) {

@@ -22,21 +22,22 @@
 
 package org.jboss.capedwarf.mail;
 
-import com.google.appengine.api.mail.MailService;
-import org.jboss.capedwarf.common.config.JBossEnvironment;
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import java.io.IOException;
+import java.util.Collection;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
-import java.io.IOException;
-import java.util.Collection;
+
+import com.google.appengine.api.mail.MailService;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class JBossMailService implements MailService {
+public class CapedwarfMailService implements MailService {
 
     private volatile Session session;
 
@@ -58,7 +59,7 @@ public class JBossMailService implements MailService {
     }
 
     private Collection<String> getAdminEmails() {
-        return JBossEnvironment.getThreadLocalInstance().getAdmins();
+        return CapedwarfEnvironment.getThreadLocalInstance().getAdmins();
     }
 
     private void assertAllRecipientFieldsAreEmpty(Message message) {

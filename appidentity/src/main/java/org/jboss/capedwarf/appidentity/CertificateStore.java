@@ -22,12 +22,12 @@
 
 package org.jboss.capedwarf.appidentity;
 
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
 /**
  * Stores CertificateBundles in Memcache.
@@ -59,7 +59,7 @@ public class CertificateStore {
     }
 
     private MemcacheService getMemcacheService() {
-        return MemcacheServiceFactory.getMemcacheService(JBossAppIdentityService.MEMCACHE_NAMESPACE);
+        return MemcacheServiceFactory.getMemcacheService(CapedwarfAppIdentityService.MEMCACHE_NAMESPACE);
     }
 
     public void store(CertificateBundle bundle) {

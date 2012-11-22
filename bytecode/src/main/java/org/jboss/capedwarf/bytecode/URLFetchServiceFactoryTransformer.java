@@ -31,6 +31,6 @@ import javassist.CtMethod;
 public class URLFetchServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getURLFetchService");
-        method.setBody("return new org.jboss.capedwarf.urlfetch.JBossURLFetchService();");
+        method.setBody("return new org.jboss.capedwarf.urlfetch.CapedwarfURLFetchService();");
     }
 }

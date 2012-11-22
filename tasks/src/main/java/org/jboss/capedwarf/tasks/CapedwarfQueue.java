@@ -60,7 +60,7 @@ import org.jboss.capedwarf.common.reflection.TargetInvocation;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JBossQueue implements Queue {
+public class CapedwarfQueue implements Queue {
     private static final String ID = "ID:";
     private static final Sort SORT = new Sort(new SortField("eta", SortField.LONG));
 
@@ -75,10 +75,10 @@ public class JBossQueue implements Queue {
     private final SearchManager searchManager;
 
     public static Queue getQueue(String queueName) {
-        return new JBossQueue(queueName); // do not cache
+        return new CapedwarfQueue(queueName); // do not cache
     }
 
-    private JBossQueue(String queueName) {
+    private CapedwarfQueue(String queueName) {
         validateQueueName(queueName);
         this.queueName = queueName;
         AdvancedCache<String,Object> ac = getCache().getAdvancedCache();

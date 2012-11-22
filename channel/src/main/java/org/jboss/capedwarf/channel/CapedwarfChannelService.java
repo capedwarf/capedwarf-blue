@@ -22,19 +22,20 @@
 
 package org.jboss.capedwarf.channel;
 
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+
 import com.google.appengine.api.channel.ChannelMessage;
 import com.google.appengine.api.channel.ChannelPresence;
 import com.google.appengine.api.channel.ChannelService;
 import org.jboss.capedwarf.channel.manager.Channel;
 import org.jboss.capedwarf.channel.manager.ChannelManager;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class JBossChannelService implements ChannelService {
+public class CapedwarfChannelService implements ChannelService {
 
     public static final int DEFAULT_DURATION_MINUTES = 120;
 

@@ -54,7 +54,7 @@ import org.jboss.capedwarf.environment.EnvironmentFactory;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class JBossAppIdentityService implements AppIdentityService {
+public class CapedwarfAppIdentityService implements AppIdentityService {
     public static final String MEMCACHE_NAMESPACE = "_ah_";
     public static final String MEMCACHE_KEY_PREFIX = "_ah_app_identity_";
     public static final long OFFSET = 300000L;

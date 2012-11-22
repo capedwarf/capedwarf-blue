@@ -19,14 +19,14 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JBossDelegate implements ApiProxy.Delegate<ApiProxy.Environment> {
+public class CapedwarfDelegate implements ApiProxy.Delegate<ApiProxy.Environment> {
 
-    public static final JBossDelegate INSTANCE = new JBossDelegate();
+    public static final CapedwarfDelegate INSTANCE = new CapedwarfDelegate();
 
     private final Logger log = Logger.getLogger(getClass().getName()); 
     private final Map<Thread, ServletRequest> threads = new ConcurrentHashMap<Thread, ServletRequest>();
 
-    private JBossDelegate() {
+    private CapedwarfDelegate() {
     }
 
     public byte[] makeSyncCall(ApiProxy.Environment environment, String packageName, String methodName, byte[] bytes) throws ApiProxy.ApiProxyException {

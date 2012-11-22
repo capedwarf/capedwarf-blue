@@ -35,7 +35,7 @@ import org.jboss.capedwarf.common.reflection.TargetInvocation;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-final class JBossCursorHelper {
+final class CapedwarfCursorHelper {
     private static TargetInvocation<Integer> getIndex = ReflectionUtils.cacheInvocation(Cursor.class, "getIndex");
 
     static Cursor createCursor(final AtomicInteger index) {

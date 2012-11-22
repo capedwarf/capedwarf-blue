@@ -22,9 +22,9 @@
 
 package org.jboss.capedwarf.images.transform;
 
-import com.google.appengine.api.images.Transform;
-
 import java.awt.image.BufferedImage;
+
+import com.google.appengine.api.images.Transform;
 
 /**
  * GAE's ImFeelingLucky image transform enhances color & contrast of the supplied image.
@@ -32,7 +32,7 @@ import java.awt.image.BufferedImage;
  *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class ImFeelingLuckyTransform extends JBossTransform {
+public class ImFeelingLuckyTransform extends CapedwarfTransform {
 
     public ImFeelingLuckyTransform(Transform transform) {
         super(transform);

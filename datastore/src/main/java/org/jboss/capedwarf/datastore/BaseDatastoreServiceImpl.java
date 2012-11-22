@@ -160,7 +160,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
     }
 
     public Transaction getCurrentTransaction() {
-        Transaction tx = JBossTransaction.currentTransaction();
+        Transaction tx = CapedwarfTransaction.currentTransaction();
         if (tx == null)
             throw new NoSuchElementException("No current transaction.");
 
@@ -168,22 +168,22 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
     }
 
     public Transaction getCurrentTransaction(Transaction transaction) {
-        Transaction tx = JBossTransaction.currentTransaction();
+        Transaction tx = CapedwarfTransaction.currentTransaction();
         return (tx != null) ? tx : transaction;
     }
 
     public Collection<Transaction> getActiveTransactions() {
-        return JBossTransaction.getTransactions();
+        return CapedwarfTransaction.getTransactions();
     }
 
     static javax.transaction.Transaction beforeTx(Transaction tx) {
         // if tx is null, explicitly suspend current tx
-        return (tx == null) ? JBossTransaction.suspendTx() : null;
+        return (tx == null) ? CapedwarfTransaction.suspendTx() : null;
     }
 
     static void afterTx(javax.transaction.Transaction transaction) {
         if (transaction != null) {
-            JBossTransaction.resumeTx(transaction);
+            CapedwarfTransaction.resumeTx(transaction);
         }
     }
 

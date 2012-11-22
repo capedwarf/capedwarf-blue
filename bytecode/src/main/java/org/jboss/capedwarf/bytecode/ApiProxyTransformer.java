@@ -33,6 +33,6 @@ import javassist.CtMethod;
 public class ApiProxyTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getCurrentEnvironment");
-        method.setBody("return org.jboss.capedwarf.common.config.JBossEnvironment.getThreadLocalInstance();");
+        method.setBody("return org.jboss.capedwarf.common.config.CapedwarfEnvironment.getThreadLocalInstance();");
     }
 }

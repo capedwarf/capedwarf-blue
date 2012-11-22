@@ -22,7 +22,7 @@
 
 package org.jboss.capedwarf.xmpp;
 
-import org.jboss.capedwarf.common.config.JBossEnvironment;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.config.XmppConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.Roster;
@@ -42,7 +42,7 @@ public class XMPPConnectionManager {
 
     public XMPPConnection createConnection() {
         try {
-            XmppConfiguration xmppConfig = JBossEnvironment.getThreadLocalInstance().getCapedwarfConfiguration().getXmppConfiguration();
+            XmppConfiguration xmppConfig = CapedwarfEnvironment.getThreadLocalInstance().getCapedwarfConfiguration().getXmppConfiguration();
 
             ConnectionConfiguration config = new ConnectionConfiguration(xmppConfig.getHost(), xmppConfig.getPort());
             XMPPConnection connection = new XMPPConnection(config);

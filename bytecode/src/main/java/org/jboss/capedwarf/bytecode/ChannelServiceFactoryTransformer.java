@@ -31,6 +31,6 @@ import javassist.CtMethod;
 public class ChannelServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getChannelService");
-        method.setBody("return new org.jboss.capedwarf.channel.JBossChannelService();");
+        method.setBody("return new org.jboss.capedwarf.channel.CapedwarfChannelService();");
     }
 }

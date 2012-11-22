@@ -22,12 +22,12 @@
 
 package org.jboss.capedwarf.files;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileWriteChannel;
 import org.infinispan.io.WritableGridFileChannel;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * JBoss file write channel.
@@ -35,13 +35,13 @@ import java.nio.ByteBuffer;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-class JBossFileWriteChannel implements FileWriteChannel {
+class CapedwarfFileWriteChannel implements FileWriteChannel {
     private AppEngineFile file;
     private final WritableGridFileChannel delegate;
-    private JBossFileService fileService;
+    private CapedwarfFileService fileService;
     private boolean lockHeld;
 
-    JBossFileWriteChannel(AppEngineFile file, WritableGridFileChannel channel, JBossFileService fileService, boolean lock) {
+    CapedwarfFileWriteChannel(AppEngineFile file, WritableGridFileChannel channel, CapedwarfFileService fileService, boolean lock) {
         this.file = file;
         this.delegate = channel;
         this.fileService = fileService;

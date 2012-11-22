@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,31 +20,35 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.images;
+package org.jboss.capedwarf.oauth;
 
-import java.awt.image.BufferedImage;
-
-import com.google.appengine.api.images.Image;
-import com.google.appengine.api.images.ImagesService;
-import org.jboss.capedwarf.images.JBossImagesService;
-import org.jboss.capedwarf.images.util.ColorUtils;
-import org.junit.Before;
+import com.google.appengine.api.oauth.OAuthRequestException;
+import com.google.appengine.api.oauth.OAuthService;
+import com.google.appengine.api.users.User;
 
 /**
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * JBoss OAuth service.
+ *
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JBossImagesServiceTest extends AbstractImagesServiceTest {
-
-    protected ImagesService imagesService;
-
-    @Before
-    public void setUp() {
-        imagesService = new JBossImagesService();
+public class CapedwarfOAuthService implements OAuthService {
+    public User getCurrentUser() throws OAuthRequestException {
+        return null;  // TODO
     }
 
-    protected int[] getARGBPixel(Image image, int x, int y) {
-        BufferedImage bufferedImage = getBufferedImage(image);
-        int rgb = bufferedImage.getRGB(x, y);
-        return ColorUtils.toIntArray((long) rgb);
+    public User getCurrentUser(String scope) throws OAuthRequestException {
+        return null;  // TODO
+    }
+
+    public boolean isUserAdmin() throws OAuthRequestException {
+        return false;  // TODO
+    }
+
+    public boolean isUserAdmin(String user) throws OAuthRequestException {
+        return false;  // TODO
+    }
+
+    public String getOAuthConsumerKey() throws OAuthRequestException {
+        return null;  // TODO
     }
 }

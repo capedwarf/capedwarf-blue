@@ -38,15 +38,15 @@ import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.images.Transform;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
-import org.jboss.capedwarf.images.transform.JBossTransform;
-import org.jboss.capedwarf.images.transform.JBossTransformFactory;
+import org.jboss.capedwarf.images.transform.CapedwarfTransform;
+import org.jboss.capedwarf.images.transform.CapedwarfTransformFactory;
 import org.jboss.capedwarf.images.util.ImageUtils;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JBossImagesService implements ImagesService {
+public class CapedwarfImagesService implements ImagesService {
 
     public Image applyTransform(Transform transform, Image image) {
         return applyTransform(transform, image, OutputEncoding.PNG);
@@ -72,8 +72,8 @@ public class JBossImagesService implements ImagesService {
     }
 
     public static BufferedImage applyTransform(Transform transform, BufferedImage bufferedImage) {
-        JBossTransform jBossTransform = JBossTransformFactory.createJBossTransform(transform);
-        return jBossTransform.applyTo(bufferedImage);
+        CapedwarfTransform capedwarfTransform = CapedwarfTransformFactory.createJBossTransform(transform);
+        return capedwarfTransform.applyTo(bufferedImage);
     }
 
     private BufferedImage convertToBufferedImage(Image image) {

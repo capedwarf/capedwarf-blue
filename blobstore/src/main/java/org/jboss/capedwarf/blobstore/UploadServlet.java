@@ -24,9 +24,7 @@
 
 package org.jboss.capedwarf.blobstore;
 
-import com.google.appengine.api.blobstore.UploadOptions;
-import org.jboss.capedwarf.common.config.JBossEnvironment;
-import org.jboss.capedwarf.common.url.URLUtils;
+import java.io.IOException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -34,7 +32,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import com.google.appengine.api.blobstore.UploadOptions;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.common.url.URLUtils;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -48,7 +49,7 @@ public class UploadServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        JBossBlobstoreService blobstoreService = new JBossBlobstoreService();
+        CapedwarfBlobstoreService blobstoreService = new CapedwarfBlobstoreService();
         blobstoreService.storeUploadedBlobs(request);
         response.sendRedirect(getSuccessPath(request));
     }
@@ -62,7 +63,7 @@ public class UploadServlet extends HttpServlet {
     }
 
     private static String getServletUrl() {
-        return JBossEnvironment.getThreadLocalInstance().getBaseApplicationUrl() + URI;
+        return CapedwarfEnvironment.getThreadLocalInstance().getBaseApplicationUrl() + URI;
     }
 
 }

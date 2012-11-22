@@ -46,7 +46,7 @@ class XGTxChecker implements TxChecker {
     private Set<Key> roots = new HashSet<Key>();
 
     public void add(Key currentRoot, Key key) {
-        final Transaction current = JBossTransaction.getTx();
+        final Transaction current = CapedwarfTransaction.getTx();
         final Transaction previous = usedRoots.putIfAbsent(currentRoot, current);
         if (previous != null && current.equals(previous) == false) {
             throw new ConcurrentModificationException("Different transactions on same entity group: " + currentRoot);

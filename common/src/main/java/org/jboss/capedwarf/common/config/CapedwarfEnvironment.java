@@ -39,10 +39,10 @@ import com.google.apphosting.api.ApiProxy;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JBossEnvironment implements ApiProxy.Environment, Serializable {
+public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable {
     private static final long serialVersionUID = 1L;
 
-    private static final ThreadLocal<JBossEnvironment> threadLocalInstance = new ThreadLocal<JBossEnvironment>();
+    private static final ThreadLocal<CapedwarfEnvironment> threadLocalInstance = new ThreadLocal<CapedwarfEnvironment>();
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
 
     /* Impl detail ... */
@@ -63,7 +63,7 @@ public class JBossEnvironment implements ApiProxy.Environment, Serializable {
     private String baseApplicationUrl;
     private String secureBaseApplicationUrl;
 
-    public JBossEnvironment() {
+    public CapedwarfEnvironment() {
         // a bit of a workaround for LocalServiceTestHelper::tearDown NPE
         attributes.put(REQUEST_END_LISTENERS, new ArrayList());
         // add thread factory
@@ -157,10 +157,10 @@ public class JBossEnvironment implements ApiProxy.Environment, Serializable {
         return secureUrl ? secureBaseApplicationUrl : baseApplicationUrl;
     }
 
-    public static JBossEnvironment getThreadLocalInstance() {
-        JBossEnvironment environment = threadLocalInstance.get();
+    public static CapedwarfEnvironment getThreadLocalInstance() {
+        CapedwarfEnvironment environment = threadLocalInstance.get();
         if (environment == null) {
-            environment = new JBossEnvironment();
+            environment = new CapedwarfEnvironment();
             threadLocalInstance.set(environment);
         }
         return environment;
@@ -170,16 +170,16 @@ public class JBossEnvironment implements ApiProxy.Environment, Serializable {
         threadLocalInstance.set(null);
     }
 
-    public static JBossEnvironment setThreadLocalInstance(final JBossEnvironment env) {
+    public static CapedwarfEnvironment setThreadLocalInstance(final CapedwarfEnvironment env) {
         SecurityManager sm = System.getSecurityManager();
         if (sm == null) {
-            JBossEnvironment previous = threadLocalInstance.get();
+            CapedwarfEnvironment previous = threadLocalInstance.get();
             threadLocalInstance.set(env);
             return previous;
         } else {
-            return AccessController.doPrivileged(new PrivilegedAction<JBossEnvironment>() {
-                public JBossEnvironment run() {
-                    JBossEnvironment previous = threadLocalInstance.get();
+            return AccessController.doPrivileged(new PrivilegedAction<CapedwarfEnvironment>() {
+                public CapedwarfEnvironment run() {
+                    CapedwarfEnvironment previous = threadLocalInstance.get();
                     threadLocalInstance.set(env);
                     return previous;
                 }

@@ -22,17 +22,17 @@
 
 package org.jboss.capedwarf.images.transform;
 
+import java.awt.image.BufferedImage;
+
 import com.google.appengine.api.images.Transform;
 import org.jboss.capedwarf.images.ReflectionWrapper;
-
-import java.awt.image.BufferedImage;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public abstract class JBossTransform extends ReflectionWrapper<Transform> {
+public abstract class CapedwarfTransform extends ReflectionWrapper<Transform> {
 
-    public JBossTransform(Transform transform) {
+    public CapedwarfTransform(Transform transform) {
         super(transform);
     }
 

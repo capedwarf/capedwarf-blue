@@ -25,7 +25,7 @@ package org.jboss.capedwarf.datastore.notifications;
 import java.util.concurrent.Callable;
 
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.config.JBossEnvironment;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 
@@ -35,7 +35,7 @@ import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractCacheListener {
-    private final JBossEnvironment env = JBossEnvironment.getThreadLocalInstance();
+    private final CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
 
     /**
      * Execute callable on distributed framework.
@@ -62,14 +62,14 @@ public abstract class AbstractCacheListener {
      * @param taskable the taskable
      */
     protected <T> void executeCallable(Taskable<T> taskable) {
-        JBossEnvironment previous = JBossEnvironment.setThreadLocalInstance(env);
+        CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
         try {
             InfinispanUtils.submit(Application.getAppId(), CacheName.DIST, taskable.toCallable(), taskable.taskKey());
         } finally {
             if (previous != null) {
-                JBossEnvironment.setThreadLocalInstance(previous);
+                CapedwarfEnvironment.setThreadLocalInstance(previous);
             } else {
-                JBossEnvironment.clearThreadLocalInstance();
+                CapedwarfEnvironment.clearThreadLocalInstance();
             }
         }
     }

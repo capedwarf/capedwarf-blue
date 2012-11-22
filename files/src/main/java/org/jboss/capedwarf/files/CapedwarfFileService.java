@@ -61,7 +61,7 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class JBossFileService implements FileService {
+public class CapedwarfFileService implements FileService {
 
     private static final String DEFAULT_MIME_TYPE = "application/octet-stream";
     private static final String KIND_TEMP_BLOB_INFO = "__BlobInfo_temp__";
@@ -164,7 +164,7 @@ public class JBossFileService implements FileService {
         }
         createBlobstoreDirIfNeeded();
         GridFilesystem gfs = getGridFilesystem();
-        return new JBossFileWriteChannel(file, gfs.getWritableChannel(getFilePath(file), true), this, lock);
+        return new CapedwarfFileWriteChannel(file, gfs.getWritableChannel(getFilePath(file), true), this, lock);
     }
 
     private void throwFinalizationException() throws FinalizationException {
@@ -190,7 +190,7 @@ public class JBossFileService implements FileService {
             throwFinalizationException();
         }
         GridFilesystem gfs = getGridFilesystem();
-        return new JBossFileReadChannel(gfs.getReadableChannel(getFilePath(file)));
+        return new CapedwarfFileReadChannel(gfs.getReadableChannel(getFilePath(file)));
     }
 
     public String getDefaultGsBucketName() {
