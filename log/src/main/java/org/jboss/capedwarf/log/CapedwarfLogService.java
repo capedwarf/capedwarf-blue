@@ -44,14 +44,14 @@ import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.RequestLogs;
-import org.jboss.capedwarf.common.apiproxy.JBossDelegate;
+import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JBossLogService implements LogService {
+public class CapedwarfLogService implements LogService {
 
     private static final String LOG_REQUEST_ENTITY_KIND = "__org.jboss.capedwarf.LogRequest__";
     private static final String LOG_REQUEST_START_TIME_MILLIS = "startTimeMillis";
@@ -193,8 +193,8 @@ public class JBossLogService implements LogService {
         if (ignoreLogging)
             return;
 
-        JBossDelegate jBossDelegate = JBossDelegate.INSTANCE;
-        ServletRequest request = jBossDelegate.getServletRequest();
+        CapedwarfDelegate capedwarfDelegate = CapedwarfDelegate.INSTANCE;
+        ServletRequest request = capedwarfDelegate.getServletRequest();
 
         Entity entity = new Entity(LOG_LINE_ENTITY_KIND);
         entity.setProperty(LOG_LINE_LOGGER, record.getLoggerName());

@@ -25,13 +25,13 @@ package org.jboss.capedwarf.images.transform;
 import com.google.appengine.api.images.Transform;
 
 /**
- * Creates a JBossTransform based on the supplied GAE Transform.
+ * Creates a CapedwarfTransform based on the supplied GAE Transform.
  *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class JBossTransformFactory {
+public class CapedwarfTransformFactory {
 
-    public static JBossTransform createJBossTransform(Transform transform) {
+    public static CapedwarfTransform createJBossTransform(Transform transform) {
         String transformClassName = transform.getClass().getName();
         if ("com.google.appengine.api.images.Resize".equals(transformClassName)) {
             return new ResizeTransform(transform);

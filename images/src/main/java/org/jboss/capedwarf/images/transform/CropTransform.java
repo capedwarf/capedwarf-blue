@@ -22,14 +22,14 @@
 
 package org.jboss.capedwarf.images.transform;
 
-import com.google.appengine.api.images.Transform;
-
 import java.awt.image.BufferedImage;
+
+import com.google.appengine.api.images.Transform;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CropTransform extends JBossTransform {
+public class CropTransform extends CapedwarfTransform {
 
     public CropTransform(Transform transform) {
         super(transform);

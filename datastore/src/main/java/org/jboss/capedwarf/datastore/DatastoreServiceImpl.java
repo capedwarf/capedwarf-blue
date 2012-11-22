@@ -175,7 +175,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     }
 
     public Transaction beginTransaction(TransactionOptions options) {
-        return JBossTransaction.newTransaction(options);
+        return CapedwarfTransaction.newTransaction(options);
     }
 
     public Map<Index, Index.IndexState> getIndexes() {
@@ -206,7 +206,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
      * @param post the post fn
      */
     protected void putInTx(final List<Tuple> keyToEntityMap, final Runnable post) {
-        final javax.transaction.Transaction tx = JBossTransaction.getTx();
+        final javax.transaction.Transaction tx = CapedwarfTransaction.getTx();
         if (tx == null) {
             doPut(keyToEntityMap, post);
         } else {
@@ -235,7 +235,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
      * @param post the post fn
      */
     protected void removeInTx(final Iterable<Key> keys, final Runnable post) {
-        final javax.transaction.Transaction tx = JBossTransaction.getTx();
+        final javax.transaction.Transaction tx = CapedwarfTransaction.getTx();
         if (tx == null) {
             doRemove(keys, post);
         } else {

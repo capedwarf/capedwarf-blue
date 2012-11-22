@@ -22,18 +22,18 @@
 
 package org.jboss.capedwarf.users;
 
+import java.util.Map;
+import java.util.Set;
+
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.apphosting.api.ApiProxy;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class JBossUserService implements UserService {
+public class CapedwarfUserService implements UserService {
 
     private static final String USER_ID_KEY = "com.google.appengine.api.users.UserService.user_id_key";
     private static final String IS_FEDERATED_USER_KEY = "com.google.appengine.api.users.UserService.is_federated_user";

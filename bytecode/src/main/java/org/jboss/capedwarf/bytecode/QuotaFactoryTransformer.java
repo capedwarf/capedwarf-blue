@@ -31,6 +31,6 @@ import javassist.CtMethod;
 public class QuotaFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         final CtMethod method = clazz.getDeclaredMethod("getQuotaService", new CtClass[]{});
-        method.setBody("return new org.jboss.capedwarf.quota.JBossQuotaService();");
+        method.setBody("return new org.jboss.capedwarf.quota.CapedwarfQuotaService();");
     }
 }

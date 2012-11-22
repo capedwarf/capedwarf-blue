@@ -34,7 +34,7 @@ import com.google.appengine.api.log.LogServiceFactory;
  */
 public class Logger {
     public static void publish(LogRecord record) {
-        ((JBossLogService)LogServiceFactory.getLogService()).log(record);
+        ((CapedwarfLogService)LogServiceFactory.getLogService()).log(record);
     }
 
     public static void flush() {

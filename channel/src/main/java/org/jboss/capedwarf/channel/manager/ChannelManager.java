@@ -22,19 +22,18 @@
 
 package org.jboss.capedwarf.channel.manager;
 
-import com.google.appengine.api.channel.ChannelServiceFactory;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.Query;
-import org.jboss.capedwarf.channel.JBossChannelService;
-
-import java.security.MessageDigest;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import com.google.appengine.api.channel.ChannelServiceFactory;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.Query;
+import org.jboss.capedwarf.channel.CapedwarfChannelService;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -101,7 +100,7 @@ public class ChannelManager {
     }
 
     public static ChannelManager getInstance() {
-        return ((JBossChannelService) ChannelServiceFactory.getChannelService()).getChannelManager();
+        return ((CapedwarfChannelService) ChannelServiceFactory.getChannelService()).getChannelManager();
     }
 
 }

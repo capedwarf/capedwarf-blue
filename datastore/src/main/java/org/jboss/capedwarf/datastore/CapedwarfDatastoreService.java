@@ -22,6 +22,14 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
@@ -36,26 +44,18 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.threads.DirectFuture;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 /**
  * JBoss DatastoreService impl.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class JBossDatastoreService extends AbstractDatastoreService implements DatastoreService {
-    public JBossDatastoreService() {
+public class CapedwarfDatastoreService extends AbstractDatastoreService implements DatastoreService {
+    public CapedwarfDatastoreService() {
         this(null);
     }
 
-    public JBossDatastoreService(DatastoreServiceConfig config) {
+    public CapedwarfDatastoreService(DatastoreServiceConfig config) {
         super(new DatastoreServiceImpl(config));
     }
 
@@ -107,7 +107,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     public Map<Key, Entity> get(final Transaction transaction, final Iterable<Key> keys) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
 
-        getDatastoreCallbacks().executePreGetCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys), map);
+        getDatastoreCallbacks().executePreGetCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(keys), map);
 
         final List<Key> requiredKeys = Lists.newArrayList(keys);
         if (map.isEmpty() == false) {
@@ -121,7 +121,7 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
             }
         }
 
-        getDatastoreCallbacks().executePostLoadCallbacks(JBossDatastoreService.this, Lists.newArrayList(map.values()));
+        getDatastoreCallbacks().executePostLoadCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(map.values()));
 
         return map;
     }
@@ -139,11 +139,11 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public List<Key> put(Transaction transaction, final Iterable<Entity> entities) {
-        getDatastoreCallbacks().executePrePutCallbacks(JBossDatastoreService.this, Lists.newArrayList(entities));
+        getDatastoreCallbacks().executePrePutCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(entities));
 
         final Runnable post = new Runnable() {
             public void run() {
-                getDatastoreCallbacks().executePostPutCallbacks(JBossDatastoreService.this, Lists.newArrayList(entities));
+                getDatastoreCallbacks().executePostPutCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(entities));
             }
         };
 
@@ -163,11 +163,11 @@ public class JBossDatastoreService extends AbstractDatastoreService implements D
     }
 
     public void delete(final Transaction transaction, final Iterable<Key> keys) {
-        getDatastoreCallbacks().executePreDeleteCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys));
+        getDatastoreCallbacks().executePreDeleteCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(keys));
 
         final Runnable post = new Runnable() {
             public void run() {
-                getDatastoreCallbacks().executePostDeleteCallbacks(JBossDatastoreService.this, Lists.newArrayList(keys));
+                getDatastoreCallbacks().executePostDeleteCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(keys));
             }
         };
         getDelegate().delete(transaction, keys, post);

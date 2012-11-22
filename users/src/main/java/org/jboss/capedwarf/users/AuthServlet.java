@@ -24,8 +24,20 @@
 
 package org.jboss.capedwarf.users;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
-import org.jboss.capedwarf.common.config.JBossEnvironment;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.url.URLUtils;
 import org.picketlink.social.openid.api.OpenIDManager;
 import org.picketlink.social.openid.api.OpenIDProtocolAdapter;
@@ -35,17 +47,6 @@ import org.picketlink.social.openid.api.exceptions.OpenIDDiscoveryException;
 import org.picketlink.social.openid.api.exceptions.OpenIDGeneralException;
 import org.picketlink.social.openid.api.exceptions.OpenIDLifeCycleException;
 import org.picketlink.social.openid.api.exceptions.OpenIDMessageException;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -185,7 +186,7 @@ public class AuthServlet extends HttpServlet {
     }
 
     private static String getServletUrl() {
-        return JBossEnvironment.getThreadLocalInstance().getBaseApplicationUrl() + SERVLET_URI;
+        return CapedwarfEnvironment.getThreadLocalInstance().getBaseApplicationUrl() + SERVLET_URI;
     }
 
 }

@@ -122,9 +122,9 @@ public class TasksMessageCreator implements MessageCreator {
             }
         }
         map.put(QUEUE_NAME_HEADER, queueName);
-        map.put(TASK_NAME_HEADER, toHeaderValue(invoke(JBossQueue.getTaskName)));
-        map.put(TASK_RETRY_COUNT, toHeaderValue(invoke(JBossQueue.getTaskRetryLimit, invoke(JBossQueue.getRetryOptions))));
-        map.put(TASK_ETA, toHeaderValue(invoke(JBossQueue.getEtaMillis)));
+        map.put(TASK_NAME_HEADER, toHeaderValue(invoke(CapedwarfQueue.getTaskName)));
+        map.put(TASK_RETRY_COUNT, toHeaderValue(invoke(CapedwarfQueue.getTaskRetryLimit, invoke(CapedwarfQueue.getRetryOptions))));
+        map.put(TASK_ETA, toHeaderValue(invoke(CapedwarfQueue.getEtaMillis)));
         map.put(FAIL_FAST, Boolean.FALSE.toString()); // TODO?
         TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
     }

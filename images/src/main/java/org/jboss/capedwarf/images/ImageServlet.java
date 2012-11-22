@@ -39,7 +39,7 @@ import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
-import org.jboss.capedwarf.common.config.JBossEnvironment;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.io.IOUtils;
 
 /**
@@ -126,7 +126,7 @@ public class ImageServlet extends HttpServlet {
     }
 
     private static String getServletUrl(boolean secureUrl) {
-        return JBossEnvironment.getThreadLocalInstance().getBaseApplicationUrl(secureUrl) + SERVLET_URI;
+        return CapedwarfEnvironment.getThreadLocalInstance().getBaseApplicationUrl(secureUrl) + SERVLET_URI;
     }
 
 }

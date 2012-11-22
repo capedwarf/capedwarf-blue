@@ -86,8 +86,8 @@ public class ConfigTestCase extends QueryTest {
     }
 
     private boolean isJBossDatastoreService(BaseDatastoreService service) {
-        return service.getClass().getSimpleName().equals("JBossDatastoreService")
-            || service.getClass().getSimpleName().equals("JBossAsyncDatastoreService");
+        return service.getClass().getSimpleName().equals("CapedwarfDatastoreService")
+            || service.getClass().getSimpleName().equals("CapedwarfAsyncDatastoreService");
     }
 
     @Test

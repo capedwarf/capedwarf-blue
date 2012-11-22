@@ -31,7 +31,7 @@ import javax.transaction.Transaction;
  */
 class TransactionWrapper {
     private javax.transaction.Transaction delegate;
-    private JBossTransaction transaction;
+    private CapedwarfTransaction transaction;
 
     // previous existing tx
     private javax.transaction.Transaction previous;
@@ -43,12 +43,12 @@ class TransactionWrapper {
         return tx;
     }
 
-    TransactionWrapper(JBossTransaction transaction) {
+    TransactionWrapper(CapedwarfTransaction transaction) {
         this.delegate = check(transaction.getTransaction());
         this.transaction = transaction;
     }
 
-    TransactionWrapper(Transaction delegate, JBossTransaction transaction) {
+    TransactionWrapper(Transaction delegate, CapedwarfTransaction transaction) {
         this.delegate = check(delegate);
         this.transaction = transaction;
     }
@@ -57,7 +57,7 @@ class TransactionWrapper {
         return delegate;
     }
 
-    JBossTransaction getTransaction() {
+    CapedwarfTransaction getTransaction() {
         return transaction;
     }
 

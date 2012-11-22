@@ -31,6 +31,6 @@ import javassist.CtMethod;
 public class FileServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getFileService");
-        method.setBody("return new org.jboss.capedwarf.files.JBossFileService();");
+        method.setBody("return new org.jboss.capedwarf.files.CapedwarfFileService();");
     }
 }

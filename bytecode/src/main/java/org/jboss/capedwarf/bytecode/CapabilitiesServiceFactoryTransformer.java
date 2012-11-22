@@ -33,6 +33,6 @@ import javassist.CtMethod;
 public class CapabilitiesServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getCapabilitiesService");
-        method.setBody("return new org.jboss.capedwarf.capabilities.JBossCapabilitiesService();");
+        method.setBody("return new org.jboss.capedwarf.capabilities.CapedwarfCapabilitiesService();");
     }
 }

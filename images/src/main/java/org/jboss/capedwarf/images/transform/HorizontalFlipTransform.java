@@ -22,16 +22,16 @@
 
 package org.jboss.capedwarf.images.transform;
 
-import com.google.appengine.api.images.Transform;
-
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
+import com.google.appengine.api.images.Transform;
+
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class HorizontalFlipTransform extends JBossTransform {
+public class HorizontalFlipTransform extends CapedwarfTransform {
 
     public HorizontalFlipTransform(Transform transform) {
         super(transform);

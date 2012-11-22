@@ -33,6 +33,6 @@ import javassist.CtMethod;
 public class XMPPServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getXMPPService");
-        method.setBody("return new org.jboss.capedwarf.xmpp.JBossXMPPService();");
+        method.setBody("return new org.jboss.capedwarf.xmpp.CapedwarfXMPPService();");
     }
 }

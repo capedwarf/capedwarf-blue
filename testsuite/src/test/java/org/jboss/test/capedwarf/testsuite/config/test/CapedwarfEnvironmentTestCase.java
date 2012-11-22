@@ -26,7 +26,7 @@ package org.jboss.test.capedwarf.testsuite.config.test;
 
 import org.jboss.capedwarf.common.config.AppEngineWebXml;
 import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
-import org.jboss.capedwarf.common.config.JBossEnvironment;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,24 +38,24 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class JBossEnvironmentTestCase {
+public class CapedwarfEnvironmentTestCase {
 
     private static final String USER_EMAIL = "user@email.com";
     private static final String ADMIN_EMAIL = "admin@email.com";
 
     private CapedwarfConfiguration config;
-    private JBossEnvironment env;
+    private CapedwarfEnvironment env;
 
     @Before
     public void setUp() throws Exception {
         config = new CapedwarfConfiguration();
-        env = JBossEnvironment.getThreadLocalInstance();
+        env = CapedwarfEnvironment.getThreadLocalInstance();
         env.setCapedwarfConfiguration(config);
     }
 
     @After
     public void tearDown() throws Exception {
-        JBossEnvironment.clearThreadLocalInstance();
+        CapedwarfEnvironment.clearThreadLocalInstance();
     }
 
     @Test

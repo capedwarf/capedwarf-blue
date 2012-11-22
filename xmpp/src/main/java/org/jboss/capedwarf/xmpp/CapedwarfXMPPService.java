@@ -22,6 +22,11 @@
 
 package org.jboss.capedwarf.xmpp;
 
+import java.io.IOException;
+import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+
 import com.google.appengine.api.xmpp.JID;
 import com.google.appengine.api.xmpp.Message;
 import com.google.appengine.api.xmpp.Presence;
@@ -33,16 +38,12 @@ import com.google.appengine.api.xmpp.XMPPService;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.util.logging.Logger;
-
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JBossXMPPService implements XMPPService {
-    private static final Logger log = Logger.getLogger(JBossXMPPService.class.getName());
+public class CapedwarfXMPPService implements XMPPService {
+    private static final Logger log = Logger.getLogger(CapedwarfXMPPService.class.getName());
 
     private static final PresenceConverter presenceConverter = new PresenceConverter();
     private static final MessageConverter messageConverter = new MessageConverter();

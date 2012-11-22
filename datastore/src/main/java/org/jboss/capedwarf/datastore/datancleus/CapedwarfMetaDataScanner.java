@@ -37,11 +37,11 @@ import org.jboss.vfs.VisitorAttributes;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JBossMetaDataScanner extends AbstractMetaDataScanner {
-    public JBossMetaDataScanner() {
+public class CapedwarfMetaDataScanner extends AbstractMetaDataScanner {
+    public CapedwarfMetaDataScanner() {
     }
 
-    public JBossMetaDataScanner(String appId) {
+    public CapedwarfMetaDataScanner(String appId) {
         super(appId);
     }
 

@@ -22,18 +22,18 @@
 
 package org.jboss.capedwarf.images.transform;
 
-import com.google.appengine.api.images.Transform;
-import org.jboss.capedwarf.images.JBossImagesService;
-
 import java.awt.image.BufferedImage;
 import java.util.List;
+
+import com.google.appengine.api.images.Transform;
+import org.jboss.capedwarf.images.CapedwarfImagesService;
 
 /**
  * A composite transform of multiple transforms.
  *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CompositeTransform extends JBossTransform {
+public class CompositeTransform extends CapedwarfTransform {
 
     public CompositeTransform(Transform transform) {
         super(transform);
@@ -42,7 +42,7 @@ public class CompositeTransform extends JBossTransform {
     @Override
     public BufferedImage applyTo(BufferedImage image) {
         for (Transform transform : getTransforms()) {
-            image = JBossImagesService.applyTransform(transform, image);
+            image = CapedwarfImagesService.applyTransform(transform, image);
         }
         return image;
     }

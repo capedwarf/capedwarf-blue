@@ -49,13 +49,13 @@ import com.google.appengine.api.files.FileServiceFactory;
 import com.google.appengine.api.files.FileWriteChannel;
 import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.capedwarf.common.servlet.ServletUtils;
-import org.jboss.capedwarf.files.JBossFileService;
+import org.jboss.capedwarf.files.CapedwarfFileService;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class JBossBlobstoreService implements BlobstoreService {
+public class CapedwarfBlobstoreService implements BlobstoreService {
 
     private static final String SERVE_HEADER = "X-AppEngine-BlobKey";
     private static final String UPLOADED_BLOBKEY_ATTR = "com.google.appengine.api.blobstore.upload.blobkeys";
@@ -170,7 +170,7 @@ public class JBossBlobstoreService implements BlobstoreService {
     }
 
     private BlobKey storeUploadedBlob(Part part) throws IOException {
-        JBossFileService fileService = getFileService();
+        CapedwarfFileService fileService = getFileService();
         AppEngineFile file = fileService.createNewBlobFile(part.getContentType(), ServletUtils.getFileName(part));
 
         ReadableByteChannel in = Channels.newChannel(part.getInputStream());
@@ -210,8 +210,8 @@ public class JBossBlobstoreService implements BlobstoreService {
         return getFileService().getStream(blobKey);
     }
 
-    private JBossFileService getFileService() {
-        return (JBossFileService) FileServiceFactory.getFileService();
+    private CapedwarfFileService getFileService() {
+        return (CapedwarfFileService) FileServiceFactory.getFileService();
     }
 
     public BlobKey createGsBlobKey(String name) {

@@ -40,11 +40,11 @@ import org.jboss.capedwarf.common.config.AppEngineWebXml;
 import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
 import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
 import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
-import org.jboss.capedwarf.common.config.JBossEnvironment;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
-import org.jboss.capedwarf.log.JBossLogService;
+import org.jboss.capedwarf.log.CapedwarfLogService;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -102,8 +102,8 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
         clearJBossEnvironment();
     }
 
-    private JBossLogService getLogService() {
-        return ((JBossLogService) LogServiceFactory.getLogService());
+    private CapedwarfLogService getLogService() {
+        return ((CapedwarfLogService) LogServiceFactory.getLogService());
     }
 
     private AppEngineWebXml readAppEngineWebXml() throws IOException {
@@ -138,22 +138,22 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     }
 
     private void initJBossEnvironment(HttpServletRequest request) {
-        JBossEnvironment environment = JBossEnvironment.getThreadLocalInstance();
+        CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
         initApplicationData(environment);
         initRequestData(environment, request);
         initUserData(environment, request);
     }
 
-    private void initApplicationData(JBossEnvironment environment) {
+    private void initApplicationData(CapedwarfEnvironment environment) {
         environment.setAppEngineWebXml(appEngineWebXml);
         environment.setCapedwarfConfiguration(capedwarfConfiguration);
     }
 
-    private void initRequestData(JBossEnvironment environment, HttpServletRequest request) {
+    private void initRequestData(CapedwarfEnvironment environment, HttpServletRequest request) {
         environment.setBaseApplicationUrl(request.getScheme(), request.getServerName(), request.getServerPort(), request.getContextPath());
     }
 
-    private void initUserData(JBossEnvironment environment, HttpServletRequest request) {
+    private void initUserData(CapedwarfEnvironment environment, HttpServletRequest request) {
         Principal principal = request.getUserPrincipal();
         if (principal != null) {
             environment.setEmail(principal.getName());
@@ -162,7 +162,7 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     }
 
     private void clearJBossEnvironment() {
-        JBossEnvironment.clearThreadLocalInstance();
+        CapedwarfEnvironment.clearThreadLocalInstance();
     }
 
     public void destroy() {

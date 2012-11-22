@@ -61,7 +61,7 @@ class QueryResultIteratorImpl<E> implements QueryResultIterator<E> {
     }
 
     public synchronized Cursor getCursor() {
-        final Cursor cursor = JBossCursorHelper.createCursor(current);
+        final Cursor cursor = CapedwarfCursorHelper.createCursor(current);
         current = new AtomicInteger(current.get());
         return cursor;
     }

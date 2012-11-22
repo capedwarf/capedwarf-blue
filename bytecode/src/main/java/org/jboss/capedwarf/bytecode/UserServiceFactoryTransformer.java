@@ -31,6 +31,6 @@ import javassist.CtMethod;
 public class UserServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getUserService");
-        method.setBody("return new org.jboss.capedwarf.users.JBossUserService();");
+        method.setBody("return new org.jboss.capedwarf.users.CapedwarfUserService();");
     }
 }

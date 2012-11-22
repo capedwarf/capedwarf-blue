@@ -35,7 +35,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class TransformationsTestCase extends JBossImagesServiceTest {
+public class TransformationsTestCase extends CapedwarfImagesServiceTest {
 
     @Test
     public void testResize() {
