@@ -148,6 +148,7 @@ public abstract class AbstractStatsQueryTest extends BaseTest {
             assertStatsEqual(initialStats, currentTotalStats());
         } finally {
             cleanup(k1, k2);
+            doSync();
         }
     }
 
