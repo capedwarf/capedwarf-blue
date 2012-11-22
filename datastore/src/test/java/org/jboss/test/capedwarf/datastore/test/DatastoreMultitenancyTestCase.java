@@ -24,6 +24,9 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -31,13 +34,12 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import java.util.Collections;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -47,6 +49,7 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
+@Category(All.class)
 public class DatastoreMultitenancyTestCase extends SimpleTest {
 
     private String originalNamespace;

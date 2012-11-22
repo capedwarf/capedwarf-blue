@@ -25,10 +25,12 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.cluster.support.ProspectiveSearchMatchResponseServlet;
 import org.jboss.test.capedwarf.cluster.support.ProspectiveSearchMatchResponseServlet.InvocationData;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
@@ -40,6 +42,7 @@ import static org.junit.Assert.fail;
  * @author Matej Lazar
  */
 @RunWith(Arquillian.class)
+@Category(JBoss.class)
 public class ProspectiveSearchTestCase extends BaseTest {
 
     private static final String TOPIC = "myTopic";

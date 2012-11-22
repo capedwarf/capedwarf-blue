@@ -31,14 +31,17 @@ import java.io.IOException;
 import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
 import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
 import org.jboss.capedwarf.common.config.XmppConfiguration;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@Category(JBoss.class)
 public class CapedwarfConfigurationParserTestCase {
 
     @Test

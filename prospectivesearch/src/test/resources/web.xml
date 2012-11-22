@@ -7,7 +7,7 @@
 
     <servlet>
         <servlet-name>matches</servlet-name>
-        <servlet-class>org.jboss.test.capedwarf.prospectivesearch.MatchResponseServlet</servlet-class>
+        <servlet-class>org.jboss.test.capedwarf.prospectivesearch.support.MatchResponseServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>matches</servlet-name>
@@ -16,7 +16,7 @@
 
     <servlet>
         <servlet-name>special</servlet-name>
-        <servlet-class>org.jboss.test.capedwarf.prospectivesearch.SpecialMatchResponseServlet</servlet-class>
+        <servlet-class>org.jboss.test.capedwarf.prospectivesearch.support.SpecialMatchResponseServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>special</servlet-name>

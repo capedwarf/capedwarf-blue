@@ -26,7 +26,9 @@ package org.jboss.test.capedwarf.datastore.test;
 
 import com.google.appengine.api.datastore.Entity;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
@@ -39,6 +41,7 @@ import static org.junit.Assert.assertThat;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
+@Category(All.class)
 public class QueryFilteringByBasicPropertyTypesTestCase extends QueryTest {
 
     @Test

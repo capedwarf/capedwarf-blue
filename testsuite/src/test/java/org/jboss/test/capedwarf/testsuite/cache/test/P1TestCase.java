@@ -25,12 +25,15 @@ package org.jboss.test.capedwarf.testsuite.cache.test;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.All;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
+@Category(All.class)
 public class P1TestCase extends PersistingTest {
     @Deployment
     public static WebArchive getDeployment() {

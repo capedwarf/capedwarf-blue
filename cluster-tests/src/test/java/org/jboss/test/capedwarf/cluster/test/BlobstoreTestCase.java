@@ -18,7 +18,9 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.fail;
@@ -27,6 +29,7 @@ import static org.junit.Assert.fail;
  * @author Matej Lazar
  */
 @RunWith(Arquillian.class)
+@Category(JBoss.class)
 public class BlobstoreTestCase extends AbstractClusteredTest {
 
     private static final String TEXT = "Uploaded text";

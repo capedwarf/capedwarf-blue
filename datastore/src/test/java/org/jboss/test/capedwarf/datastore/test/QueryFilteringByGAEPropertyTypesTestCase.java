@@ -43,6 +43,7 @@ import com.google.appengine.api.datastore.Rating;
 import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.users.User;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,6 +58,7 @@ import static org.junit.Assert.assertEquals;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
+@org.junit.experimental.categories.Category({All.class})
 public class QueryFilteringByGAEPropertyTypesTestCase extends QueryTest {
 
     @Test

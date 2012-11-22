@@ -22,6 +22,12 @@
 
 package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -29,14 +35,11 @@ import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import org.junit.experimental.categories.Category;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -44,6 +47,7 @@ import static junit.framework.Assert.assertEquals;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
+@Category(All.class)
 public class QueryCallbacksTestCase extends AbstractCallbacksTest {
     public static final String POST_LOAD = "PostLoad";
     private final int N = 5;
@@ -130,6 +134,7 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
     }
 
     @Test
+    @Category(JBoss.class) // TODO -- remove once fixed in GAE
     public void testSubList() throws Exception {
         List<Entity> list = asList(FetchOptions.Builder.withChunkSize(1));
 

@@ -26,14 +26,17 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
+@Category(All.class)
 public class AllocateIdsTestCase extends SimpleTest {
 
     @Test

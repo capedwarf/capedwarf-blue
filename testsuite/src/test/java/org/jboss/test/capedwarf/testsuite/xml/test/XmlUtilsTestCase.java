@@ -28,9 +28,11 @@ import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import org.jboss.capedwarf.common.xml.XmlUtils;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -39,6 +41,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@Category(JBoss.class)
 public class XmlUtilsTestCase {
 
     private Element docElement;

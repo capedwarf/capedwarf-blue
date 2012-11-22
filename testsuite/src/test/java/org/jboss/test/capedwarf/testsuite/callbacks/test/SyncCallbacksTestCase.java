@@ -22,6 +22,9 @@
 
 package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -32,14 +35,14 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.List;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
+@Category(All.class)
 public class SyncCallbacksTestCase extends AbstractCallbacksTest {
     @Deployment
     public static WebArchive getDeployment() {

@@ -33,11 +33,12 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultList;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withEndCursor;
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withLimit;
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withOffset;
@@ -50,6 +51,7 @@ import static org.junit.Assert.assertEquals;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
+@Category(All.class)
 public class QueryFetchOptionsTestCase extends QueryTest {
 
     private Entity foo1;

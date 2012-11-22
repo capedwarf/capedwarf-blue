@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.JBoss;
 
 /**
  * Base test class for all CapeDwarf tests.
@@ -54,6 +55,8 @@ public class BaseTest {
         // this class + test_context
         war.addClass(BaseTest.class);
         war.addClass(TestContext.class);
+        // categories
+        war.addPackage(JBoss.class.getPackage());
 
         // web.xml
         if (context.getWebXmlFile() != null) {

@@ -26,9 +26,11 @@ package org.jboss.test.capedwarf.testsuite.config.test;
 
 
 import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -36,6 +38,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@Category(JBoss.class)
 public class CapedwarfConfigurationTestCase {
 
     private CapedwarfConfiguration config;

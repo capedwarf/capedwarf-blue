@@ -32,10 +32,11 @@ import com.google.appengine.api.datastore.Query;
 import org.hamcrest.Matcher;
 import org.hamcrest.core.IsEqual;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.SortDirection.ASCENDING;
 import static com.google.appengine.api.datastore.Query.SortDirection.DESCENDING;
 import static org.junit.Assert.assertThat;
@@ -47,6 +48,7 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
+@Category(All.class)
 public class QuerySortingTestCase extends QueryTest {
 
     @Test

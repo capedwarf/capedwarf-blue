@@ -48,12 +48,14 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.jboss.test.capedwarf.testsuite.LibUtils;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountMapper;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountReducer;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.EntityCreator;
 import org.jboss.test.capedwarf.testsuite.mapreduce.test.AbstractMapReduceTest;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
@@ -62,6 +64,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
+@Category(JBoss.class)
 public class MapReduceTestCase extends AbstractMapReduceTest {
     private List<String> payloads = Arrays.asList("capedwarf", "jboss", "redhat");
 

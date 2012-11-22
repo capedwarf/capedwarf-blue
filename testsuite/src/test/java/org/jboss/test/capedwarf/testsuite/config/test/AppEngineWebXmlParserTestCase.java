@@ -29,14 +29,17 @@ import java.io.ByteArrayInputStream;
 
 import org.jboss.capedwarf.common.config.AppEngineWebXml;
 import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@Category(All.class)
 public class AppEngineWebXmlParserTestCase {
 
     @Test

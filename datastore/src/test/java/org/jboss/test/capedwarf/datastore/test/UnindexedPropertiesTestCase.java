@@ -33,7 +33,9 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Text;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertNull;
@@ -43,6 +45,7 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
+@Category(All.class)
 public class UnindexedPropertiesTestCase extends SimpleTest {
 
     private static final Field PROPERTY_MAP_FIELD;

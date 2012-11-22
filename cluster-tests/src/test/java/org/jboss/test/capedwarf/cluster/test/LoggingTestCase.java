@@ -15,9 +15,11 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertFalse;
@@ -27,6 +29,7 @@ import static org.junit.Assert.assertTrue;
  * @author Matej Lazar
  */
 @RunWith(Arquillian.class)
+@Category(JBoss.class)
 public class LoggingTestCase extends BaseTest {
 
     @Deployment(name = "dep1") @TargetsContainer("container-1")

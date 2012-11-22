@@ -35,7 +35,9 @@ import com.google.appengine.api.datastore.Query;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
@@ -47,6 +49,7 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
+@Category(All.class)
 public class ConfigTestCase extends QueryTest {
 
     @Test

@@ -35,12 +35,14 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.jboss.test.capedwarf.tasks.support.PrintListener;
 import org.jboss.test.capedwarf.tasks.support.PrintServlet;
 import org.junit.After;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static junit.framework.Assert.assertEquals;
@@ -51,6 +53,7 @@ import static junit.framework.Assert.assertNotNull;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
+@Category(All.class)
 public class TasksTestCase extends BaseTest {
     private static final String URL = "/_ah/test";
     private static final String WEB_XML =

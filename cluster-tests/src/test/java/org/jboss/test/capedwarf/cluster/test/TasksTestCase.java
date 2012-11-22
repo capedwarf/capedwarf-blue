@@ -11,15 +11,18 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.cluster.support.PrintListener;
 import org.jboss.test.capedwarf.cluster.support.PrintServlet;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
  */
 @RunWith(Arquillian.class)
+@Category(JBoss.class)
 public class TasksTestCase extends BaseTest {
 
     private static final String URL = "/_ah/test";

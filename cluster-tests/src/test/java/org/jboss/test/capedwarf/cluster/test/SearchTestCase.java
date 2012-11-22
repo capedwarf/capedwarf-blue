@@ -21,8 +21,10 @@ import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static junit.framework.Assert.assertEquals;
@@ -33,6 +35,7 @@ import static junit.framework.Assert.fail;
  * @author Matej Lazar
  */
 @RunWith(Arquillian.class)
+@Category(JBoss.class)
 public class SearchTestCase extends AbstractClusteredTest {
 
     private SearchService service;
