@@ -68,9 +68,9 @@ public class LoggingTestCase extends BaseTest {
     }
 
     protected void clear(LogService service) {
-        final Class<? extends LogService> clazz = service.getClass();
-        if (clazz.getName().contains("JBossLogService")) {
+        if (isJBossImpl(service)) {
             try {
+                Class<?> clazz = service.getClass();
                 Method clearLog = clazz.getMethod("clearLog");
                 clearLog.invoke(service);
             } catch (Exception e) {
