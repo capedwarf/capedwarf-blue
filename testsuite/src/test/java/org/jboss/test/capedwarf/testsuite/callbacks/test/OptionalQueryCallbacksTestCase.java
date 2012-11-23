@@ -20,42 +20,47 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.testsuite.deployment.test;
+package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import java.util.List;
+
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
+ * TODO -- should be removed once GAE fixes callback List::subList bug
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-@RunWith(Arquillian.class)
 @Category(JBoss.class)
-public class MultipleAppsTestCase extends AbstractMultipleAppsTest {
-    @Deployment (name = "depA")
-    public static WebArchive getDeploymentA() {
-        return getDeployment("a");
+public class OptionalQueryCallbacksTestCase extends AbstractQueryCallbacksTest {
+
+    @Test
+    public void testSubList() throws Exception {
+        List<Entity> list = asList(FetchOptions.Builder.withChunkSize(1));
+
+        List<Entity> subList = list.subList(1, 3);
+        assertPostLoadCallbackInvokedTimes(3);
+        assertEquals(2, subList.size());
+
+        list.get(0);
+        assertNoCallbackInvoked();
+        subList.get(0);
+        assertNoCallbackInvoked();
+
+        list.get(2);
+        assertNoCallbackInvoked();
+        subList.get(1);
+        assertNoCallbackInvoked();
+
+        list.get(3);
+        assertPostLoadCallbackInvokedTimes(1);
     }
 
-    @Deployment(name = "depB")
-    public static WebArchive getDeploymentB() {
-        return getDeployment("b");
-    }
-
-    @Test @OperateOnDeployment("depA")
-    public void depATests() throws Exception {
-        allTests(true);
-        cleanup();
-    }
-
-    @Test @OperateOnDeployment("depB")
-    public void depBTests() throws Exception {
-        allTests(true);
-        cleanup();
-    }
 }

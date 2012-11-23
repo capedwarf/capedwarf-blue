@@ -22,55 +22,23 @@
 
 package org.jboss.test.capedwarf.testsuite.callbacks.test;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
-import org.jboss.test.capedwarf.common.support.JBoss;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static junit.framework.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @Category(All.class)
-public class QueryCallbacksTestCase extends AbstractCallbacksTest {
-    public static final String POST_LOAD = "PostLoad";
-    private final int N = 5;
-    private final String[] states = getPostLoadStates(N);
-
-    @Deployment
-    public static WebArchive getDeployment() {
-        return getDefaultDeployment();
-    }
-
-    @Before
-    public void setUp() {
-        super.setUp();
-
-        DatastoreService service = createDatastoreService();
-        int n = N;
-        while (n > 0) {
-            Entity e = new Entity(KIND);
-            e.setProperty("x", n);
-            service.put(e);
-            n--;
-        }
-    }
+public class QueryCallbacksTestCase extends AbstractQueryCallbacksTest {
 
     @Test
     public void testListGet() throws Exception {
@@ -131,29 +99,6 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
         e2.setProperty("x", 1);
         list.removeAll(Collections.singleton(e2));
         assertNoCallbackInvoked();
-    }
-
-    @Test
-    @Category(JBoss.class) // TODO -- remove once fixed in GAE
-    public void testSubList() throws Exception {
-        List<Entity> list = asList(FetchOptions.Builder.withChunkSize(1));
-
-        List<Entity> subList = list.subList(1, 3);
-        assertPostLoadCallbackInvokedTimes(3);
-        assertEquals(2, subList.size());
-
-        list.get(0);
-        assertNoCallbackInvoked();
-        subList.get(0);
-        assertNoCallbackInvoked();
-
-        list.get(2);
-        assertNoCallbackInvoked();
-        subList.get(1);
-        assertNoCallbackInvoked();
-
-        list.get(3);
-        assertPostLoadCallbackInvokedTimes(1);
     }
 
     @Test
@@ -227,40 +172,4 @@ public class QueryCallbacksTestCase extends AbstractCallbacksTest {
         assertPostLoadCallbackInvokedTimes(2);
     }
 
-    protected void assertCallbackInvokedFully() {
-        assertCallbackInvoked(states);
-    }
-
-    protected void assertPostLoadCallbackInvokedTimes(int num) {
-        assertCallbackInvoked(getPostLoadStates(num));
-    }
-
-    protected static String[] getPostLoadStates(int num) {
-        List<String> states = new ArrayList<String>();
-        while(num > 0) {
-            states.add(POST_LOAD);
-            num--;
-        }
-        return states.toArray(new String[states.size()]);
-    }
-
-    protected List<Entity> asList(FetchOptions options) {
-        DatastoreService service = createDatastoreService();
-
-        PreparedQuery pq = service.prepare(new Query(KIND));
-        reset();
-        List<Entity> list = pq.asList(options);
-        assertNoCallbackInvoked();
-        return list;
-    }
-
-    protected Iterator<Entity> asIterator(FetchOptions options) {
-        DatastoreService service = createDatastoreService();
-
-        PreparedQuery pq = service.prepare(new Query(KIND));
-        reset();
-        Iterator<Entity> iterator = pq.asIterator(options);
-        assertNoCallbackInvoked();
-        return iterator;
-    }
 }
