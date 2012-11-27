@@ -33,12 +33,15 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
+import org.jboss.capedwarf.datastore.NamespaceServiceFactory;
+import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
 
 /**
  * @author Marko Luksa
@@ -46,6 +49,9 @@ import com.google.appengine.api.datastore.Query;
 @Named("datastoreViewer")
 @RequestScoped
 public class DatastoreViewer {
+
+    @Inject @HttpParam
+    private String selectedNamespace = "";
 
     @Inject @HttpParam
     private String selectedEntityKind;
@@ -59,6 +65,11 @@ public class DatastoreViewer {
 
     public void setSelectedEntityKind(String selectedEntityKind) {
         this.selectedEntityKind = selectedEntityKind;
+    }
+
+    public Set<String> getNamespaces() {
+        NamespaceServiceInternal namespaceService = NamespaceServiceFactory.getNamespaceService();
+        return namespaceService.getNamespaces();
     }
 
     public List<String> getEntityKinds() {
@@ -90,11 +101,15 @@ public class DatastoreViewer {
     private void loadEntities() {
         rows = new ArrayList<Row>();
         SortedSet<String> propertyNameSet = new TreeSet<String>();
-        for (Entity entity : getDatastore().prepare(new Query(getSelectedEntityKind())).asIterable()) {
-            propertyNameSet.addAll(entity.getProperties().keySet());
-            rows.add(new Row(entity));
+        NamespaceManager.set(selectedNamespace);
+        try {
+            for (Entity entity : getDatastore().prepare(new Query(getSelectedEntityKind())).asIterable()) {
+                propertyNameSet.addAll(entity.getProperties().keySet());
+                rows.add(new Row(entity));
+            }
+        } finally {
+            NamespaceManager.set("");
         }
-
         properties.clear();
         properties.addAll(propertyNameSet);
     }

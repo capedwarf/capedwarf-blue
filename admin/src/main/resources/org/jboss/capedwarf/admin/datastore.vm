@@ -2,8 +2,19 @@
 
 <h2>Datastore viewer</h2>
 <form action="datastore.vm">
+
+    <label for="namespaceSelect">Namespace:</label>
+    <select id="namespaceSelect" name="selectedNamespace" onchange="this.form.submit()">
+        #foreach($namespace in $datastoreViewer.namespaces)
+            <option value="$namespace" #if($namespace.equals($datastoreViewer.selectedNamespace)) selected="selected" #end>
+                #if($namespace.equals("")) Empty namespace #end
+                $namespace
+            </option>
+        #end
+    </select>
+
     <label for="entityKindSelect">Entity kind:</label>
-    <select id="entityKindSelect" name="selectedEntityKind">
+    <select id="entityKindSelect" name="selectedEntityKind" onchange="this.form.submit()">
         <option value=""></option>
         #foreach($kind in $datastoreViewer.entityKinds)
             <option value="$kind" #if($kind.equals($datastoreViewer.selectedEntityKind)) selected="selected" #end>$kind</option>
