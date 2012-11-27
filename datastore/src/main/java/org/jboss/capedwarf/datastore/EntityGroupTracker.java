@@ -31,6 +31,7 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
 import com.google.appengine.api.datastore.Key;
+import org.jboss.capedwarf.common.compatibility.Compatibility;
 
 /**
  * Track entity groups.
@@ -52,7 +53,7 @@ class EntityGroupTracker implements Synchronization {
     }
 
     static EntityGroupTracker registerKey(Key key) {
-        if (key == null)
+        if (key == null || ignoreTracking())
             return null;
 
         final Transaction transaction = CapedwarfTransaction.getTx();
@@ -72,20 +73,7 @@ class EntityGroupTracker implements Synchronization {
         return egt;
     }
 
-    private void registerSynchronization(Transaction tx) {
-        try {
-            tx.registerSynchronization(this);
-        } catch (RollbackException e) {
-            throw new RuntimeException(e);
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     static void trackKey(Key key) {
-        if (key == null)
-            return;
-
         final EntityGroupTracker egt = registerKey(key);
         if (egt != null) {
             egt.checkRoot();
@@ -93,6 +81,9 @@ class EntityGroupTracker implements Synchronization {
     }
 
     static void check() {
+        if (ignoreTracking())
+            return;
+
         final Transaction transaction = CapedwarfTransaction.getTx();
         if (transaction == null)
             return; // nothing to check
@@ -100,6 +91,21 @@ class EntityGroupTracker implements Synchronization {
         EntityGroupTracker egt = trackers.get(transaction);
         if (egt != null) {
             egt.checkRoot();
+        }
+    }
+
+    private static boolean ignoreTracking() {
+        Compatibility instance = Compatibility.getInstance();
+        return instance.isEnabled(Compatibility.Feature.DISABLE_ENTITY_GROUPS);
+    }
+
+    private void registerSynchronization(Transaction tx) {
+        try {
+            tx.registerSynchronization(this);
+        } catch (RollbackException e) {
+            throw new RuntimeException(e);
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -101,6 +101,8 @@ public class DatastoreViewer {
     private void loadEntities() {
         rows = new ArrayList<Row>();
         SortedSet<String> propertyNameSet = new TreeSet<String>();
+
+        final String previous = NamespaceManager.get();
         NamespaceManager.set(selectedNamespace);
         try {
             for (Entity entity : getDatastore().prepare(new Query(getSelectedEntityKind())).asIterable()) {
@@ -108,8 +110,9 @@ public class DatastoreViewer {
                 rows.add(new Row(entity));
             }
         } finally {
-            NamespaceManager.set("");
+            NamespaceManager.set(previous);
         }
+
         properties.clear();
         properties.addAll(propertyNameSet);
     }
