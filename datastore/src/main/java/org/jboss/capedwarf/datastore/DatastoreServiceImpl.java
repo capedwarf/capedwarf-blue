@@ -42,6 +42,7 @@ import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import org.jboss.capedwarf.common.compatibility.Compatibility;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
@@ -60,13 +61,17 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
 
     private static final String SEQUENCE_POSTFIX = "_SEQUENCE__"; // GAE's SequenceGenerator impl detail
 
-    private final EntityModifier entityModifier = EntityModifierImpl.INSTANCE;
+    private final EntityModifier entityModifier;
 
     public DatastoreServiceImpl() {
+        this(null);
     }
 
     public DatastoreServiceImpl(DatastoreServiceConfig config) {
         super(config);
+        Compatibility instance = Compatibility.getInstance();
+        boolean enabled = instance.isEnabled(Compatibility.Feature.IGNORE_ENTITY_PROPERTY_CONVERSION);
+        entityModifier = enabled ? CloningEntityModifier.INSTANCE : EntityModifierImpl.INSTANCE;
     }
 
     protected Map<String, Integer> getAllocationsMap() {

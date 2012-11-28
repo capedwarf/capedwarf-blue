@@ -22,10 +22,14 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.Collection;
+import java.util.Date;
+
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Category;
 import com.google.appengine.api.datastore.Email;
+import com.google.appengine.api.datastore.EmbeddedEntity;
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.IMHandle;
 import com.google.appengine.api.datastore.Key;
@@ -41,9 +45,6 @@ import org.hibernate.search.bridge.builtin.BooleanBridge;
 import org.hibernate.search.bridge.builtin.DateBridge;
 import org.hibernate.search.bridge.builtin.FloatBridge;
 import org.hibernate.search.bridge.builtin.StringBridge;
-
-import java.util.Collection;
-import java.util.Date;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -72,7 +73,8 @@ public enum Bridge implements TwoWayStringBridge {
     LONG(new LongBridge()),
     DOUBLE(new DoubleBridge()),
     FLOAT(new FloatBridge()),
-    NULL(new NullBridge());
+    NULL(new NullBridge()),
+    EMBEDDED_ENTITY(new EmbeddedEntityBridge());
 
     private TwoWayStringBridge bridge;
 
@@ -133,6 +135,8 @@ public enum Bridge implements TwoWayStringBridge {
             return BLOB;
         } else if (value instanceof ShortBlob) {
             return SHORT_BLOB;
+        } else if (value instanceof EmbeddedEntity) {
+            return EMBEDDED_ENTITY;
         }
         throw new IllegalArgumentException("No matching bridge. Value was " + value);
     }
@@ -419,6 +423,19 @@ public enum Bridge implements TwoWayStringBridge {
 
         public Object stringToObject(String stringValue) {
             return new ShortBlob(stringToBytes(stringValue));
+        }
+    }
+
+    // TODO -- check this
+    private static class EmbeddedEntityBridge implements TwoWayStringBridge {
+        public static final String EMBEDDED_TOKEN = "__capedwarf___EMBEDDED___";
+
+        public Object stringToObject(String stringValue) {
+            return null;
+        }
+
+        public String objectToString(Object object) {
+            return EMBEDDED_TOKEN;
         }
     }
 

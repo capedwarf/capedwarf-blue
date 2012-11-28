@@ -40,6 +40,7 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.BaseTest;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -58,6 +59,10 @@ public class AbstractTest extends BaseTest {
         return getCapedwarfDeployment().addClass(AbstractTest.class);
     }
 
+    protected static WebArchive getDefaultDeployment(TestContext context) {
+        return getCapedwarfDeployment(context).addClass(AbstractTest.class);
+    }
+
     @Before
     public void setUp() {
         service = DatastoreServiceFactory.getDatastoreService();
@@ -69,6 +74,7 @@ public class AbstractTest extends BaseTest {
         for (Entity entity : entities) {
             service.delete(entity.getKey());
         }
+        service = null;
     }
 
     protected FetchOptions withDefaults() {

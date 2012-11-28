@@ -79,7 +79,7 @@ public class BaseTest {
 
         // capedwarf-compatibility
         if (context.getCompatibilityProperties() != null) {
-            war.addAsResource("capedwarf-compatibility.properties");
+            war.addAsResource(context.getCompatibilityProperties(), "capedwarf-compatibility.properties");
         } else if (context.getProperties().isEmpty() == false) {
             final StringWriter writer = new StringWriter();
             try {

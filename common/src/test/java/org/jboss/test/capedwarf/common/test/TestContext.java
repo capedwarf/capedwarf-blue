@@ -56,7 +56,7 @@ public class TestContext implements Cloneable {
     }
 
     public static TestContext asDefault() {
-        return DEFAULT.clone();
+        return new TestContext().setIgnoreLogging(true);
     }
 
     public static TestContext asRoot() {
@@ -133,14 +133,5 @@ public class TestContext implements Cloneable {
     public TestContext setIgnoreLogging(boolean ignoreLogging) {
         properties.put("ignore.logging", String.valueOf(ignoreLogging));
         return this;
-    }
-
-    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
-    protected TestContext clone()  {
-        try {
-            return (TestContext) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

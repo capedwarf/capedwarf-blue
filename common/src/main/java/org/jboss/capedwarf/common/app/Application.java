@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.common.app;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import com.google.apphosting.api.ApiProxy;
 
 /**
@@ -56,6 +59,15 @@ public final class Application {
      */
     public static ClassLoader getAppClassloader() {
         // TCCL should do for now
-        return Thread.currentThread().getContextClassLoader();
+        SecurityManager sm = System.getSecurityManager();
+        if (sm == null) {
+            return Thread.currentThread().getContextClassLoader();
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                public ClassLoader run() {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            });
+        }
     }
 }

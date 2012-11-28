@@ -43,7 +43,7 @@ public class Compatibility {
     public static enum Feature {
         ENABLE_ALL("enable.all"),
         DISABLE_ENTITY_GROUPS("disable.entity.groups"),
-        IGNORE_TO_LONG_CONVERSION("ignore.long.conversion"),
+        IGNORE_ENTITY_PROPERTY_CONVERSION("ignore.entity.property.conversion"),
         IGNORE_LOGGING("ignore.logging"),
         ENABLE_EAGER_DATASTORE_STATS("enable.eager.datastore.stats", new RegexpValue("(sync|async)"));
 
