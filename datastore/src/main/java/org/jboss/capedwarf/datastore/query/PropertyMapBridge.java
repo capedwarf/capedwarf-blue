@@ -27,7 +27,10 @@ package org.jboss.capedwarf.datastore.query;
 import java.util.Collection;
 import java.util.Map;
 
+import com.google.appengine.api.datastore.Blob;
+import com.google.appengine.api.datastore.EmbeddedEntity;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Text;
 import org.apache.lucene.document.Document;
 import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.LuceneOptions;
@@ -47,13 +50,15 @@ public class PropertyMapBridge implements FieldBridge {
         for (Map.Entry<String, ?> entry : entityProperties.entrySet()) {
             final String propertyName = entry.getKey();
             final Object propertyValue = entry.getValue();
-            if (!isUnindexedProperty(propertyValue)) {
+            if (isIndexedProperty(propertyValue)) {
                 final Bridge bridge = Bridge.matchBridge(propertyValue);
                 if (propertyValue instanceof Collection) {
                     Collection collection = (Collection) propertyValue;
                     for (Object element : collection) {
-                        final Bridge inner = Bridge.matchBridge(element);
-                        luceneOptions.addFieldToDocument(propertyName, inner.objectToString(element), document);
+                        if (isIndexedProperty(element)) {
+                            final Bridge inner = Bridge.matchBridge(element);
+                            luceneOptions.addFieldToDocument(propertyName, inner.objectToString(element), document);
+                        }
                     }
                 } else {
                     luceneOptions.addFieldToDocument(propertyName, bridge.objectToString(propertyValue), document);
@@ -64,8 +69,20 @@ public class PropertyMapBridge implements FieldBridge {
         projections.finish(document);
     }
 
-    private boolean isUnindexedProperty(Object value) {
-        return value != null && UNINDEXED_VALUE_CLASS_NAME.equals(value.getClass().getName());
+    @SuppressWarnings("SimplifiableIfStatement")
+    protected boolean isIndexedProperty(Object value) {
+        if (value == null)
+            return true;
+
+        if (value instanceof Text) {
+            return false;
+        } else if (value instanceof Blob) {
+            return false;
+        } else if (value instanceof EmbeddedEntity) {
+            return false;
+        } else {
+            return UNINDEXED_VALUE_CLASS_NAME.equals(value.getClass().getName()) == false;
+        }
     }
 }
 
