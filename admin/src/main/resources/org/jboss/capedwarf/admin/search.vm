@@ -1,0 +1,33 @@
+#include("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Text search</h2>
+<form action="search.vm">
+
+    <label for="namespaceSelect">Namespace:</label>
+    <input type="text" id="namespaceSelect" name="namespace" value="$search.namespace"/>
+
+    <label for="indexNamePrefix">Index name prefix:</label>
+    <input type="text" id="indexNamePrefix" name="indexNamePrefix" value="$search.indexNamePrefix"/>
+
+    <input type="submit" value="Refresh indexes"/>
+</form>
+
+<br/><br/>
+
+#if($search.searchPerformed)
+    <table width="100%">
+        <tr>
+            <th>Index name</th>
+            <th>Consistency</th>
+        </tr>
+
+        #foreach ($row in $search.rows)
+            <tr>
+                <td><a href="searchIndex.vm?namespace=${search.namespace}&amp;indexName=$row.indexName">$row.indexName</a></td>
+                <td>$row.consistency</td>
+            </tr>
+        #end
+    </table>
+#end
+
+#include("/org/jboss/capedwarf/admin/footer.vm")

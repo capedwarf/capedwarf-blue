@@ -229,6 +229,9 @@
                             <a href="#">Prospective Search</a>
                         </li>
                         <li>
+                            <a href="search.vm">Text search</a>
+                        </li>
+                        <li>
                             <a href="#">Datastore Admin</a>
                         </li>
                     </ul>
