@@ -1,0 +1,29 @@
+#include("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Tasks for queue: $taskQueue.name</h2>
+
+Push the 'Run' button to execute each task.
+
+<table width="100%">
+    <tr>
+        <th>Task name</th>
+        <th>ETA</th>
+        <th>Method</th>
+        <th>URL</th>
+        <th></th>
+        <th></th>
+    </tr>
+
+    #foreach ($row in $taskQueue.rows)
+        <tr>
+            <td>$row.name</td>
+            <td>$row.eta</td>
+            <td>$row.method</td>
+            <td>$row.url</td>
+            <td><input type="button" value="Run"/></td>
+            <td><input type="button" value="Delete"/></td>
+        </tr>
+    #end
+</table>
+
+#include("/org/jboss/capedwarf/admin/footer.vm")
