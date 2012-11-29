@@ -56,8 +56,8 @@ public class DatastoreViewer {
     @Inject @HttpParam
     private String selectedEntityKind;
 
-    private static List<String> properties = new ArrayList<String>();
-    private static List<Row> rows;
+    private List<String> properties = new ArrayList<String>();
+    private List<Row> rows;
 
     public String getSelectedEntityKind() {
         return selectedEntityKind;
@@ -93,7 +93,10 @@ public class DatastoreViewer {
         return rows;
     }
 
-    public static List<String> getProperties() {
+    public List<String> getProperties() {
+        if (rows == null) {
+            loadEntities();
+        }
         return properties;
     }
 

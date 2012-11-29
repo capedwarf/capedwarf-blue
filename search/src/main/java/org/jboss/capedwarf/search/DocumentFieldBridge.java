@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.search;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 import com.google.appengine.api.search.Field;
 import org.apache.lucene.document.Document;
 import org.hibernate.search.bridge.FieldBridge;
@@ -29,10 +32,8 @@ import org.hibernate.search.bridge.LuceneOptions;
 import org.hibernate.search.spatial.SpatialFieldBridgeByGrid;
 import org.hibernate.search.spatial.impl.Point;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
-import static org.apache.lucene.document.Field.*;
+import static org.apache.lucene.document.Field.Index;
+import static org.apache.lucene.document.Field.Store;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -49,6 +50,9 @@ public class DocumentFieldBridge implements FieldBridge {
         com.google.appengine.api.search.Document googleDocument = (com.google.appengine.api.search.Document) value;
         document.add(new org.apache.lucene.document.Field(CacheValue.MATCH_ALL_DOCS_FIELD_NAME, CacheValue.MATCH_ALL_DOCS_FIELD_VALUE, Store.NO, Index.NOT_ANALYZED_NO_NORMS));
         for (Field field : googleDocument.getFields()) {
+            if (field.getType() == null) {
+                throw new IllegalStateException("Field " + field.getName() + " of document " + googleDocument.getId() + " has null type!");
+            }
             String prefixedFieldName = fieldNamePrefixer.getPrefixedFieldName(field.getName(), field.getType());
             String prefixedAllFieldName = fieldNamePrefixer.getPrefixedFieldName(CacheValue.ALL_FIELD_NAME, field.getType());
             if (field.getType() == Field.FieldType.NUMBER) {

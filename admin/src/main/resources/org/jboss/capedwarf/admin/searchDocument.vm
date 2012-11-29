@@ -1,0 +1,29 @@
+#include("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Search document: ${searchDocument.docId}</h2>
+
+<p>Namespace: ${searchDocument.namespace}</p>
+<p>Index name: ${searchDocument.indexName}</p>
+<p>Document id: ${searchDocument.docId}</p>
+<p>Order id: ${searchDocument.orderId}</p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Field Name</th>
+        <th>Field Type</th>
+        <th>Field Value</th>
+    </tr>
+    </thead>
+    <tbody>
+        #foreach($property in $searchDocument.properties)
+        <tr>
+            <td>$property.name</td>
+            <td>$property.type</td>
+            <td>$property.value</td>
+        </tr>
+        #end
+    </tbody>
+</table>
+
+#include("/org/jboss/capedwarf/admin/footer.vm")

@@ -1,0 +1,26 @@
+#include("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Text search</h2>
+<br/><br/>
+
+<table width="100%">
+    <tr>
+        <th>DocId</th>
+        <th>OrderId</th>
+        #foreach ($property in $searchIndex.fieldNames)
+            <th>$property</th>
+        #end
+    </tr>
+
+    #foreach ($row in $searchIndex.rows)
+        <tr>
+            <td><a href="searchDocument.vm?namespace=${searchIndex.namespace}&amp;indexName=${searchIndex.indexName}&amp;docId=${row.docId}">$row.docId</a></td>
+            <td>$row.orderId</td>
+            #foreach ($cell in $row.cells)
+                <td>$cell</td>
+            #end
+        </tr>
+    #end
+</table>
+
+#include("/org/jboss/capedwarf/admin/footer.vm")
