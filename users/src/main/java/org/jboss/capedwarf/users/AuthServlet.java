@@ -58,7 +58,7 @@ public class AuthServlet extends HttpServlet {
 
     private static final String OPENID_MANAGER_KEY = "openid_manager";
 
-    public static final String SERVLET_URI = "/_capedwarf_/auth";
+    public static final String SERVLET_URI = "/_ah/auth";
 
     private static final String LOGIN_RETURN_PATH = "/login_return";
     private static final String LOGIN_PATH = "/login";

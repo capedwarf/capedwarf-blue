@@ -48,7 +48,7 @@ import org.jboss.capedwarf.common.io.IOUtils;
  */
 @WebServlet(urlPatterns = ImageServlet.SERVLET_URI)
 public class ImageServlet extends HttpServlet {
-    public static final String SERVLET_URI = "/_capedwarf_/image";
+    public static final String SERVLET_URI = "/_ah/image";
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
