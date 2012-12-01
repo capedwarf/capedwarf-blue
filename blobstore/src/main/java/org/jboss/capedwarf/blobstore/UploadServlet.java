@@ -44,7 +44,7 @@ import org.jboss.capedwarf.common.url.URLUtils;
 @MultipartConfig()  // TODO
 public class UploadServlet extends HttpServlet {
 
-    public static final String URI = "/_capedwarf_/blobstore/upload";
+    public static final String URI = "/_ah/blobstore/upload";
     private static final String SUCCESS_PATH_PARAM = "successPath";
 
     @Override
