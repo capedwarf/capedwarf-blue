@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.QueueStatistics;
 import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -63,5 +64,14 @@ public class SmokeTestCase extends BaseTest {
         } finally {
             queue.deleteTask(th);
         }
+    }
+
+    @Test
+    public void testStatsAPI() throws Exception {
+        final Queue queue = QueueFactory.getQueue("pull-queue");
+        QueueStatistics stats = queue.fetchStatistics();
+        Assert.assertNotNull(stats);
+        Assert.assertEquals("pull-queue", stats.getQueueName());
+        // TODO -- more stats checks
     }
 }

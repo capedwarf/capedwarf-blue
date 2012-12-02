@@ -22,17 +22,11 @@
 
 package org.jboss.capedwarf.common.jms;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
 
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.modules.ModuleClassLoader;
 
 
@@ -42,43 +36,8 @@ import org.jboss.modules.ModuleClassLoader;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ServletExecutorProducer {
-
+public class ServletExecutorProducer extends JmsAdapter {
     private static final String PREFIX = "org_jboss_capedwarf_jms_";
-
-    private Session session;
-    private MessageProducer producer;
-    private Connection connection;
-
-    private Session getSession() throws Exception {
-        if (session == null) {
-            final ConnectionFactory factory = JndiLookupUtils.lookup("jms.factory.jndi", ConnectionFactory.class, "java:/JmsXA");
-            connection = factory.createConnection();
-            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        }
-        return session;
-    }
-
-    private MessageProducer getProducer() throws Exception {
-        if (producer == null) {
-            final Queue queue = JndiLookupUtils.lookup("jms.queue.jndi", Queue.class, "java:/queue/capedwarf");
-            producer = getSession().createProducer(queue);
-            producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-        }
-        return producer;
-    }
-
-    public void dispose() {
-        final Connection tmp = connection;
-        connection = null;
-        if (tmp != null) {
-            try {
-                tmp.close();
-            } catch (JMSException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 
     /**
      * Send jms message.

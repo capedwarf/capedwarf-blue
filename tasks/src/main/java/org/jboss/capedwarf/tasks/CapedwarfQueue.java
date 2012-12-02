@@ -259,8 +259,12 @@ public class CapedwarfQueue implements Queue {
         return taskHandle;
     }
 
+    protected QueueStatisticsInternal createQueueStatistics() {
+        return new QueueStatisticsImpl(searchManager);
+    }
+
     public QueueStatistics fetchStatistics() {
-        return null; // TODO
+        return createQueueStatistics().fetchStatistics(queueName);
     }
 
     static TermTermination toTerm(QueryBuilder builder, String field, Object value) {
