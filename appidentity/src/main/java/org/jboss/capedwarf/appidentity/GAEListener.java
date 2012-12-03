@@ -42,6 +42,8 @@ import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
 import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
 import org.jboss.capedwarf.common.config.CapedwarfConfigurationParser;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.common.config.QueueXml;
+import org.jboss.capedwarf.common.config.QueueXmlReader;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
@@ -57,11 +59,13 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
 
     private static final String APPENGINE_WEB_XML = "/WEB-INF/appengine-web.xml";
     private static final String CAPEDWARF_WEB_XML = "/WEB-INF/capedwarf-web.xml";
+    private static final String QUEUE_XML = "/WEB-INF/queue.xml";
 
     private ServletContext servletContext;
 
     private AppEngineWebXml appEngineWebXml;
     private CapedwarfConfiguration capedwarfConfiguration;
+    private QueueXml queueXml;
 
     public void contextInitialized(ServletContextEvent sce) {
         this.servletContext = sce.getServletContext();
@@ -69,6 +73,7 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
         try {
             appEngineWebXml = readAppEngineWebXml();
             capedwarfConfiguration = readCapedwarfConfig();
+            queueXml = readQueueXml();
         } catch (Exception e) {
             throw new IllegalArgumentException("Unable to read configuration files", e);
         }
@@ -133,6 +138,20 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
         }
     }
 
+    private QueueXml readQueueXml() throws IOException {
+        InputStream stream = getWebResourceAsStream(QUEUE_XML);
+        if (stream == null) {
+            log.info("No queue.xml found.");
+            return new QueueXml();
+        }
+
+        try {
+            return new QueueXmlReader().parse(stream);
+        } finally {
+            IOUtils.safeClose(stream);
+        }
+    }
+
 
     private InputStream getWebResourceAsStream(String path) {
         return servletContext.getResourceAsStream(path);
@@ -148,6 +167,7 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     private void initApplicationData(CapedwarfEnvironment environment) {
         environment.setAppEngineWebXml(appEngineWebXml);
         environment.setCapedwarfConfiguration(capedwarfConfiguration);
+        environment.setQueueXml(queueXml);
     }
 
     private void initRequestData(CapedwarfEnvironment environment, HttpServletRequest request) {
