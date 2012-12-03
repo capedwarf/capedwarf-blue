@@ -127,7 +127,7 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     private CapedwarfConfiguration readCapedwarfConfig() throws IOException {
         InputStream stream = getWebResourceAsStream(CAPEDWARF_WEB_XML);
         if (stream == null) {
-            log.info("No capedwarf-web.xml found.");
+            log.fine("No capedwarf-web.xml found.");
             return new CapedwarfConfiguration();
         }
 
@@ -141,7 +141,7 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     private QueueXml readQueueXml() throws IOException {
         InputStream stream = getWebResourceAsStream(QUEUE_XML);
         if (stream == null) {
-            log.info("No queue.xml found.");
+            log.fine("No queue.xml found.");
             return new QueueXml();
         }
 
@@ -151,7 +151,6 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
             IOUtils.safeClose(stream);
         }
     }
-
 
     private InputStream getWebResourceAsStream(String path) {
         return servletContext.getResourceAsStream(path);

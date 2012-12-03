@@ -23,32 +23,45 @@
 package org.jboss.capedwarf.common.config;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.appengine.api.taskqueue.TaskOptions;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class QueueXml implements Serializable {
-
     private static final long serialVersionUID = 1L;
+    private static final Queue DEFAULT = new Queue(com.google.appengine.api.taskqueue.Queue.DEFAULT_QUEUE, Mode.PUSH);
 
-    private List<Queue> queues = new ArrayList<Queue>();
+    private Map<String, Queue> queues;
+
+    public QueueXml() {
+        queues = new HashMap<String, Queue>();
+        queues.put(com.google.appengine.api.taskqueue.Queue.DEFAULT_QUEUE, DEFAULT);
+    }
 
     public void addQueue(String name, Mode mode) {
-        queues.add(new Queue(name, mode));
+        queues.put(name, new Queue(name, mode));
     }
 
-    public List<Queue> getQueues() {
-        return queues;
+    public Map<String, Queue> getQueues() {
+        return Collections.unmodifiableMap(queues);
     }
 
-    public static class Queue {
+    public static class Queue implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         private String name;
         private Mode mode;
 
-        public Queue(String name, Mode mode) {
+        private Queue(String name, Mode mode) {
             this.name = name;
+            if (mode == null)
+                mode = Mode.PUSH;
             this.mode = mode;
         }
 
@@ -62,6 +75,16 @@ public class QueueXml implements Serializable {
     }
 
     public static enum Mode {
-        PULL, PUSH
+        PULL(TaskOptions.Method.PULL), PUSH(TaskOptions.Method.POST);
+
+        private TaskOptions.Method method;
+
+        private Mode(TaskOptions.Method method) {
+            this.method = method;
+        }
+
+        public TaskOptions.Method getMethod() {
+            return method;
+        }
     }
 }

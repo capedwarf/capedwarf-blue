@@ -48,6 +48,8 @@ import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.common.config.QueueXml;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.jms.MessageCreator;
@@ -80,6 +82,14 @@ public class CapedwarfQueue implements Queue {
 
     private CapedwarfQueue(String queueName) {
         validateQueueName(queueName);
+
+        CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance(false);
+        QueueXml qx = env.getQueueXml();
+        QueueXml.Queue queue = qx.getQueues().get(queueName);
+        if (queue == null) {
+            throw new IllegalStateException("No such queue " + queueName + " in queue.xml!");
+        }
+
         this.queueName = queueName;
         AdvancedCache<String,Object> ac = getCache().getAdvancedCache();
         this.tasks = ac.with(Application.getAppClassloader());

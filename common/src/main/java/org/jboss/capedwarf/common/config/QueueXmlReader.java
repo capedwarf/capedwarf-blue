@@ -37,6 +37,7 @@ import org.xml.sax.SAXException;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class QueueXmlReader {
 
@@ -99,15 +100,19 @@ public class QueueXmlReader {
 
     private void parseQueueTag(Element queue) {
         String name = getBody(getChildElement(queue, NAME_TAG));
-        String mode = getBody(getChildElement(queue, MODE_TAG));
-        queueXml.addQueue(name, QueueXml.Mode.valueOf(mode.toUpperCase()));
+        String mode = getBody(getChildElement(queue, MODE_TAG, true));
+        queueXml.addQueue(name, (mode != null) ? QueueXml.Mode.valueOf(mode.toUpperCase()) : null);
     }
 
     private String getBody(Element element) {
-        return element.getTextContent();
+        return (element != null) ? element.getTextContent() : null;
     }
 
     private Element getChildElement(Element parent, String childName) {
+        return getChildElement(parent, childName, false);
+    }
+
+    private Element getChildElement(Element parent, String childName, boolean allowNull) {
         NodeList children = parent.getChildNodes();
         for (int i=0; i<children.getLength(); i++) {
             Node child = children.item(i);
@@ -118,8 +123,11 @@ public class QueueXmlReader {
                 }
             }
         }
-        throw new QueueConfigException(parent.getTagName() + " does not contain <" + childName + ">");
+        if (allowNull) {
+            return null;
+        } else {
+            throw new QueueConfigException(parent.getTagName() + " does not contain <" + childName + ">");
+        }
     }
-
 
 }
