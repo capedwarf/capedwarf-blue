@@ -34,6 +34,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import com.google.appengine.api.log.LogServiceFactory;
 import org.jboss.capedwarf.common.config.AppEngineWebXml;
@@ -154,10 +155,14 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     }
 
     private void initUserData(CapedwarfEnvironment environment, HttpServletRequest request) {
-        Principal principal = request.getUserPrincipal();
-        if (principal != null) {
-            environment.setEmail(principal.getName());
-//            environment.setAuthDomain();
+        HttpSession session = request.getSession();
+        // our fake request doesn't create session
+        if (session != null) {
+            Principal principal = (Principal) session.getAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY);
+            if (principal != null) {
+                environment.setEmail(principal.getName());
+    //            environment.setAuthDomain();
+            }
         }
     }
 
