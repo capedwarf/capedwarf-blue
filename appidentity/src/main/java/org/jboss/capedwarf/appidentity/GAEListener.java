@@ -91,8 +91,10 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
         long requestStartMillis = System.currentTimeMillis();
 
         final ServletRequest req = sre.getServletRequest();
-        if (req instanceof HttpServletRequest)
-            initJBossEnvironment((HttpServletRequest) req);
+        if (req instanceof HttpServletRequest) {
+            HttpServletRequest request = (HttpServletRequest) req;
+            initJBossEnvironment(request);
+        }
 
         getLogService().requestStarted(sre.getServletRequest(), requestStartMillis);
     }
@@ -154,7 +156,7 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     }
 
     private void initUserData(CapedwarfEnvironment environment, HttpServletRequest request) {
-        Principal principal = request.getUserPrincipal();
+        Principal principal = (Principal) request.getSession().getAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY);
         if (principal != null) {
             environment.setEmail(principal.getName());
 //            environment.setAuthDomain();
