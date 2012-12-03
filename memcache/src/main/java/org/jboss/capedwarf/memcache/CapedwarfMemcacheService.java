@@ -51,20 +51,20 @@ import org.jboss.capedwarf.common.infinispan.WrapperTxCallable;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class InfinispanMemcacheService implements MemcacheService {
+public class CapedwarfMemcacheService implements MemcacheService {
 
-    protected static final Logger log = Logger.getLogger(InfinispanMemcacheService.class.getName());
+    protected static final Logger log = Logger.getLogger(CapedwarfMemcacheService.class.getName());
     private static final SetPolicy DEFAULT_SET_POLICY = SetPolicy.SET_ALWAYS;
 
     protected final Cache<NamespacedKey, Object> cache;
     private String namespace;
     private ErrorHandler errorHandler;
 
-    public InfinispanMemcacheService() {
+    public CapedwarfMemcacheService() {
         this(null);
     }
 
-    public InfinispanMemcacheService(String namespace) {
+    public CapedwarfMemcacheService(String namespace) {
         setNamespace(namespace);
         this.cache = InfinispanUtils.getCache(Application.getAppId(), CacheName.MEMCACHE);
     }
@@ -79,7 +79,6 @@ public class InfinispanMemcacheService implements MemcacheService {
         }
         this.namespace = namespace;
     }
-
 
     public Object get(Object key) {
         return cache.get(namespacedKey(key));

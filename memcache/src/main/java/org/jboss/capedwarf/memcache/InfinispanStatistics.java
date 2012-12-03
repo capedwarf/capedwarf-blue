@@ -28,10 +28,9 @@ import com.google.appengine.api.memcache.Stats;
 import org.infinispan.AdvancedCache;
 
 /**
- *
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class InfinispanStatistics implements Stats {
-
     private AdvancedCache<?, ?> advancedCache;
 
     public InfinispanStatistics(AdvancedCache<?, ?> cache) {
@@ -47,7 +46,7 @@ public class InfinispanStatistics implements Stats {
     }
 
     public long getBytesReturnedForHits() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0; // TODO
     }
 
     public long getItemCount() {
@@ -55,10 +54,10 @@ public class InfinispanStatistics implements Stats {
     }
 
     public long getTotalItemBytes() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0; // TODO
     }
 
     public int getMaxTimeWithoutAccess() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0; // TODO
     }
 }

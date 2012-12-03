@@ -41,16 +41,16 @@ public class MemcacheServiceFactoryTransformer extends JavassistTransformer {
 
     private void transformGetMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
         CtMethod method = clazz.getDeclaredMethod("getMemcacheService");
-        method.setBody("return new org.jboss.capedwarf.memcache.InfinispanMemcacheService();");
+        method.setBody("return new org.jboss.capedwarf.memcache.CapedwarfMemcacheService();");
     }
 
     private void transformParameterizedGetMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
         CtMethod method = clazz.getDeclaredMethod("getMemcacheService", new CtClass[]{clazz.getClassPool().get("java.lang.String")});
-        method.setBody("return new org.jboss.capedwarf.memcache.InfinispanMemcacheService($1);");
+        method.setBody("return new org.jboss.capedwarf.memcache.CapedwarfMemcacheService($1);");
     }
 
     private void transformGetAsyncMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
         CtMethod method = clazz.getDeclaredMethod("getAsyncMemcacheService");
-        method.setBody("return new org.jboss.capedwarf.memcache.JBossAsyncMemcacheService();");
+        method.setBody("return new org.jboss.capedwarf.memcache.CapedwarfAsyncMemcacheService();");
     }
 }
