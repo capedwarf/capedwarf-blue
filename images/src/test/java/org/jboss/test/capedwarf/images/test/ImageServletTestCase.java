@@ -25,8 +25,11 @@
 package org.jboss.test.capedwarf.images.test;
 
 import com.google.appengine.api.blobstore.BlobKey;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.images.ImageServlet;
 import org.jboss.test.capedwarf.common.support.All;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -41,6 +44,16 @@ public class ImageServletTestCase {
 
     private static final String BLOB_KEY_STRING = "key123";
     private static final BlobKey BLOB_KEY = new BlobKey(BLOB_KEY_STRING);
+
+    @Before
+    public void setUp() {
+        CapedwarfEnvironment.createThreadLocalInstance();
+    }
+
+    @After
+    public void tearDown() {
+        CapedwarfEnvironment.clearThreadLocalInstance();
+    }
 
     @Test
     public void servingUrlContainsBlobKey() throws Exception {

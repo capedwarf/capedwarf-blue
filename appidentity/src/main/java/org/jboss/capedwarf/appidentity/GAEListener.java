@@ -157,7 +157,7 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     }
 
     private void initJBossEnvironment(HttpServletRequest request) {
-        CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
+        CapedwarfEnvironment environment = CapedwarfEnvironment.createThreadLocalInstance();
         initApplicationData(environment);
         initRequestData(environment, request);
         initUserData(environment, request);

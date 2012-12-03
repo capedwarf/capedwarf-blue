@@ -50,7 +50,7 @@ public class CapedwarfEnvironmentTestCase {
     @Before
     public void setUp() throws Exception {
         config = new CapedwarfConfiguration();
-        env = CapedwarfEnvironment.getThreadLocalInstance();
+        env = CapedwarfEnvironment.createThreadLocalInstance();
         env.setCapedwarfConfiguration(config);
     }
 

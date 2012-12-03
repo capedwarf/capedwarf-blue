@@ -78,17 +78,17 @@ class LazyThreadFactory implements ThreadFactory, Serializable {
         public void run() {
             final ClassLoader old = SecurityActions.setThreadContextClassLoader(appCL);
             try {
-                final ApiProxy.Delegate previous = ApiProxy.getDelegate();
-                ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
+                CapedwarfEnvironment.setThreadLocalInstance(env);
                 try {
-                    CapedwarfEnvironment.setThreadLocalInstance(env);
+                    final ApiProxy.Delegate previous = ApiProxy.getDelegate();
+                    ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
                     try {
                         runnable.run();
                     } finally {
-                        CapedwarfEnvironment.clearThreadLocalInstance();
+                        ApiProxy.setDelegate(previous);
                     }
                 } finally {
-                    ApiProxy.setDelegate(previous);
+                    CapedwarfEnvironment.clearThreadLocalInstance();
                 }
             } finally {
                 SecurityActions.setThreadContextClassLoader(old);

@@ -83,7 +83,7 @@ public class CapedwarfQueue implements Queue {
     private CapedwarfQueue(String queueName) {
         validateQueueName(queueName);
 
-        CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance(false);
+        CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
         QueueXml qx = env.getQueueXml();
         QueueXml.Queue queue = qx.getQueues().get(queueName);
         if (queue == null) {
