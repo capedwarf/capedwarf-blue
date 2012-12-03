@@ -60,6 +60,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     private CapedwarfConfiguration capedwarfConfiguration;
     private AppEngineWebXml appEngineWebXml;
+    private QueueXml queueXml;
     private String baseApplicationUrl;
     private String secureBaseApplicationUrl;
 
@@ -132,6 +133,14 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public void setAppEngineWebXml(AppEngineWebXml appEngineWebXml) {
         this.appEngineWebXml = appEngineWebXml;
+    }
+
+    public QueueXml getQueueXml() {
+        return queueXml;
+    }
+
+    public void setQueueXml(QueueXml queueXml) {
+        this.queueXml = queueXml;
     }
 
     public Collection<String> getAdmins() {
