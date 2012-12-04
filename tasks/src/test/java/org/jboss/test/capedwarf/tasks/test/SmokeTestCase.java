@@ -52,10 +52,23 @@ public class SmokeTestCase extends BaseTest {
     }
 
     @Test
+    public void testStatsAPI() throws Exception {
+        final Queue queue = QueueFactory.getQueue("pull-queue");
+        QueueStatistics stats = queue.fetchStatistics();
+        Assert.assertNotNull(stats);
+        Assert.assertEquals("pull-queue", stats.getQueueName());
+        // TODO -- more stats checks
+    }
+
+    @Test
     public void testBasics() throws Exception {
         final Queue queue = QueueFactory.getQueue("pull-queue");
         TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).param("foo", "bar").etaMillis(15000));
         try {
+            QueueStatistics stats = queue.fetchStatistics();
+            Assert.assertNotNull(stats);
+            Assert.assertEquals(1, stats.getNumTasks());
+
             List<TaskHandle> handles = queue.leaseTasks(30, TimeUnit.MINUTES, 100);
             Assert.assertFalse(handles.isEmpty());
             TaskHandle lh = handles.get(0);
@@ -64,14 +77,5 @@ public class SmokeTestCase extends BaseTest {
         } finally {
             queue.deleteTask(th);
         }
-    }
-
-    @Test
-    public void testStatsAPI() throws Exception {
-        final Queue queue = QueueFactory.getQueue("pull-queue");
-        QueueStatistics stats = queue.fetchStatistics();
-        Assert.assertNotNull(stats);
-        Assert.assertEquals("pull-queue", stats.getQueueName());
-        // TODO -- more stats checks
     }
 }
