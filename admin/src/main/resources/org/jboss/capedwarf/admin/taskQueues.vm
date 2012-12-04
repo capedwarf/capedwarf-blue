@@ -1,0 +1,51 @@
+#include("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Task Queues</h2>
+
+<p>Select a push queue to run tasks manually.</p>
+
+<p><b>Push Queues</b></p>
+<table width="100%">
+    <tr>
+        <th>Queue name</th>
+        <th>Maximum rate</th>
+        <th>Bucket size</th>
+        <th>Oldest task</th>
+        <th>Tasks in queue</th>
+        <th></th>
+    </tr>
+
+    #foreach ($row in $taskQueues.pushQueues)
+        <tr>
+            <td><a href="taskQueue.vm?name=$row.name">$row.name</a></td>
+            <td>$row.maximumRate</td>
+            <td>$row.bucketSize</td>
+            <td>$row.oldestTask</td>
+            <td>$row.tasksInQueue</td>
+            <td><input type="button" value="Purge queue"/></td>
+        </tr>
+    #end
+</table>
+<br/>
+<br/>
+
+<p><b>Pull Queues</b></p>
+<table width="100%">
+    <tr>
+        <th>Queue name</th>
+        <th>Oldest task</th>
+        <th>Tasks in queue</th>
+        <th></th>
+    </tr>
+
+    #foreach ($row in $taskQueues.pullQueues)
+        <tr>
+            <td><a href="taskQueue.vm?name=$row.name">$row.name</a></td>
+            <td>$row.oldestTask</td>
+            <td>$row.tasksInQueue</td>
+            <td><input type="button" value="Purge queue"/></td>
+        </tr>
+    #end
+</table>
+
+#include("/org/jboss/capedwarf/admin/footer.vm")

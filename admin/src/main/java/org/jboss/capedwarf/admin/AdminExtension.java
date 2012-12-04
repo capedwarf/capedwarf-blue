@@ -26,6 +26,8 @@ public class AdminExtension implements Extension {
         addAnnotatedType(bbd, bm, Search.class);
         addAnnotatedType(bbd, bm, SearchDocument.class);
         addAnnotatedType(bbd, bm, SearchIndex.class);
+        addAnnotatedType(bbd, bm, TaskQueues.class);
+        addAnnotatedType(bbd, bm, TaskQueue.class);
         addAnnotatedType(bbd, bm, HttpParamProducer.class);
         addAnnotatedType(bbd, bm, LogViewer.class);
         addAnnotatedType(bbd, bm, TimeFormatter.class);
