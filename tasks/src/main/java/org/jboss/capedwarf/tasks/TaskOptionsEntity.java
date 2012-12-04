@@ -45,14 +45,14 @@ public class TaskOptionsEntity implements Serializable {
     private String name;
     private String queue;
     private String tag;
-    private long eta;
+    private Long eta;
     private TaskOptions options;
     private RetryOptions retry;
 
     public TaskOptionsEntity() {
     }
 
-    public TaskOptionsEntity(String name, String queue, String tag, long eta, TaskOptions options, RetryOptions retry) {
+    public TaskOptionsEntity(String name, String queue, String tag, Long eta, TaskOptions options, RetryOptions retry) {
         this.name = name;
         this.queue = queue;
         this.tag = tag;
@@ -89,11 +89,11 @@ public class TaskOptionsEntity implements Serializable {
 
     @NumericField
     @Field
-    public long getEta() {
+    public Long getEta() {
         return eta;
     }
 
-    public void setEta(long eta) {
+    public void setEta(Long eta) {
         this.eta = eta;
     }
 

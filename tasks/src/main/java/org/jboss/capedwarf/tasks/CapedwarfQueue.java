@@ -156,7 +156,7 @@ public class CapedwarfQueue implements Queue {
                     }
                     Long lifespan = getEtaMillis.invoke(to);
                     RetryOptions retryOptions = getRetryOptions.invoke(to);
-                    getTasks().put(taskName, new TaskOptionsEntity(taskName, queueName, copy.getTag(), lifespan, copy, retryOptions), lifespan, TimeUnit.MILLISECONDS);
+                    getTasks().put(taskName, new TaskOptionsEntity(taskName, queueName, copy.getTag(), lifespan, copy, retryOptions), lifespan == null ? -1 : lifespan, TimeUnit.MILLISECONDS);
                 } else if (m == TaskOptions.Method.POST) {
                     final MessageCreator mc = createMessageCreator(to);
                     final String id = producer.sendMessage(mc);
