@@ -46,7 +46,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class AbstractLoggingTest extends BaseTest {
 
-    protected static TestContext newTextContext() {
+    protected static TestContext newTestContext() {
         return new TestContext();
     }
 

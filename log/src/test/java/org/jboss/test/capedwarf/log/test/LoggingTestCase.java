@@ -49,7 +49,7 @@ public class LoggingTestCase extends AbstractLoggingTest {
 
     @Deployment
     public static WebArchive getDeployment() {
-        return getDefaultDeployment(newTextContext());
+        return getDefaultDeployment(newTestContext());
     }
 
     @Test
