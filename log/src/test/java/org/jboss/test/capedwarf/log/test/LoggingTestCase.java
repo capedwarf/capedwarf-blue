@@ -24,6 +24,7 @@ package org.jboss.test.capedwarf.log.test;
 
 import java.util.logging.Logger;
 
+import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.LogServiceFactory;
@@ -53,13 +54,14 @@ public class LoggingTestCase extends AbstractLoggingTest {
 
     @Test
     public void testLogging() {
-        assertLogDoesntContain("hello");
+        String text = "hello";
+        assertLogDoesntContain(text);
 
         Logger log = Logger.getLogger(LoggingTestCase.class.getName());
-        log.info("hello");
+        log.info(text);
         flush(log);
 
-        assertLogContains("hello");
+        assertLogContains(text);
     }
 
     @Test
@@ -82,4 +84,22 @@ public class LoggingTestCase extends AbstractLoggingTest {
         }
         fail("Should have found at least one appLogLine, but didn't find any");
     }
+
+    @Test
+    public void testLogLinesAlwaysStoredInEmptyNamespace() {
+        String text = "something logged while namespace not set to empty";
+        assertLogDoesntContain(text);
+
+        NamespaceManager.set("some-namespace");
+        try {
+            Logger log = Logger.getLogger(LoggingTestCase.class.getName());
+            log.info(text);
+            flush(log);
+        } finally {
+            NamespaceManager.set("");
+        }
+
+        assertLogContains(text);
+    }
+
 }
