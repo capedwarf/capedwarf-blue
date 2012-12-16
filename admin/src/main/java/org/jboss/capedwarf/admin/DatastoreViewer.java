@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.admin;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -63,6 +64,10 @@ public class DatastoreViewer {
         return selectedEntityKind;
     }
 
+    public String getSelectedNamespace() {
+        return selectedNamespace == null ? "" : selectedNamespace;
+    }
+
     public void setSelectedEntityKind(String selectedEntityKind) {
         this.selectedEntityKind = selectedEntityKind;
     }
@@ -73,13 +78,11 @@ public class DatastoreViewer {
     }
 
     public List<String> getEntityKinds() {
-        Set<String> set = new TreeSet<String>();
-        for (Entity entity : getDatastore().prepare(new Query()).asIterable()) {
-            if (entity != null) {
-                set.add(entity.getKind());
-            }
-        }
-        return new ArrayList<String>(set);
+        NamespaceServiceInternal namespaceService = NamespaceServiceFactory.getNamespaceService();
+        Set<String> set = namespaceService.getKindsPerNamespace(getSelectedNamespace());
+        List<String> list = new ArrayList<String>(set);
+        Collections.sort(list);
+        return list;
     }
 
     private DatastoreService getDatastore() {
