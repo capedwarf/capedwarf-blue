@@ -133,7 +133,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
             context.setText(builder.toString());
             context.setKind(QueryTreeContext.Kind.PHRASE);
             context.setReturnType(QueryTreeContext.Type.TEXT);
-        } else if (type.getType() == QueryLexer.NUMBER) {
+        } else if (type.getType() == QueryLexer.DIGIT) { // TODO -- OK?
             context.setKind(QueryTreeContext.Kind.LITERAL);
             context.setReturnType(QueryTreeContext.Type.NUMBER);
         } else {

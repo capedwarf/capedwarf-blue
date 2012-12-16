@@ -289,6 +289,19 @@ public class CapedwarfSearchIndex implements Index {
         return null;  // TODO
     }
 
+    public Future<Void> deleteSchemaAsync() {
+        return ExecutorFactory.wrap(new Callable<Void>() {
+            public Void call() throws Exception {
+                deleteSchema();
+                return null;
+            }
+        });
+    }
+
+    public void deleteSchema() {
+        // TODO
+    }
+
     public Future<Void> deleteAsync(String... strings) {
         return deleteAsync(Arrays.asList(strings));
     }
