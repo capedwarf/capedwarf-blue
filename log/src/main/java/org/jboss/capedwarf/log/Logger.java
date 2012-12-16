@@ -22,9 +22,12 @@
 
 package org.jboss.capedwarf.log;
 
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.LogRecord;
 
 import com.google.appengine.api.log.LogServiceFactory;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.util.collection.ConcurrentReferenceHashMap;
 
 /**
  * Logger.
@@ -33,13 +36,41 @@ import com.google.appengine.api.log.LogServiceFactory;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class Logger {
+    private static ConcurrentMap<ClassLoader, Logable> logs = new ConcurrentReferenceHashMap<ClassLoader, Logable>();
+
     public static void publish(LogRecord record) {
-        ((CapedwarfLogService)LogServiceFactory.getLogService()).log(record);
+        ClassLoader cl = Application.getAppClassloader();
+        LoggerLogable logable = new LoggerLogable();
+        Logable previous = logs.putIfAbsent(cl, logable);
+        if (previous == null) {
+            logable.log(record);
+        } else {
+            previous.log(record);
+        }
     }
 
     public static void flush() {
     }
 
     public static void close() throws SecurityException {
+    }
+
+    private static class LoggerLogable implements Logable {
+        private volatile Logable logable;
+
+        private Logable getLogable() {
+            if (logable == null) {
+                synchronized (this) {
+                    if (logable == null) {
+                        logable = ((CapedwarfLogService)LogServiceFactory.getLogService());
+                    }
+                }
+            }
+            return logable;
+        }
+
+        public void log(LogRecord record) {
+            getLogable().log(record);
+        }
     }
 }

@@ -51,7 +51,7 @@ import org.jboss.capedwarf.common.compatibility.Compatibility;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfLogService implements LogService {
+public class CapedwarfLogService implements LogService, Logable {
 
     private static final String LOG_REQUEST_ENTITY_KIND = "__org.jboss.capedwarf.LogRequest__";
     private static final String LOG_REQUEST_START_TIME_MILLIS = "startTimeMillis";
