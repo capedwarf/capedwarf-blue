@@ -27,12 +27,13 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.QueueStatistics;
 import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,11 +44,20 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
-@Category(All.class)
-public class SmokeTestCase extends BaseTest {
+@Category(JBoss.class) // should be @All, once GAE local supports stats
+public class StatsTestCase extends BaseTest {
     @Deployment
     public static Archive getDeployment() {
         return getCapedwarfDeployment().addAsWebInfResource("queue.xml");
+    }
+
+    @Test
+    public void testStatsAPI() throws Exception {
+        final Queue queue = QueueFactory.getQueue("pull-queue");
+        QueueStatistics stats = queue.fetchStatistics();
+        Assert.assertNotNull(stats);
+        Assert.assertEquals("pull-queue", stats.getQueueName());
+        // TODO -- more stats checks
     }
 
     @Test
@@ -55,6 +65,10 @@ public class SmokeTestCase extends BaseTest {
         final Queue queue = QueueFactory.getQueue("pull-queue");
         TaskHandle th = queue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL).param("foo", "bar").etaMillis(15000));
         try {
+            QueueStatistics stats = queue.fetchStatistics();
+            Assert.assertNotNull(stats);
+            Assert.assertEquals(1, stats.getNumTasks());
+
             List<TaskHandle> handles = queue.leaseTasks(30, TimeUnit.MINUTES, 100);
             Assert.assertFalse(handles.isEmpty());
             TaskHandle lh = handles.get(0);
