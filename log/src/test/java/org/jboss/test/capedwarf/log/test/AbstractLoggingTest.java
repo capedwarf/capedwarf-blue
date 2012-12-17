@@ -46,7 +46,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class AbstractLoggingTest extends BaseTest {
 
-    protected static TestContext newTextContext() {
+    protected static TestContext newTestContext() {
         return new TestContext();
     }
 
@@ -84,7 +84,7 @@ public class AbstractLoggingTest extends BaseTest {
     }
 
     protected boolean logContains(String text) {
-        Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery().includeAppLogs(true));
+        Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery().includeAppLogs(true).includeIncomplete(true));
         for (RequestLogs logs : iterable) {
             for (AppLogLine logLine : logs.getAppLogLines()) {
                 if (logLine.getLogMessage().contains(text)) {

@@ -24,6 +24,7 @@ package org.jboss.test.capedwarf.log.test;
 
 import java.util.logging.Logger;
 
+import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.LogServiceFactory;
@@ -32,6 +33,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -48,18 +50,19 @@ public class LoggingTestCase extends AbstractLoggingTest {
 
     @Deployment
     public static WebArchive getDeployment() {
-        return getDefaultDeployment(newTextContext());
+        return getDefaultDeployment(newTestContext());
     }
 
     @Test
     public void testLogging() {
-        assertLogDoesntContain("hello");
+        String text = "hello";
+        assertLogDoesntContain(text);
 
         Logger log = Logger.getLogger(LoggingTestCase.class.getName());
-        log.info("hello");
+        log.info(text);
         flush(log);
 
-        assertLogContains("hello");
+        assertLogContains(text);
     }
 
     @Test
@@ -82,4 +85,34 @@ public class LoggingTestCase extends AbstractLoggingTest {
         }
         fail("Should have found at least one appLogLine, but didn't find any");
     }
+
+    @Test
+    public void testLogLinesAlwaysStoredInEmptyNamespace() {
+        String text = "something logged while namespace not set to empty";
+        assertLogDoesntContain(text);
+
+        NamespaceManager.set("some-namespace");
+        try {
+            Logger log = Logger.getLogger(LoggingTestCase.class.getName());
+            log.info(text);
+            flush(log);
+        } finally {
+            NamespaceManager.set("");
+        }
+
+        assertLogContains(text);
+    }
+
+    @Ignore
+    @Test
+    public void testStdOutIsLogged() {
+        String text = "Something written to STDOUT";
+        assertLogDoesntContain(text);
+
+        System.out.println(text);
+        System.out.flush();
+
+        assertLogContains(text);
+    }
+
 }

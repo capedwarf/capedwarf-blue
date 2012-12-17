@@ -34,6 +34,7 @@ import java.util.logging.LogRecord;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -72,16 +73,22 @@ public class CapedwarfLogService implements LogService, Logable {
     private boolean ignoreLogging = Compatibility.getInstance().isEnabled(Compatibility.Feature.IGNORE_LOGGING);
 
     public Iterable<RequestLogs> fetch(LogQuery logQuery) {
-        List<RequestLogs> list = new ArrayList<RequestLogs>();
+        String ns = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            List<RequestLogs> list = new ArrayList<RequestLogs>();
 
-        Map<Key, RequestLogs> map = fetchRequestLogs(logQuery, list);
-        if (logQuery.getIncludeAppLogs()) {
-            fetchAppLogLines(logQuery, map);
+            Map<Key, RequestLogs> map = fetchRequestLogs(logQuery, list);
+            if (logQuery.getIncludeAppLogs()) {
+                fetchAppLogLines(logQuery, map);
+            }
+            if (logQuery.getMinLogLevel() != null) {
+                removeRequestsWithNoLogLines(list);
+            }
+            return list;
+        } finally {
+            NamespaceManager.set(ns);
         }
-        if (logQuery.getMinLogLevel() != null) {
-            removeRequestsWithNoLogLines(list);
-        }
-        return list;
     }
 
     private void removeRequestsWithNoLogLines(List<RequestLogs> list) {
@@ -193,17 +200,24 @@ public class CapedwarfLogService implements LogService, Logable {
         if (ignoreLogging)
             return;
 
-        CapedwarfDelegate capedwarfDelegate = CapedwarfDelegate.INSTANCE;
-        ServletRequest request = capedwarfDelegate.getServletRequest();
+        String ns = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            CapedwarfDelegate capedwarfDelegate = CapedwarfDelegate.INSTANCE;
+            ServletRequest request = capedwarfDelegate.getServletRequest();
 
-        Entity entity = new Entity(LOG_LINE_ENTITY_KIND);
-        entity.setProperty(LOG_LINE_LOGGER, record.getLoggerName());
-        entity.setProperty(LOG_LINE_LEVEL, getLogLevel(record).ordinal());
-        entity.setProperty(LOG_LINE_MILLIS, record.getMillis());
-        entity.setProperty(LOG_LINE_THROWN, record.getThrown());
-        entity.setProperty(LOG_LINE_MESSAGE, record.getMessage()); // TODO: format message
-        entity.setProperty(LOG_LINE_REQUEST_KEY, getRequestEntityKey(request));
-        DatastoreServiceFactory.getDatastoreService().put(entity); // TODO -- async
+            Entity entity = new Entity(LOG_LINE_ENTITY_KIND);
+            entity.setProperty(LOG_LINE_LOGGER, record.getLoggerName());
+            entity.setProperty(LOG_LINE_LEVEL, getLogLevel(record).ordinal());
+            entity.setProperty(LOG_LINE_MILLIS, record.getMillis());
+            entity.setProperty(LOG_LINE_THROWN, record.getThrown());
+            entity.setProperty(LOG_LINE_MESSAGE, record.getMessage()); // TODO: format message
+            entity.setProperty(LOG_LINE_REQUEST_KEY, getRequestEntityKey(request));
+
+            DatastoreServiceFactory.getDatastoreService().put(entity); // TODO -- async
+        } finally {
+            NamespaceManager.set(ns);
+        }
     }
 
     private LogLevel getLogLevel(LogRecord record) {
