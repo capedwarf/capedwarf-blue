@@ -33,7 +33,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -103,7 +102,6 @@ public class LoggingTestCase extends AbstractLoggingTest {
         assertLogContains(text);
     }
 
-    @Ignore
     @Test
     public void testStdOutIsLogged() {
         String text = "Something written to STDOUT";
