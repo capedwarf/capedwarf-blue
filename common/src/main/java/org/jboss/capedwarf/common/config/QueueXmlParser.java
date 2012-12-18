@@ -39,8 +39,7 @@ import org.xml.sax.SAXException;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class QueueXmlReader {
-
+public class QueueXmlParser {
     private static final String TOTAL_STORAGE_LIMIT_TAG = "total-storage-limit";
     private static final String QUEUEENTRIES_TAG = "queue-entries";
     private static final String QUEUE_TAG = "queue";
@@ -60,22 +59,19 @@ public class QueueXmlReader {
     private static final String USER_EMAIL_TAG = "user-email";
     private static final String WRITER_EMAIL_TAG = "writer-email";
 
+    public static QueueXml parse(InputStream is)  {
+        if (is == null) {
+            return new QueueXml();
+        }
 
-    private QueueXml queueXml;
-
-    public QueueXmlReader() {
-        queueXml = new QueueXml();
-    }
-
-    public QueueXml parse(InputStream is)  {
-
+        QueueXml queueXml = new QueueXml();
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(is);
             doc.getDocumentElement().normalize();
 
-            if (!QUEUEENTRIES_TAG.equals(doc.getDocumentElement().getTagName())) {
+            if (QUEUEENTRIES_TAG.equals(doc.getDocumentElement().getTagName()) == false) {
                 throw new QueueConfigException("queue.xml does not contain <queue-entries>");
             }
             NodeList list = doc.getDocumentElement().getChildNodes();
@@ -84,7 +80,7 @@ public class QueueXmlReader {
                 if (node instanceof Element) {
                     Element element = (Element) node;
                     if (QUEUE_TAG.equals(element.getTagName())) {
-                        parseQueueTag(element);
+                        parseQueueTag(queueXml, element);
                     }
                 }
             }
@@ -98,21 +94,21 @@ public class QueueXmlReader {
         }
     }
 
-    private void parseQueueTag(Element queue) {
+    private static void parseQueueTag(QueueXml queueXml, Element queue) {
         String name = getBody(getChildElement(queue, NAME_TAG));
         String mode = getBody(getChildElement(queue, MODE_TAG, true));
         queueXml.addQueue(name, (mode != null) ? QueueXml.Mode.valueOf(mode.toUpperCase()) : null);
     }
 
-    private String getBody(Element element) {
+    private static String getBody(Element element) {
         return (element != null) ? element.getTextContent() : null;
     }
 
-    private Element getChildElement(Element parent, String childName) {
+    private static Element getChildElement(Element parent, String childName) {
         return getChildElement(parent, childName, false);
     }
 
-    private Element getChildElement(Element parent, String childName, boolean allowNull) {
+    private static Element getChildElement(Element parent, String childName, boolean allowNull) {
         NodeList children = parent.getChildNodes();
         for (int i=0; i<children.getLength(); i++) {
             Node child = children.item(i);
@@ -129,5 +125,4 @@ public class QueueXmlReader {
             throw new QueueConfigException(parent.getTagName() + " does not contain <" + childName + ">");
         }
     }
-
 }

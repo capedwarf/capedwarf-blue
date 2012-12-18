@@ -24,23 +24,24 @@
 
 package org.jboss.capedwarf.common.config;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.jboss.capedwarf.common.xml.XmlUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-
 /**
  * Parses the appengine-web.xml file
  *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class AppEngineWebXmlParser {
-
     public static AppEngineWebXml parse(InputStream inputStream) throws IOException {
         try {
             return tryParse(inputStream);

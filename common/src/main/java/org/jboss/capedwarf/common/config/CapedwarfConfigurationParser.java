@@ -24,21 +24,25 @@
 
 package org.jboss.capedwarf.common.config;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.jboss.capedwarf.common.xml.XmlUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.InputStream;
-
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfConfigurationParser {
-
     public static CapedwarfConfiguration parse(InputStream inputStream) throws IOException {
+        if (inputStream == null) {
+            return new CapedwarfConfiguration();
+        }
         try {
             return tryParse(inputStream);
         } catch (ParserConfigurationException e) {
@@ -70,6 +74,4 @@ public class CapedwarfConfigurationParser {
 
         return config;
     }
-
-
 }
