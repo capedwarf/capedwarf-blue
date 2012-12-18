@@ -34,9 +34,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.apphosting.api.ApiProxy;
-import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
-
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -48,19 +45,7 @@ public class GAEFilter implements Filter {
 
     public void doFilter(ServletRequest req, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = new CapedwarfHttpServletRequestWrapper((HttpServletRequest) req);
-
-        final ApiProxy.Delegate previous = ApiProxy.getDelegate();
-        final CapedwarfDelegate delegate = CapedwarfDelegate.INSTANCE;
-        ApiProxy.setDelegate(delegate);
-        try {
-            delegate.addRequest(req);
-
-            chain.doFilter(request, response);
-        } finally {
-            delegate.removeRequest();
-
-            ApiProxy.setDelegate(previous);
-        }
+        chain.doFilter(request, response);
     }
 
     public void destroy() {

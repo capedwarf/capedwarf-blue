@@ -37,6 +37,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import com.google.appengine.api.log.LogServiceFactory;
+import com.google.apphosting.api.ApiProxy;
+import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.AppEngineWebXml;
 import org.jboss.capedwarf.common.config.AppEngineWebXmlParser;
 import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
@@ -97,15 +99,30 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
         long requestStartMillis = System.currentTimeMillis();
 
         final ServletRequest req = sre.getServletRequest();
-        if (req instanceof HttpServletRequest)
+        if (req instanceof HttpServletRequest) {
             initJBossEnvironment((HttpServletRequest) req);
+        }
 
-        getLogService().requestStarted(sre.getServletRequest(), requestStartMillis);
+        final CapedwarfDelegate delegate = CapedwarfDelegate.INSTANCE;
+        ApiProxy.setDelegate(delegate);
+        delegate.addRequest(req);
+
+        getLogService().requestStarted(req, requestStartMillis);
     }
 
     public void requestDestroyed(ServletRequestEvent sre) {
-        getLogService().requestFinished(sre.getServletRequest());
-        clearJBossEnvironment();
+        final ServletRequest req = sre.getServletRequest();
+        try {
+            getLogService().requestFinished(req);
+        } finally {
+            try {
+                final CapedwarfDelegate delegate = CapedwarfDelegate.INSTANCE;
+                ApiProxy.setDelegate(null);
+                delegate.addRequest(req);
+            } finally {
+                clearJBossEnvironment();
+            }
+        }
     }
 
     private CapedwarfLogService getLogService() {
