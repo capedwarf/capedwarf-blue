@@ -34,17 +34,30 @@ public class DatastoreServiceConfigBuilderTransformer extends JavassistTransform
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("withDefaults");
         method.setBody("{" +
-                "com.google.appengine.api.datastore.DatastoreCallbacks callbacks = null;" +
+                "java.lang.Object callbacks = null;" +
                 "ClassLoader cl = Thread.currentThread().getContextClassLoader();" +
                 "java.io.InputStream is = cl.getResourceAsStream(\"/META-INF/datastorecallbacks.xml\");" +
                 "if (is != null) {" +
                 "   callbacks = new com.google.appengine.api.datastore.DatastoreCallbacksImpl(is, false);" +
                 "}" +
                 "try {" +
-                "   Class clazz = com.google.appengine.api.datastore.DatastoreCallbacks.class.getClassLoader().loadClass(\"com.google.appengine.api.datastore.DatastoreServiceConfig\");" +
-                "   java.lang.reflect.Constructor ctor = clazz.getDeclaredConstructor(new Class[]{com.google.appengine.api.datastore.DatastoreCallbacks.class});" +
-                "   ctor.setAccessible(true);" +
-                "   return ((com.google.appengine.api.datastore.DatastoreServiceConfig)ctor.newInstance(new Object[]{callbacks}));" +
+                "   Class clazz = com.google.appengine.api.datastore.DatastoreService.class.getClassLoader().loadClass(\"com.google.appengine.api.datastore.DatastoreServiceConfig\");" +
+                "   if (callbacks != null) {" +
+                "       java.lang.reflect.Constructor ctor = clazz.getDeclaredConstructor(new Class[]{com.google.appengine.api.datastore.DatastoreCallbacks.class});" +
+                "       ctor.setAccessible(true);" +
+                "       return ((com.google.appengine.api.datastore.DatastoreServiceConfig)ctor.newInstance(new Object[]{callbacks}));" +
+                "   } else {" +
+                "       java.lang.reflect.Constructor ctor;" +
+                "       try {" +
+                "           ctor = clazz.getDeclaredConstructor(new Class[]{com.google.appengine.api.datastore.DatastoreCallbacks.class});" +
+                "           ctor.setAccessible(true);" +
+                "           return ((com.google.appengine.api.datastore.DatastoreServiceConfig)ctor.newInstance(new Object[]{callbacks}));" +
+                "       } catch (Exception ignored) {" +
+                "           ctor = clazz.getDeclaredConstructor(new Class[0]);" +
+                "           ctor.setAccessible(true);" +
+                "           return ((com.google.appengine.api.datastore.DatastoreServiceConfig)ctor.newInstance(new Object[0]));" +
+                "       }" +
+                "   }" +
                 "} catch (Exception e) {" +
                 "   throw new RuntimeException(e);" +
                 "}" +
