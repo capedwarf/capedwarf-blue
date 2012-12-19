@@ -173,11 +173,20 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     }
 
     public static CapedwarfEnvironment getThreadLocalInstance() {
-        CapedwarfEnvironment environment = threadLocalInstance.get();
+        final CapedwarfEnvironment environment = getThreadLocalInstanceInternal();
         if (environment == null) {
             throw new IllegalStateException("Environment should exist!");
         }
         return environment;
+    }
+
+    /**
+     * This one doesn't make any check if env is null.
+     *
+     * @return env or null if not set
+     */
+    public static CapedwarfEnvironment getThreadLocalInstanceInternal() {
+        return threadLocalInstance.get();
     }
 
     public static void clearThreadLocalInstance() {

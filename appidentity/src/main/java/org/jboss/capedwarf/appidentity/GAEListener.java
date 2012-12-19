@@ -98,6 +98,10 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
         return previous;
     }
 
+    public static boolean isSetup() {
+        return (CapedwarfEnvironment.getThreadLocalInstanceInternal() != null);
+    }
+
     public static void teardown() {
         teardownInternal(null);
     }
