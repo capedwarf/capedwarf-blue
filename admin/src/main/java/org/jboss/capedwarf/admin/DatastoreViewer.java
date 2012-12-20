@@ -147,7 +147,8 @@ public class DatastoreViewer {
             Object[] cells = new Object[properties.size()];
             for (int i = 0; i < cells.length; i++) {
                 String property = properties.get(i);
-                cells[i] = entity.getProperty(property);
+                Object value = entity.getProperty(property);
+                cells[i] = value == null ? "" : value;
             }
             return cells;
         }
