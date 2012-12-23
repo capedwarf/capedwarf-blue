@@ -32,7 +32,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.datastore.query.GAEKeyTransformer;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -43,7 +43,7 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(All.class)
+@Category(JBoss.class)
 public class GAEKeyTransformerTestCase {
 
     private GAEKeyTransformer transformer = new GAEKeyTransformer();

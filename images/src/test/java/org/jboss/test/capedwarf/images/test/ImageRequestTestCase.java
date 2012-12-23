@@ -26,7 +26,7 @@ package org.jboss.test.capedwarf.images.test;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import org.jboss.capedwarf.images.ImageRequest;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -37,7 +37,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(All.class)
+@Category(JBoss.class)
 public class ImageRequestTestCase {
 
     @Test

@@ -33,7 +33,7 @@ import org.junit.Before;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfImagesServiceTest extends AbstractImagesServiceTest {
+public abstract class CapedwarfImagesServiceTest extends AbstractImagesServiceTest {
 
     protected ImagesService imagesService;
 

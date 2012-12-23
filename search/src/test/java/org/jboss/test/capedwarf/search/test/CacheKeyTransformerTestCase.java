@@ -25,14 +25,14 @@ package org.jboss.test.capedwarf.search.test;
 import junit.framework.Assert;
 import org.jboss.capedwarf.search.CacheKey;
 import org.jboss.capedwarf.search.CacheKeyTransformer;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**
  * Non-Arquillian on purpose.
  */
-@Category(All.class)
+@Category(JBoss.class)
 public class CacheKeyTransformerTestCase {
 
     @Test

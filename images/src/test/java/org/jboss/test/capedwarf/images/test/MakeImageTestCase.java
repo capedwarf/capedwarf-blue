@@ -28,7 +28,7 @@ import java.io.InputStream;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import org.jboss.capedwarf.common.io.IOUtils;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,7 +36,7 @@ import org.junit.experimental.categories.Category;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(All.class)
+@Category(JBoss.class)
 public class MakeImageTestCase {
 
     @Test

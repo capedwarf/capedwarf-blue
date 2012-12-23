@@ -25,7 +25,7 @@ package org.jboss.test.capedwarf.images.test;
 import java.awt.image.BufferedImage;
 
 import com.google.appengine.api.images.Image;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(All.class)
+@Category(JBoss.class)
 public class HistogramTestCase extends CapedwarfImagesServiceTest {
 
     private static final int[] WHITE_PIXEL = new int[]{255, 255, 255};

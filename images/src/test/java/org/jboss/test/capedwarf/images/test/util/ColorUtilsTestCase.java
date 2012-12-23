@@ -23,7 +23,7 @@
 package org.jboss.test.capedwarf.images.test.util;
 
 import org.jboss.capedwarf.images.util.ColorUtils;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -33,7 +33,7 @@ import static org.junit.Assert.fail;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(All.class)
+@Category(JBoss.class)
 public class ColorUtilsTestCase {
 
     @Test

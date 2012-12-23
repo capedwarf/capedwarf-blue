@@ -10,7 +10,7 @@ import javax.mail.internet.InternetAddress;
 
 import com.google.appengine.api.mail.MailService;
 import org.jboss.capedwarf.mail.MessageConverter;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -22,7 +22,7 @@ import static org.junit.Assert.assertThat;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(All.class)
+@Category(JBoss.class)
 public class MessageConverterTestCase {
 
     private static final Session NO_SESSION = null;

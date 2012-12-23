@@ -28,7 +28,7 @@ import java.util.Arrays;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -37,7 +37,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(All.class)
+@Category(JBoss.class)
 public class TransformationsTestCase extends CapedwarfImagesServiceTest {
 
     @Test

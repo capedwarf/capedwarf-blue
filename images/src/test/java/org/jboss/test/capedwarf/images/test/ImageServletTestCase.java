@@ -27,7 +27,7 @@ package org.jboss.test.capedwarf.images.test;
 import com.google.appengine.api.blobstore.BlobKey;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.images.ImageServlet;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(All.class)
+@Category(JBoss.class)
 public class ImageServletTestCase {
 
     private static final String BLOB_KEY_STRING = "key123";

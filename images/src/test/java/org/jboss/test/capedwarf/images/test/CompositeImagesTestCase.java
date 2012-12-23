@@ -38,7 +38,7 @@ import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import org.jboss.capedwarf.images.util.ColorUtils;
 import org.jboss.capedwarf.images.util.ImageUtils;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -56,7 +56,7 @@ import static com.google.appengine.api.images.Composite.Anchor.TOP_RIGHT;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(All.class)
+@Category(JBoss.class)
 public class CompositeImagesTestCase extends CapedwarfImagesServiceTest {
 
     private static final long BLACK_ARGB = 0xFF000000L;
