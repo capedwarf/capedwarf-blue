@@ -50,7 +50,7 @@ public class AbstractMatchTest extends AbstractTest {
     @Deployment
     public static WebArchive getDeployment() {
         final TestContext context = new TestContext();
-        context.setWebXmlFile("web.xml");
+        context.setWebXmlFile("match-web.xml");
         final WebArchive war = getCapedwarfDeployment(context);
         war.addClasses(AbstractTest.class, AbstractMatchTest.class, MatchResponseServlet.class, SpecialMatchResponseServlet.class);
         return war;
