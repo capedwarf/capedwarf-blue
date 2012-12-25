@@ -7,9 +7,6 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import org.apache.lucene.search.Sort;
-import org.hibernate.search.query.dsl.BooleanJunction;
-import org.hibernate.search.query.dsl.QueryBuilder;
-import org.hibernate.search.query.dsl.TermMatchingContext;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
@@ -25,7 +22,7 @@ public class QueryConverter {
     public static final String NAMESPACE_PROPERTY_KEY = "____capedwarf.entity.namespace___";
     public static final String ANCESTOR_PROPERTY_KEY = "____capedwarf.entity.ancestor.key___";
 
-    private QueryBuilder queryBuilder;
+    private LuceneQueryBuilder queryBuilder;
     private SearchManager searchManager;
 
     private FilterConverter filterConverter;
@@ -33,7 +30,7 @@ public class QueryConverter {
 
     public QueryConverter(SearchManager searchManager) {
         this.searchManager = searchManager;
-        this.queryBuilder = searchManager.buildQueryBuilderForClass(Entity.class).get();
+        this.queryBuilder = new LuceneQueryBuilder(searchManager.buildQueryBuilderForClass(Entity.class).get());
         this.filterConverter = new FilterConverter(queryBuilder);
         this.sortPredicateConverter = new SortPredicateConverter();
     }
@@ -63,16 +60,7 @@ public class QueryConverter {
     }
 
     private org.apache.lucene.search.Query createLuceneQuery(Query gaeQuery) {
-        List<org.apache.lucene.search.Query> list = getQueryList(gaeQuery);
-        if (list.size() == 1) {
-            return list.get(0);
-        } else {
-            BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
-            for (org.apache.lucene.search.Query query : list) {
-                bool.must(query);
-            }
-            return bool.createQuery();
-        }
+        return queryBuilder.all(getQueryList(gaeQuery));
     }
 
     private List<org.apache.lucene.search.Query> getQueryList(Query gaeQuery) {
@@ -134,16 +122,7 @@ public class QueryConverter {
     }
 
     public org.apache.lucene.search.Query equal(String fieldName, String value) {
-        return keywordOnField(fieldName)
-            .matching(value)
-            .createQuery();
-    }
-
-    private TermMatchingContext keywordOnField(String fieldName) {
-        return queryBuilder
-            .keyword().onField(fieldName)
-            .ignoreFieldBridge()
-            .ignoreAnalyzer();
+        return queryBuilder.equal(fieldName, value);
     }
 
 }
