@@ -435,11 +435,11 @@ public enum Bridge implements TwoWayStringBridge {
     private static class ShortBlobBridge implements TwoWayStringBridge {
         public String objectToString(Object object) {
             byte[] bytes = ((ShortBlob) object).getBytes();
-            return bytesToString(bytes);
+            return new String(bytes);
         }
 
         public Object stringToObject(String stringValue) {
-            return new ShortBlob(stringToBytes(stringValue));
+            return new ShortBlob(stringValue.getBytes());
         }
     }
 
