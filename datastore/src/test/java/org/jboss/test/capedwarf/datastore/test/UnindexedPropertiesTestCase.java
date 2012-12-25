@@ -34,10 +34,12 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Text;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.test.capedwarf.common.support.All;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -87,6 +89,22 @@ public class UnindexedPropertiesTestCase extends SimpleTest {
         assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("text", Query.FilterOperator.EQUAL, "text"))));
         assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("text", Query.FilterOperator.EQUAL, new Text("text")))));
         assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("blob", Query.FilterOperator.EQUAL, new Blob("blob".getBytes())))));
+    }
+
+    @Ignore
+    @Test
+    public void testFilterWithUnindexedPropertyType() throws Exception {
+        Entity entity = new Entity("test");
+        entity.setProperty("prop", "bbb");
+        service.put(entity);
+
+        assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("prop", Query.FilterOperator.EQUAL, new Text("bbb")))));
+        assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("prop", Query.FilterOperator.LESS_THAN, new Text("ccc")))));
+        assertNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("prop", Query.FilterOperator.LESS_THAN_OR_EQUAL, new Text("ccc")))));
+
+        // it's strange that GREATER_THAN actually DOES return a result, whereas LESS_THAN doesn't
+        assertNotNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("prop", Query.FilterOperator.GREATER_THAN, new Text("aaa")))));
+        assertNotNull(getResult(new Query("test").setFilter(new Query.FilterPredicate("prop", Query.FilterOperator.GREATER_THAN_OR_EQUAL, new Text("aaa")))));
     }
 
     private Entity getResult(Query query) {
