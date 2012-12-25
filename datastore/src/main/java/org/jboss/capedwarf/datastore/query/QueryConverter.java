@@ -1,18 +1,18 @@
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import org.apache.lucene.search.Sort;
+import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.hibernate.search.query.dsl.TermMatchingContext;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 
 /**
  * Converts a GAE query to Infinispan's CacheQuery
@@ -25,6 +25,7 @@ public class QueryConverter {
     public static final String NAMESPACE_PROPERTY_KEY = "____capedwarf.entity.namespace___";
     public static final String ANCESTOR_PROPERTY_KEY = "____capedwarf.entity.ancestor.key___";
 
+    private QueryBuilder queryBuilder;
     private SearchManager searchManager;
 
     private FilterConverter filterConverter;
@@ -32,12 +33,9 @@ public class QueryConverter {
 
     public QueryConverter(SearchManager searchManager) {
         this.searchManager = searchManager;
-        this.filterConverter = new FilterConverter(createQueryBuilder());
+        this.queryBuilder = searchManager.buildQueryBuilderForClass(Entity.class).get();
+        this.filterConverter = new FilterConverter(queryBuilder);
         this.sortPredicateConverter = new SortPredicateConverter();
-    }
-
-    private QueryBuilder createQueryBuilder() {
-        return searchManager.buildQueryBuilderForClass(Entity.class).get();
     }
 
     public CacheQuery convert(Query gaeQuery) {
@@ -65,8 +63,30 @@ public class QueryConverter {
     }
 
     private org.apache.lucene.search.Query createLuceneQuery(Query gaeQuery) {
+        List<org.apache.lucene.search.Query> list = getQueryList(gaeQuery);
+        if (list.size() == 1) {
+            return list.get(0);
+        } else {
+            BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
+            for (org.apache.lucene.search.Query query : list) {
+                bool.must(query);
+            }
+            return bool.createQuery();
+        }
+    }
+
+    private List<org.apache.lucene.search.Query> getQueryList(Query gaeQuery) {
+        List<org.apache.lucene.search.Query> list = new ArrayList<org.apache.lucene.search.Query>();
+        addFilterQuery(list, gaeQuery);
+        addNamespaceQuery(list, getNamespace(gaeQuery));
+        addEntityKindQuery(list, gaeQuery.getKind());
+        addAncestorQuery(list, gaeQuery.getAncestor());
+        return list;
+    }
+
+    private void addFilterQuery(List<org.apache.lucene.search.Query> list, Query gaeQuery) {
         Query.Filter filter = getFilter(gaeQuery);
-        return filterConverter.convert(filter);
+        list.add(filterConverter.convert(filter));
     }
 
     private Query.Filter getFilter(Query gaeQuery) {
@@ -83,9 +103,6 @@ public class QueryConverter {
     @SuppressWarnings("deprecation")
     private List<Query.Filter> getAllFilterPredicates(Query gaeQuery) {
         List<Query.Filter> list = new ArrayList<Query.Filter>();
-        addNamespaceFilterPredicate(list, getNamespace(gaeQuery));
-        addEntityKindFilterPredicate(list, gaeQuery.getKind());
-        addAncestorFilterPredicate(list, gaeQuery.getAncestor());
         if (gaeQuery.getFilter() != null) {
             list.add(gaeQuery.getFilter());
         }
@@ -98,22 +115,35 @@ public class QueryConverter {
         return (String) ReflectionUtils.invokeInstanceMethod(appIdNamespace, "getNamespace");
     }
 
-    private void addAncestorFilterPredicate(List<Query.Filter> list, Key ancestor) {
+    private void addAncestorQuery(List<org.apache.lucene.search.Query> list, Key ancestor) {
         if (ancestor != null) {
-            list.add(new Query.FilterPredicate(ANCESTOR_PROPERTY_KEY, EQUAL, ancestor));
+            list.add(equal(ANCESTOR_PROPERTY_KEY, Bridge.KEY.objectToString(ancestor)));
         }
     }
 
-    private void addEntityKindFilterPredicate(List<Query.Filter> list, String kind) {
+    private void addEntityKindQuery(List<org.apache.lucene.search.Query> list, String kind) {
         if (kind != null) {
-            list.add(new Query.FilterPredicate(KIND_PROPERTY_KEY, EQUAL, kind));
+            list.add(equal(KIND_PROPERTY_KEY, kind));
         }
     }
 
-    private void addNamespaceFilterPredicate(List<Query.Filter> list, String namespace) {
+    private void addNamespaceQuery(List<org.apache.lucene.search.Query> list, String namespace) {
         if (namespace != null) {
-            list.add(new Query.FilterPredicate(NAMESPACE_PROPERTY_KEY, EQUAL, NamespaceBridge.objectToString(namespace)));
+            list.add(equal(NAMESPACE_PROPERTY_KEY, NamespaceBridge.objectToString(namespace)));
         }
+    }
+
+    public org.apache.lucene.search.Query equal(String fieldName, String value) {
+        return keywordOnField(fieldName)
+            .matching(value)
+            .createQuery();
+    }
+
+    private TermMatchingContext keywordOnField(String fieldName) {
+        return queryBuilder
+            .keyword().onField(fieldName)
+            .ignoreFieldBridge()
+            .ignoreAnalyzer();
     }
 
 }

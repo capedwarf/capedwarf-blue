@@ -52,34 +52,45 @@ import org.hibernate.search.bridge.builtin.StringBridge;
  */
 public enum Bridge implements TwoWayStringBridge {
     // add new enums at the end!
-    STRING(StringBridge.INSTANCE),
-    BOOLEAN(new BooleanBridge()),
-    COLLECTION(new CollectionBridge()),
-    DATE(DateBridge.DATE_MILLISECOND),
-    TEXT(new TextBridge()),
-    PHONE_NUMBER(new PhoneNumberBridge()),
-    POSTAL_ADDRESS(new PostalAddressBridge()),
-    EMAIL(new EmailBridge()),
-    USER(new UserBridge()),
-    LINK(new LinkBridge()),
-    KEY(new KeyBridge()),
-    RATING(new RatingBridge()),
-    GEO_PT(new GeoPtBridge()),
-    CATEGORY(new CategoryBridge()),
-    IM_HANDLE(new IMHandleBridge()),
-    BLOB_KEY(new BlobKeyBridge()),
-    BLOB(new BlobBridge()),
-    SHORT_BLOB(new ShortBlobBridge()),
-    LONG(new LongBridge()),
-    DOUBLE(new DoubleBridge()),
-    FLOAT(new FloatBridge()),
-    NULL(new NullBridge()),
-    EMBEDDED_ENTITY(new EmbeddedEntityBridge());
+    NULL("000", new NullBridge()),
+
+    LONG("010", new LongBridge()),
+    RATING("010", new RatingBridge()),
+    DATE("010", DateBridge.DATE_MILLISECOND),
+
+    BOOLEAN("020", new BooleanBridge()),
+
+//    SHORT_BLOB("030", new ShortBlobBridge()),
+    SHORT_BLOB("040", new ShortBlobBridge()),
+
+    STRING("040", StringBridge.INSTANCE),
+    PHONE_NUMBER("040", new PhoneNumberBridge()),
+    POSTAL_ADDRESS("040", new PostalAddressBridge()),
+    EMAIL("040", new EmailBridge()),
+    IM_HANDLE("040", new IMHandleBridge()),
+    LINK("040", new LinkBridge()),
+    CATEGORY("040", new CategoryBridge()),
+    BLOB_KEY("040", new BlobKeyBridge()),
+
+    DOUBLE("050", new DoubleBridge()),
+    FLOAT("050", new FloatBridge()),
+
+    GEO_PT("060", new GeoPtBridge()),
+
+    USER("070", new UserBridge()),
+
+    KEY("080", new KeyBridge()),
+
+    COLLECTION("999", new CollectionBridge()),
+    TEXT("999", new TextBridge()),
+    BLOB("999", new BlobBridge()),
+    EMBEDDED_ENTITY("999", new EmbeddedEntityBridge());
+
 
     private TwoWayStringBridge bridge;
 
-    private Bridge(TwoWayStringBridge bridge) {
-        this.bridge = bridge;
+    private Bridge(String orderPrefix, TwoWayStringBridge bridge) {
+        this.bridge = new OrderingWrapper(orderPrefix, bridge);
     }
 
     public String objectToString(Object object) {
@@ -351,24 +362,30 @@ public enum Bridge implements TwoWayStringBridge {
     }
 
     private static class RatingBridge implements TwoWayStringBridge {
+        private LongBridge longBridge = new LongBridge();
+
         public String objectToString(Object object) {
-            return LONG.objectToString(Rating.class.cast(object).getRating());
+            int rating = Rating.class.cast(object).getRating();
+            return longBridge.objectToString(rating);
         }
 
         public Object stringToObject(String stringValue) {
-            return new Rating(Number.class.cast(LONG.stringToObject(stringValue)).intValue());
+            return new Rating(Number.class.cast(longBridge.stringToObject(stringValue)).intValue());
         }
     }
 
     private static class GeoPtBridge implements TwoWayStringBridge {
+        private FloatBridge floatBridge;
+
         public String objectToString(Object object) {
-            return FLOAT.objectToString(((GeoPt) object).getLatitude()) + ";" + FLOAT.objectToString(((GeoPt) object).getLongitude());
+            floatBridge = new FloatBridge();
+            return floatBridge.objectToString(((GeoPt) object).getLatitude()) + ";" + floatBridge.objectToString(((GeoPt) object).getLongitude());
         }
 
         public Object stringToObject(String stringValue) {
             String[] pair = stringValue.split(";");
-            float latitude = (Float)FLOAT.stringToObject(pair[0]);
-            float longitude = (Float)FLOAT.stringToObject(pair[1]);
+            float latitude = (Float)floatBridge.stringToObject(pair[0]);
+            float longitude = (Float)floatBridge.stringToObject(pair[1]);
             return new GeoPt(latitude, longitude);
         }
     }
@@ -458,6 +475,41 @@ public enum Bridge implements TwoWayStringBridge {
             bytes[i] = (byte) Integer.parseInt(hex, 16);
         }
         return bytes;
+    }
+
+    private class OrderingWrapper implements TwoWayStringBridge {
+
+        public static final int ORDER_PREFIX_LENGTH = 3;
+
+        private final String orderPrefix;
+        private final TwoWayStringBridge bridge;
+
+        public OrderingWrapper(String orderPrefix, TwoWayStringBridge bridge) {
+            if (orderPrefix.length() != ORDER_PREFIX_LENGTH) {
+                throw new IllegalArgumentException("invalid length, orderPrefix=" + orderPrefix);
+            }
+            this.orderPrefix = orderPrefix;
+            this.bridge = bridge;
+        }
+
+        @Override
+        public Object stringToObject(String stringValue) {
+            return bridge.stringToObject(removeOrderingPrefix(stringValue));
+        }
+
+        @Override
+        public String objectToString(Object object) {
+            return addOrderingPrefix(bridge.objectToString(object));
+        }
+
+        private String addOrderingPrefix(String str) {
+            return orderPrefix + ":" + str;
+        }
+
+        private String removeOrderingPrefix(String stringValue) {
+            return stringValue.substring(ORDER_PREFIX_LENGTH + 1);
+        }
+
     }
 }
 
