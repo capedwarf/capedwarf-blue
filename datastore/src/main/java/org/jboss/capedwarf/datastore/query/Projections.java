@@ -114,7 +114,7 @@ class Projections {
      * @param bridge       the bridge
      */
     void storePropertyBridge(String propertyName, Bridge bridge) {
-        bridges.put(propertyName, String.valueOf(bridge.ordinal()));
+        bridges.put(propertyName, String.valueOf(bridge.name()));
     }
 
     /**
@@ -227,7 +227,7 @@ class Projections {
     }
 
     private static Bridge getBridge(String propertyName, Properties bridges) {
-        final String bridgeOrdinal = bridges.getProperty(propertyName);
-        return Bridge.values()[Integer.parseInt(bridgeOrdinal)];
+        String bridgeName = bridges.getProperty(propertyName);
+        return Bridge.valueOf(bridgeName);
     }
 }

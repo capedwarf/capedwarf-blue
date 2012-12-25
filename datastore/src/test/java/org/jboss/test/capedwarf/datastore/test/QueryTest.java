@@ -149,15 +149,17 @@ public abstract class QueryTest extends AbstractTest {
         Entity highEntity = storeTestEntityWithSingleProperty(highValue);
         Entity lowEntity = storeTestEntityWithSingleProperty(lowValue);
         Entity midEntity = storeTestEntityWithSingleProperty(midValue);
+        Entity nullEntity = storeTestEntityWithSingleProperty(null);
 
         assertThat(whenFilteringBy(GREATER_THAN, lowValue), queryReturns(midEntity, highEntity));
         assertThat(whenFilteringBy(GREATER_THAN_OR_EQUAL, midValue), queryReturns(midEntity, highEntity));
-        assertThat(whenFilteringBy(LESS_THAN, highValue), queryReturns(midEntity, lowEntity));
-        assertThat(whenFilteringBy(LESS_THAN_OR_EQUAL, midValue), queryReturns(midEntity, lowEntity));
+        assertThat(whenFilteringBy(LESS_THAN, highValue), queryReturns(nullEntity, midEntity, lowEntity));
+        assertThat(whenFilteringBy(LESS_THAN_OR_EQUAL, midValue), queryReturns(nullEntity, midEntity, lowEntity));
 
         service.delete(lowEntity.getKey());
         service.delete(midEntity.getKey());
         service.delete(highEntity.getKey());
+        service.delete(nullEntity.getKey());
     }
 
     /**

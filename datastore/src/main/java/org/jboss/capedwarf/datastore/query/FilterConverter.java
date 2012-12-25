@@ -24,15 +24,15 @@
 
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.lucene.search.Query;
-import org.hibernate.search.query.dsl.BooleanJunction;
-import org.hibernate.search.query.dsl.QueryBuilder;
-import org.hibernate.search.query.dsl.RangeMatchingContext;
-import org.hibernate.search.query.dsl.TermMatchingContext;
 
-import static com.google.appengine.api.datastore.Query.*;
+import static com.google.appengine.api.datastore.Query.CompositeFilter;
+import static com.google.appengine.api.datastore.Query.Filter;
+import static com.google.appengine.api.datastore.Query.FilterPredicate;
 
 /**
  * Converts GAE's Query.FilterPredicates to Lucene Queries
@@ -41,15 +41,15 @@ import static com.google.appengine.api.datastore.Query.*;
  */
 public class FilterConverter {
 
-    private QueryBuilder queryBuilder;
+    private LuceneQueryBuilder queryBuilder;
 
-    public FilterConverter(QueryBuilder queryBuilder) {
+    public FilterConverter(LuceneQueryBuilder queryBuilder) {
         this.queryBuilder = queryBuilder;
     }
 
     public Query convert(Filter filter) {
         if (filter == null) {
-            return queryBuilder.all().createQuery();
+            return queryBuilder.matchAll();
         }
 
         if (filter instanceof CompositeFilter) {
@@ -64,17 +64,19 @@ public class FilterConverter {
     }
 
     private Query convert(CompositeFilter compositeFilter) {
-        BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
+        List<Query> subQueries = new ArrayList<Query>(compositeFilter.getSubFilters().size());
         for (Filter subFilter : compositeFilter.getSubFilters()) {
-            if (compositeFilter.getOperator() == CompositeFilterOperator.AND) {
-                bool.must(convert(subFilter));
-            } else if (compositeFilter.getOperator() == CompositeFilterOperator.OR) {
-                bool.should(convert(subFilter));
-            } else {
-                throw new IllegalArgumentException("Unknown operator " + compositeFilter.getOperator());
-            }
+            subQueries.add(convert(subFilter));
         }
-        return bool.createQuery();
+
+        switch (compositeFilter.getOperator()) {
+            case AND:
+                return queryBuilder.all(subQueries);
+            case OR:
+                return queryBuilder.any(subQueries);
+            default:
+                throw new IllegalArgumentException("Unknown operator " + compositeFilter.getOperator());
+        }
     }
 
     public Query convert(FilterPredicate filterPredicate) {
@@ -83,81 +85,22 @@ public class FilterConverter {
 
         switch (filterPredicate.getOperator()) {
             case EQUAL:
-                return equal(fieldName, value);
+                return queryBuilder.equal(fieldName, value);
             case NOT_EQUAL:
-                return not(equal(fieldName, value));
+                return queryBuilder.notEqual(fieldName, value);
             case IN:
-                return in(fieldName, (Collection<?>) value);
+                return queryBuilder.in(fieldName, (Collection<?>) value);
             case GREATER_THAN:
-                return greaterThan(fieldName, value);
+                return queryBuilder.greaterThan(fieldName, value);
             case GREATER_THAN_OR_EQUAL:
-                return greaterThanOrEqual(fieldName, value);
+                return queryBuilder.greaterThanOrEqual(fieldName, value);
             case LESS_THAN:
-                return lessThan(fieldName, value);
+                return queryBuilder.lessThan(fieldName, value);
             case LESS_THAN_OR_EQUAL:
-                return lessThanOrEqual(fieldName, value);
+                return queryBuilder.lessThanOrEqual(fieldName, value);
             default:
                 throw new IllegalArgumentException("Unknown operator " + filterPredicate.getOperator());
         }
     }
 
-    private Query in(String fieldName, Collection<?> values) {
-        BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
-        for (Object value : values) {
-            bool.should(equal(fieldName, value));
-        }
-        return bool.createQuery();
-    }
-
-    private Query not(Query query) {
-        return queryBuilder.bool().must(query).not().createQuery();
-    }
-
-    public Query equal(String fieldName, Object value) {
-        return keywordOnField(fieldName)
-                .matching(convertToString(value))
-                .createQuery();
-    }
-
-    private TermMatchingContext keywordOnField(String fieldName) {
-        return queryBuilder
-                .keyword().onField(fieldName)
-                .ignoreFieldBridge()
-                .ignoreAnalyzer();
-    }
-
-    private Query greaterThan(String fieldName, Object value) {
-        return rangeOnField(fieldName)
-                .above(convertToString(value)).excludeLimit()
-                .createQuery();
-    }
-
-    private Query greaterThanOrEqual(String fieldName, Object value) {
-        return rangeOnField(fieldName)
-                .above(convertToString(value))
-                .createQuery();
-    }
-
-    private Query lessThan(String fieldName, Object value) {
-        return rangeOnField(fieldName)
-                .below(convertToString(value)).excludeLimit()
-                .createQuery();
-    }
-
-    private Query lessThanOrEqual(String fieldName, Object value) {
-        return rangeOnField(fieldName)
-                .below(convertToString(value))
-                .createQuery();
-    }
-
-    private RangeMatchingContext rangeOnField(String fieldName) {
-        return queryBuilder
-                .range().onField(fieldName)
-                .ignoreFieldBridge()
-                .ignoreAnalyzer();
-    }
-
-    private String convertToString(Object value) {
-        return Bridge.matchBridge(value).objectToString(value);
-    }
 }
