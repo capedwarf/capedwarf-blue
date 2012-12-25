@@ -51,7 +51,9 @@ import org.hibernate.search.bridge.builtin.StringBridge;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public enum Bridge implements TwoWayStringBridge {
-    // add new enums at the end!
+
+    // WARNING: DO NOT CHANGE NAMES (they are stored in the datastore - see Projections)
+
     NULL("000", new NullBridge()),
 
     LONG("010", new LongBridge()),
