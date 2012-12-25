@@ -87,7 +87,7 @@ public class OrderingTestCase extends QueryTest {
             asSet(20f, 20d),
             asSet(new GeoPt(10f, 10f)),
             asSet(new GeoPt(20f, 20f)),
-            asSet(new User("aaa", "aaa")),
+            asSet(new User("aaa", "aaa"), new User("aaa", "otherAuthDomain")),  // ordering must depend only on the email
             asSet(new User("bbb", "bbb")),
             asSet(KeyFactory.createKey("kind", "aaa")),
             asSet(KeyFactory.createKey("kind", "bbb"))
