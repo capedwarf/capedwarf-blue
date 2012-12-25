@@ -2,6 +2,7 @@ package org.jboss.test.capedwarf.datastore.test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -59,6 +60,9 @@ public class OrderingTestCase extends QueryTest {
             asSet((short)20, 20, 20L, new Rating(20)),
             asSet(createDate(2013, 1, 1)),
             asSet(createDate(2013, 5, 5)),
+            asSet(1381363199999999L),   // 1 microsecond before 2013-10-10
+            asSet(new Date(1381363200000L), 1381363200000000L), // 2013-10-10
+            asSet(1381363200000001L),   // 1 microsecond after 2013-10-10
             asSet(false),
             asSet(true),
             asSet(

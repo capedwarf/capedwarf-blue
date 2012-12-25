@@ -42,7 +42,6 @@ import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.User;
 import org.hibernate.search.bridge.TwoWayStringBridge;
 import org.hibernate.search.bridge.builtin.BooleanBridge;
-import org.hibernate.search.bridge.builtin.DateBridge;
 import org.hibernate.search.bridge.builtin.FloatBridge;
 import org.hibernate.search.bridge.builtin.StringBridge;
 
@@ -58,7 +57,7 @@ public enum Bridge implements TwoWayStringBridge {
 
     LONG("010", new LongBridge()),
     RATING("010", new RatingBridge()),
-    DATE("010", DateBridge.DATE_MILLISECOND),
+    DATE("010", new DateBridge()),
 
     BOOLEAN("020", new BooleanBridge()),
 
@@ -479,7 +478,23 @@ public enum Bridge implements TwoWayStringBridge {
         return bytes;
     }
 
-    private class OrderingWrapper implements TwoWayStringBridge {
+    private static class DateBridge implements TwoWayStringBridge {
+
+        private LongBridge longBridge = new LongBridge();
+
+        @Override
+        public Object stringToObject(String stringValue) {
+            long value = (Long) longBridge.stringToObject(stringValue);
+            return new Date(value / 1000L);
+        }
+
+        @Override
+        public String objectToString(Object object) {
+            return longBridge.objectToString(((Date)object).getTime() * 1000L);
+        }
+    }
+
+    private static class OrderingWrapper implements TwoWayStringBridge {
 
         public static final int ORDER_PREFIX_LENGTH = 3;
 
