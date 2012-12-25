@@ -60,7 +60,7 @@ public enum Bridge implements TwoWayStringBridge {
 
     BOOLEAN("020", new BooleanBridge()),
 
-//    SHORT_BLOB("030", new ShortBlobBridge()),
+    //    SHORT_BLOB("030", new ShortBlobBridge()),
     SHORT_BLOB("040", new ShortBlobBridge()),
 
     STRING("040", StringBridge.INSTANCE),
@@ -402,12 +402,12 @@ public enum Bridge implements TwoWayStringBridge {
 
     private static class IMHandleBridge implements TwoWayStringBridge {
         public String objectToString(Object object) {
-            return ((IMHandle) object).getProtocol() + ";" + ((IMHandle) object).getAddress();
+            return ((IMHandle) object).getProtocol() + " " + ((IMHandle) object).getAddress();
         }
 
         public Object stringToObject(String stringValue) {
-            String[] pair = stringValue.split(";");
-            return new IMHandle(IMHandle.Scheme.valueOf(pair[0]), pair[1]);
+            int spaceIndex = stringValue.indexOf(' ');
+            return new IMHandle(IMHandle.Scheme.valueOf(stringValue.substring(0, spaceIndex)), stringValue.substring(spaceIndex+1));
         }
     }
 
