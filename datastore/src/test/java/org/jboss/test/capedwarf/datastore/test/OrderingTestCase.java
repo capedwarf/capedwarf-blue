@@ -55,8 +55,8 @@ public class OrderingTestCase extends QueryTest {
 
         values = asList(
             asSet((Object)null),
-            asSet(10, new Rating(10)),
-            asSet(20, new Rating(20)),
+            asSet((short)10, 10, 10L, new Rating(10)),
+            asSet((short)20, 20, 20L, new Rating(20)),
             asSet(createDate(2013, 1, 1)),
             asSet(createDate(2013, 5, 5)),
             asSet(false),
@@ -83,8 +83,8 @@ public class OrderingTestCase extends QueryTest {
                 new Category("xmpp xmpp"),
                 new BlobKey("xmpp xmpp")
             ),
-            asSet(10.0),
-            asSet(20.0),
+            asSet(10f, 10d),
+            asSet(20f, 20d),
             asSet(new GeoPt(10f, 10f)),
             asSet(new GeoPt(20f, 20f)),
             asSet(new User("aaa", "aaa")),
