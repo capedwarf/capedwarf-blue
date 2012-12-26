@@ -68,7 +68,8 @@ public abstract class QueryTest extends AbstractTest {
     protected static Date createDate(int year, int month, int day) {
         Calendar cal = Calendar.getInstance();
         //noinspection MagicConstant
-        cal.set(year, month + 1, day);
+        cal.set(year, month - 1, day, 0, 0, 0);
+        cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
 
