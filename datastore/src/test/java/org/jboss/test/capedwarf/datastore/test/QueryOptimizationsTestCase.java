@@ -33,6 +33,7 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.RawValue;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.test.capedwarf.common.support.All;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -110,6 +111,33 @@ public class QueryOptimizationsTestCase extends QueryTest {
         RawValue rawValue = (RawValue) result.getProperty("long");
         assertEquals(Long.valueOf(123L), rawValue.asType(Long.class));
         assertEquals(Long.valueOf(123L), rawValue.asStrictType(Long.class));
+    }
+
+    @Ignore("CAPEDWARF-67")
+    @Test
+    public void testProjectionOfCollectionProperties() throws Exception {
+        Entity e = createEntity("Kind", 1)
+            .withProperty("prop", Arrays.asList("bbb", "ccc", "aaa"))
+            .store();
+
+        Query query = new Query("Kind")
+            .addProjection(new PropertyProjection("prop", String.class));
+
+        PreparedQuery preparedQuery = service.prepare(query);
+        List<Entity> results = preparedQuery.asList(withDefaults());
+        System.out.println("results.get(0) = " + results.get(0));
+        assertEquals(3, results.size());
+
+        Entity firstResult = results.get(0);
+        Entity secondResult = results.get(1);
+        Entity thirdResult = results.get(2);
+
+        assertEquals(e.getKey(), firstResult.getKey());
+        assertEquals(e.getKey(), secondResult.getKey());
+        assertEquals(e.getKey(), thirdResult.getKey());
+        assertEquals("aaa", firstResult.getProperty("prop"));
+        assertEquals("bbb", secondResult.getProperty("prop"));
+        assertEquals("ccc", thirdResult.getProperty("prop"));
     }
 
     @Test
