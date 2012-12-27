@@ -109,12 +109,23 @@ public abstract class QueryTest extends AbstractTest {
     }
 
     protected Query createQuery(Query.FilterOperator operator, Object value) {
-        return createQuery()
-                .setFilter(new Query.FilterPredicate(SINGLE_PROPERTY_NAME, operator, value));
+        return createQuery(createFilter(operator, value));
+    }
+
+    private Query createQuery(Query.Filter filter) {
+        return createQuery().setFilter(filter);
+    }
+
+    private Query.FilterPredicate createFilter(Query.FilterOperator operator, Object value) {
+        return new Query.FilterPredicate(SINGLE_PROPERTY_NAME, operator, value);
     }
 
     protected Query createQuery() {
         return new Query(TEST_ENTITY_KIND);
+    }
+
+    protected Matcher<Set<Entity>> queryReturnsNothing() {
+        return queryReturns();
     }
 
     protected Matcher<Set<Entity>> queryReturns(Entity... entities) {
@@ -126,7 +137,11 @@ public abstract class QueryTest extends AbstractTest {
     }
 
     protected Set<Entity> whenFilteringBy(Query.FilterOperator operator, Object value) {
-        Query query = createQuery(operator, value);
+        return whenFilteringWith(createFilter(operator, value));
+    }
+
+    protected Set<Entity> whenFilteringWith(Query.Filter filter) {
+        Query query = createQuery(filter);
         List<Entity> results = service.prepare(query).asList(withDefaults());
         return new HashSet<Entity>(results);
     }
