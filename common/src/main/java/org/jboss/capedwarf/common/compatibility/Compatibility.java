@@ -62,6 +62,18 @@ public class Compatibility {
             this.key = key;
             this.value = value;
         }
+
+        public String getKey() {
+            return key;
+        }
+
+        public Value getValue() {
+            return value;
+        }
+
+        public String toString() {
+            return key + "=" + value;
+        }
     }
 
     private static Map<ClassLoader, Compatibility> instances = new WeakHashMap<ClassLoader, Compatibility>();
@@ -168,6 +180,10 @@ public class Compatibility {
         public boolean match(String v) {
             return value.equalsIgnoreCase(v);
         }
+
+        public String toString() {
+            return value;
+        }
     }
 
     private static class RegexpValue implements Value {
@@ -179,6 +195,10 @@ public class Compatibility {
 
         public boolean match(String v) {
             return pattern.matcher(v).matches();
+        }
+
+        public String toString() {
+            return pattern.toString();
         }
     }
 }

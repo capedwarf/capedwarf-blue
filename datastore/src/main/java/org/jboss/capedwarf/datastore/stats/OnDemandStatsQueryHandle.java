@@ -25,6 +25,7 @@ package org.jboss.capedwarf.datastore.stats;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
+import org.jboss.capedwarf.common.compatibility.Compatibility;
 import org.jboss.capedwarf.datastore.query.AbstractQueryHandle;
 import org.jboss.capedwarf.datastore.query.QueryHandleService;
 
@@ -39,6 +40,6 @@ class OnDemandStatsQueryHandle extends AbstractQueryHandle {
     }
 
     public PreparedQuery createQuery(Transaction tx, Query query) {
-        throw new UnsupportedOperationException("Not yet implemented - use eager stats: -Denable.eager.datastore.stats=true");
+        throw new UnsupportedOperationException("Not yet implemented - use eager stats: -D" + Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
     }
 }
