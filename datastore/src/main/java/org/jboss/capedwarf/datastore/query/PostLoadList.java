@@ -234,4 +234,9 @@ class PostLoadList<E> implements List<E> {
         size();
         return delegate.lastIndexOf(o);
     }
+
+    @Override
+    public String toString() {
+        return delegate.toString();
+    }
 }
