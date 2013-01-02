@@ -101,6 +101,9 @@ public class DatastoreMultitenancyTestCase extends SimpleTest {
 
         NamespaceManager.set("one");
         assertEquals(entity1, service.get(key1));
+
+        service.delete(key1);
+        service.delete(key2);
     }
 
     @Test
@@ -119,6 +122,9 @@ public class DatastoreMultitenancyTestCase extends SimpleTest {
         NamespaceManager.set("one");
         List<Entity> listOne = service.prepare(new Query("foo")).asList(withDefaults());
         assertEquals(Collections.singletonList(fooOne), listOne);
+
+        service.delete(fooOne.getKey());
+        service.delete(fooTwo.getKey());
     }
 
 }
