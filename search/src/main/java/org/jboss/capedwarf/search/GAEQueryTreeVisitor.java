@@ -175,8 +175,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
             double radius = Double.parseDouble(value.getText()) / 1000; // need to convert from m to km
 
             String prefixedFieldName = new FieldNamePrefixer().getPrefixedFieldName(fieldName, Field.FieldType.GEO_POINT);
-            return SpatialQueryBuilder.buildSpatialQueryByGrid(latitude, longitude, radius, prefixedFieldName);
-
+            return SpatialQueryBuilder.buildSpatialQueryByQuadTree(latitude, longitude, radius, prefixedFieldName);
         } else {
             return createQuery(leftSide.getText(), operator, rightSide);
         }

@@ -52,7 +52,7 @@
         <version.com.google.gae.api>1.7.4</version.com.google.gae.api>
         <version.com.google.guava>11.0.2</version.com.google.guava>
         <version.json>20090211</version.json>
-        <version.org.apache.lucene>3.6.1</version.org.apache.lucene>
+        <version.org.apache.lucene>3.6.2</version.org.apache.lucene>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
         <version.org.bouncycastle>1.47</version.org.bouncycastle>
         <version.org.jboss.logging>3.1.2.GA</version.org.jboss.logging>
@@ -67,8 +67,8 @@
         <version.javax.jpa2>1.0.1.Final</version.javax.jpa2>
         <version.javax.mail>1.4.4</version.javax.mail>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
-        <version.org.hibernate.search>4.2.0.Beta2</version.org.hibernate.search>
-        <version.org.infinispan>5.2.0.Beta5</version.org.infinispan>
+        <version.org.hibernate.search>4.2.0.CR1</version.org.hibernate.search>
+        <version.org.infinispan>5.2.0.Beta6</version.org.infinispan>
         <version.net.jcip>1.0</version.net.jcip>
         <version.metainf>1.1</version.metainf>
         <version.org.apache.httpcomponents>4.1.1</version.org.apache.httpcomponents>

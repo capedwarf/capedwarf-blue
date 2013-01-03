@@ -29,7 +29,8 @@ import com.google.appengine.api.search.Field;
 import org.apache.lucene.document.Document;
 import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.LuceneOptions;
-import org.hibernate.search.spatial.SpatialFieldBridgeByGrid;
+import org.hibernate.search.spatial.SpatialFieldBridge;
+import org.hibernate.search.spatial.SpatialFieldBridgeByQuadTree;
 import org.hibernate.search.spatial.impl.Point;
 
 import static org.apache.lucene.document.Field.Index;
@@ -43,7 +44,7 @@ public class DocumentFieldBridge implements FieldBridge {
     private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
 
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-    private SpatialFieldBridgeByGrid spatialFieldBridgeByGrid = new SpatialFieldBridgeByGrid();
+    private SpatialFieldBridge spatialFieldBridgeByGrid = new SpatialFieldBridgeByQuadTree();
 
     @SuppressWarnings("unchecked")
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
