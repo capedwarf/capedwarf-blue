@@ -1,5 +1,6 @@
 package org.jboss.capedwarf.datastore.query;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.apache.lucene.search.Query;
@@ -31,6 +32,10 @@ public class LuceneQueryBuilder {
         return bool.createQuery();
     }
 
+    public Query any(Query... subQueries) {
+        return any(Arrays.asList(subQueries));
+    }
+
     public Query any(Collection<Query> subQueries) {
         BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
         for (Query subQuery : subQueries) {
@@ -48,7 +53,9 @@ public class LuceneQueryBuilder {
     }
 
     public Query notEqual(String fieldName, Object value) {
-        return not(equal(fieldName, value));
+        return any(
+            lessThan(fieldName, value),
+            greaterThan(fieldName, value));
     }
 
     public Query not(Query query) {

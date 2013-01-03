@@ -25,6 +25,7 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -131,6 +132,21 @@ public class QueryBasicsTestCase extends QueryTest {
 
         Entity entity = service.prepare(new Query("Entry")).asSingleEntity();
         assertNull(entity.getProperty("user"));
+    }
+
+    @Test
+    public void testFilteringWithNotEqualReturnsOnlyEntitiesContainingTheProperty() throws Exception {
+        Entity e1 = createEntity("Entry", 1)
+            .withProperty("foo", "aaa")
+            .store();
+
+        createEntity("Entry", 2)
+            .withProperty("bar", "aaa")
+            .store();
+
+        Query query = new Query("Entry")
+            .setFilter(new Query.FilterPredicate("foo", NOT_EQUAL, "bbb"));
+        assertEquals(Collections.singletonList(e1), service.prepare(query).asList(withDefaults()));
     }
 
     @Test
