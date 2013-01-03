@@ -102,15 +102,4 @@ public class LoggingTestCase extends AbstractLoggingTest {
         assertLogContains(text);
     }
 
-    @Test
-    public void testStdOutIsLogged() {
-        String text = "Something written to STDOUT";
-        assertLogDoesntContain(text);
-
-        System.out.println(text);
-        System.out.flush();
-
-        assertLogContains(text);
-    }
-
 }
