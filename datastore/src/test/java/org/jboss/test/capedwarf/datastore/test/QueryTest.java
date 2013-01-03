@@ -188,12 +188,18 @@ public abstract class QueryTest extends AbstractTest {
     protected void testEqualityQueries(Object foo, Object bar) {
         Entity fooEntity = storeTestEntityWithSingleProperty(foo);
         Entity barEntity = storeTestEntityWithSingleProperty(bar);
+        Entity noPropertyEntity = storeTestEntityWithoutProperties();
 
         assertThat(whenFilteringBy(EQUAL, foo), queryReturns(fooEntity));
         assertThat(whenFilteringBy(NOT_EQUAL, foo), queryReturns(barEntity));
 
         service.delete(fooEntity.getKey());
         service.delete(barEntity.getKey());
+        service.delete(noPropertyEntity.getKey());
+    }
+
+    private Entity storeTestEntityWithoutProperties() {
+        return buildTestEntity().store();
     }
 
     protected class TestEntityBuilder {

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Projection;
 import com.google.appengine.api.datastore.Query;
 import org.apache.lucene.search.Sort;
 import org.infinispan.query.CacheQuery;
@@ -69,7 +70,14 @@ public class QueryConverter {
         addNamespaceQuery(list, getNamespace(gaeQuery));
         addEntityKindQuery(list, gaeQuery.getKind());
         addAncestorQuery(list, gaeQuery.getAncestor());
+        addProjectionsFilterQuery(list, gaeQuery);
         return list;
+    }
+
+    private void addProjectionsFilterQuery(List<org.apache.lucene.search.Query> list, Query gaeQuery) {
+        for (Projection projection : gaeQuery.getProjections()) {
+            list.add(queryBuilder.notEqual(projection.getName(), Bridge.NullBridge.NULL_TOKEN));
+        }
     }
 
     private void addFilterQuery(List<org.apache.lucene.search.Query> list, Query gaeQuery) {
