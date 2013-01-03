@@ -23,6 +23,7 @@
 package org.jboss.test.capedwarf.datastore.test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.appengine.api.datastore.Entity;
@@ -93,6 +94,50 @@ public class QueryOptimizationsTestCase extends QueryTest {
         assertEquals(e.getProperty("x"), result.getProperty("x"));
         assertEquals(e.getProperty("diff"), result.getProperty("diff"));
         assertNull(result.getProperty("weight"));
+    }
+
+    @Test
+    public void testProjectionQueryOnlyReturnsEntitiesContainingProjectedProperty() throws Exception {
+        Entity e1 = createEntity("Kind", 1)
+            .withProperty("foo", "foo")
+            .store();
+
+        Entity e2 = createEntity("Kind", 2)
+            .withProperty("bar", "bar")
+            .store();
+
+        Query query = new Query("Kind")
+            .addProjection(new PropertyProjection("foo", String.class));
+
+        List<Entity> results = service.prepare(query).asList(withDefaults());
+        assertEquals(Collections.singletonList(e1), results);
+    }
+
+    @Test
+    public void testProjectionQueryOnlyReturnsEntitiesContainingAllProjectedProperties() throws Exception {
+        Entity e1 = createEntity("Kind", 1)
+            .withProperty("foo", "foo")
+            .withProperty("bar", "bar")
+            .store();
+
+        Entity e2 = createEntity("Kind", 2)
+            .withProperty("foo", "foo")
+            .store();
+
+        Entity e3 = createEntity("Kind", 3)
+            .withProperty("bar", "bar")
+            .store();
+
+        Entity e4 = createEntity("Kind", 4)
+            .withProperty("baz", "baz")
+            .store();
+
+        Query query = new Query("Kind")
+            .addProjection(new PropertyProjection("foo", String.class))
+            .addProjection(new PropertyProjection("bar", String.class));
+
+        List<Entity> results = service.prepare(query).asList(withDefaults());
+        assertEquals(Collections.singletonList(e1), results);
     }
 
     @Test
