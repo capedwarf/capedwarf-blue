@@ -65,6 +65,19 @@ public class LoggingTestCase extends AbstractLoggingTest {
     }
 
     @Test
+    public void testLoggingHonorsLogLevel() {
+        Logger log = Logger.getLogger(LoggingTestCase.class.getName());
+        log.info("info_test");
+        log.warning("warning_test");
+        log.severe("severe_test");
+        flush(log);
+
+        assertLogContains("info_test", LogService.LogLevel.INFO);
+        assertLogContains("warning_test", LogService.LogLevel.WARN);
+        assertLogContains("severe_test", LogService.LogLevel.ERROR);
+    }
+
+    @Test
     public void testLogLinesAreReturnedOnlyWhenRequested() {
         Logger log = Logger.getLogger(LoggingTestCase.class.getName());
         log.info("hello_testLogLinesAreReturnedOnlyWhenRequested");

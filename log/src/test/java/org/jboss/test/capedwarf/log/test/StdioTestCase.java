@@ -22,6 +22,7 @@
 
 package org.jboss.test.capedwarf.log.test;
 
+import com.google.appengine.api.log.LogService;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -44,14 +45,25 @@ public class StdioTestCase extends AbstractLoggingTest {
     }
 
     @Test
-    public void testStdOutIsLogged() {
+    public void testStdOutIsLoggedAsInfo() {
         String text = "Something written to STDOUT";
         assertLogDoesntContain(text);
 
         System.out.println(text);
         System.out.flush();
 
-        assertLogContains(text);
+        assertLogContains(text, LogService.LogLevel.INFO);
+    }
+
+    @Test
+    public void testStdErrIsLoggedAsWarn() {
+        String text = "Something written to STDERR";
+        assertLogDoesntContain(text);
+
+        System.err.println(text);
+        System.err.flush();
+
+        assertLogContains(text, LogService.LogLevel.WARN);
     }
 
 }
