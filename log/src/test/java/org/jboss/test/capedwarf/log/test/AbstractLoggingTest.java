@@ -37,8 +37,9 @@ import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.After;
 import org.junit.Before;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Ales Justin
@@ -84,15 +85,19 @@ public class AbstractLoggingTest extends BaseTest {
     }
 
     protected boolean logContains(String text) {
+        return findLogLine(text) != null;
+    }
+
+    private AppLogLine findLogLine(String text) {
         Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery().includeAppLogs(true).includeIncomplete(true));
         for (RequestLogs logs : iterable) {
             for (AppLogLine logLine : logs.getAppLogLines()) {
                 if (logLine.getLogMessage().contains(text)) {
-                    return true;
+                    return logLine;
                 }
             }
         }
-        return false;
+        return null;
     }
 
     protected void assertLogDoesntContain(String text) {
@@ -100,6 +105,14 @@ public class AbstractLoggingTest extends BaseTest {
     }
 
     protected void assertLogContains(String text) {
-        assertTrue("log should contain '" + text + "', but it does not", logContains(text));
+        assertLogContains(text, null);
+    }
+
+    protected void assertLogContains(String text, LogService.LogLevel logLevel) {
+        AppLogLine logLine = findLogLine(text);
+        assertNotNull("log should contain '" + text + "', but it does not", logLine);
+        if (logLevel != null) {
+            assertEquals("incorrect logLevel", logLevel, logLine.getLogLevel());
+        }
     }
 }
