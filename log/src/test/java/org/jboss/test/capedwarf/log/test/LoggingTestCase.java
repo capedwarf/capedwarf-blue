@@ -54,7 +54,7 @@ public class LoggingTestCase extends AbstractLoggingTest {
 
     @Test
     public void testLogging() {
-        String text = "hello";
+        String text = "hello_testLogging";
         assertLogDoesntContain(text);
 
         Logger log = Logger.getLogger(LoggingTestCase.class.getName());
@@ -67,7 +67,7 @@ public class LoggingTestCase extends AbstractLoggingTest {
     @Test
     public void testLogLinesAreReturnedOnlyWhenRequested() {
         Logger log = Logger.getLogger(LoggingTestCase.class.getName());
-        log.info("hello");
+        log.info("hello_testLogLinesAreReturnedOnlyWhenRequested");
         flush(log);
 
         LogService logService = LogServiceFactory.getLogService();
