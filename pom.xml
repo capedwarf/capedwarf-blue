@@ -93,6 +93,9 @@
         <version.commons-logging>1.1.1</version.commons-logging>
         <version.org.apache.hadoop.core>0.20.2</version.org.apache.hadoop.core>
         <version.org.json>20090211</version.org.json>
+        <!-- Testing Iddx -->
+        <version.com.google.api-client>1.11.0-beta</version.com.google.api-client>
+        <version.com.google.api-services-bigquery>v2-rev33-1.8.0-beta</version.com.google.api-services-bigquery>
         <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
@@ -188,6 +191,16 @@
             <id>datanucleus</id>
             <name>Datanucleus Repository</name>
             <url>http://www.datanucleus.org/downloads/maven2</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>google-api</id>
+            <name>Google API Repository</name>
+            <url>https://mavenrepo.google-api-java-client.googlecode.com/hg/</url>
             <layout>default</layout>
             <releases>
                 <enabled>true</enabled>
@@ -730,6 +743,62 @@
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-core</artifactId>
                 <version>${version.org.apache.hadoop.core}</version>
+            </dependency>
+
+            <!-- Testing Iddx -->
+
+            <dependency>
+                <groupId>com.google.api-client</groupId>
+                <artifactId>google-api-client</artifactId>
+                <version>${version.com.google.api-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.api-client</groupId>
+                <artifactId>google-api-client-appengine</artifactId>
+                <version>${version.com.google.api-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.http-client</groupId>
+                <artifactId>google-http-client</artifactId>
+                <version>${version.com.google.api-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.http-client</groupId>
+                <artifactId>google-http-client-appengine</artifactId>
+                <version>${version.com.google.api-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.http-client</groupId>
+                <artifactId>google-http-client-jackson</artifactId>
+                <version>${version.com.google.api-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.oauth-client</groupId>
+                <artifactId>google-oauth-client</artifactId>
+                <version>${version.com.google.api-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.oauth-client</groupId>
+                <artifactId>google-oauth-client-appengine</artifactId>
+                <version>${version.com.google.api-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.oauth-client</groupId>
+                <artifactId>google-oauth-client-servlet</artifactId>
+                <version>${version.com.google.api-client}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.apis</groupId>
+                <artifactId>google-api-services-bigquery</artifactId>
+                <version>${version.com.google.api-services-bigquery}</version>
             </dependency>
 
         </dependencies>
