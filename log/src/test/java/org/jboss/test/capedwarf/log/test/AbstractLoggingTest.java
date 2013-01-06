@@ -89,7 +89,8 @@ public class AbstractLoggingTest extends BaseTest {
     }
 
     private AppLogLine findLogLine(String text) {
-        Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery().includeAppLogs(true).includeIncomplete(true));
+        LogQuery logQuery = new LogQuery().includeAppLogs(true).includeIncomplete(true).minLogLevel(LogService.LogLevel.DEBUG);
+        Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(logQuery);
         for (RequestLogs logs : iterable) {
             for (AppLogLine logLine : logs.getAppLogLines()) {
                 if (logLine.getLogMessage().contains(text)) {
@@ -112,7 +113,7 @@ public class AbstractLoggingTest extends BaseTest {
         AppLogLine logLine = findLogLine(text);
         assertNotNull("log should contain '" + text + "', but it does not", logLine);
         if (logLevel != null) {
-            assertEquals("incorrect logLevel", logLevel, logLine.getLogLevel());
+            assertEquals("incorrect logLevel for text '" + text + "'", logLevel, logLine.getLogLevel());
         }
     }
 }
