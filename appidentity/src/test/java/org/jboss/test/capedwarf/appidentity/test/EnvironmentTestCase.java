@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -30,7 +30,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.BaseTest;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -43,10 +42,8 @@ import static junit.framework.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
- *
- * TODO: move test to appropriate module
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@Ignore("CAPEDWARF-74")
 @RunWith(Arquillian.class)
 @Category(All.class)
 public class EnvironmentTestCase extends BaseTest {
@@ -59,25 +56,25 @@ public class EnvironmentTestCase extends BaseTest {
     @Test
     public void testEnvironmentIsSet() {
         assertTrue("SystemProperty.environment.value() should either return Development or Production",
-            Arrays.asList(Development, Production)
-                .contains(SystemProperty.environment.value()));
-        assertTrue("System.getProperty(c.g.a.runtime.environment) should either return Development or Production",
-            Arrays.asList(Development.name(), Production.name())
-                .contains(System.getProperty("com.google.appengine.runtime.environment")));
+            Arrays.asList(Development, Production).contains(SystemProperty.environment.value()));
+        // multi app env
+        // assertTrue("System.getProperty(c.g.a.runtime.environment) should either return Development or Production",
+        //    Arrays.asList(Development.name(), Production.name()).contains(System.getProperty(SystemProperty.environment.key())));
     }
 
     @Test
     public void testVersionIsSet() {
         assertNotNull(SystemProperty.version.get());
-        assertNotNull(System.getProperty("com.google.appengine.runtime.version"));
-        assertTrue(SystemProperty.version.get().equals(System.getProperty("com.google.appengine.runtime.version")));
+        // multi app env
+        // assertNotNull(System.getProperty(SystemProperty.version.key()));
+        // assertTrue(SystemProperty.version.get().equals(System.getProperty(SystemProperty.version.key())));
     }
 
     @Test
     public void testApplicationIdIsSet() {
         assertEquals("capedwarf-test", SystemProperty.applicationId.get());
-        assertEquals("capedwarf-test", System.getProperty("com.google.appengine.application.id"));
+        // multi app env
+        // assertEquals("capedwarf-test", System.getProperty(SystemProperty.applicationId.key()));
     }
-
 
 }
