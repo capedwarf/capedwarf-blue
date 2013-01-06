@@ -54,7 +54,7 @@ public class ConfigTestCase extends QueryTest {
 
     @Test
     public void testFactoryPassesConfigToDatastoreServiceInstance() throws Exception {
-        if (runningInsideDevAppEngine()) {
+        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
             return;
         }
         DatastoreServiceConfig config = DatastoreServiceConfig.Builder.withDefaults();
@@ -64,7 +64,7 @@ public class ConfigTestCase extends QueryTest {
 
     @Test
     public void testFactoryPassesConfigToAsyncDatastoreServiceInstance() throws Exception {
-        if (runningInsideDevAppEngine()) {
+        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
             return;
         }
         DatastoreServiceConfig config = DatastoreServiceConfig.Builder.withDefaults();
@@ -75,7 +75,7 @@ public class ConfigTestCase extends QueryTest {
     @Test
     @SuppressWarnings("deprecation")
     public void testFactorySupportsDeprecatedMethods() throws Exception {
-        if (runningInsideDevAppEngine()) {
+        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
             return;
         }
         DatastoreConfig oldConfig = DatastoreServiceFactory.getDefaultDatastoreConfig();

@@ -36,7 +36,6 @@ import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.PutResponse;
 import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
-import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -193,7 +192,7 @@ public abstract class AbstractTest extends BaseTest {
     }
 
     protected List<Document> getAllDocumentsIn(Index index) {
-        if (runningInsideDevAppEngine()) {
+        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
             fixListDocumentsBugWhenInvokedOnEmptyIndex(index);
         }
         return index.getRange(defaultListRequest()).getResults();
@@ -214,10 +213,6 @@ public abstract class AbstractTest extends BaseTest {
         for (int i=0; i<number; i++) {
             index.put(newEmptyDocument());
         }
-    }
-
-    protected boolean runningInsideDevAppEngine() {
-        return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
     }
 
     protected Index createIndex(String indexName) {

@@ -32,7 +32,6 @@ import com.google.appengine.api.prospectivesearch.FieldType;
 import com.google.appengine.api.prospectivesearch.ProspectiveSearchService;
 import com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory;
 import com.google.appengine.api.prospectivesearch.Subscription;
-import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.After;
 import org.junit.Before;
@@ -83,10 +82,6 @@ public abstract class AbstractTest extends BaseTest {
         schema.put(field1, type1);
         schema.put(field2, type2);
         return schema;
-    }
-
-    protected boolean runningInsideDevAppEngine() {
-        return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
     }
 
 }

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.logging.Logger;
 
+import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -108,6 +109,10 @@ public class BaseTest {
 
         // good enough?
         return service.getClass().getName().contains(".jboss.");
+    }
+
+    protected static boolean runningInsideDevAppEngine() {
+        return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
     }
 
     protected static void sync() {

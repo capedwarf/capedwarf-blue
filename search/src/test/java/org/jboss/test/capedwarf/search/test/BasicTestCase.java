@@ -176,7 +176,7 @@ public class BasicTestCase extends AbstractTest {
 
         Document retrievedDoc = addAndRetrieve(doc);
         assertEquals("document id is not persisted", "foo", retrievedDoc.getId());
-        if (!runningInsideDevAppEngine()) {
+        if (!runningInsideDevAppEngine() || isJBossImpl(service)) {
             assertEquals("document locale is not persisted", Locale.CANADA, retrievedDoc.getLocale());
         }
         assertEquals("document rank is not persisted", 123, retrievedDoc.getRank());
@@ -230,7 +230,7 @@ public class BasicTestCase extends AbstractTest {
 
     @Test
     public void testDocumentHandlesGeoPointFields() {
-        if (runningInsideDevAppEngine()) {
+        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
             return; // dev appengine does not support geo points
         }
         Document doc = newDocument(newField("geoPointField").setGeoPoint(new GeoPoint(45.0, 15.0)));

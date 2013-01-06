@@ -111,7 +111,7 @@ public class SearchTestCase extends AbstractTest {
 
     @Test
     public void testSearchByDateEqualityAndInequality() {
-        if (runningInsideDevAppEngine()) {
+        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
             // this test only works on dev server if the _system_ timezone is set to UTC
             return;
         }
@@ -162,7 +162,7 @@ public class SearchTestCase extends AbstractTest {
 
     @Test
     public void testSearchForLocationWithinSpecifiedDistance() {
-        if (runningInsideDevAppEngine()) {
+        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
             return; // dev appengine does not support geo points
         }
         Index index = getTestIndex();
@@ -173,7 +173,7 @@ public class SearchTestCase extends AbstractTest {
 
     @Test
     public void testArgumentsOfDistanceFunctionCanBeSwapped() {
-        if (runningInsideDevAppEngine()) {
+        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
             return; // dev appengine does not support geo points
         }
         Index index = getTestIndex();
@@ -184,7 +184,7 @@ public class SearchTestCase extends AbstractTest {
 
     @Test
     public void testSearchForLocationYieldsResultsInsideRadiusButNotInsideSquare() {
-        if (runningInsideDevAppEngine()) {
+        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
             return; // dev appengine does not support geo points
         }
         Index index = getTestIndex();
