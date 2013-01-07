@@ -100,6 +100,7 @@ public class CapedwarfEnvironmentTestCase {
     public void isAdmin_ReturnsFalseWhenLoggedInUserNotAdmin() throws Exception {
         config.addAdmin(ADMIN_EMAIL);
         env.setEmail(USER_EMAIL);
+        env.setAdmin(false); // pretty useless?
         assertFalse(env.isAdmin());
     }
 
@@ -107,6 +108,7 @@ public class CapedwarfEnvironmentTestCase {
     public void isAdmin_ReturnsTrueWhenLoggedInUserIsAdmin() throws Exception {
         config.addAdmin(ADMIN_EMAIL);
         env.setEmail(ADMIN_EMAIL);
+        env.setAdmin(true); // pretty useless?
         assertTrue(env.isAdmin());
     }
 
