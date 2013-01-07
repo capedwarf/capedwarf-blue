@@ -67,7 +67,7 @@ public class LogServiceTestCase extends AbstractLoggingTest {
         assertLogQueryExecutes(new LogQuery().includeIncomplete(true));
         assertLogQueryExecutes(new LogQuery().includeAppLogs(true));
         assertLogQueryExecutes(new LogQuery().batchSize(20));
-        assertLogQueryExecutes(new LogQuery().offset("aaa"));
+//        assertLogQueryExecutes(new LogQuery().offset());  // TODO
         assertLogQueryExecutes(new LogQuery().majorVersionIds(Arrays.asList("1", "2", "3")));
         assertLogQueryExecutes(new LogQuery().requestIds(Arrays.asList("1", "2", "3")));
         assertLogQueryExecutes(new LogQuery().startTimeMillis(System.currentTimeMillis()));
@@ -80,7 +80,7 @@ public class LogServiceTestCase extends AbstractLoggingTest {
                 .includeIncomplete(true)
                 .includeAppLogs(true)
                 .batchSize(20)
-                .offset("aaa")
+//                .offset() // TODO
                 .majorVersionIds(Arrays.asList("1", "2", "3"))
                 .requestIds(Arrays.asList("1", "2", "3"))
                 .startTimeMillis(System.currentTimeMillis())
