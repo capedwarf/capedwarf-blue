@@ -200,7 +200,7 @@
         <repository>
             <id>google-api</id>
             <name>Google API Repository</name>
-            <url>https://mavenrepo.google-api-java-client.googlecode.com/hg/</url>
+            <url>http://mavenrepo.google-api-java-client.googlecode.com/hg/</url>
             <layout>default</layout>
             <releases>
                 <enabled>true</enabled>
