@@ -77,4 +77,10 @@ public class EnvironmentTestCase extends BaseTest {
         assertEquals("capedwarf-test", System.getProperty(SystemProperty.applicationId.key()));
     }
 
+    @Test
+    public void testApplicationVerisonIsSet() {
+        assertEquals("1", SystemProperty.applicationVersion.get());
+        assertEquals("1", System.getProperty(SystemProperty.applicationVersion.key()));
+    }
+
 }
