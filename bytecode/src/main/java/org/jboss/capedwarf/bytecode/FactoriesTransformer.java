@@ -54,7 +54,6 @@ public class FactoriesTransformer extends MultipleTransformer {
         register("com.google.appengine.api.taskqueue.QueueFactory", new QueueFactoryTransformer());
         register("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());
         register("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
-        register("com.google.appengine.api.utils.SystemProperty", new SystemPropertyTransformer());
         register("com.google.appengine.api.xmpp.XMPPServiceFactory", new XMPPServiceFactoryTransformer());
         register("com.google.apphosting.api.ApiProxy", new ApiProxyTransformer());
         // GAE MapReduce

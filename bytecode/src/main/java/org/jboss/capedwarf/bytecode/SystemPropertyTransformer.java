@@ -30,6 +30,7 @@ import javassist.NotFoundException;
 
 /**
  * Hack SystemProperty class.
+ * Not used anymore, we hacked global system properties in CD_AS.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */

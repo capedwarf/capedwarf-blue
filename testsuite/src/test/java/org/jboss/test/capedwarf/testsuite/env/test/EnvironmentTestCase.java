@@ -60,24 +60,21 @@ public class EnvironmentTestCase extends BaseTest {
     public void testEnvironmentIsSet() {
         assertTrue("SystemProperty.environment.value() should either return Development or Production",
                 Arrays.asList(Development, Production).contains(SystemProperty.environment.value()));
-        // multi app env
-        // assertTrue("System.getProperty(c.g.a.runtime.environment) should either return Development or Production",
-        //    Arrays.asList(Development.name(), Production.name()).contains(System.getProperty(SystemProperty.environment.key())));
+        assertTrue("System.getProperty(c.g.a.runtime.environment) should either return Development or Production",
+            Arrays.asList(Development.name(), Production.name()).contains(System.getProperty(SystemProperty.environment.key())));
     }
 
     @Test
     public void testVersionIsSet() {
         assertNotNull(SystemProperty.version.get());
-        // multi app env
-        // assertNotNull(System.getProperty(SystemProperty.version.key()));
-        // assertTrue(SystemProperty.version.get().equals(System.getProperty(SystemProperty.version.key())));
+        assertNotNull(System.getProperty(SystemProperty.version.key()));
+        assertTrue(SystemProperty.version.get().equals(System.getProperty(SystemProperty.version.key())));
     }
 
     @Test
     public void testApplicationIdIsSet() {
         assertEquals("capedwarf-test", SystemProperty.applicationId.get());
-        // multi app env
-        // assertEquals("capedwarf-test", System.getProperty(SystemProperty.applicationId.key()));
+        assertEquals("capedwarf-test", System.getProperty(SystemProperty.applicationId.key()));
     }
 
 }
