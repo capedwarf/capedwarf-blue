@@ -22,22 +22,28 @@
  *
  */
 
-package org.jboss.capedwarf.users;
+package org.jboss.capedwarf.common;
 
 import java.security.Principal;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-class CapedwarfUserPrincipal implements Principal {
+public class CapedwarfUserPrincipal implements Principal {
 
     private final String email;
+    private final boolean isAdmin;
 
-    public CapedwarfUserPrincipal(String email) {
+    public CapedwarfUserPrincipal(String email, boolean isAdmin) {
         this.email = email;
+        this.isAdmin = isAdmin;
     }
 
     public String getName() {
         return email;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
     }
 }

@@ -25,28 +25,21 @@
 package org.jboss.capedwarf.users;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
+import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.url.URLUtils;
-import org.picketlink.social.openid.api.OpenIDManager;
-import org.picketlink.social.openid.api.OpenIDProtocolAdapter;
-import org.picketlink.social.openid.api.OpenIDRequest;
-import org.picketlink.social.openid.api.exceptions.OpenIDAssociationException;
-import org.picketlink.social.openid.api.exceptions.OpenIDDiscoveryException;
-import org.picketlink.social.openid.api.exceptions.OpenIDGeneralException;
-import org.picketlink.social.openid.api.exceptions.OpenIDLifeCycleException;
-import org.picketlink.social.openid.api.exceptions.OpenIDMessageException;
+
+import static com.google.appengine.api.utils.SystemProperty.Environment.Value.Development;
+import static com.google.appengine.api.utils.SystemProperty.Environment.Value.Production;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -54,13 +47,8 @@ import org.picketlink.social.openid.api.exceptions.OpenIDMessageException;
 @WebServlet(urlPatterns = AuthServlet.SERVLET_URI + "/*")
 public class AuthServlet extends HttpServlet {
 
-    private static final String GOOGLE_OPEN_ID_SERVICE_URL = "https://www.google.com/accounts/o8/id";
-
-    private static final String OPENID_MANAGER_KEY = "openid_manager";
-
     public static final String SERVLET_URI = "/_ah/auth";
 
-    private static final String LOGIN_RETURN_PATH = "/login_return";
     private static final String LOGIN_PATH = "/login";
     private static final String LOGOUT_PATH = "/logout";
 
@@ -68,106 +56,32 @@ public class AuthServlet extends HttpServlet {
     public static final String DESTINATION_URL_PARAM = "destinationURL";
     public static final String AUTH_DOMAIN_PARAM = "authDomain";
 
+    private AuthHandler authHandler;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+
+        SystemProperty.Environment.Value environment = SystemProperty.environment.value();
+        if (environment == Production) {
+            authHandler = new ProductionAuthHandler();
+        } else if (environment == Development) {
+            authHandler = new DevelopmentAuthHandler();
+        } else {
+            throw new IllegalStateException("Unknown environment: " + environment);
+        }
+    }
+
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
-        if (pathInfo.equals(LOGIN_RETURN_PATH)) {
-            handleOpenIdCallBack(request, response);
-        } else if (pathInfo.equals(LOGIN_PATH)) {
-            handleLoginRequest(request, response);
+        if (pathInfo.equals(LOGIN_PATH)) {
+            authHandler.handleLoginRequest(request, response);
         } else if (pathInfo.equals(LOGOUT_PATH)) {
-            handleLogoutRequest(request, response);
+            authHandler.handleLogoutRequest(request, response);
         } else {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            authHandler.handleOtherRequest(request, response);
         }
-    }
-
-    private void handleLogoutRequest(HttpServletRequest request, HttpServletResponse response) {
-        try {
-            request.getSession().setAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY, null);
-
-            String destinationUrl = request.getParameter(DESTINATION_URL_PARAM);
-            response.sendRedirect(destinationUrl);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void handleLoginRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String authDomain = request.getParameter(AUTH_DOMAIN_PARAM);    // TODO: what is authDomain _exactly_?
-
-        OpenIDManager manager = getOpenIdManager(request);
-        try {
-            OpenIDProtocolAdapter adapter = createOpenIdProtocolAdapter(request, response);
-            OpenIDManager.OpenIDProviderInformation providerInfo = manager.associate(adapter, manager.discoverProviders());
-            manager.authenticate(adapter, providerInfo);
-
-        } catch (OpenIDGeneralException e) {
-            log("[OpenIDConsumerServlet] Exception in dealing with the provider:", e);
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    private String getReturnUrl(HttpServletRequest request) {
-        String destinationURL = request.getParameter(DESTINATION_URL_PARAM);
-        return getServletUrl()
-                + LOGIN_RETURN_PATH
-                + "?" + DESTINATION_URL_PARAM + "=" + URLUtils.encode(destinationURL);
-    }
-
-    private void handleOpenIdCallBack(final HttpServletRequest request, final HttpServletResponse response) {
-        // extract the receiving URL from the HTTP request
-        try {
-            OpenIDProtocolAdapter adapter = createOpenIdProtocolAdapter(request, response);
-            OpenIDManager manager = getOpenIdManager(request.getSession());
-            boolean auth = manager.verify(adapter, getStringToStringParameterMap(request), getFullRequestURL(request));
-
-        } catch (OpenIDMessageException e) {
-            throw new RuntimeException(e);
-        } catch (OpenIDDiscoveryException e) {
-            throw new RuntimeException(e);
-        } catch (OpenIDAssociationException e) {
-            throw new RuntimeException(e);
-        } catch (OpenIDLifeCycleException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private CapedwarfOpenIDProtocolAdaptor createOpenIdProtocolAdapter(HttpServletRequest request, HttpServletResponse response) {
-        return new CapedwarfOpenIDProtocolAdaptor(request, response, getReturnUrl(request));
-    }
-
-    private Map<String, String> getStringToStringParameterMap(HttpServletRequest request) {
-        Map<String, String> map = new HashMap<String, String>();
-        for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
-            map.put(entry.getKey(), entry.getValue().length > 0 ? entry.getValue()[0] : null);
-        }
-        return map;
-    }
-
-    private String getFullRequestURL(HttpServletRequest request) {
-        String queryString = request.getQueryString();
-        return request.getRequestURL().toString()
-                + ((queryString == null || queryString.isEmpty()) ? "" : ("?" + queryString));
-    }
-
-    private OpenIDManager getOpenIdManager(HttpServletRequest req) {
-        OpenIDManager manager = getOpenIdManager(req.getSession());
-        if (manager == null) {
-            manager = new OpenIDManager(createOpenIdRequest(req));
-            req.getSession().setAttribute(OPENID_MANAGER_KEY, manager);
-        }
-        return manager;
-    }
-
-    private OpenIDRequest createOpenIdRequest(HttpServletRequest req) {
-        String federatedIdentity = req.getParameter(FEDERATED_IDENTITY_PARAM);
-        String openIdUrl = federatedIdentity == null || federatedIdentity.isEmpty() ? GOOGLE_OPEN_ID_SERVICE_URL : federatedIdentity;
-        return new OpenIDRequest(openIdUrl);
-    }
-
-    private OpenIDManager getOpenIdManager(HttpSession session) {
-        return (OpenIDManager) session.getAttribute(OPENID_MANAGER_KEY);
     }
 
     public static String createLoginURL(String destinationURL, String authDomain, String federatedIdentity, Set<String> attributesRequest) {
@@ -185,7 +99,7 @@ public class AuthServlet extends HttpServlet {
                 + "&" + AUTH_DOMAIN_PARAM + "=" + URLUtils.encode(authDomain);
     }
 
-    private static String getServletUrl() {
+    protected static String getServletUrl() {
         return CapedwarfEnvironment.getThreadLocalInstance().getBaseApplicationUrl() + SERVLET_URI;
     }
 
