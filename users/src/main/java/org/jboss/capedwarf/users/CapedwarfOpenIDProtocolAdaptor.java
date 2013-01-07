@@ -24,19 +24,22 @@
 
 package org.jboss.capedwarf.users;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
+import org.jboss.capedwarf.common.CapedwarfUserPrincipal;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.picketlink.social.openid.api.OpenIDAttributeMap;
 import org.picketlink.social.openid.api.OpenIDLifecycle;
 import org.picketlink.social.openid.api.OpenIDLifecycleEvent;
 import org.picketlink.social.openid.api.OpenIDProtocolAdapter;
 import org.picketlink.social.openid.api.exceptions.OpenIDLifeCycleException;
 import org.picketlink.social.openid.api.exceptions.OpenIDProtocolException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -74,9 +77,10 @@ class CapedwarfOpenIDProtocolAdaptor implements OpenIDProtocolAdapter, OpenIDLif
     public void handle(OpenIDLifecycleEvent event) throws OpenIDLifeCycleException {
         if (event.getEventType() == OpenIDLifecycleEvent.TYPE.SUCCESS) {
             String email = request.getParameter("openid.ext1.value.email");
+            boolean isAdmin = CapedwarfEnvironment.getThreadLocalInstance().isAdmin(email);
             request.getSession().setAttribute(
                     CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY,
-                    new CapedwarfUserPrincipal(email));
+                    new CapedwarfUserPrincipal(email, isAdmin));
 
             try {
                 response.sendRedirect(request.getParameter(AuthServlet.DESTINATION_URL_PARAM));

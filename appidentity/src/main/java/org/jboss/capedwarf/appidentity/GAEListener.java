@@ -22,8 +22,6 @@
 
 package org.jboss.capedwarf.appidentity;
 
-import java.security.Principal;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -35,6 +33,7 @@ import javax.servlet.http.HttpSession;
 
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.apphosting.api.ApiProxy;
+import org.jboss.capedwarf.common.CapedwarfUserPrincipal;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.AppEngineWebXml;
 import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
@@ -178,9 +177,10 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
         HttpSession session = request.getSession();
         // our fake request doesn't create session
         if (session != null) {
-            Principal principal = (Principal) session.getAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY);
+            CapedwarfUserPrincipal principal = (CapedwarfUserPrincipal) session.getAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY);
             if (principal != null) {
                 environment.setEmail(principal.getName());
+                environment.setAdmin(principal.isAdmin());
             }
         }
     }

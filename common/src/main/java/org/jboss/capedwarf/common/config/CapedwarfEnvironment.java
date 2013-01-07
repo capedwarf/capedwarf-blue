@@ -55,6 +55,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private static final int DEFAULT_HTTP_PORT = 80;
 
     private String email;
+    private boolean isAdmin;
     private String authDomain;
     private Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
 
@@ -96,7 +97,11 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     }
 
     public boolean isAdmin() {
-        return isLoggedIn() && capedwarfConfiguration.isAdmin(getEmail());
+        return isLoggedIn() && isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
     }
 
     public String getAuthDomain() {
@@ -145,6 +150,10 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public Collection<String> getAdmins() {
         return capedwarfConfiguration.getAdmins();
+    }
+
+    public boolean isAdmin(String email) {
+        return capedwarfConfiguration.isAdmin(email);
     }
 
     public void setBaseApplicationUrl(String scheme, String serverName, int port, String context) {
