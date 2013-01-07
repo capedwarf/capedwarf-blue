@@ -37,12 +37,14 @@ import org.jboss.capedwarf.common.app.Application;
  * Allow for custom extensions to GAE API, impl, behavior, etc.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 public class Compatibility {
     public static enum Feature {
         ENABLE_ALL("enable.all"),
         DISABLE_ENTITY_GROUPS("disable.entity.groups"),
+        DISABLE_QUERY_INEQUALITY_FILTER_CHECK("disable.query.inequality.filter.check"),
         IGNORE_ENTITY_PROPERTY_CONVERSION("ignore.entity.property.conversion"),
         IGNORE_LOGGING("ignore.logging"),
         ENABLE_EAGER_DATASTORE_STATS("enable.eager.datastore.stats", new RegexpValue("(sync|async)"));

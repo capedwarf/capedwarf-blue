@@ -29,10 +29,12 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
 import org.infinispan.query.CacheQuery;
+import org.jboss.capedwarf.common.compatibility.Compatibility;
 import org.jboss.capedwarf.datastore.LazyKeyChecker;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class LazyChecker extends LazyKeyChecker {
     private final AtomicBoolean checked = new AtomicBoolean();
@@ -86,6 +88,10 @@ public class LazyChecker extends LazyKeyChecker {
     }
 
     private void checkInequalityConstraints() {
+        if (Compatibility.getInstance().isEnabled(Compatibility.Feature.DISABLE_QUERY_INEQUALITY_FILTER_CHECK)) {
+            return;
+        }
+
         final Query query = holder.getQuery();
         String inequalityFilterProperty = checkInequalityConstraints(query.getFilter(), null);
 

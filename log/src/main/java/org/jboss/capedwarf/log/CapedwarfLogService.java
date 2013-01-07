@@ -76,16 +76,21 @@ public class CapedwarfLogService implements LogService, Logable {
         String ns = NamespaceManager.get();
         NamespaceManager.set("");
         try {
-            List<RequestLogs> list = new ArrayList<RequestLogs>();
+            Compatibility.enable(Compatibility.Feature.DISABLE_QUERY_INEQUALITY_FILTER_CHECK);
+            try {
+                List<RequestLogs> list = new ArrayList<RequestLogs>();
 
-            Map<Key, RequestLogs> map = fetchRequestLogs(logQuery, list);
-            if (logQuery.getIncludeAppLogs()) {
-                fetchAppLogLines(logQuery, map);
+                Map<Key, RequestLogs> map = fetchRequestLogs(logQuery, list);
+                if (logQuery.getIncludeAppLogs()) {
+                    fetchAppLogLines(logQuery, map);
+                }
+                if (logQuery.getMinLogLevel() != null) {
+                    removeRequestsWithNoLogLines(list);
+                }
+                return list;
+            } finally {
+                Compatibility.disable(Compatibility.Feature.DISABLE_QUERY_INEQUALITY_FILTER_CHECK);
             }
-            if (logQuery.getMinLogLevel() != null) {
-                removeRequestsWithNoLogLines(list);
-            }
-            return list;
         } finally {
             NamespaceManager.set(ns);
         }
