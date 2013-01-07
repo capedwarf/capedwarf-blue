@@ -75,9 +75,13 @@ public class EnvironmentTestCase extends BaseTest {
     }
 
     @Test
-    public void testApplicationVerisonIsSet() {
-        assertEquals("1", SystemProperty.applicationVersion.get());
-        assertEquals("1", System.getProperty(SystemProperty.applicationVersion.key()));
+    public void testApplicationVersionIsSet() {
+        assertRegexpMatches("1\\.[0-9]+", SystemProperty.applicationVersion.get());
+        assertRegexpMatches("1\\.[0-9]+", System.getProperty(SystemProperty.applicationVersion.key()));
+    }
+
+    private static void assertRegexpMatches(String regexp, String str) {
+        assertTrue("Expected to match regexp " + regexp + " but was: " + str, str != null && str.matches(regexp));
     }
 
 }
