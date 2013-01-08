@@ -29,6 +29,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Logger;
 
+import org.infinispan.util.concurrent.WithinThreadExecutor;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 /**
@@ -36,7 +37,9 @@ import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
  */
 public class ExecutorFactory {
     private static String[] defaultJndiNames = {"java:jboss/threads/executor/capedwarf"};
+
     private static volatile ExecutorService executor;
+    private static volatile ExecutorService direct = new WithinThreadExecutor();
 
     private static int refCount = 0;
 
@@ -55,6 +58,15 @@ public class ExecutorFactory {
             }
         }
         return executor;
+    }
+
+    /**
+     * Get direct executor.
+     *
+     * @return direct executor
+     */
+    public static ExecutorService getDirectExecutor() {
+        return direct; // TODO - more configurable
     }
 
     /**

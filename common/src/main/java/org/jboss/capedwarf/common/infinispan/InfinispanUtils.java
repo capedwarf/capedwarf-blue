@@ -78,7 +78,7 @@ public class InfinispanUtils {
 
         final Cache cache = getCache(appId, template);
         try {
-            final DistributedExecutorService des = new DefaultExecutorService(cache, ExecutorFactory.getInstance());
+            final DistributedExecutorService des = new DefaultExecutorService(cache, ExecutorFactory.getDirectExecutor());
             final Future<R> result = des.submit(task, keys);
             return result.get();
         } catch (Exception e) {
