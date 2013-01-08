@@ -35,6 +35,7 @@ import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -77,7 +78,7 @@ public class InfinispanUtils {
 
         final Cache cache = getCache(appId, template);
         try {
-            final DistributedExecutorService des = new DefaultExecutorService(cache);
+            final DistributedExecutorService des = new DefaultExecutorService(cache, ExecutorFactory.getInstance());
             final Future<R> result = des.submit(task, keys);
             return result.get();
         } catch (Exception e) {

@@ -22,20 +22,21 @@
 
 package org.jboss.capedwarf.common.threads;
 
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Logger;
+
+import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ExecutorFactory {
     private static String[] defaultJndiNames = {"java:jboss/threads/executor/capedwarf"};
-    private static volatile Executor executor;
+    private static volatile ExecutorService executor;
 
     private static int refCount = 0;
 
@@ -45,7 +46,7 @@ public class ExecutorFactory {
      *
      * @return the Executor instance
      */
-    public static Executor getInstance() {
+    public static ExecutorService getInstance() {
         if (executor == null) {
             synchronized (ExecutorFactory.class) {
                 if (executor == null) {
@@ -69,9 +70,9 @@ public class ExecutorFactory {
         return task;
     }
 
-    protected static Executor doJndiLookup() {
+    protected static ExecutorService doJndiLookup() {
         try {
-            return JndiLookupUtils.lookup("jndi.executor", Executor.class, defaultJndiNames);
+            return JndiLookupUtils.lookup("jndi.executor", ExecutorService.class, defaultJndiNames);
         } catch (Throwable t) {
             Logger.getLogger(Executor.class.getName()).fine("No Executor found in JNDI: " + t.getMessage());
             return null;
