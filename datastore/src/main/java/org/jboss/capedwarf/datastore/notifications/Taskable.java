@@ -30,4 +30,5 @@ import java.util.concurrent.Callable;
 public interface Taskable<T> {
     Callable<T> toCallable();
     Object taskKey();
+    boolean block();
 }

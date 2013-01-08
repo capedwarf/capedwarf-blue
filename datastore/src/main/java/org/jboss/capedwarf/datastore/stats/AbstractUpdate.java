@@ -46,14 +46,24 @@ public abstract class AbstractUpdate implements Update {
 
     protected final Entity trigger;
     protected final Signum signum;
+    protected final boolean block;
 
     protected AbstractUpdate(Entity trigger, Signum signum) {
+        this(trigger, signum, true);
+    }
+
+    protected AbstractUpdate(Entity trigger, Signum signum, boolean block) {
         this.trigger = trigger;
         this.signum = signum;
+        this.block = block;
     }
 
     public Object taskKey() {
         return statsKind();
+    }
+
+    public boolean block() {
+        return block;
     }
 
     public void initialize(Entity entity) {

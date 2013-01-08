@@ -37,6 +37,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.common.util.Util;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -78,11 +79,7 @@ public class InfinispanUtils {
      */
     public static <R> R submit(final String appId, final CacheName template, final Callable<R> task, Object... keys) {
         final Future<R> result = distribute(appId, template, task, true, keys);
-        try {
-            return result.get();
-        } catch (Exception e) {
-            throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
-        }
+        return Util.quietGet(result);
     }
 
     /**

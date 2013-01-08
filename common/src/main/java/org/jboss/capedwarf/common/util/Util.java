@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.common.util;
 
+import java.util.concurrent.Future;
+
 /**
  * Simple utils.
  *
@@ -40,5 +42,20 @@ public final class Util {
      */
     public static <T> T defaultIfNull(T value, T defaultValue) {
         return (value != null) ? value : defaultValue;
+    }
+
+    /**
+     * Quiet future get.
+     * Wrap exception into runtime exception.
+     *
+     * @param future the future
+     * @return future's get result
+     */
+    public static <R> R quietGet(Future<R> future) {
+        try {
+            return future.get();
+        } catch (Exception e) {
+            throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
+        }
     }
 }

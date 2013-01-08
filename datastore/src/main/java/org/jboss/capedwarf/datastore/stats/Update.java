@@ -34,7 +34,6 @@ import org.jboss.capedwarf.datastore.notifications.Taskable;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public interface Update extends Serializable, Taskable<Entity> {
-
     String statsNamespace();
     String statsKind();
     void initialize(Entity entity);

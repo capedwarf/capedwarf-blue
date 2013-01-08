@@ -23,11 +23,13 @@
 package org.jboss.capedwarf.datastore.notifications;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.util.Util;
 
 /**
  * Abstract cache listener
@@ -45,6 +47,18 @@ public abstract class AbstractCacheListener {
      * @param key the task key
      */
     protected <T> void executeCallable(final Callable<T> callable, final Object key) {
+        executeCallable(callable, key, true);
+    }
+
+    /**
+     * Execute callable on distributed framework.
+     * Make sure callable is fully initialized.
+     *
+     * @param callable the callable
+     * @param key the task key
+     * @param block the block flag
+     */
+    protected <T> void executeCallable(final Callable<T> callable, final Object key, final boolean block) {
         executeCallable(new Taskable<T>() {
             public Callable<T> toCallable() {
                 return callable;
@@ -52,6 +66,10 @@ public abstract class AbstractCacheListener {
 
             public Object taskKey() {
                 return key;
+            }
+
+            public boolean block() {
+                return block;
             }
         });
     }
@@ -64,7 +82,10 @@ public abstract class AbstractCacheListener {
     protected <T> void executeCallable(Taskable<T> taskable) {
         CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
         try {
-            InfinispanUtils.fire(Application.getAppId(), CacheName.DIST, taskable.toCallable(), taskable.taskKey());
+            final Future<T> future = InfinispanUtils.fire(Application.getAppId(), CacheName.DIST, taskable.toCallable(), taskable.taskKey());
+            if (taskable.block()) {
+                Util.quietGet(future);
+            }
         } finally {
             if (previous != null) {
                 CapedwarfEnvironment.setThreadLocalInstance(previous);
