@@ -47,6 +47,7 @@ import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.RequestLogs;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -69,6 +70,8 @@ public class CapedwarfLogService implements LogService, Logable {
     private static final String LOG_LINE_THROWN = "thrown";
 
     private static final String LOG_REQUEST_ENTITY_REQUEST_ATTRIBUTE = "__org.jboss.capedwarf.LogRequest__";
+
+    private static final String REQUEST_LOG_ID = "com.google.appengine.runtime.request_log_id";
 
     private boolean ignoreLogging = Compatibility.getInstance().isEnabled(Compatibility.Feature.IGNORE_LOGGING);
 
@@ -254,8 +257,11 @@ public class CapedwarfLogService implements LogService, Logable {
             entity.setProperty(LOG_REQUEST_USER_AGENT, request.getHeader("User-Agent"));
         }
 
-        DatastoreServiceFactory.getDatastoreService().put(entity);
+        Key key = DatastoreServiceFactory.getDatastoreService().put(entity);
         servletRequest.setAttribute(LOG_REQUEST_ENTITY_REQUEST_ATTRIBUTE, entity);
+
+        CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
+        environment.getAttributes().put(REQUEST_LOG_ID, String.valueOf(key.getId()));
     }
 
     public void requestFinished(ServletRequest servletRequest) {
