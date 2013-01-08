@@ -30,6 +30,7 @@ import javassist.CtMethod;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@Deprecated
 public class ApiProxyTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getCurrentEnvironment");

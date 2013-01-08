@@ -42,7 +42,6 @@ import com.google.apphosting.api.ApiProxy;
 public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable {
     private static final long serialVersionUID = 1L;
 
-    private static final ThreadLocal<CapedwarfEnvironment> threadLocalInstance = new ThreadLocal<CapedwarfEnvironment>();
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
 
     /* Impl detail ... */
@@ -177,7 +176,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public static CapedwarfEnvironment createThreadLocalInstance() {
         CapedwarfEnvironment environment = new CapedwarfEnvironment();
-        threadLocalInstance.set(environment);
+        ApiProxy.setEnvironmentForCurrentThread(environment);
         return environment;
     }
 
@@ -195,24 +194,24 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
      * @return env or null if not set
      */
     public static CapedwarfEnvironment getThreadLocalInstanceInternal() {
-        return threadLocalInstance.get();
+        return (CapedwarfEnvironment) ApiProxy.getCurrentEnvironment();
     }
 
     public static void clearThreadLocalInstance() {
-        threadLocalInstance.remove();
+        ApiProxy.clearEnvironmentForCurrentThread();
     }
 
-    public static CapedwarfEnvironment setThreadLocalInstance(final CapedwarfEnvironment env) {
+    public static CapedwarfEnvironment setThreadLocalInstance(final CapedwarfEnvironment environment) {
         SecurityManager sm = System.getSecurityManager();
         if (sm == null) {
-            CapedwarfEnvironment previous = threadLocalInstance.get();
-            threadLocalInstance.set(env);
+            CapedwarfEnvironment previous = getThreadLocalInstanceInternal();
+            ApiProxy.setEnvironmentForCurrentThread(environment);
             return previous;
         } else {
             return AccessController.doPrivileged(new PrivilegedAction<CapedwarfEnvironment>() {
                 public CapedwarfEnvironment run() {
-                    CapedwarfEnvironment previous = threadLocalInstance.get();
-                    threadLocalInstance.set(env);
+                    CapedwarfEnvironment previous = getThreadLocalInstanceInternal();
+                    ApiProxy.setEnvironmentForCurrentThread(environment);
                     return previous;
                 }
             });

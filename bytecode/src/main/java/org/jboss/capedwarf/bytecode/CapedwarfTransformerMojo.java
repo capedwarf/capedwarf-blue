@@ -40,8 +40,7 @@ public class CapedwarfTransformerMojo {
         return new String[]{
                 pathToAppEngineJar,
                 CapedwarfTransformer.class.getName(),
-                "(([.]*ApiProxy*)" +
-                        "|([.]*ServiceFactory*)" +
+                "(([.]*ServiceFactory*)" +
                         "|([.]*.taskqueue.QueueFactory)" +
                         "|([.]*datastore.Cursor*)" +
                         "|([.]*datastore.DatastoreServiceConfig*)" +
