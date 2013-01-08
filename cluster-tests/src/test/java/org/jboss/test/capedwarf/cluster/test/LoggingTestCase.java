@@ -1,14 +1,12 @@
 package org.jboss.test.capedwarf.cluster.test;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.lang.reflect.Method;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
-import com.google.appengine.api.log.AppLogLine;
-import com.google.appengine.api.log.LogQuery;
-import com.google.appengine.api.log.LogService;
-import com.google.appengine.api.log.LogServiceFactory;
-import com.google.appengine.api.log.RequestLogs;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -22,8 +20,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import com.google.appengine.api.log.AppLogLine;
+import com.google.appengine.api.log.LogQuery;
+import com.google.appengine.api.log.LogService;
+import com.google.appengine.api.log.LogServiceFactory;
+import com.google.appengine.api.log.RequestLogs;
 
 /**
  * @author Matej Lazar
@@ -56,7 +57,6 @@ public class LoggingTestCase extends BaseTest {
 
         Logger log = Logger.getLogger(LoggingTestCase.class.getName());
         log.info("hello");
-        waitForSync();
         flush(log);
         waitForSync();
         assertLogContains("hello");
@@ -68,6 +68,13 @@ public class LoggingTestCase extends BaseTest {
     public void readLogOnDep2() {
         waitForSync();
         assertLogContains("hello");
+    }
+
+    @InSequence(1000)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void shuttingDown() {
+        //dummy test: waiting server to shutdown
     }
 
     protected void clear(LogService service) {
@@ -91,7 +98,8 @@ public class LoggingTestCase extends BaseTest {
     }
 
     private boolean logContains(String text) {
-        Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(new LogQuery().includeAppLogs(true));
+        LogQuery logQuery = new LogQuery().includeAppLogs(true).includeIncomplete(true).minLogLevel(LogService.LogLevel.DEBUG);
+        Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(logQuery);
         for (RequestLogs logs : iterable) {
             for (AppLogLine logLine : logs.getAppLogLines()) {
                 if (logLine.getLogMessage().contains(text)) {
