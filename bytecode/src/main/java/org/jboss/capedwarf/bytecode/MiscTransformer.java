@@ -29,7 +29,7 @@ package org.jboss.capedwarf.bytecode;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class MiscTransformer extends MultipleTransformer {
+final class MiscTransformer extends MultipleTransformer {
 
     // -- Keep lexicographical order --
 

@@ -28,7 +28,7 @@ package org.jboss.capedwarf.bytecode;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class FactoriesTransformer extends MultipleTransformer {
+final class FactoriesTransformer extends MultipleTransformer {
 
     // -- Keep lexicographical order --
 
