@@ -55,6 +55,10 @@ public class TestContext implements Cloneable {
         this.archiveName = archiveName;
     }
 
+    public static TestContext withLogging() {
+        return new TestContext();
+    }
+
     public static TestContext asDefault() {
         return new TestContext().setIgnoreLogging(true);
     }
