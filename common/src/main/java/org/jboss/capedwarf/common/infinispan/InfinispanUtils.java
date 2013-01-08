@@ -89,7 +89,7 @@ public class InfinispanUtils {
      * Submit the task to distributed execution env, it could be a fire-n-forget way.
      */
     public static <R> Future<R> fire(final String appId, final CacheName template, final Callable<R> task, Object... keys) {
-        return distribute(appId, template, task, true, keys); // TODO -- make direct == false
+        return distribute(appId, template, task, false, keys);
     }
 
     private static <R> Future<R> distribute(final String appId, final CacheName template, final Callable<R> task, final boolean direct, final Object... keys) {
