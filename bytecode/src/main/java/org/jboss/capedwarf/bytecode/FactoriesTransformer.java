@@ -23,6 +23,8 @@
 package org.jboss.capedwarf.bytecode;
 
 /**
+ * ONLY service factory transformers go here!!
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
@@ -36,12 +38,7 @@ public class FactoriesTransformer extends MultipleTransformer {
         register("com.google.appengine.api.blobstore.BlobstoreServiceFactory", new BlobstoreServiceFactoryTransformer());
         register("com.google.appengine.api.capabilities.CapabilitiesServiceFactory", new CapabilitiesServiceFactoryTransformer());
         register("com.google.appengine.api.channel.ChannelServiceFactory", new ChannelServiceFactoryTransformer());
-        register("com.google.appengine.api.datastore.Cursor", new CursorTransformer());
-        register("com.google.appengine.api.datastore.DatastoreServiceConfig$Builder", new DatastoreServiceConfigBuilderTransformer());
         register("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreServiceFactoryTransformer());
-        register("com.google.appengine.api.datastore.Entity", new EntityTransformer());
-        register("com.google.appengine.api.datastore.Key", new KeyTransformer());
-        register("com.google.appengine.api.datastore.RawValue", new RawValueTransformer());
         register("com.google.appengine.api.files.FileServiceFactory", new FileServiceFactoryTransformer());
         register("com.google.appengine.api.images.ImagesServiceFactory", new ImagesServiceFactoryTransformer());
         register("com.google.appengine.api.log.LogServiceFactory", new LogServiceFactoryTransformer());
@@ -55,7 +52,6 @@ public class FactoriesTransformer extends MultipleTransformer {
         register("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());
         register("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
         register("com.google.appengine.api.xmpp.XMPPServiceFactory", new XMPPServiceFactoryTransformer());
-        register("com.google.apphosting.api.ApiProxy", new ApiProxyTransformer());
         // GAE MapReduce
         register("com.google.appengine.tools.mapreduce.impl.ShuffleServiceImpl", new ShuffleServiceTransformer());
     }

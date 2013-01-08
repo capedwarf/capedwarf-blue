@@ -39,7 +39,7 @@ public class CapedwarfTransformerMojo {
     private static String[] createArgs(String pathToAppEngineJar) {
         return new String[]{
                 pathToAppEngineJar,
-                FactoriesTransformer.class.getName(),
+                CapedwarfTransformer.class.getName(),
                 "(([.]*ApiProxy*)" +
                         "|([.]*ServiceFactory*)" +
                         "|([.]*.taskqueue.QueueFactory)" +
