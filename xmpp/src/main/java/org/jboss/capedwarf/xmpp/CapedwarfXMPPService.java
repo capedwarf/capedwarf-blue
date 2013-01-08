@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.xmpp;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +36,9 @@ import com.google.appengine.api.xmpp.PresenceType;
 import com.google.appengine.api.xmpp.SendResponse;
 import com.google.appengine.api.xmpp.Subscription;
 import com.google.appengine.api.xmpp.XMPPService;
+import com.google.appengine.repackaged.com.google.common.base.Function;
+import com.google.appengine.repackaged.com.google.common.collect.Iterators;
+import com.google.appengine.repackaged.com.google.common.collect.Lists;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 
@@ -59,6 +63,19 @@ public class CapedwarfXMPPService implements XMPPService {
             }
         };
         return presenceConverter.convert(execute(action));
+    }
+
+    public List<Presence> getPresence(Iterable<JID> jids) {
+        return getPresence(jids, null);
+    }
+
+    public List<Presence> getPresence(Iterable<JID> jids, final JID fromJid) {
+        final Function<JID, Presence> function = new Function<JID, Presence>() {
+            public Presence apply(JID jid) {
+                return getPresence(jid, fromJid);
+            }
+        };
+        return Lists.newArrayList(Iterators.transform(jids.iterator(), function));
     }
 
     public void sendPresence(JID jid, PresenceType presenceType, PresenceShow presenceShow, String status) {
