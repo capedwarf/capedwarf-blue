@@ -76,11 +76,13 @@ class CapedwarfOpenIDProtocolAdaptor implements OpenIDProtocolAdapter, OpenIDLif
 
     public void handle(OpenIDLifecycleEvent event) throws OpenIDLifeCycleException {
         if (event.getEventType() == OpenIDLifecycleEvent.TYPE.SUCCESS) {
+            String userId = request.getParameter("openid.claimed_id");
             String email = request.getParameter("openid.ext1.value.email");
+            String authDomain = "gmail.com";    // TODO?
             boolean isAdmin = CapedwarfEnvironment.getThreadLocalInstance().isAdmin(email);
             request.getSession().setAttribute(
                     CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY,
-                    new CapedwarfUserPrincipal(email, isAdmin));
+                    new CapedwarfUserPrincipal(userId, email, authDomain, isAdmin));
 
             try {
                 response.sendRedirect(request.getParameter(AuthServlet.DESTINATION_URL_PARAM));

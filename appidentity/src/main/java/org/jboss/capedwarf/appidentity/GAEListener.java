@@ -179,7 +179,9 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
         if (session != null) {
             CapedwarfUserPrincipal principal = (CapedwarfUserPrincipal) session.getAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY);
             if (principal != null) {
+                environment.setUserId(principal.getUserId());
                 environment.setEmail(principal.getName());
+                environment.setAuthDomain(principal.getAuthDomain());
                 environment.setAdmin(principal.isAdmin());
             }
         }

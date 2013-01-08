@@ -31,16 +31,28 @@ import java.security.Principal;
  */
 public class CapedwarfUserPrincipal implements Principal {
 
+    private final String userId;
     private final String email;
+    private final String authDomain;
     private final boolean isAdmin;
 
-    public CapedwarfUserPrincipal(String email, boolean isAdmin) {
+    public CapedwarfUserPrincipal(String userId, String email, String authDomain, boolean isAdmin) {
+        this.userId = userId;
         this.email = email;
+        this.authDomain = authDomain;
         this.isAdmin = isAdmin;
+    }
+
+    public String getUserId() {
+        return userId;
     }
 
     public String getName() {
         return email;
+    }
+
+    public String getAuthDomain() {
+        return authDomain;
     }
 
     public boolean isAdmin() {

@@ -28,17 +28,13 @@ import java.util.Set;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.apphosting.api.ApiProxy;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class CapedwarfUserService implements UserService {
-
-    private static final String USER_ID_KEY = "com.google.appengine.api.users.UserService.user_id_key";
-    private static final String IS_FEDERATED_USER_KEY = "com.google.appengine.api.users.UserService.is_federated_user";
-    private static final String FEDERATED_AUTHORITY_KEY = "com.google.appengine.api.users.UserService.federated_authority";
-    private static final String FEDERATED_IDENTITY_KEY = "com.google.appengine.api.users.UserService.federated_identity";
 
     public String createLoginURL(String destinationURL) {
         return createLoginURL(destinationURL, null);
@@ -76,8 +72,8 @@ public class CapedwarfUserService implements UserService {
         if (!environment.isLoggedIn())
             return null;
 
-        String userId = getEnvAttribute(USER_ID_KEY);
-        Boolean isFederated = getEnvAttribute(IS_FEDERATED_USER_KEY);
+        String userId = getEnvAttribute(CapedwarfEnvironment.USER_ID_KEY);
+        Boolean isFederated = getEnvAttribute(CapedwarfEnvironment.IS_FEDERATED_USER_KEY);
 
         if (isFederated == null || !isFederated) {
             String authDomain = environment.getAuthDomain() == null ? "" : environment.getAuthDomain();
@@ -85,9 +81,9 @@ public class CapedwarfUserService implements UserService {
         } else
             return new User(
                     environment.getEmail(),
-                    (String) getEnvAttribute(FEDERATED_AUTHORITY_KEY),
+                    (String) getEnvAttribute(CapedwarfEnvironment.FEDERATED_AUTHORITY_KEY),
                     userId,
-                    (String) getEnvAttribute(FEDERATED_IDENTITY_KEY));
+                    (String) getEnvAttribute(CapedwarfEnvironment.FEDERATED_IDENTITY_KEY));
     }
 
     private <T> T getEnvAttribute(String key) {
