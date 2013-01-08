@@ -25,6 +25,7 @@ package org.jboss.capedwarf.common.infinispan;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.infinispan.Cache;
@@ -72,18 +73,33 @@ public class InfinispanUtils {
         return getCache(template, appId);
     }
 
+    /**
+     * Submit the task to distributed execution env, expecting result at the end.
+     */
     public static <R> R submit(final String appId, final CacheName template, final Callable<R> task, Object... keys) {
-        if (cacheManager == null)
-            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
-
-        final Cache cache = getCache(appId, template);
+        final Future<R> result = distribute(appId, template, task, true, keys);
         try {
-            final DistributedExecutorService des = new DefaultExecutorService(cache, ExecutorFactory.getDirectExecutor());
-            final Future<R> result = des.submit(task, keys);
             return result.get();
         } catch (Exception e) {
             throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
         }
+    }
+
+    /**
+     * Submit the task to distributed execution env, it could be a fire-n-forget way.
+     */
+    public static <R> Future<R> fire(final String appId, final CacheName template, final Callable<R> task, Object... keys) {
+        return distribute(appId, template, task, true, keys); // TODO -- make direct == false
+    }
+
+    private static <R> Future<R> distribute(final String appId, final CacheName template, final Callable<R> task, final boolean direct, final Object... keys) {
+        if (cacheManager == null)
+            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+
+        final Cache cache = getCache(appId, template);
+        final ExecutorService executor = (direct ? ExecutorFactory.getDirectExecutor() : ExecutorFactory.getInstance());
+        final DistributedExecutorService des = new DefaultExecutorService(cache, executor);
+        return des.submit(task, keys);
     }
 
     public static GridFilesystem getGridFilesystem(String appId) {
