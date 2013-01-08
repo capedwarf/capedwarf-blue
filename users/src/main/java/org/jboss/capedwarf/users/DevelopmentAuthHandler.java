@@ -14,12 +14,15 @@ import org.jboss.capedwarf.common.CapedwarfUserPrincipal;
  */
 public class DevelopmentAuthHandler extends AuthHandler {
 
+    public static final String EMAIL_SESSION_ATTR = "devel_login_email";
+
     @Override
     public void handleLoginRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String email = request.getParameter("email");
         if (email == null) {
             showLoginForm(request, response);
         } else {
+            request.getSession().setAttribute(EMAIL_SESSION_ATTR, email);
             boolean isAdmin = Boolean.valueOf(request.getParameter("isAdmin"));
 
             request.getSession().setAttribute(
@@ -31,6 +34,11 @@ public class DevelopmentAuthHandler extends AuthHandler {
     }
 
     private void showLoginForm(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String email = (String) request.getSession().getAttribute(EMAIL_SESSION_ATTR);
+        if (email == null) {
+            email = "test@example.com";
+        }
+
         PrintWriter out = response.getWriter();
         out.print("<html>\n" +
             "<body>\n" +
@@ -39,7 +47,7 @@ public class DevelopmentAuthHandler extends AuthHandler {
             "        <h3>Development login</h3>\n" +
             "        <p>\n" +
             "            <label for=\"email\" style=\"width: 4em\">Email:</label>\n" +
-            "            <input type=\"text\" name=\"email\" id=\"email\" value=\"test@example.com\" style=\"padding: 0.4em\">\n" +
+            "            <input type=\"text\" name=\"email\" id=\"email\" value=\"" + email + "\" style=\"padding: 0.4em\">\n" +
             "        </p>\n" +
             "        <p style=\"margin-left: 3.5em; font-size:12px\">\n" +
             "            <input type=\"checkbox\" name=\"isAdmin\" id=\"isAdmin\" value=\"true\">\n" +
