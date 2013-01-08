@@ -23,11 +23,14 @@ public class DevelopmentAuthHandler extends AuthHandler {
             showLoginForm(request, response);
         } else {
             request.getSession().setAttribute(EMAIL_SESSION_ATTR, email);
+
+            String userId = email;   // TODO
+            String authDomain = "gmail.com";    // TODO?
             boolean isAdmin = Boolean.valueOf(request.getParameter("isAdmin"));
 
             request.getSession().setAttribute(
                 CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY,
-                new CapedwarfUserPrincipal(email, isAdmin));
+                new CapedwarfUserPrincipal(userId, email, authDomain, isAdmin));
 
             response.sendRedirect(request.getParameter(AuthServlet.DESTINATION_URL_PARAM));
         }

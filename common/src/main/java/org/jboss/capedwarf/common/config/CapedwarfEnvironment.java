@@ -44,6 +44,11 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
 
+    public static final String USER_ID_KEY = "com.google.appengine.api.users.UserService.user_id_key";
+    public static final String IS_FEDERATED_USER_KEY = "com.google.appengine.api.users.UserService.is_federated_user";
+    public static final String FEDERATED_AUTHORITY_KEY = "com.google.appengine.api.users.UserService.federated_authority";
+    public static final String FEDERATED_IDENTITY_KEY = "com.google.appengine.api.users.UserService.federated_identity";
+
     /* Impl detail ... */
     public static final String REQUEST_END_LISTENERS = "com.google.appengine.tools.development.request_end_listeners";
     private static final String REQUEST_THREAD_FACTORY_ATTR = "com.google.appengine.api.ThreadManager.REQUEST_THREAD_FACTORY";
@@ -216,6 +221,10 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
                 }
             });
         }
+    }
+
+    public void setUserId(String userId) {
+        getAttributes().put(USER_ID_KEY, userId);
     }
 }
 
