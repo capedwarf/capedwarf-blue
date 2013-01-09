@@ -28,6 +28,7 @@ import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.IDatastoreServiceFactory;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -37,7 +38,7 @@ import org.kohsuke.MetaInfServices;
  */
 @MetaInfServices(FactoryProvider.class)
 @ServiceProvider(IDatastoreServiceFactory.class)
-public class CapedwarfDatastoreServiceFactoryProvider extends FactoryProvider<IDatastoreServiceFactory> {
+public class CapedwarfDatastoreServiceFactoryProvider extends CapedwarfFactoryProvider<IDatastoreServiceFactory> {
     private IDatastoreServiceFactory factory = new IDatastoreServiceFactory() {
         public DatastoreService getDatastoreService(DatastoreServiceConfig config) {
             return new CapedwarfDatastoreService(config);
