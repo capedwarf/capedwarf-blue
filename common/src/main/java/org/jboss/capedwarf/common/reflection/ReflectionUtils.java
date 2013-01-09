@@ -143,6 +143,17 @@ public final class ReflectionUtils {
      *
      * @param clazz      the class
      * @param methodName the method name
+     * @return method's return value
+     */
+    public static Object invokeStaticMethod(Class<?> clazz, String methodName) {
+        return invokeStaticMethod(clazz, methodName, EMPTY_CLASSES, EMPTY_ARGS);
+    }
+
+    /**
+     * Invoke static method.
+     *
+     * @param clazz      the class
+     * @param methodName the method name
      * @param type       the type
      * @param arg        the arg
      * @return method's return value

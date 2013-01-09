@@ -107,7 +107,7 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
     public Map<Key, Entity> get(final Transaction transaction, final Iterable<Key> keys) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
 
-        getDatastoreCallbacks().executePreGetCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(keys), map);
+        getDatastoreCallbacks().executePreGetCallbacks(this, Lists.newArrayList(keys), map);
 
         final List<Key> requiredKeys = Lists.newArrayList(keys);
         if (map.isEmpty() == false) {
@@ -121,7 +121,7 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
             }
         }
 
-        getDatastoreCallbacks().executePostLoadCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(map.values()));
+        getDatastoreCallbacks().executePostLoadCallbacks(this, Lists.newArrayList(map.values()));
 
         return map;
     }
@@ -139,7 +139,7 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
     }
 
     public List<Key> put(Transaction transaction, final Iterable<Entity> entities) {
-        getDatastoreCallbacks().executePrePutCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(entities));
+        getDatastoreCallbacks().executePrePutCallbacks(this, Lists.newArrayList(entities));
 
         final Runnable post = new Runnable() {
             public void run() {
@@ -163,7 +163,7 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
     }
 
     public void delete(final Transaction transaction, final Iterable<Key> keys) {
-        getDatastoreCallbacks().executePreDeleteCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(keys));
+        getDatastoreCallbacks().executePreDeleteCallbacks(this, Lists.newArrayList(keys));
 
         final Runnable post = new Runnable() {
             public void run() {

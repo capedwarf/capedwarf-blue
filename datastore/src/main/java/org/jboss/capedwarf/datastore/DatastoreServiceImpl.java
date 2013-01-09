@@ -142,19 +142,25 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     }
 
     public List<Key> put(Transaction tx, Iterable<Entity> entities, Runnable post) {
-        javax.transaction.Transaction transaction = beforeTx(tx);
+        final javax.transaction.Transaction current = CapedwarfTransaction.getTx();
+        TxTasks.begin(current);
         try {
-            List<Tuple> keyToEntityMap = new ArrayList<Tuple>();
-            for (Entity entity : entities) {
-                assignIdIfNeeded(entity);
-                Key key = entity.getKey();
-                EntityGroupTracker.trackKey(key);
-                keyToEntityMap.add(new Tuple(key, entityModifier.modify(entity)));
+            javax.transaction.Transaction transaction = beforeTx(tx);
+            try {
+                List<Tuple> keyToEntityMap = new ArrayList<Tuple>();
+                for (Entity entity : entities) {
+                    assignIdIfNeeded(entity);
+                    Key key = entity.getKey();
+                    EntityGroupTracker.trackKey(key);
+                    keyToEntityMap.add(new Tuple(key, entityModifier.modify(entity)));
+                }
+                putInTx(keyToEntityMap, post);
+                return Lists.transform(keyToEntityMap, FN);
+            } finally {
+                afterTx(transaction);
             }
-            putInTx(keyToEntityMap, post);
-            return Lists.transform(keyToEntityMap, FN);
         } finally {
-            afterTx(transaction);
+            TxTasks.end(current);
         }
     }
 
@@ -168,14 +174,20 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
 
     @Override
     public void delete(Transaction tx, Iterable<Key> keys, Runnable post) {
-        final javax.transaction.Transaction transaction = beforeTx(tx);
+        final javax.transaction.Transaction current = CapedwarfTransaction.getTx();
+        TxTasks.begin(current);
         try {
-            for (Key key : keys) {
-                EntityGroupTracker.trackKey(key);
+            final javax.transaction.Transaction transaction = beforeTx(tx);
+            try {
+                for (Key key : keys) {
+                    EntityGroupTracker.trackKey(key);
+                }
+                removeInTx(keys, post);
+            } finally {
+                afterTx(transaction);
             }
-            removeInTx(keys, post);
         } finally {
-            afterTx(transaction);
+            TxTasks.end(current);
         }
     }
 

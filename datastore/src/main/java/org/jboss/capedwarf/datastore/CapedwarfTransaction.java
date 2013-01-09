@@ -51,6 +51,9 @@ import org.jboss.capedwarf.environment.EnvironmentFactory;
 final class CapedwarfTransaction implements Transaction {
     private static final Logger log = Logger.getLogger(CapedwarfTransaction.class.getName());
 
+    private static final int asyncRetryCount = Integer.parseInt(System.getProperty("jboss.capedwarf.tx.asyncRetryCount", "10"));
+    private static final long asyncRetrySleep = Long.parseLong(System.getProperty("jboss.capedwarf.tx.asyncRetrySleep", "1000"));
+
     private final static TransactionManager tm = TxUtils.getTransactionManager();
     private final static ThreadLocal<Stack<CapedwarfTransaction>> current = new ThreadLocal<Stack<CapedwarfTransaction>>();
 
@@ -103,6 +106,10 @@ final class CapedwarfTransaction implements Transaction {
         } else {
             return null;
         }
+    }
+
+    static boolean isTxActive() {
+        return (getTxStatus() == Status.STATUS_ACTIVE);
     }
 
     static int getTxStatus() {
@@ -266,8 +273,12 @@ final class CapedwarfTransaction implements Transaction {
             public Void call() throws Exception {
                 resumeTx(tx);
                 try {
-                    tx.commit();
-                    return null;
+                    return finishAsync(tx, new Callable<Void>() {
+                        public Void call() throws Exception {
+                            tx.commit();
+                            return null;
+                        }
+                    });
                 } finally {
                     suspendTx();
                 }
@@ -299,8 +310,12 @@ final class CapedwarfTransaction implements Transaction {
             public Void call() throws Exception {
                 resumeTx(tx);
                 try {
-                    tx.rollback();
-                    return null;
+                    return finishAsync(tx, new Callable<Void>() {
+                        public Void call() throws Exception {
+                            tx.rollback();
+                            return null;
+                        }
+                    });
                 } finally {
                     suspendTx();
                 }
@@ -325,10 +340,28 @@ final class CapedwarfTransaction implements Transaction {
     }
 
     public boolean isActive() {
+        return isTxActive();
+    }
+
+    private static Void finishAsync(final javax.transaction.Transaction tx, final Callable<Void> callable) throws Exception {
         try {
-            return (tm.getStatus() == Status.STATUS_ACTIVE);
-        } catch (Exception e) {
-            throw new DatastoreFailureException("Cannot check tx status.", e);
+            int counter = asyncRetryCount;
+            while(counter > 0 && TxTasks.finished(tx) == false) {
+                counter--;
+                try {
+                    Thread.sleep(asyncRetrySleep);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
+                }
+            }
+            if (TxTasks.finished(tx)) {
+                return callable.call();
+            } else {
+                throw new IllegalStateException("Cannot execute tx operation, unfinished tasks for tx: " + tx);
+            }
+        } finally {
+            TxTasks.clear(tx); // clear anyway
         }
     }
 }

@@ -20,37 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.tx;
+package org.jboss.capedwarf.datastore;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import java.util.concurrent.Future;
 
 /**
- * Tx utils.
+ * Using impl details to async commit / rollback tx.
+ * e.g. expecting tx param to be of BaseTransaction instance
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public final class TxUtils {
-    private TxUtils() {
+@SuppressWarnings({"unchecked", "UnusedParameters"})
+final class AsyncTxHelper {
+    private static final String GET_TM = "getTransactionManager";
+    private static final String COMMIT_ASYNC = "commitAsync";
+
+    static Future<Void> commit(Object tx) {
+        /*
+        if (tx != null) {
+            try {
+                if (tx instanceof TransactionManager) {
+                    tx = ReflectionUtils.invokeStaticMethod(tx.getClass(), GET_TM);
+                }
+                return (Future<Void>) ReflectionUtils.invokeInstanceMethod(tx, COMMIT_ASYNC);
+            } catch (Exception ignore) {
+            }
+        }
+        */
+        return null;
     }
 
-    /**
-     * Get transaction manager.
-     *
-     * @return the transaction mananger
-     */
-    public static TransactionManager getTransactionManager() {
-        return JndiLookupUtils.lookup("tm.jndi.name", TransactionManager.class, "java:jboss/TransactionManager");
-    }
-
-    /**
-     * Get user transaction.
-     *
-     * @return the user transaction
-     */
-    public static UserTransaction getUserTransaction() {
-        return JndiLookupUtils.lookup("ut.jndi.name", UserTransaction.class, "java:jboss/UserTransaction");
+    static Future<Void> rollback(Object tx) {
+        return null;
     }
 }

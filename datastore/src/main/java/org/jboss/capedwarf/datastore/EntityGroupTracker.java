@@ -57,7 +57,7 @@ class EntityGroupTracker implements Synchronization {
             return null;
 
         final Transaction transaction = CapedwarfTransaction.getTx();
-        if (transaction == null)
+        if (ignoreTracking(transaction))
             return null; // do not track w/o Tx
 
         if (KindUtils.isSpecial(key.getKind()))
@@ -85,7 +85,7 @@ class EntityGroupTracker implements Synchronization {
             return;
 
         final Transaction transaction = CapedwarfTransaction.getTx();
-        if (transaction == null)
+        if (ignoreTracking(transaction))
             return; // nothing to check
 
         EntityGroupTracker egt = trackers.get(transaction);
@@ -97,6 +97,10 @@ class EntityGroupTracker implements Synchronization {
     private static boolean ignoreTracking() {
         Compatibility instance = Compatibility.getInstance();
         return instance.isEnabled(Compatibility.Feature.DISABLE_ENTITY_GROUPS);
+    }
+
+    private static boolean ignoreTracking(Transaction tx) {
+        return (tx == null);
     }
 
     private void registerSynchronization(Transaction tx) {

@@ -126,7 +126,7 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
     public Future<Map<Key, Entity>> get(final Transaction transaction, final Iterable<Key> keyIterable) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
 
-        getDatastoreCallbacks().executePreGetCallbacks(CapedwarfAsyncDatastoreService.this, Lists.newArrayList(keyIterable), map);
+        getDatastoreCallbacks().executePreGetCallbacks(this, Lists.newArrayList(keyIterable), map);
 
         final List<Key> requiredKeys = Lists.newArrayList(keyIterable);
         if (map.isEmpty() == false) {
@@ -170,7 +170,7 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
     }
 
     public Future<List<Key>> put(final Transaction transaction, final Iterable<Entity> entityIterable) {
-        getDatastoreCallbacks().executePrePutCallbacks(CapedwarfAsyncDatastoreService.this, Lists.newArrayList(entityIterable));
+        getDatastoreCallbacks().executePrePutCallbacks(this, Lists.newArrayList(entityIterable));
 
         final Runnable post = new Runnable() {
             public void run() {
@@ -207,7 +207,7 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
     }
 
     public Future<Void> delete(final Transaction transaction, final Iterable<Key> keyIterable) {
-        getDatastoreCallbacks().executePreDeleteCallbacks(CapedwarfAsyncDatastoreService.this, Lists.newArrayList(keyIterable));
+        getDatastoreCallbacks().executePreDeleteCallbacks(this, Lists.newArrayList(keyIterable));
 
         final Runnable post = new Runnable() {
             public void run() {
