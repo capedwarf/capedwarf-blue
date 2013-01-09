@@ -56,7 +56,7 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
     }
 
     public CapedwarfAsyncDatastoreService(DatastoreServiceConfig config) {
-        super(new DatastoreServiceImpl(config));
+        super(DatastoreServiceImpl.async(config));
     }
 
     protected static <T> Future<T> wrap(final Callable<T> callable) {

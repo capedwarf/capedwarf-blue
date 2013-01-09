@@ -61,6 +61,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
 
     private static final String SEQUENCE_POSTFIX = "_SEQUENCE__"; // GAE's SequenceGenerator impl detail
 
+    private final boolean async; // do we use async frontend
     private final EntityModifier entityModifier;
 
     public DatastoreServiceImpl() {
@@ -68,10 +69,19 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     }
 
     public DatastoreServiceImpl(DatastoreServiceConfig config) {
+        this(config, false);
+    }
+
+    private DatastoreServiceImpl(DatastoreServiceConfig config, boolean async) {
         super(config);
         Compatibility instance = Compatibility.getInstance();
         boolean enabled = instance.isEnabled(Compatibility.Feature.IGNORE_ENTITY_PROPERTY_CONVERSION);
         entityModifier = enabled ? CloningEntityModifier.INSTANCE : EntityModifierImpl.INSTANCE;
+        this.async = async;
+    }
+
+    public static DatastoreServiceInternal async(DatastoreServiceConfig config) {
+        return new DatastoreServiceImpl(config, true);
     }
 
     protected Map<String, Integer> getAllocationsMap() {
@@ -142,8 +152,11 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     }
 
     public List<Key> put(Transaction tx, Iterable<Entity> entities, Runnable post) {
-        final javax.transaction.Transaction current = CapedwarfTransaction.getTx();
-        TxTasks.begin(current);
+        javax.transaction.Transaction current = null;
+        if (async) {
+            current = CapedwarfTransaction.getTx();
+            TxTasks.begin(current);
+        }
         try {
             javax.transaction.Transaction transaction = beforeTx(tx);
             try {
@@ -160,7 +173,9 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
                 afterTx(transaction);
             }
         } finally {
-            TxTasks.end(current);
+            if (async) {
+                TxTasks.end(current);
+            }
         }
     }
 
@@ -174,8 +189,11 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
 
     @Override
     public void delete(Transaction tx, Iterable<Key> keys, Runnable post) {
-        final javax.transaction.Transaction current = CapedwarfTransaction.getTx();
-        TxTasks.begin(current);
+        javax.transaction.Transaction current = null;
+        if (async) {
+            current = CapedwarfTransaction.getTx();
+            TxTasks.begin(current);
+        }
         try {
             final javax.transaction.Transaction transaction = beforeTx(tx);
             try {
@@ -187,7 +205,9 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
                 afterTx(transaction);
             }
         } finally {
-            TxTasks.end(current);
+            if (async) {
+                TxTasks.end(current);
+            }
         }
     }
 
