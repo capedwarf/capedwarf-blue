@@ -87,12 +87,28 @@ public class CapedwarfURLFetchService implements URLFetchService {
     }
 
     public HTTPResponse fetch(final HTTPRequest httpRequest) throws IOException {
+        return fetch(httpRequest.getMethod().name(), toURI(httpRequest));
+    }
+
+    public Future<HTTPResponse> fetchAsync(URL url) {
+        return fetchAsync(new HTTPRequest(url));
+    }
+
+    public Future<HTTPResponse> fetchAsync(final HTTPRequest httpRequest) {
+        final String method = httpRequest.getMethod().name();
+        final URI uri = toURI(httpRequest);
+        return ExecutorFactory.wrap(new Callable<HTTPResponse>() {
+            public HTTPResponse call() throws Exception {
+                return fetch(method, uri);
+            }
+        });
+    }
+
+    protected HTTPResponse fetch(final String method, final URI uri) throws IOException {
         try {
             HttpUriRequest request = new HttpRequestBase() {
-                private URI uri = toURI(httpRequest);
-
                 public String getMethod() {
-                    return httpRequest.getMethod().name();
+                    return method;
                 }
 
                 public URI getURI() {
@@ -101,7 +117,7 @@ public class CapedwarfURLFetchService implements URLFetchService {
             };
             HttpResponse response = getClient().execute(request);
             HTTPResponseHack jhr = new HTTPResponseHack(response);
-            jhr.setFinalUrl(httpRequest.getURL()); // TODO -- OK?
+            jhr.setFinalUrl(uri.toURL()); // TODO -- OK?
             return jhr.getResponse();
         } catch (Exception e) {
             IOException ioe = new IOException();
@@ -129,17 +145,5 @@ public class CapedwarfURLFetchService implements URLFetchService {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
-    }
-
-    public Future<HTTPResponse> fetchAsync(URL url) {
-        return fetchAsync(new HTTPRequest(url));
-    }
-
-    public Future<HTTPResponse> fetchAsync(final HTTPRequest httpRequest) {
-        return ExecutorFactory.wrap(new Callable<HTTPResponse>() {
-            public HTTPResponse call() throws Exception {
-                return fetch(httpRequest);
-            }
-        });
     }
 }
