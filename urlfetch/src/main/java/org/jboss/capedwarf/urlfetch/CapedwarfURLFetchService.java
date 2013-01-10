@@ -26,9 +26,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 import com.google.appengine.api.backends.BackendService;
 import com.google.appengine.api.backends.BackendServiceFactory;
@@ -138,13 +136,10 @@ public class CapedwarfURLFetchService implements URLFetchService {
     }
 
     public Future<HTTPResponse> fetchAsync(final HTTPRequest httpRequest) {
-        FutureTask<HTTPResponse> task = new FutureTask<HTTPResponse>(new Callable<HTTPResponse>() {
+        return ExecutorFactory.wrap(new Callable<HTTPResponse>() {
             public HTTPResponse call() throws Exception {
                 return fetch(httpRequest);
             }
         });
-        Executor executor = ExecutorFactory.getInstance();
-        executor.execute(task);
-        return task;
     }
 }
