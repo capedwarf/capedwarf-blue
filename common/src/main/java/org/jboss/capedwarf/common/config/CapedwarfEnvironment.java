@@ -29,10 +29,13 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.backends.BackendService;
+import com.google.appengine.api.utils.SystemProperty;
 import com.google.apphosting.api.ApiProxy;
 
 /**
@@ -66,6 +69,8 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private CapedwarfConfiguration capedwarfConfiguration;
     private AppEngineWebXml appEngineWebXml;
     private QueueXml queueXml;
+    private Backends backends;
+
     private String baseApplicationUrl;
     private String secureBaseApplicationUrl;
 
@@ -75,6 +80,10 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
         // add thread factory
         attributes.put(REQUEST_THREAD_FACTORY_ATTR, LazyThreadFactory.INSTANCE);
         attributes.put(BACKGROUND_THREAD_FACTORY_ATTR, LazyThreadFactory.INSTANCE);
+    }
+
+    public boolean isProduction() {
+        return SystemProperty.environment.value() == SystemProperty.Environment.Value.Production;
     }
 
     public String getAppId() {
@@ -117,6 +126,13 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     }
 
     public Map<String, Object> getAttributes() {
+        if (isProduction() == false && attributes.containsKey(BackendService.DEVAPPSERVER_PORTMAPPING_KEY) == false) {
+            Map<String, String> portMap = new HashMap<String, String>();
+            for (Backends.Backend bb : backends.getBackends()) {
+                portMap.put(bb.getName(), getBaseApplicationUrl());
+            }
+            attributes.put(BackendService.DEVAPPSERVER_PORTMAPPING_KEY, portMap);
+        }
         return attributes;
     }
 
@@ -150,6 +166,14 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public void setQueueXml(QueueXml queueXml) {
         this.queueXml = queueXml;
+    }
+
+    public Backends getBackends() {
+        return backends;
+    }
+
+    public void setBackends(Backends backends) {
+        this.backends = backends;
     }
 
     public Collection<String> getAdmins() {
