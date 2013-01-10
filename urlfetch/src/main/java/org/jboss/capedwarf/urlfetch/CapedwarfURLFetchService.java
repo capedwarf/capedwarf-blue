@@ -24,13 +24,14 @@ package org.jboss.capedwarf.urlfetch;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
+import com.google.appengine.api.backends.BackendService;
+import com.google.appengine.api.backends.BackendServiceFactory;
 import com.google.appengine.api.urlfetch.HTTPRequest;
 import com.google.appengine.api.urlfetch.HTTPResponse;
 import com.google.appengine.api.urlfetch.URLFetchService;
@@ -50,6 +51,8 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
+import org.jboss.capedwarf.common.config.Backends;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 /**
@@ -88,16 +91,14 @@ public class CapedwarfURLFetchService implements URLFetchService {
     public HTTPResponse fetch(final HTTPRequest httpRequest) throws IOException {
         try {
             HttpUriRequest request = new HttpRequestBase() {
+                private URI uri = toURI(httpRequest);
+
                 public String getMethod() {
                     return httpRequest.getMethod().name();
                 }
 
                 public URI getURI() {
-                    try {
-                        return httpRequest.getURL().toURI();
-                    } catch (URISyntaxException e) {
-                        throw new IllegalStateException(e);
-                    }
+                    return uri;
                 }
             };
             HttpResponse response = getClient().execute(request);
@@ -108,6 +109,27 @@ public class CapedwarfURLFetchService implements URLFetchService {
             IOException ioe = new IOException();
             ioe.initCause(e);
             throw ioe;
+        }
+    }
+
+    protected URI toURI(HTTPRequest httpRequest) {
+        try {
+            URL url = httpRequest.getURL();
+            final String host = url.getHost();
+            CapedwarfEnvironment ce = CapedwarfEnvironment.getThreadLocalInstance();
+            for (Backends.Backend bb : ce.getBackends()) {
+                if (bb.getName().equals(host)) {
+                    BackendService bs = BackendServiceFactory.getBackendService();
+                    String address = bs.getBackendAddress(host);
+                    String urlString = url.toExternalForm();
+                    URL addressUrl = new URL(address);
+                    urlString = urlString.replace(host, addressUrl.getHost() + ":" + addressUrl.getPort() + addressUrl.getPath());
+                    return new URL(urlString).toURI();
+                }
+            }
+            return url.toURI();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
         }
     }
 

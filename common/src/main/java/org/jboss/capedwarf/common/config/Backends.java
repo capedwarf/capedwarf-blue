@@ -23,8 +23,8 @@
 package org.jboss.capedwarf.common.config;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public final class Backends implements Serializable {
+public final class Backends implements Serializable, Iterable<Backends.Backend> {
     private static final long serialVersionUID = 1L;
 
     private Map<String, Backend> backends = new LinkedHashMap<String, Backend>();
@@ -41,12 +41,12 @@ public final class Backends implements Serializable {
         return backends.get(name);
     }
 
-    protected void addBackend(Backend backend) {
-        backends.put(backend.getName(), backend);
+    public Iterator<Backend> iterator() {
+        return backends.values().iterator();
     }
 
-    protected Collection<Backend> getBackends() {
-        return backends.values();
+    protected void addBackend(Backend backend) {
+        backends.put(backend.getName(), backend);
     }
 
     public static enum Class {

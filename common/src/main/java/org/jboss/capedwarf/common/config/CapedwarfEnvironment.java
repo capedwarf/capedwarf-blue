@@ -128,7 +128,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     public Map<String, Object> getAttributes() {
         if (isProduction() == false && attributes.containsKey(BackendService.DEVAPPSERVER_PORTMAPPING_KEY) == false) {
             Map<String, String> portMap = new HashMap<String, String>();
-            for (Backends.Backend bb : backends.getBackends()) {
+            for (Backends.Backend bb : backends) {
                 portMap.put(bb.getName(), getBaseApplicationUrl());
             }
             attributes.put(BackendService.DEVAPPSERVER_PORTMAPPING_KEY, portMap);

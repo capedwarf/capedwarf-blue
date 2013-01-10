@@ -23,6 +23,7 @@
 package org.jboss.test.capedwarf.testsuite.config.test;
 
 import org.jboss.capedwarf.common.config.AppEngineWebXml;
+import org.jboss.capedwarf.common.config.Backends;
 import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.test.capedwarf.common.support.JBoss;
@@ -52,6 +53,7 @@ public class CapedwarfEnvironmentTestCase {
         config = new CapedwarfConfiguration();
         env = CapedwarfEnvironment.createThreadLocalInstance();
         env.setCapedwarfConfiguration(config);
+        env.setBackends(new Backends());
     }
 
     @After
