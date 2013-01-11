@@ -187,6 +187,16 @@ public class MapReduceTestCase extends AbstractMapReduceTest {
         cleanup();
     }
 
+    @Test @OperateOnDeployment("dep1") @InSequence(70)
+    public void waitToFinishA() throws Exception {
+        sync();
+    }
+
+    @Test @OperateOnDeployment("dep2") @InSequence(80)
+    public void waitToFinishB() throws Exception {
+        sync();
+    }
+
     protected static int[] toChars(List<String> payloads) {
         int[] chars = new int['z' - 'a' + 1];
         for (String payload : payloads) {
