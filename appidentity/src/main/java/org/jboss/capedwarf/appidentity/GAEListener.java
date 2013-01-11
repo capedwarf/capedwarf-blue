@@ -117,8 +117,12 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     }
 
     protected static void teardownInternal(ApiProxy.Delegate previous) {
-        ApiProxy.setDelegate(previous);
-        CapedwarfEnvironment.clearThreadLocalInstance();
+        try {
+            CapedwarfEnvironment.getThreadLocalInstance().checkGlobalTimeLimit();
+        } finally {
+            ApiProxy.setDelegate(previous);
+            CapedwarfEnvironment.clearThreadLocalInstance();
+        }
     }
 
     public void contextInitialized(ServletContextEvent sce) {

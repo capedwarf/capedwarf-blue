@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.utils.SystemProperty;
+import javassist.util.proxy.ProxyFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -108,7 +109,8 @@ public class BaseTest {
             throw new IllegalArgumentException("Null service!");
 
         // good enough?
-        return service.getClass().getName().contains(".jboss.");
+        final Class<?> aClass = service.getClass();
+        return ProxyFactory.isProxyClass(aClass) || aClass.getName().contains(".jboss.");
     }
 
     protected static boolean runningInsideDevAppEngine() {

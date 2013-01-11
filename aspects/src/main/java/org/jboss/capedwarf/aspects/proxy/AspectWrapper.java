@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,46 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.aspects.proxy;
 
-import com.google.appengine.api.quota.QuotaService;
-import javassist.CtClass;
-import javassist.CtMethod;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+
+import org.jboss.capedwarf.aspects.Aspect;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class QuotaFactoryTransformer extends JavassistTransformer {
-    protected void transform(CtClass clazz) throws Exception {
-        final CtMethod method = clazz.getDeclaredMethod("getQuotaService", new CtClass[]{});
-        method.setBody(toProxy(QuotaService.class, "new org.jboss.capedwarf.quota.CapedwarfQuotaService()"));
+final class AspectWrapper {
+    private Aspect aspect;
+    private Annotation annotation;
+
+    AspectWrapper(Aspect aspect, Annotation annotation) {
+        this.aspect = aspect;
+        this.annotation = annotation;
+    }
+
+    public int order() {
+        return aspect.order();
+    }
+
+    public Object invoke(AspectContext context) throws Exception {
+        return aspect.invoke(context);
+    }
+
+    public Annotation getAnnotation() {
+        return annotation;
+    }
+
+    public int hashCode() {
+        return aspect.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        if (obj instanceof AspectWrapper == false)
+            return false;
+
+        AspectWrapper other = (AspectWrapper) obj;
+        return aspect.equals(other.aspect);
     }
 }

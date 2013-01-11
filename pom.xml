@@ -18,6 +18,7 @@
     <modules>
         <module>admin</module>
         <module>appidentity</module>
+        <module>aspects</module>
         <module>bytecode</module>
         <module>common</module>
         <module>blobstore</module>
@@ -233,6 +234,13 @@
                 <artifactId>capedwarf-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-aspects</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-admin</artifactId>

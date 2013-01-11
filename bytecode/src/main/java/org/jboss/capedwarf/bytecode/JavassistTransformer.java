@@ -50,6 +50,10 @@ public abstract class JavassistTransformer implements ClassFileTransformer {
 
     protected abstract void transform(CtClass clazz) throws Exception;
 
+    protected String toProxy(Class<?> apiInterface, String apiImp) {
+        return "return org.jboss.capedwarf.aspects.proxy.AspectFactory.createProxy(" + apiInterface.getName() + ".class, " + apiImp + ");";
+    }
+
     /**
      * Get nested class.
      *

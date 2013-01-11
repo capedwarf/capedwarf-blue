@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.aspects;
 
-import com.google.appengine.api.quota.QuotaService;
-import javassist.CtClass;
-import javassist.CtMethod;
+import java.lang.annotation.Annotation;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class QuotaFactoryTransformer extends JavassistTransformer {
-    protected void transform(CtClass clazz) throws Exception {
-        final CtMethod method = clazz.getDeclaredMethod("getQuotaService", new CtClass[]{});
-        method.setBody(toProxy(QuotaService.class, "new org.jboss.capedwarf.quota.CapedwarfQuotaService()"));
+public abstract class AbstractAspect<T extends Annotation> implements Aspect<T> {
+    private Class<T> annotationClass;
+
+    protected AbstractAspect(Class<T> annotationClass) {
+        this.annotationClass = annotationClass;
+    }
+
+    public int order() {
+        return 0;
+    }
+
+    public Class<T> annotation() {
+        return annotationClass;
     }
 }

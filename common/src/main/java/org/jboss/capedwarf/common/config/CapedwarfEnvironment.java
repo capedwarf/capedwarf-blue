@@ -38,6 +38,7 @@ import com.google.appengine.api.backends.BackendService;
 import com.google.appengine.api.backends.BackendServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import com.google.apphosting.api.ApiProxy;
+import org.jboss.capedwarf.common.compatibility.Compatibility;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -62,6 +63,11 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private static final String DELIMITER = "://";
     private static final int DEFAULT_HTTP_PORT = 80;
 
+    private static final long GLOBAL_LIMIT = Long.parseLong(System.getProperty("jboss.capedwarf.globalLilmit", "60000"));
+
+    private final long requestStart;
+    private final boolean checkGlobalTimeLimit;
+
     private String email;
     private boolean isAdmin;
     private String authDomain;
@@ -76,6 +82,8 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private String secureBaseApplicationUrl;
 
     public CapedwarfEnvironment() {
+        requestStart = System.currentTimeMillis();
+        checkGlobalTimeLimit = Compatibility.getInstance().isEnabled(Compatibility.Feature.ENABLE_GLOBAL_TIME_LIMIT);
         // a bit of a workaround for LocalServiceTestHelper::tearDown NPE
         attributes.put(REQUEST_END_LISTENERS, new ArrayList());
         // add thread factory
@@ -95,6 +103,19 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
             }
         }
         return null;
+    }
+
+    public void checkGlobalTimeLimit() {
+        if (checkGlobalTimeLimit) {
+            checkTimeLimit(requestStart, GLOBAL_LIMIT);
+        }
+    }
+
+    public void checkTimeLimit(long start, long limit) {
+        long current = System.currentTimeMillis();
+        long diff = current - start;
+        if (diff > limit)
+            throw new IllegalStateException("Execution taking too long: " + diff);
     }
 
     public String getAppId() {
