@@ -38,7 +38,9 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.apphosting.api.ApiProxy;
 import org.hibernate.search.query.engine.spi.TimeoutExceptionFactory;
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.context.Flag;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
@@ -62,7 +64,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
 
     protected final Logger log = Logger.getLogger(getClass().getName());
     protected final String appId;
-    protected final Cache<Key, Entity> store;
+    protected final AdvancedCache<Key, Entity> store;
     protected final SearchManager searchManager;
     private final QueryConverter queryConverter;
     private DatastoreServiceConfig config;
@@ -93,7 +95,14 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         this.appId = Application.getAppId();
         final ClassLoader classLoader = Application.getAppClassloader();
         this.config = (config == null ? withDefaults(classLoader) : config);
-        this.store = createStore().getAdvancedCache().with(classLoader);
+
+        AdvancedCache<Key, Entity> ac = createStore().getAdvancedCache().with(classLoader);
+        if (SyncHack.forceSync()) {
+            store = ac.withFlags(Flag.FORCE_SYNCHRONOUS);
+        } else {
+            store = ac;
+        }
+
         this.searchManager = Search.getSearchManager(store);
         this.searchManager.setTimeoutExceptionFactory(new TimeoutExceptionFactory() {
             public RuntimeException createTimeoutException(String message, org.apache.lucene.search.Query query) {
