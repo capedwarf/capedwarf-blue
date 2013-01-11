@@ -35,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.backends.BackendService;
+import com.google.appengine.api.backends.BackendServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import com.google.apphosting.api.ApiProxy;
 
@@ -84,6 +85,16 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public boolean isProduction() {
         return SystemProperty.environment.value() == SystemProperty.Environment.Value.Production;
+    }
+
+    public String getBackendAddress(String backend) {
+        for (Backends.Backend bb : backends) {
+            if (bb.matches(backend)) {
+                BackendService bs = BackendServiceFactory.getBackendService();
+                return bs.getBackendAddress(backend);
+            }
+        }
+        return null;
     }
 
     public String getAppId() {

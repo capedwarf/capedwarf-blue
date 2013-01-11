@@ -28,8 +28,6 @@ import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import com.google.appengine.api.backends.BackendService;
-import com.google.appengine.api.backends.BackendServiceFactory;
 import com.google.appengine.api.urlfetch.HTTPRequest;
 import com.google.appengine.api.urlfetch.HTTPResponse;
 import com.google.appengine.api.urlfetch.URLFetchService;
@@ -49,7 +47,6 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
-import org.jboss.capedwarf.common.config.Backends;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
@@ -131,15 +128,12 @@ public class CapedwarfURLFetchService implements URLFetchService {
             URL url = httpRequest.getURL();
             final String host = url.getHost();
             CapedwarfEnvironment ce = CapedwarfEnvironment.getThreadLocalInstance();
-            for (Backends.Backend bb : ce.getBackends()) {
-                if (bb.getName().equals(host)) {
-                    BackendService bs = BackendServiceFactory.getBackendService();
-                    String address = bs.getBackendAddress(host);
-                    String urlString = url.toExternalForm();
-                    URL addressUrl = new URL(address);
-                    urlString = urlString.replace(host, addressUrl.getHost() + ":" + addressUrl.getPort() + addressUrl.getPath());
-                    return new URL(urlString).toURI();
-                }
+            String address = ce.getBackendAddress(host); // try host as backend name
+            if (address != null) {
+                String urlString = url.toExternalForm();
+                URL addressUrl = new URL(address);
+                urlString = urlString.replace(host, addressUrl.getHost() + ":" + addressUrl.getPort() + addressUrl.getPath());
+                return new URL(urlString).toURI();
             }
             return url.toURI();
         } catch (Exception e) {

@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -65,6 +66,19 @@ public final class Backends implements Serializable, Iterable<Backends.Backend> 
         private int instances = 1;
         private int maxConcurrentRequests;
         private Set<Options> options = Collections.emptySet();
+
+        private volatile Pattern pattern;
+
+        private Pattern getPattern() {
+            if (pattern == null) {
+                pattern = Pattern.compile(name + "|[0-9]+\\." + name);
+            }
+            return pattern;
+        }
+
+        public boolean matches(String backend) {
+            return getPattern().matcher(backend).matches();
+        }
 
         public String getName() {
             return name;
