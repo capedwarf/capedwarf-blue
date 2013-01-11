@@ -45,12 +45,13 @@ import org.jboss.capedwarf.datastore.CapedwarfDatastoreService;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class RemoteApiServlet extends HttpServlet {
+    private DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Compatibility.enable(Compatibility.Feature.IGNORE_LOGGING);
         try {
-            CapedwarfDatastoreService datastore = (CapedwarfDatastoreService) DatastoreServiceFactory.getDatastoreService();
+            CapedwarfDatastoreService datastore = (CapedwarfDatastoreService) datastoreService;
             DataOutputStream out = new DataOutputStream(resp.getOutputStream());
             try {
                 Iterator<Entity> entities = datastore.getAllEntitiesIterator();
@@ -77,7 +78,6 @@ public class RemoteApiServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         DataInputStream in = new DataInputStream(req.getInputStream());
         try {
             while (true) {
@@ -91,7 +91,7 @@ public class RemoteApiServlet extends HttpServlet {
                 in.readFully(pbBytes, 0, arrayLength);
 
                 Entity entity = EntityTranslator.createFromPbBytes(pbBytes);
-                datastore.put(entity);
+                datastoreService.put(entity);
             }
         } finally {
             in.close();

@@ -22,25 +22,25 @@
 
 package org.jboss.capedwarf.admin;
 
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.KeyFactory;
-
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.KeyFactory;
 
 /**
  * @author Marko Luksa
  */
 @Named("datastoreEntity")
 @RequestScoped
-public class DatastoreEntityViewer {
+public class DatastoreEntityViewer extends DatastoreHolder {
 
     @Inject @HttpParam
     private String key;
@@ -55,7 +55,7 @@ public class DatastoreEntityViewer {
 
     public List<Map.Entry<String, Object>> getProperties() {
         try {
-            Entity entity = DatastoreServiceFactory.getDatastoreService().get(KeyFactory.stringToKey(getKey()));
+            Entity entity = getDatastore().get(KeyFactory.stringToKey(getKey()));
             return new ArrayList<Map.Entry<String, Object>>(entity.getProperties().entrySet());
         } catch (EntityNotFoundException e) {
             return Collections.emptyList();

@@ -26,9 +26,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import com.google.appengine.api.channel.ChannelServiceFactory;
+import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
@@ -40,17 +40,17 @@ import org.jboss.capedwarf.channel.CapedwarfChannelService;
  */
 public class ChannelManager {
 
-    private final Logger log = Logger.getLogger(getClass().getName());
-
     public static final String CHANNEL_ENTITY_KIND = "Channel";
     public static final String PROPERTY_CLIENT_ID = "clientId";
     public static final String PROPERTY_EXPIRATION_TIME = "expirationTime";
     public static final String PROPERTY_TOKEN = "token";
 
+    private DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+
     public Channel createChannel(String clientId, int durationMinutes) {
         Channel channel = new Channel(clientId, toExpirationTime(durationMinutes), generateToken());
         Entity entity = channelToEntity(channel);
-        DatastoreServiceFactory.getDatastoreService().put(entity);
+        datastoreService.put(entity);
         return channel;
     }
 
@@ -79,7 +79,7 @@ public class ChannelManager {
 
     public Set<Channel> getChannels(String clientId) {
         Query query = new Query(CHANNEL_ENTITY_KIND).setFilter(new Query.FilterPredicate(PROPERTY_CLIENT_ID, Query.FilterOperator.EQUAL, clientId));
-        List<Entity> entities = DatastoreServiceFactory.getDatastoreService().prepare(query).asList(FetchOptions.Builder.withDefaults());
+        List<Entity> entities = datastoreService.prepare(query).asList(FetchOptions.Builder.withDefaults());
         Set<Channel> set = new HashSet<Channel>();
         for (Entity entity : entities) {
             set.add(entityToChannel(entity));
@@ -92,7 +92,7 @@ public class ChannelManager {
             throw new NullPointerException("token should not be null");
         }
         Query query = new Query(CHANNEL_ENTITY_KIND).setFilter(new Query.FilterPredicate(PROPERTY_TOKEN, Query.FilterOperator.EQUAL, token));
-        Entity entity = DatastoreServiceFactory.getDatastoreService().prepare(query).asSingleEntity();
+        Entity entity = datastoreService.prepare(query).asSingleEntity();
         if (entity == null) {
             throw new NoSuchChannelException("No channel with token " + token);
         }

@@ -35,8 +35,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.google.appengine.api.NamespaceManager;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
@@ -49,7 +47,7 @@ import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
  */
 @Named("datastoreViewer")
 @RequestScoped
-public class DatastoreViewer {
+public class DatastoreViewer extends DatastoreHolder {
 
     @Inject @HttpParam
     private String selectedNamespace = "";
@@ -83,10 +81,6 @@ public class DatastoreViewer {
         List<String> list = new ArrayList<String>(set);
         Collections.sort(list);
         return list;
-    }
-
-    private DatastoreService getDatastore() {
-        return DatastoreServiceFactory.getDatastoreService();
     }
 
     public List<Row> getRows() {

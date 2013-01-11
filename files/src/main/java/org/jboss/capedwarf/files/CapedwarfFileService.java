@@ -66,6 +66,8 @@ public class CapedwarfFileService implements FileService {
     private static final String DEFAULT_MIME_TYPE = "application/octet-stream";
     private static final String KIND_TEMP_BLOB_INFO = "__BlobInfo_temp__";
 
+    private DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+
     public AppEngineFile createNewBlobFile(String mimeType) throws IOException {
         return createNewBlobFile(mimeType, "");
     }
@@ -86,7 +88,6 @@ public class CapedwarfFileService implements FileService {
         String origNamespace = NamespaceManager.get();
         NamespaceManager.set("");
         try {
-            DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
             Entity tempBlobInfo = new Entity(getTempBlobInfoKey(file));
             tempBlobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, contentType);
             tempBlobInfo.setProperty(BlobInfoFactory.CREATION, creationTimestamp);
@@ -105,7 +106,6 @@ public class CapedwarfFileService implements FileService {
         String origNamespace = NamespaceManager.get();
         NamespaceManager.set("");
         try {
-            DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
             Entity tempBlobInfo;
             try {
                 tempBlobInfo = datastoreService.get(getTempBlobInfoKey(file));
@@ -242,7 +242,6 @@ public class CapedwarfFileService implements FileService {
 
     protected Entity getFileInfo(Key key) {
         try {
-            DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
             return datastoreService.get(key);
         } catch (EntityNotFoundException e) {
             return null;

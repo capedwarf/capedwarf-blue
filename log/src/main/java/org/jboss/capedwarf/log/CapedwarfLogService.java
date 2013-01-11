@@ -75,6 +75,8 @@ public class CapedwarfLogService implements LogService, Logable {
 
     private boolean ignoreLogging = Compatibility.getInstance().isEnabled(Compatibility.Feature.IGNORE_LOGGING);
 
+    private DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+
     public Iterable<RequestLogs> fetch(LogQuery logQuery) {
         String ns = NamespaceManager.get();
         NamespaceManager.set("");
@@ -114,7 +116,7 @@ public class CapedwarfLogService implements LogService, Logable {
         Query query = createRequestLogsQuery(logQuery);
         FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
 
-        List<Entity> entities = DatastoreServiceFactory.getDatastoreService().prepare(query).asList(fetchOptions);
+        List<Entity> entities = datastoreService.prepare(query).asList(fetchOptions);
         for (Entity entity : entities) {
             RequestLogs requestLogs = new RequestLogs();
             Long startTimeUsec = (Long) entity.getProperty(LOG_REQUEST_START_TIME_MILLIS);
@@ -164,7 +166,7 @@ public class CapedwarfLogService implements LogService, Logable {
         Query query = createAppLogLinesQuery(logQuery);
         FetchOptions fetchOptions = createAppLogFetchOptions(logQuery);
 
-        List<Entity> entities = DatastoreServiceFactory.getDatastoreService().prepare(query).asList(fetchOptions);
+        List<Entity> entities = datastoreService.prepare(query).asList(fetchOptions);
         for (Entity entity : entities) {
             AppLogLine logLine = new AppLogLine();
             logLine.setLogLevel(LogLevel.values()[((Number) entity.getProperty(LOG_LINE_LEVEL)).intValue()]);
@@ -222,7 +224,7 @@ public class CapedwarfLogService implements LogService, Logable {
             entity.setProperty(LOG_LINE_MESSAGE, record.getMessage()); // TODO: format message
             entity.setProperty(LOG_LINE_REQUEST_KEY, getRequestEntityKey(request));
 
-            DatastoreServiceFactory.getDatastoreService().put(entity); // TODO -- async
+            datastoreService.put(entity); // TODO -- async
         } finally {
             NamespaceManager.set(ns);
         }
@@ -257,7 +259,7 @@ public class CapedwarfLogService implements LogService, Logable {
             entity.setProperty(LOG_REQUEST_USER_AGENT, request.getHeader("User-Agent"));
         }
 
-        Key key = DatastoreServiceFactory.getDatastoreService().put(entity);
+        Key key = datastoreService.put(entity);
         servletRequest.setAttribute(LOG_REQUEST_ENTITY_REQUEST_ATTRIBUTE, entity);
 
         CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
@@ -285,11 +287,10 @@ public class CapedwarfLogService implements LogService, Logable {
     }
 
     public void clearLog() {
-        final DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
         Query query = new Query(LOG_LINE_ENTITY_KIND).setKeysOnly();
-        Iterable<Entity> entities = ds.prepare(query).asIterable();
+        Iterable<Entity> entities = datastoreService.prepare(query).asIterable();
         for (Entity entity : entities) {
-            ds.delete(entity.getKey());
+            datastoreService.delete(entity.getKey());
         }
     }
 }

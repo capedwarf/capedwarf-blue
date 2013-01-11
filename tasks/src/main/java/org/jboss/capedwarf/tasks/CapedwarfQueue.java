@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.taskqueue.LeaseOptions;
@@ -75,6 +76,7 @@ public class CapedwarfQueue implements Queue {
     private final String queueName;
     private final Cache<String, Object> tasks;
     private final SearchManager searchManager;
+    private final DatastoreService datastoreService;
 
     public static Queue getQueue(String queueName) {
         return new CapedwarfQueue(queueName); // do not cache
@@ -94,6 +96,8 @@ public class CapedwarfQueue implements Queue {
         AdvancedCache<String,Object> ac = getCache().getAdvancedCache();
         this.tasks = ac.with(Application.getAppClassloader());
         this.searchManager = Search.getSearchManager(tasks);
+
+        this.datastoreService = DatastoreServiceFactory.getDatastoreService();
     }
 
     private Cache<String, Object> getCache() {
@@ -108,8 +112,8 @@ public class CapedwarfQueue implements Queue {
         return new TasksMessageCreator(queueName, taskOptions);
     }
 
-    protected static Transaction getCurrentTransaction() {
-        return DatastoreServiceFactory.getDatastoreService().getCurrentTransaction(null);
+    protected Transaction getCurrentTransaction() {
+        return datastoreService.getCurrentTransaction(null);
     }
 
     protected static String toJmsId(final String name) {

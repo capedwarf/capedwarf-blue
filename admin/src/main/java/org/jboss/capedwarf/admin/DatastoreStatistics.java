@@ -32,8 +32,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.google.appengine.api.NamespaceManager;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
@@ -50,7 +48,7 @@ import static org.jboss.capedwarf.admin.NumberFormatter.formatCount;
 @Named("datastoreStatistics")
 @RequestScoped
 @SuppressWarnings("UnusedDeclaration")
-public class DatastoreStatistics {
+public class DatastoreStatistics extends DatastoreHolder {
 
     public static final String ALL_NAMESPACES = "!";
 
@@ -162,11 +160,6 @@ public class DatastoreStatistics {
             return namespaceService.getKindsPerNamespace(getSelectedNamespace());
         }
     }
-
-    private DatastoreService getDatastore() {
-        return DatastoreServiceFactory.getDatastoreService();
-    }
-
 
     public static class Column {
         private long bytes;
