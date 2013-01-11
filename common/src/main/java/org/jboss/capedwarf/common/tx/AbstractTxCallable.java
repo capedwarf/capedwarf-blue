@@ -22,10 +22,13 @@
 
 package org.jboss.capedwarf.common.tx;
 
+import java.util.concurrent.Callable;
+
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import java.util.concurrent.Callable;
+
+import org.jboss.capedwarf.common.util.Util;
 
 /**
  * Abstract tx callable.
@@ -60,7 +63,7 @@ public abstract class AbstractTxCallable<R> implements Callable<R> {
                 return callInTx();
             } catch (Throwable t) {
                 error = true;
-                throw toRuntimeException(t);
+                throw Util.toRuntimeException(t);
             } finally {
                 if (useNewTx || previous == null) {
                     if (error || tm.getStatus() == Status.STATUS_MARKED_ROLLBACK)
@@ -73,9 +76,5 @@ public abstract class AbstractTxCallable<R> implements Callable<R> {
             if (useNewTx && previous != null)
                 tm.resume(previous);
         }
-    }
-
-    protected static RuntimeException toRuntimeException(Throwable t) {
-        return (t instanceof RuntimeException) ? (RuntimeException) t : new RuntimeException(t);
     }
 }

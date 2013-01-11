@@ -34,6 +34,16 @@ public final class Util {
     }
 
     /**
+     * To RuntimeException.
+     *
+     * @param t exception
+     * @return t if t is RuntimeException already, else wrap t into RuntimeException
+     */
+    public static RuntimeException toRuntimeException(Throwable t) {
+        return (t instanceof RuntimeException) ? (RuntimeException) t : new RuntimeException(t);
+    }
+
+    /**
      * Check value for null, return default if true.
      *
      * @param value the value to check
@@ -55,7 +65,7 @@ public final class Util {
         try {
             return future.get();
         } catch (Exception e) {
-            throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
+            throw toRuntimeException(e);
         }
     }
 }

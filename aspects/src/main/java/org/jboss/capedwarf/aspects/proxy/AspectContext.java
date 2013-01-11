@@ -39,16 +39,12 @@ public final class AspectContext {
         this.aspects = AspectRegistry.findAspects(info);
     }
 
-    public Object proceed() {
-        try {
-            if (index == aspects.length) {
-                Method method = info.getMethod();
-                return method.invoke(info.getApiImpl(), info.getParams());
-            } else {
-                return aspects[index++].invoke(this);
-            }
-        } catch (Exception e) {
-            throw (e instanceof RuntimeException ? (RuntimeException) e : new RuntimeException(e));
+    public Object proceed() throws Exception {
+        if (index == aspects.length) {
+            Method method = info.getMethod();
+            return method.invoke(info.getApiImpl(), info.getParams());
+        } else {
+            return aspects[index++].invoke(this);
         }
     }
 

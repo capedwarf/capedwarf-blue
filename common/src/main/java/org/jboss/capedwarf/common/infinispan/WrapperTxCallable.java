@@ -22,9 +22,10 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
-import org.infinispan.Cache;
-
 import java.util.concurrent.Callable;
+
+import org.infinispan.Cache;
+import org.jboss.capedwarf.common.util.Util;
 
 /**
  * Wrapper Tx callable.
@@ -49,7 +50,7 @@ public class WrapperTxCallable<K, V, R> extends BaseTxCallable<K, V, R> {
         try {
             return super.call();
         } catch (Exception e) {
-            throw toRuntimeException(e);
+            throw Util.toRuntimeException(e);
         }
     }
 
