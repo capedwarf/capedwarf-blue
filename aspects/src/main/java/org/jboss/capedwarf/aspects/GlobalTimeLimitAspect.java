@@ -22,15 +22,25 @@
 
 package org.jboss.capedwarf.aspects;
 
-import java.lang.annotation.Annotation;
-
 import org.jboss.capedwarf.aspects.proxy.AspectContext;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public interface Aspect<T extends Annotation> {
-    int priority();
-    Class<T> annotation();
-    Object invoke(AspectContext context) throws Exception;
+public class GlobalTimeLimitAspect extends AbstractAspect<TimeLimit> {
+    public GlobalTimeLimitAspect() {
+        super(TimeLimit.class);
+    }
+
+    public int priority() {
+        return Integer.MAX_VALUE;
+    }
+
+    public Object invoke(AspectContext context) throws Exception {
+        CapedwarfEnvironment ce = CapedwarfEnvironment.getThreadLocalInstance();
+        ce.checkGlobalTimeLimit(); // always check global limit
+
+        return context.proceed();
+    }
 }

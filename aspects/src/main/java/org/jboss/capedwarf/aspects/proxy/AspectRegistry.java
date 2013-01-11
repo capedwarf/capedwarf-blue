@@ -38,7 +38,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.capedwarf.aspects.Aspect;
 import org.jboss.capedwarf.aspects.AspectAdapter;
-import org.jboss.capedwarf.aspects.TimeLimitAspect;
+import org.jboss.capedwarf.aspects.GlobalTimeLimitAspect;
+import org.jboss.capedwarf.aspects.InvocationTimeLimitAspect;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -51,11 +52,14 @@ final class AspectRegistry {
     private static final Map<Class<? extends Annotation>, Aspect> aspectsPerAnnotation = new HashMap<Class<? extends Annotation>, Aspect>();
 
     static {
-        addDefaultAspect(new TimeLimitAspect(), TimeLimitAspect.limit());
+        // default aspects
+        addDefaultAspect(new GlobalTimeLimitAspect());
+        // per annotation aspects
+        addAspect(new InvocationTimeLimitAspect());
     }
 
-    public static <T extends Annotation> void addDefaultAspect(Aspect<T> aspect, T annotation) {
-        defaultAspects.add(new AspectWrapper(aspect, annotation));
+    public static <T extends Annotation> void addDefaultAspect(Aspect<T> aspect) {
+        defaultAspects.add(new AspectWrapper(aspect));
     }
 
     public static <T extends Annotation> void addAspect(Aspect<T> aspect) {
@@ -146,7 +150,7 @@ final class AspectRegistry {
 
     private static class AspectWrapperComparator implements Comparator<AspectWrapper> {
         public int compare(AspectWrapper a1, AspectWrapper a2) {
-            return a2.order() - a1.order();
+            return a2.priority() - a1.priority();
         }
     }
 }

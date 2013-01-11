@@ -63,7 +63,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private static final String DELIMITER = "://";
     private static final int DEFAULT_HTTP_PORT = 80;
 
-    private static final long GLOBAL_LIMIT = Long.parseLong(System.getProperty("jboss.capedwarf.globalLilmit", "60000"));
+    private static final long GLOBAL_TIME_LIMIT = Long.parseLong(System.getProperty("jboss.capedwarf.globalTimeLimit", "60000"));
 
     private final long requestStart;
     private final boolean checkGlobalTimeLimit;
@@ -107,7 +107,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public void checkGlobalTimeLimit() {
         if (checkGlobalTimeLimit) {
-            checkTimeLimit(requestStart, GLOBAL_LIMIT);
+            checkTimeLimit(requestStart, GLOBAL_TIME_LIMIT);
         }
     }
 

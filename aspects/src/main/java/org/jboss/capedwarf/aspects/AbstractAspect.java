@@ -34,7 +34,7 @@ public abstract class AbstractAspect<T extends Annotation> implements Aspect<T> 
         this.annotationClass = annotationClass;
     }
 
-    public int order() {
+    public int priority() {
         return 0;
     }
 

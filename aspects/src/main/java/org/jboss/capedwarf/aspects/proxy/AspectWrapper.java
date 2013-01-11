@@ -23,7 +23,6 @@
 package org.jboss.capedwarf.aspects.proxy;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
 import org.jboss.capedwarf.aspects.Aspect;
 
@@ -34,13 +33,17 @@ final class AspectWrapper {
     private Aspect aspect;
     private Annotation annotation;
 
+    AspectWrapper(Aspect aspect) {
+        this(aspect, null);
+    }
+
     AspectWrapper(Aspect aspect, Annotation annotation) {
         this.aspect = aspect;
         this.annotation = annotation;
     }
 
-    public int order() {
-        return aspect.order();
+    public int priority() {
+        return aspect.priority();
     }
 
     public Object invoke(AspectContext context) throws Exception {
