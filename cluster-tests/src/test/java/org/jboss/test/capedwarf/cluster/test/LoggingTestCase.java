@@ -1,12 +1,14 @@
 package org.jboss.test.capedwarf.cluster.test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.lang.reflect.Method;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
+import com.google.appengine.api.log.AppLogLine;
+import com.google.appengine.api.log.LogQuery;
+import com.google.appengine.api.log.LogService;
+import com.google.appengine.api.log.LogServiceFactory;
+import com.google.appengine.api.log.RequestLogs;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -20,11 +22,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import com.google.appengine.api.log.AppLogLine;
-import com.google.appengine.api.log.LogQuery;
-import com.google.appengine.api.log.LogService;
-import com.google.appengine.api.log.LogServiceFactory;
-import com.google.appengine.api.log.RequestLogs;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Matej Lazar
@@ -73,8 +72,17 @@ public class LoggingTestCase extends BaseTest {
     @InSequence(1000)
     @Test
     @OperateOnDeployment("dep1")
-    public void shuttingDown() {
+    public void shuttingDown1() {
         //dummy test: waiting server to shutdown
+        sync();
+    }
+
+    @InSequence(2000)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void shuttingDown2() {
+        //dummy test: waiting server to shutdown
+        sync();
     }
 
     protected void clear(LogService service) {
