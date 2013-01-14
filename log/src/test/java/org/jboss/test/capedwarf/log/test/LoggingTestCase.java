@@ -29,6 +29,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -40,9 +41,16 @@ import org.junit.runner.RunWith;
 @Category(All.class)
 public class LoggingTestCase extends AbstractLoggingTest {
 
+    private Logger log;
+
     @Deployment
     public static WebArchive getDeployment() {
         return getDefaultDeployment(newTestContext());
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        log = Logger.getLogger(LoggingTestCase.class.getName());
     }
 
     @Test
@@ -50,7 +58,6 @@ public class LoggingTestCase extends AbstractLoggingTest {
         String text = "hello_testLogging";
         assertLogDoesntContain(text);
 
-        Logger log = Logger.getLogger(LoggingTestCase.class.getName());
         log.info(text);
         flush(log);
 
@@ -64,7 +71,6 @@ public class LoggingTestCase extends AbstractLoggingTest {
 
         NamespaceManager.set("some-namespace");
         try {
-            Logger log = Logger.getLogger(LoggingTestCase.class.getName());
             log.info(text);
             flush(log);
         } finally {
