@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.logging.Logger;
 
+import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import javassist.util.proxy.ProxyFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -113,8 +114,9 @@ public class BaseTest {
         return ProxyFactory.isProxyClass(aClass) || aClass.getName().contains(".jboss.");
     }
 
-    protected static boolean runningInsideDevAppEngine() {
-        return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
+    protected boolean isRunningInsideGaeDevServer() {
+        return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development
+            && isJBossImpl(LogServiceFactory.getLogService()) == false;
     }
 
     protected static void sync() {

@@ -27,7 +27,6 @@ import java.util.logging.Logger;
 
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.log.AppLogLine;
-import com.google.appengine.api.log.LogServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -89,7 +88,7 @@ public class LoggingTestCase extends AbstractLoggingTest {
     @Test
     public void testLogMessageIsFormatted() {
         // GAE dev server doesn't handle this properly (see http://code.google.com/p/googleappengine/issues/detail?id=8666)
-        if (runningInsideDevAppEngine() && !isJBossImpl(LogServiceFactory.getLogService())) {
+        if (isRunningInsideGaeDevServer()) {
             return;
         }
         log.log(Level.INFO, "Parameterized message with params {0} and {1}", new Object[] {"param1", 222});

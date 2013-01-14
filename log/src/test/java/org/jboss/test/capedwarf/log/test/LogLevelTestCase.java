@@ -22,13 +22,10 @@
 
 package org.jboss.test.capedwarf.log.test;
 
-import java.util.Arrays;
 import java.util.logging.Logger;
 
-import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.LogServiceFactory;
-import com.google.appengine.api.log.RequestLogs;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -38,9 +35,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -82,7 +76,7 @@ public class LogLevelTestCase extends AbstractLoggingTest {
 
         // we can't test the following on dev appserver, because it returns incorrect logLevels
         // more info at http://code.google.com/p/googleappengine/issues/detail?id=8651
-        if (!runningInsideDevAppEngine() || isJBossImpl(service)) {
+        if (!isRunningInsideGaeDevServer()) {
             assertLogContains("info_testLogLevelMatches", LogService.LogLevel.INFO);
             assertLogContains("warning_testLogLevelMatches", LogService.LogLevel.WARN);
             assertLogContains("severe_testLogLevelMatches", LogService.LogLevel.ERROR);
