@@ -89,9 +89,6 @@ public class CapedwarfLogService implements LogService, Logable {
                 if (logQuery.getIncludeAppLogs()) {
                     fetchAppLogLines(logQuery, map);
                 }
-                if (logQuery.getMinLogLevel() != null) {
-                    removeRequestsWithNoLogLines(list);
-                }
                 return list;
             } finally {
                 Compatibility.disable(Compatibility.Feature.DISABLE_QUERY_INEQUALITY_FILTER_CHECK);
@@ -182,9 +179,6 @@ public class CapedwarfLogService implements LogService, Logable {
         List<Query.Filter> filters = new ArrayList<Query.Filter>();
 
         Query query = new Query(LOG_LINE_ENTITY_KIND);
-        if (logQuery.getMinLogLevel() != null) {
-            filters.add(new Query.FilterPredicate(LOG_LINE_LEVEL, Query.FilterOperator.GREATER_THAN_OR_EQUAL, logQuery.getMinLogLevel().ordinal()));
-        }
         if (logQuery.getStartTimeUsec() != null) {
             filters.add(new Query.FilterPredicate(LOG_LINE_MILLIS, Query.FilterOperator.GREATER_THAN_OR_EQUAL, logQuery.getStartTimeUsec()));
         }
