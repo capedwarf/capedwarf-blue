@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.log;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -212,13 +213,14 @@ public class CapedwarfLogService implements LogService, Logable {
             CapedwarfDelegate capedwarfDelegate = CapedwarfDelegate.INSTANCE;
             ServletRequest request = capedwarfDelegate.getServletRequest();
             LogLevel logLevel = getLogLevel(record);
+            String formattedMessage = new MessageFormat(record.getMessage()).format(record.getParameters());
 
             Entity entity = new Entity(LOG_LINE_ENTITY_KIND);
             entity.setProperty(LOG_LINE_LOGGER, record.getLoggerName());
             entity.setProperty(LOG_LINE_LEVEL, logLevel.ordinal());
             entity.setProperty(LOG_LINE_MILLIS, record.getMillis());
             entity.setProperty(LOG_LINE_THROWN, record.getThrown());
-            entity.setProperty(LOG_LINE_MESSAGE, record.getMessage()); // TODO: format message
+            entity.setProperty(LOG_LINE_MESSAGE, formattedMessage);
             entity.setProperty(LOG_LINE_REQUEST_KEY, getRequestEntityKey(request));
 
             datastoreService.put(entity); // TODO -- async

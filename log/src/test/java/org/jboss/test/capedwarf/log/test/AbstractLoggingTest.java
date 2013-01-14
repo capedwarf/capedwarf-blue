@@ -106,10 +106,10 @@ public class AbstractLoggingTest extends BaseTest {
     }
 
     protected boolean logContains(String text) {
-        return findLogLine(text) != null;
+        return findLogLineContaining(text) != null;
     }
 
-    private AppLogLine findLogLine(String text) {
+    protected AppLogLine findLogLineContaining(String text) {
         LogQuery logQuery = new LogQuery().includeAppLogs(true).includeIncomplete(true);
         return findLogLine(text, logQuery);
     }
@@ -135,7 +135,7 @@ public class AbstractLoggingTest extends BaseTest {
     }
 
     protected void assertLogContains(String text, LogService.LogLevel logLevel) {
-        AppLogLine logLine = findLogLine(text);
+        AppLogLine logLine = findLogLineContaining(text);
         assertNotNull("log should contain '" + text + "', but it does not", logLine);
         if (logLevel != null) {
             assertEquals("incorrect logLevel for text '" + text + "'", logLevel, logLine.getLogLevel());
