@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,18 +20,20 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.config;
+package org.jboss.capedwarf.common.shared;
+
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.shared.components.AbstractKey;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class BackendsConfigException extends RuntimeException {
-
-    public BackendsConfigException(String message, Throwable throwable) {
-        super(message, throwable);
+public abstract class AppKey<T> extends AbstractKey<T> {
+    public AppKey(Class<T> type) {
+        super(type);
     }
 
-    public BackendsConfigException(String message) {
-        super(message);
+    public String getAppId() {
+        return Application.getAppId();
     }
 }

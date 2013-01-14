@@ -33,10 +33,6 @@ public class TestCapedwarfMetaDataScanner extends CapedwarfMetaDataScanner {
     public TestCapedwarfMetaDataScanner() {
     }
 
-    public TestCapedwarfMetaDataScanner(String appId) {
-        super(appId);
-    }
-
     @Override
     protected boolean accept(VirtualFile file) {
         return super.accept(file) && file.getName().contains("Test") == false;

@@ -33,69 +33,30 @@ import javax.servlet.http.HttpSession;
 
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.apphosting.api.ApiProxy;
-import org.jboss.capedwarf.common.CapedwarfUserPrincipal;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
-import org.jboss.capedwarf.common.config.AppEngineWebXml;
-import org.jboss.capedwarf.common.config.Backends;
-import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.common.config.QueueXml;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.security.CapedwarfUserPrincipal;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.log.CapedwarfLogService;
+import org.jboss.capedwarf.shared.config.AppEngineWebXml;
+import org.jboss.capedwarf.shared.config.BackendsXml;
+import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
+import org.jboss.capedwarf.shared.config.ConfigurationAware;
+import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class GAEListener implements ServletContextListener, ServletRequestListener {
+public class GAEListener extends ConfigurationAware implements ServletContextListener, ServletRequestListener {
     private static final String API_PROXY = "__API_PROXY";
-
-    private AppEngineWebXml appEngineWebXml;
-    private CapedwarfConfiguration capedwarfConfiguration;
-    private QueueXml queueXml;
-    private Backends backends;
-
-    // hack around passing config instances
-
-    private static final ThreadLocal<AppEngineWebXml> appEngineWebXmlTL = new ThreadLocal<AppEngineWebXml>();
-    private static final ThreadLocal<CapedwarfConfiguration> capedwarfConfigurationTL = new ThreadLocal<CapedwarfConfiguration>();
-    private static final ThreadLocal<QueueXml> queueXmlTL = new ThreadLocal<QueueXml>();
-    private static final ThreadLocal<Backends> backendsTL = new ThreadLocal<Backends>();
-
-    public static void setAppEngineWebXml(Object appEngineWebXml) {
-        if (appEngineWebXml != null)
-            appEngineWebXmlTL.set((AppEngineWebXml) appEngineWebXml);
-        else
-            appEngineWebXmlTL.remove();
-    }
-
-    public static void setCapedwarfConfiguration(Object capedwarfConfiguration) {
-        if (capedwarfConfiguration != null)
-            capedwarfConfigurationTL.set((CapedwarfConfiguration) capedwarfConfiguration);
-        else
-            capedwarfConfigurationTL.remove();
-    }
-
-    public static void setQueueXml(Object queueXml) {
-        if (queueXml != null)
-            queueXmlTL.set((QueueXml) queueXml);
-        else
-            queueXmlTL.remove();
-    }
-
-    public static void setBackends(Object backends) {
-        if (backends != null)
-            backendsTL.set((Backends) backends);
-        else
-            backendsTL.remove();
-    }
 
     public static void setup() {
         setupInternal(appEngineWebXmlTL.get(), capedwarfConfigurationTL.get(), queueXmlTL.get(), backendsTL.get());
     }
 
-    protected static ApiProxy.Delegate setupInternal(AppEngineWebXml appEngineWebXml, CapedwarfConfiguration capedwarfConfiguration, QueueXml queueXml, Backends backends) {
+    protected static ApiProxy.Delegate setupInternal(AppEngineWebXml appEngineWebXml, CapedwarfConfiguration capedwarfConfiguration, QueueXml queueXml, BackendsXml backends) {
         final CapedwarfEnvironment environment = CapedwarfEnvironment.createThreadLocalInstance();
         environment.setAppEngineWebXml(appEngineWebXml);
         environment.setCapedwarfConfiguration(capedwarfConfiguration);
@@ -126,10 +87,7 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     }
 
     public void contextInitialized(ServletContextEvent sce) {
-        appEngineWebXml = appEngineWebXmlTL.get();
-        capedwarfConfiguration = capedwarfConfigurationTL.get();
-        queueXml = queueXmlTL.get();
-        backends = backendsTL.get();
+        initialize();
 
         final String appId = appEngineWebXml.getApplication();
 
@@ -178,7 +136,7 @@ public class GAEListener implements ServletContextListener, ServletRequestListen
     }
 
     private void initJBossEnvironment(HttpServletRequest request) {
-        ApiProxy.Delegate previous = setupInternal(appEngineWebXml, capedwarfConfiguration, queueXml, backends);
+        ApiProxy.Delegate previous = setupInternal(appEngineWebXml, capedwarfConfiguration, queueXml, backendsXml);
         request.setAttribute(API_PROXY, previous);
         CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
         initRequestData(environment, request);

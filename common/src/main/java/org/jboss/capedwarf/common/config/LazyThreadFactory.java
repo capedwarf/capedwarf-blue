@@ -29,7 +29,8 @@ import java.util.concurrent.ThreadFactory;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Keys;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -49,7 +50,7 @@ class LazyThreadFactory implements ThreadFactory, Serializable {
         if (factory == null) {
             synchronized (this) {
                 if (factory == null) {
-                    factory = JndiLookupUtils.lookup("jndi.thread-factory", ThreadFactory.class, defaultJndiNames);
+                    factory = ComponentRegistry.getInstance().getComponent(Keys.THREAD_FACTORY);
                 }
             }
         }

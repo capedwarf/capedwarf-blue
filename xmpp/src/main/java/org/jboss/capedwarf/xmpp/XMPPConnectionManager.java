@@ -23,7 +23,7 @@
 package org.jboss.capedwarf.xmpp;
 
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.common.config.XmppConfiguration;
+import org.jboss.capedwarf.shared.config.XmppConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;

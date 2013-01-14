@@ -27,11 +27,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.shared.AppSimpleKey;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Key;
 
 /**
  * Allow for custom extensions to GAE API, impl, behavior, etc.
@@ -79,8 +81,8 @@ public class Compatibility {
         }
     }
 
-    private static Map<ClassLoader, Compatibility> instances = new WeakHashMap<ClassLoader, Compatibility>();
-    private static ThreadLocal<Set<Feature>> temps = new ThreadLocal<Set<Feature>>();
+    private static final Key<Compatibility> KEY = new AppSimpleKey<Compatibility>(Compatibility.class);
+    private static final ThreadLocal<Set<Feature>> temps = new ThreadLocal<Set<Feature>>();
 
     private final Properties properties;
     private final Map<Feature, Boolean> values = new ConcurrentHashMap<Feature, Boolean>();
@@ -90,16 +92,20 @@ public class Compatibility {
     }
 
     public static Compatibility getInstance() {
-        final ClassLoader cl = Application.getAppClassloader();
-        return getInstance(cl);
+        return getInstance(null);
     }
 
-    public static synchronized Compatibility getInstance(final ClassLoader cl) {
+    public synchronized static Compatibility getInstance(ClassLoader cl) {
         try {
-            Compatibility compatibility = instances.get(cl);
+            ComponentRegistry registry = ComponentRegistry.getInstance();
+            Compatibility compatibility = registry.getComponent(KEY);
             if (compatibility == null) {
                 final Properties properties = new Properties();
                 properties.putAll(System.getProperties());
+
+                if (cl == null)
+                    cl = Application.getAppClassloader();
+
                 final InputStream is = cl.getResourceAsStream("capedwarf-compatibility.properties");
                 if (is != null) {
                     try {
@@ -109,7 +115,7 @@ public class Compatibility {
                     }
                 }
                 compatibility = new Compatibility(properties);
-                instances.put(cl, compatibility);
+                registry.setComponent(KEY, compatibility);
             }
             return compatibility;
         } catch (Exception e) {

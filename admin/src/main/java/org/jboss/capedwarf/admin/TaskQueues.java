@@ -34,7 +34,7 @@ import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.QueueStatistics;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.common.config.QueueXml;
+import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

@@ -39,6 +39,10 @@ import com.google.appengine.api.backends.BackendServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.config.AppEngineWebXml;
+import org.jboss.capedwarf.shared.config.BackendsXml;
+import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
+import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -66,7 +70,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private static final long GLOBAL_TIME_LIMIT = Long.parseLong(System.getProperty("jboss.capedwarf.globalTimeLimit", "60000"));
 
     private final long requestStart;
-    private final boolean checkGlobalTimeLimit;
+    private volatile Boolean checkGlobalTimeLimit;
 
     private String email;
     private boolean isAdmin;
@@ -76,14 +80,13 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private CapedwarfConfiguration capedwarfConfiguration;
     private AppEngineWebXml appEngineWebXml;
     private QueueXml queueXml;
-    private Backends backends;
+    private BackendsXml backends;
 
     private String baseApplicationUrl;
     private String secureBaseApplicationUrl;
 
     public CapedwarfEnvironment() {
         requestStart = System.currentTimeMillis();
-        checkGlobalTimeLimit = Compatibility.getInstance().isEnabled(Compatibility.Feature.ENABLE_GLOBAL_TIME_LIMIT);
         // a bit of a workaround for LocalServiceTestHelper::tearDown NPE
         attributes.put(REQUEST_END_LISTENERS, new ArrayList());
         // add thread factory
@@ -91,12 +94,19 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
         attributes.put(BACKGROUND_THREAD_FACTORY_ATTR, LazyThreadFactory.INSTANCE);
     }
 
+    private boolean doCheckGlobalTimeLimit() {
+        if (checkGlobalTimeLimit == null) {
+            checkGlobalTimeLimit = Compatibility.getInstance().isEnabled(Compatibility.Feature.ENABLE_GLOBAL_TIME_LIMIT);
+        }
+        return checkGlobalTimeLimit;
+    }
+
     public boolean isProduction() {
         return SystemProperty.environment.value() == SystemProperty.Environment.Value.Production;
     }
 
     public String getBackendAddress(String backend) {
-        for (Backends.Backend bb : backends) {
+        for (BackendsXml.Backend bb : backends) {
             if (bb.matches(backend)) {
                 BackendService bs = BackendServiceFactory.getBackendService();
                 return bs.getBackendAddress(backend);
@@ -106,7 +116,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     }
 
     public void checkGlobalTimeLimit() {
-        if (checkGlobalTimeLimit) {
+        if (doCheckGlobalTimeLimit()) {
             checkTimeLimit(requestStart, GLOBAL_TIME_LIMIT);
         }
     }
@@ -160,7 +170,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     public Map<String, Object> getAttributes() {
         if (isProduction() == false && attributes.containsKey(BackendService.DEVAPPSERVER_PORTMAPPING_KEY) == false) {
             Map<String, String> portMap = new HashMap<String, String>();
-            for (Backends.Backend bb : backends) {
+            for (BackendsXml.Backend bb : backends) {
                 portMap.put(bb.getName(), getBaseApplicationUrl());
             }
             attributes.put(BackendService.DEVAPPSERVER_PORTMAPPING_KEY, portMap);
@@ -200,11 +210,11 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
         this.queueXml = queueXml;
     }
 
-    public Backends getBackends() {
+    public BackendsXml getBackends() {
         return backends;
     }
 
-    public void setBackends(Backends backends) {
+    public void setBackends(BackendsXml backends) {
         this.backends = backends;
     }
 

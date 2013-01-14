@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
-import org.jboss.capedwarf.common.CapedwarfUserPrincipal;
+import org.jboss.capedwarf.common.security.CapedwarfUserPrincipal;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

@@ -35,16 +35,15 @@ import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.common.util.Util;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Keys;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InfinispanUtils {
-    private static String[] defaultJndiNames = {"java:jboss/infinispan/container/capedwarf"};
-
     private static volatile int cacheManagerUsers;
     private static EmbeddedCacheManager cacheManager;
     private static final Map<String, GridFilesystem> gridFilesystems = new HashMap<String, GridFilesystem>();
@@ -118,7 +117,7 @@ public class InfinispanUtils {
     @SuppressWarnings("UnusedParameters")
     public static synchronized void initApplicationData(String appId) {
         if (cacheManager == null) {
-            cacheManager = JndiLookupUtils.lazyLookup("infinispan.jndi.name", EmbeddedCacheManager.class, defaultJndiNames);
+            cacheManager = ComponentRegistry.getInstance().getComponent(Keys.CACHE_MANAGER);
         }
         cacheManagerUsers++;
     }

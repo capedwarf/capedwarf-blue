@@ -22,10 +22,13 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import org.jboss.capedwarf.common.shared.AppKey;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Key;
+import org.jboss.capedwarf.shared.components.Keys;
 
 /**
  * Do we make DatastoreService force sync ops on cache for certain callers.
@@ -35,23 +38,26 @@ import java.util.logging.Logger;
  */
 final class SyncHack {
     private static final Logger log = Logger.getLogger(SyncHack.class.getName());
-    private static final String FORCE_SYNC = "jboss.capedwarf.forceSync";
-    private static final Set<String> SYNC_CALLERS = new LinkedHashSet<String>();
+    private static final Key<Set> KEY;
 
     static {
-        SYNC_CALLERS.add("com.google.appengine.tools.pipeline.impl.backend.AppEngineBackEnd");
-        String sysProp = System.getProperty(FORCE_SYNC);
-        if (sysProp != null) {
-            Collections.addAll(SYNC_CALLERS, sysProp.split(","));
-        }
+        KEY = new AppKey<Set>(Set.class) {
+            public Object getSlot() {
+                return Keys.SYNC_HACK;
+            }
+        };
     }
 
-    // Not super optimal, but should do.
+    @SuppressWarnings("unchecked")
     static boolean forceSync() {
+        Set<String> callers = ComponentRegistry.getInstance().getComponent(KEY);
+        if (callers == null || callers.isEmpty())
+            return false;
+
         StackTraceElement[] elements = Thread.currentThread().getStackTrace();
         for (StackTraceElement ste : elements) {
             String clazz = ste.getClassName();
-            if (SYNC_CALLERS.contains(clazz)) {
+            if (callers.contains(clazz)) {
                 log.finest("Matched " + clazz + ", forcing sync ops.");
                 return true;
             }

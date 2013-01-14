@@ -22,10 +22,10 @@
 
 package org.jboss.test.capedwarf.testsuite.config.test;
 
-import org.jboss.capedwarf.common.config.AppEngineWebXml;
-import org.jboss.capedwarf.common.config.Backends;
-import org.jboss.capedwarf.common.config.CapedwarfConfiguration;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.shared.config.AppEngineWebXml;
+import org.jboss.capedwarf.shared.config.BackendsXml;
+import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
 import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.After;
 import org.junit.Assert;
@@ -53,7 +53,7 @@ public class CapedwarfEnvironmentTestCase {
         config = new CapedwarfConfiguration();
         env = CapedwarfEnvironment.createThreadLocalInstance();
         env.setCapedwarfConfiguration(config);
-        env.setBackends(new Backends());
+        env.setBackends(new BackendsXml());
     }
 
     @After

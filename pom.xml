@@ -49,6 +49,9 @@
     </modules>
 
     <properties>
+        <!-- Shared -->
+        <version.org.jboss.capedwarf.shared>1.0.0-SNAPSHOT</version.org.jboss.capedwarf.shared>
+        <!-- External -->
         <version.cdi.api>1.0-SP4</version.cdi.api>
         <version.com.google.gae.api>1.7.4</version.com.google.gae.api>
         <version.com.google.guava>11.0.2</version.com.google.guava>
@@ -403,6 +406,14 @@
                 <artifactId>capedwarf-testsuite</artifactId>
                 <version>${project.version}</version>
                 <type>test-jar</type>
+            </dependency>
+
+            <!-- CapeDwarf Shared -->
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.shared</groupId>
+                <artifactId>capedwarf-shared</artifactId>
+                <version>${version.org.jboss.capedwarf.shared}</version>
             </dependency>
 
             <!-- Transform GAE code -->

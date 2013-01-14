@@ -42,6 +42,7 @@ import org.jboss.capedwarf.common.reflection.BytecodeUtils;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
+@Deprecated
 public class JndiLookupUtils {
     private static final Logger log = Logger.getLogger(JndiLookupUtils.class.getName());
 

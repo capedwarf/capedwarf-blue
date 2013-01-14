@@ -31,19 +31,10 @@ import org.jboss.capedwarf.common.app.Application;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractMetaDataScanner implements MetaDataScanner {
-    private String appId;
-
     protected AbstractMetaDataScanner() {
     }
 
-    public AbstractMetaDataScanner(String appId) {
-        this.appId = appId;
-    }
-
-    public synchronized String getAppId() {
-        if (appId == null) {
-            appId = Application.getAppId();
-        }
-        return appId;
+    public String getAppId() {
+        return Application.getAppId();
     }
 }

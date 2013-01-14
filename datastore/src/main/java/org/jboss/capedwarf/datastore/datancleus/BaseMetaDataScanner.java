@@ -24,43 +24,36 @@ package org.jboss.capedwarf.datastore.datancleus;
 
 import java.util.Set;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
 import org.datanucleus.metadata.PersistenceUnitMetaData;
+import org.jboss.capedwarf.common.shared.AppKey;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Key;
+import org.jboss.capedwarf.shared.components.Keys;
 
 /**
- * Uses prepared Jandex based JNDI metadata scanner.
+ * Uses prepared Jandex based metadata scanner.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class JndiMetaDataScanner extends AbstractMetaDataScanner {
+public class BaseMetaDataScanner extends AbstractMetaDataScanner {
     private Set<String> entities;
 
-    public JndiMetaDataScanner() {
+    public BaseMetaDataScanner() {
     }
 
-    public JndiMetaDataScanner(String appId) {
-        super(appId);
-    }
-
-    public JndiMetaDataScanner(Set<String> entities) {
+    public BaseMetaDataScanner(Set<String> entities) {
         this.entities = entities;
     }
 
     public synchronized Set<String> scanForPersistableClasses(PersistenceUnitMetaData pumd) {
         if (entities == null) {
-            try {
-                final Context context = new InitialContext();
-                try {
-                    //noinspection unchecked
-                    entities = (Set<String>) context.lookup("java:jboss/capedwarf/persistence/entities/" + getAppId());
-                } finally {
-                    context.close();
+            Key<Set> key = new AppKey<Set>(Set.class) {
+                public Object getSlot() {
+                    return Keys.METADATA_SCANNER;
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            };
+            //noinspection unchecked
+            entities = (Set<String>) ComponentRegistry.getInstance().getComponent(key);
         }
         return entities;
     }

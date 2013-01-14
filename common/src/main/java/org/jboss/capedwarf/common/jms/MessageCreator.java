@@ -25,6 +25,8 @@ package org.jboss.capedwarf.common.jms;
 import javax.jms.Message;
 import javax.jms.Session;
 
+import org.jboss.capedwarf.shared.jms.ServletRequestCreator;
+
 /**
  * Create JMS message.
  *

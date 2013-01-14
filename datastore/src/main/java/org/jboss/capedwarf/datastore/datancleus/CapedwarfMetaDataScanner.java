@@ -41,10 +41,6 @@ public class CapedwarfMetaDataScanner extends AbstractMetaDataScanner {
     public CapedwarfMetaDataScanner() {
     }
 
-    public CapedwarfMetaDataScanner(String appId) {
-        super(appId);
-    }
-
     public Set<String> scanForPersistableClasses(PersistenceUnitMetaData pumd) {
         try {
             final Set<String> classes = new HashSet<String>();

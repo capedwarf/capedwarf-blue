@@ -31,7 +31,8 @@ import javax.mail.Transport;
 
 import com.google.appengine.api.mail.MailService;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Keys;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -80,7 +81,7 @@ public class CapedwarfMailService implements MailService {
 
     private Session getSession() {
         if (session == null)
-            session = JndiLookupUtils.lookup("mail.jndi.name", Session.class, "java:jboss/mail/Default");
+            session = ComponentRegistry.getInstance().getComponent(Keys.MAIL_SESSION);
 
         return session;
     }

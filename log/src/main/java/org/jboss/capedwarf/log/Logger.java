@@ -36,6 +36,7 @@ import org.jboss.util.collection.ConcurrentReferenceHashMap;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class Logger {
+    // leave this one to CRHM (intentionally not using ComponentRegistry)
     private static ConcurrentMap<ClassLoader, Logable> logs = new ConcurrentReferenceHashMap<ClassLoader, Logable>();
 
     public static void publish(LogRecord record) {

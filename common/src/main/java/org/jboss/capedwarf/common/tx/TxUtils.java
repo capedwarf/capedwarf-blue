@@ -25,7 +25,8 @@ package org.jboss.capedwarf.common.tx;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Keys;
 
 /**
  * Tx utils.
@@ -42,7 +43,7 @@ public final class TxUtils {
      * @return the transaction mananger
      */
     public static TransactionManager getTransactionManager() {
-        return JndiLookupUtils.lookup("tm.jndi.name", TransactionManager.class, "java:jboss/TransactionManager");
+        return ComponentRegistry.getInstance().getComponent(Keys.TM);
     }
 
     /**
@@ -51,6 +52,6 @@ public final class TxUtils {
      * @return the user transaction
      */
     public static UserTransaction getUserTransaction() {
-        return JndiLookupUtils.lookup("ut.jndi.name", UserTransaction.class, "java:jboss/UserTransaction");
+        return ComponentRegistry.getInstance().getComponent(Keys.USER_TX);
     }
 }

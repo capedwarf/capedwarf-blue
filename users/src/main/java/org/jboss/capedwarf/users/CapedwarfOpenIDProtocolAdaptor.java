@@ -32,8 +32,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
-import org.jboss.capedwarf.common.CapedwarfUserPrincipal;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.common.security.CapedwarfUserPrincipal;
 import org.picketlink.social.openid.api.OpenIDAttributeMap;
 import org.picketlink.social.openid.api.OpenIDLifecycle;
 import org.picketlink.social.openid.api.OpenIDLifecycleEvent;

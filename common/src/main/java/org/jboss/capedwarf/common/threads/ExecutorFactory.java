@@ -27,10 +27,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import java.util.logging.Logger;
 
 import org.infinispan.util.concurrent.WithinThreadExecutor;
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Keys;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -53,7 +53,7 @@ public class ExecutorFactory {
         if (executor == null) {
             synchronized (ExecutorFactory.class) {
                 if (executor == null) {
-                    executor = doJndiLookup();
+                    executor = ComponentRegistry.getInstance().getComponent(Keys.EXECUTOR_SERVICE);
                 }
             }
         }
@@ -80,15 +80,6 @@ public class ExecutorFactory {
         final Executor executor = getInstance();
         executor.execute(task);
         return task;
-    }
-
-    protected static ExecutorService doJndiLookup() {
-        try {
-            return JndiLookupUtils.lookup("jndi.executor", ExecutorService.class, defaultJndiNames);
-        } catch (Throwable t) {
-            Logger.getLogger(Executor.class.getName()).fine("No Executor found in JNDI: " + t.getMessage());
-            return null;
-        }
     }
 
     /**

@@ -43,9 +43,11 @@ import com.google.appengine.api.datastore.TransactionOptions;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.common.shared.AppKey;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Keys;
 
 /**
  * JBoss DatastoreService impl.
@@ -55,6 +57,12 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  */
 class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements DatastoreServiceInternal {
     private static final MethodInvocation<Void> setId = ReflectionUtils.cacheMethod(Key.class, "setId", Long.TYPE);
+
+    private static org.jboss.capedwarf.shared.components.Key<Map> KEY = new AppKey<Map>(Map.class) {
+        public Object getSlot() {
+            return Keys.ALLOCATIONS_MAP;
+        }
+    };
 
     private DatastoreAttributes datastoreAttributes;
     private volatile Map<String, Integer> allocationsMap;
@@ -89,11 +97,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
             synchronized (this) {
                 if (allocationsMap == null) {
                     //noinspection unchecked
-                    allocationsMap = JndiLookupUtils.lookup(
-                            "jndi.persistence.allocationsMap",
-                            Map.class,
-                            "java:jboss/capedwarf/persistence/allocationsMap/" + appId
-                    );
+                    allocationsMap = ComponentRegistry.getInstance().getComponent(KEY);
                 }
             }
         }

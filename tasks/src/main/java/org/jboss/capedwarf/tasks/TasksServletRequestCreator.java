@@ -38,8 +38,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
-import org.jboss.capedwarf.common.jms.ServletRequestCreator;
 import org.jboss.capedwarf.common.servlet.AbstractHttpServletRequest;
+import org.jboss.capedwarf.shared.jms.ServletRequestCreator;
 
 /**
  * Tasks servlet request creator.

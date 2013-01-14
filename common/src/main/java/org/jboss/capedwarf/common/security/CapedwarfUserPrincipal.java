@@ -22,29 +22,40 @@
  *
  */
 
-package org.jboss.capedwarf.common.config;
+package org.jboss.capedwarf.common.security;
 
-import java.io.Serializable;
+import java.security.Principal;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class AppEngineWebXml implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class CapedwarfUserPrincipal implements Principal {
 
-    private String application;
-    private String version;
+    private final String userId;
+    private final String email;
+    private final String authDomain;
+    private final boolean isAdmin;
 
-    public AppEngineWebXml(String application, String version) {
-        this.application = application;
-        this.version = version;
+    public CapedwarfUserPrincipal(String userId, String email, String authDomain, boolean isAdmin) {
+        this.userId = userId;
+        this.email = email;
+        this.authDomain = authDomain;
+        this.isAdmin = isAdmin;
     }
 
-    public String getApplication() {
-        return application;
+    public String getUserId() {
+        return userId;
     }
 
-    public String getVersion() {
-        return version;
+    public String getName() {
+        return email;
+    }
+
+    public String getAuthDomain() {
+        return authDomain;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
     }
 }

@@ -27,6 +27,7 @@ import javax.jms.Message;
 import javax.jms.MessageProducer;
 
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.shared.jms.MessageConstants;
 import org.jboss.modules.ModuleClassLoader;
 
 
@@ -37,8 +38,6 @@ import org.jboss.modules.ModuleClassLoader;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ServletExecutorProducer extends JmsAdapter {
-    private static final String PREFIX = "org_jboss_capedwarf_jms_";
-
     /**
      * Send jms message.
      *
@@ -55,10 +54,10 @@ public class ServletExecutorProducer extends JmsAdapter {
             creator.enhanceMessage(message);
         }
 
-        setString(message, "module", getModuleName());
-        setString(message, "appId", Application.getAppId());
-        setString(message, "path", creator.getPath());
-        setString(message, "factory", creator.getServletRequestCreator().getName());
+        setString(message, MessageConstants.MODULE, getModuleName());
+        setString(message, MessageConstants.APP_ID, Application.getAppId());
+        setString(message, MessageConstants.PATH, creator.getPath());
+        setString(message, MessageConstants.FACTORY, creator.getServletRequestCreator().getName());
 
         mp.send(message);
 
@@ -66,7 +65,7 @@ public class ServletExecutorProducer extends JmsAdapter {
     }
 
     private static void setString(final Message msg, String key, String value) throws JMSException {
-        msg.setStringProperty(PREFIX + key, value);
+        msg.setStringProperty(MessageConstants.PREFIX + key, value);
     }
 
     private static String getModuleName() {

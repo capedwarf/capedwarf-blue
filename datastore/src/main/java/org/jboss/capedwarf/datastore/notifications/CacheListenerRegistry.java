@@ -23,19 +23,25 @@
 package org.jboss.capedwarf.datastore.notifications;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.infinispan.notifications.Listenable;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.shared.AppKey;
 import org.jboss.capedwarf.datastore.ns.NamespaceListener;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Key;
+import org.jboss.capedwarf.shared.components.Keys;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CacheListenerRegistry {
-    private static Map<ClassLoader, Set<CacheListenerHandle>> registry = new WeakHashMap<ClassLoader, Set<CacheListenerHandle>>();
+    private static final Key<Set> KEY = new AppKey<Set>(Set.class) {
+        public Object getSlot() {
+            return Keys.CACHE_LISTENERS;
+        }
+    };
 
     /**
      * Cache listener handles
@@ -47,15 +53,18 @@ public class CacheListenerRegistry {
      *
      * @param handle the cache handle
      */
+    @SuppressWarnings("unchecked")
     public static synchronized void registerListener(Listenable listenable, CacheListenerHandle handle) {
-        final ClassLoader cl = Application.getAppClassloader();
-        Set<CacheListenerHandle> handles = registry.get(cl);
+        ComponentRegistry registry = ComponentRegistry.getInstance();
+        Set<CacheListenerHandle> handles = (Set<CacheListenerHandle>) registry.getComponent(KEY);
         if (handles == null || handles.contains(handle) == false) {
             if (handles == null) {
                 handles = new HashSet<CacheListenerHandle>();
-                registry.put(cl, handles);
+                registry.setComponent(KEY, handles);
             }
             handles.add(handle);
+
+            final ClassLoader cl = Application.getAppClassloader();
             listenable.addListener(handle.createListener(cl));
         }
     }

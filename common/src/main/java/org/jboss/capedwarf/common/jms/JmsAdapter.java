@@ -31,7 +31,8 @@ import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
 
-import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Keys;
 
 
 /**
@@ -46,7 +47,7 @@ public abstract class JmsAdapter {
 
     protected Session getSession() throws Exception {
         if (session == null) {
-            final ConnectionFactory factory = JndiLookupUtils.lookup("jms.factory.jndi", ConnectionFactory.class, "java:/JmsXA");
+            final ConnectionFactory factory = ComponentRegistry.getInstance().getComponent(Keys.CONNECTION_FACTORY);
             connection = factory.createConnection();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         }
@@ -54,7 +55,7 @@ public abstract class JmsAdapter {
     }
 
     protected Queue getQueue() throws Exception {
-        return JndiLookupUtils.lookup("jms.queue.jndi", Queue.class, "java:/queue/capedwarf");
+        return ComponentRegistry.getInstance().getComponent(Keys.QUEUE);
     }
 
     protected QueueBrowser getBrowser() throws Exception {

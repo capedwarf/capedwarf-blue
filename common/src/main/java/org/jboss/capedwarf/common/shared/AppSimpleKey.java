@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,50 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.config;
-
-import java.io.Serializable;
+package org.jboss.capedwarf.common.shared;
 
 /**
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class XmppConfiguration implements Serializable {
-    private static final long serialVersionUID = 1L;
-
-    private String host;
-    private int port;
-    private String username;
-    private String password;
-
-    public String getHost() {
-        return host;
+public class AppSimpleKey<T> extends AppKey<T> {
+    public AppSimpleKey(Class<T> type) {
+        super(type);
     }
 
-    public int getPort() {
-        return port;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    void setHost(String host) {
-        this.host = host;
-    }
-
-    void setPort(int port) {
-        this.port = port;
-    }
-
-    void setUsername(String username) {
-        this.username = username;
-    }
-
-    void setPassword(String password) {
-        this.password = password;
+    public Object getSlot() {
+        return getType();
     }
 }
