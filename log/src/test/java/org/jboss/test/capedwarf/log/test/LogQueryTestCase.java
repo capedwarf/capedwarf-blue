@@ -22,9 +22,11 @@
 
 package org.jboss.test.capedwarf.log.test;
 
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.log.LogQuery;
+import com.google.apphosting.api.ApiProxy;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -49,6 +51,10 @@ public class LogQueryTestCase extends AbstractLoggingTest {
 
     private Logger log;
 
+    private static String request1Id;
+    private static String request2Id;
+    private static String request3Id;
+
     @Deployment
     public static WebArchive getDeployment() {
         return getDefaultDeployment(newTestContext());
@@ -71,6 +77,7 @@ public class LogQueryTestCase extends AbstractLoggingTest {
     @Test
     @InSequence(1)
     public void createCompleteRequest1() throws Exception {
+        request1Id = getCurrentRequestId();
         log.info("info_createCompleteRequest1");
         log.warning("warning_createCompleteRequest1");
         flush(log);
@@ -79,6 +86,7 @@ public class LogQueryTestCase extends AbstractLoggingTest {
     @Test
     @InSequence(2)
     public void createCompleteRequest2() throws Exception {
+        request2Id = getCurrentRequestId();
         log.severe("severe_createCompleteRequest2");
         flush(log);
     }
@@ -86,6 +94,7 @@ public class LogQueryTestCase extends AbstractLoggingTest {
     @Test
     @InSequence(3)
     public void createCompleteRequest3() throws Exception {
+        request3Id = getCurrentRequestId();
         log.info("info_createCompleteRequest3");
         flush(log);
     }
@@ -129,4 +138,17 @@ public class LogQueryTestCase extends AbstractLoggingTest {
         assertLogQueryDoesNotReturn("log message in incomplete request", new LogQuery().includeAppLogs(true).includeIncomplete(false));
     }
 
+    @Test
+    @InSequence(20)
+    public void testRequestIds() throws Exception {
+        assertLogQueryReturns("info_createCompleteRequest1", new LogQuery().includeAppLogs(true).requestIds(Arrays.asList(request1Id)));
+        assertLogQueryDoesNotReturn("info_createCompleteRequest3", new LogQuery().includeAppLogs(true).requestIds(Arrays.asList(request1Id)));
+
+        assertLogQueryReturns("info_createCompleteRequest3", new LogQuery().includeAppLogs(true).requestIds(Arrays.asList(request3Id)));
+        assertLogQueryDoesNotReturn("info_createCompleteRequest1", new LogQuery().includeAppLogs(true).requestIds(Arrays.asList(request3Id)));
+    }
+
+    private String getCurrentRequestId() {
+        return (String) ApiProxy.getCurrentEnvironment().getAttributes().get("com.google.appengine.runtime.request_log_id");
+    }
 }

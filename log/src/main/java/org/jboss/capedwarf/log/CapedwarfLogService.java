@@ -40,6 +40,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogQuery;
@@ -51,6 +52,7 @@ import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN_OR_EQUAL;
+import static com.google.appengine.api.datastore.Query.FilterOperator.IN;
 import static com.google.appengine.api.datastore.Query.FilterOperator.LESS_THAN_OR_EQUAL;
 import static com.google.appengine.api.datastore.Query.FilterOperator.NOT_EQUAL;
 
@@ -151,6 +153,14 @@ public class CapedwarfLogService implements LogService, Logable {
         boolean onlyCompleteRequests = !Boolean.TRUE.equals(logQuery.getIncludeIncomplete());
         if (onlyCompleteRequests) {
             filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, NOT_EQUAL, null));
+        }
+
+        if (!logQuery.getRequestIds().isEmpty()) {
+            ArrayList<Key> keys = new ArrayList<Key>();
+            for (String requestId : logQuery.getRequestIds()) {
+                keys.add(KeyFactory.createKey(LOG_REQUEST_ENTITY_KIND, Long.parseLong(requestId)));
+            }
+            filters.add(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, IN, keys));
         }
 
         Query query = new Query(LOG_REQUEST_ENTITY_KIND);
