@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,16 +49,44 @@ import static org.junit.Assert.fail;
 @Category(All.class)
 public class LogServiceTestCase extends AbstractLoggingTest {
 
-    private LogService logService;
+    private LogService service;
 
     @Before
     public void setUp() throws Exception {
-        logService = LogServiceFactory.getLogService();
+        service = LogServiceFactory.getLogService();
     }
 
     @Deployment
     public static WebArchive getDeployment() {
-        return getDefaultDeployment(newTestContext());
+        TestContext context = newTestContext().setAppEngineWebXmlFile("appengine-web-with-logging-properties.xml");
+        return getDefaultDeployment(context)
+                .addAsWebInfResource("logging-all.properties", "logging.properties");
+    }
+
+    @Test
+    public void testLogLevelInAppLogLineMatchesActualLogLevelUsedWhenLogging() {
+        Logger log = Logger.getLogger(LogServiceTestCase.class.getName());
+        log.finest("finest_testLogLevelMatches");
+        log.finer("finer_testLogLevelMatches");
+        log.fine("fine_testLogLevelMatches");
+        log.config("config_testLogLevelMatches");
+        log.info("info_testLogLevelMatches");
+        log.warning("warning_testLogLevelMatches");
+        log.severe("severe_testLogLevelMatches");
+        flush(log);
+
+        assertLogContains("finest_testLogLevelMatches", LogService.LogLevel.DEBUG);
+        assertLogContains("finer_testLogLevelMatches", LogService.LogLevel.DEBUG);
+        assertLogContains("fine_testLogLevelMatches", LogService.LogLevel.DEBUG);
+        assertLogContains("config_testLogLevelMatches", LogService.LogLevel.DEBUG);
+
+        // we can't test the following on dev appserver, because it returns incorrect logLevels
+        // more info at http://code.google.com/p/googleappengine/issues/detail?id=8651
+        if (!runningInsideDevAppEngine() || isJBossImpl(service)) {
+            assertLogContains("info_testLogLevelMatches", LogService.LogLevel.INFO);
+            assertLogContains("warning_testLogLevelMatches", LogService.LogLevel.WARN);
+            assertLogContains("severe_testLogLevelMatches", LogService.LogLevel.ERROR);
+        }
     }
 
     @Test
@@ -89,7 +118,7 @@ public class LogServiceTestCase extends AbstractLoggingTest {
     }
 
     private void assertLogQueryExecutes(LogQuery logQuery) {
-        logService.fetch(logQuery);
+        service.fetch(logQuery);
     }
 
     @Test
@@ -98,11 +127,11 @@ public class LogServiceTestCase extends AbstractLoggingTest {
         log.info("hello_testLogLinesAreReturnedOnlyWhenRequested");
         flush(log);
 
-        for (RequestLogs logs : logService.fetch(new LogQuery().includeAppLogs(false))) {
+        for (RequestLogs logs : service.fetch(new LogQuery().includeAppLogs(false))) {
             assertTrue("AppLogLines should be empty", logs.getAppLogLines().isEmpty());
         }
 
-        for (RequestLogs logs : logService.fetch(new LogQuery().includeAppLogs(true))) {
+        for (RequestLogs logs : service.fetch(new LogQuery().includeAppLogs(true))) {
             if (!logs.getAppLogLines().isEmpty()) {
                 // if we've found at least one appLogLine, the test passed
                 return;

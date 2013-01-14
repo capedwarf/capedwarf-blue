@@ -225,17 +225,17 @@ public class CapedwarfLogService implements LogService, Logable {
     }
 
     private LogLevel getLogLevel(LogRecord record) {
-        // TODO
-        if (record.getLevel().equals(Level.INFO)) {
-            return LogLevel.INFO;
-        } else if (record.getLevel().equals(Level.WARNING)) {
-            return LogLevel.WARN;
-        } else if (record.getLevel().equals(Level.SEVERE)) {
-            return LogLevel.ERROR;
-        } else if (record.getLevel().equals(Level.FINE)) {
+        int level = record.getLevel().intValue();
+        if (level <= Level.CONFIG.intValue()) {
             return LogLevel.DEBUG;
-        } else {
+        } else if (level <= Level.INFO.intValue()) {
             return LogLevel.INFO;
+        } else if (level <= Level.WARNING.intValue()) {
+            return LogLevel.WARN;
+        } else if (level <= Level.SEVERE.intValue()) {
+            return LogLevel.ERROR;
+        } else {
+            return LogLevel.FATAL;
         }
     }
 
@@ -266,7 +266,7 @@ public class CapedwarfLogService implements LogService, Logable {
         if (entity != null) {
             entity.setProperty(LOG_REQUEST_END_TIME_MILLIS, System.currentTimeMillis());
 
-    //            HttpServletResponse response;
+            //            HttpServletResponse response;
             // TODO entity.setProperty("responseStatusCode", response.getStatus());
             // TODO entity.setProperty("responseLength", );
         }
