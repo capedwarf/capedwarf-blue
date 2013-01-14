@@ -30,6 +30,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -60,6 +61,11 @@ public class LogQueryTestCase extends AbstractLoggingTest {
     @Before
     public void setUp() throws Exception {
         log = Logger.getLogger(LogQueryTestCase.class.getName());
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+        clear();
     }
 
     @Test
@@ -104,6 +110,23 @@ public class LogQueryTestCase extends AbstractLoggingTest {
         assertLogQueryDoesNotReturn("info_createCompleteRequest1", errorLogQuery);
         assertLogQueryDoesNotReturn("warning_createCompleteRequest1", errorLogQuery);
         assertLogQueryDoesNotReturn("info_createCompleteRequest3", errorLogQuery);
+    }
+
+    @Test
+    @InSequence(20)
+    public void testIncomplete() throws Exception {
+        // GAE dev server doesn't handle this
+        if (isRunningInsideGaeDevServer()) {
+            return;
+        }
+
+        log.info("log message in incomplete request");
+        flush(log);
+
+        assertLogQueryReturns("log message in incomplete request", new LogQuery().includeAppLogs(true).includeIncomplete(true));
+
+        assertLogQueryReturns("info_createCompleteRequest1", new LogQuery().includeAppLogs(true).includeIncomplete(true));
+        assertLogQueryDoesNotReturn("log message in incomplete request", new LogQuery().includeAppLogs(true).includeIncomplete(false));
     }
 
 }

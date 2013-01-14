@@ -52,6 +52,7 @@ import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN_OR_EQUAL;
 import static com.google.appengine.api.datastore.Query.FilterOperator.LESS_THAN_OR_EQUAL;
+import static com.google.appengine.api.datastore.Query.FilterOperator.NOT_EQUAL;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -146,6 +147,12 @@ public class CapedwarfLogService implements LogService, Logable {
         if (logQuery.getMinLogLevel() != null) {
             filters.add(new Query.FilterPredicate(LOG_REQUEST_MAX_LOG_LEVEL, GREATER_THAN_OR_EQUAL, logQuery.getMinLogLevel().ordinal()));
         }
+
+        boolean onlyCompleteRequests = !Boolean.TRUE.equals(logQuery.getIncludeIncomplete());
+        if (onlyCompleteRequests) {
+            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, NOT_EQUAL, null));
+        }
+
         Query query = new Query(LOG_REQUEST_ENTITY_KIND);
         addFilters(query, filters);
         query.addSort(LOG_REQUEST_END_TIME_MILLIS);

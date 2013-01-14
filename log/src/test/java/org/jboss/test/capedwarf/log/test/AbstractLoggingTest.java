@@ -35,7 +35,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 
 import static org.junit.Assert.assertEquals;
@@ -79,11 +78,6 @@ public class AbstractLoggingTest extends BaseTest {
         if (clearLogAfterEachTestMethod) {
             clear();
         }
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-        clear();
     }
 
     protected static void clear() {
