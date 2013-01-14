@@ -25,7 +25,6 @@ package org.jboss.test.capedwarf.log.test;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.NamespaceManager;
-import com.google.appengine.api.log.LogService;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -56,19 +55,6 @@ public class LoggingTestCase extends AbstractLoggingTest {
         flush(log);
 
         assertLogContains(text);
-    }
-
-    @Test
-    public void testLoggingHonorsLogLevel() {
-        Logger log = Logger.getLogger(LoggingTestCase.class.getName());
-        log.info("info_test");
-        log.warning("warning_test");
-        log.severe("severe_test");
-        flush(log);
-
-        assertLogContains("info_test", LogService.LogLevel.INFO);
-        assertLogContains("warning_test", LogService.LogLevel.WARN);
-        assertLogContains("severe_test", LogService.LogLevel.ERROR);
     }
 
     @Test
