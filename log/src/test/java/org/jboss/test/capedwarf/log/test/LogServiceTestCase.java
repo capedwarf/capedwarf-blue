@@ -58,35 +58,7 @@ public class LogServiceTestCase extends AbstractLoggingTest {
 
     @Deployment
     public static WebArchive getDeployment() {
-        TestContext context = newTestContext().setAppEngineWebXmlFile("appengine-web-with-logging-properties.xml");
-        return getDefaultDeployment(context)
-                .addAsWebInfResource("logging-all.properties", "logging.properties");
-    }
-
-    @Test
-    public void testLogLevelInAppLogLineMatchesActualLogLevelUsedWhenLogging() {
-        Logger log = Logger.getLogger(LogServiceTestCase.class.getName());
-        log.finest("finest_testLogLevelMatches");
-        log.finer("finer_testLogLevelMatches");
-        log.fine("fine_testLogLevelMatches");
-        log.config("config_testLogLevelMatches");
-        log.info("info_testLogLevelMatches");
-        log.warning("warning_testLogLevelMatches");
-        log.severe("severe_testLogLevelMatches");
-        flush(log);
-
-        assertLogContains("finest_testLogLevelMatches", LogService.LogLevel.DEBUG);
-        assertLogContains("finer_testLogLevelMatches", LogService.LogLevel.DEBUG);
-        assertLogContains("fine_testLogLevelMatches", LogService.LogLevel.DEBUG);
-        assertLogContains("config_testLogLevelMatches", LogService.LogLevel.DEBUG);
-
-        // we can't test the following on dev appserver, because it returns incorrect logLevels
-        // more info at http://code.google.com/p/googleappengine/issues/detail?id=8651
-        if (!runningInsideDevAppEngine() || isJBossImpl(service)) {
-            assertLogContains("info_testLogLevelMatches", LogService.LogLevel.INFO);
-            assertLogContains("warning_testLogLevelMatches", LogService.LogLevel.WARN);
-            assertLogContains("severe_testLogLevelMatches", LogService.LogLevel.ERROR);
-        }
+        return getDefaultDeployment(newTestContext());
     }
 
     @Test
