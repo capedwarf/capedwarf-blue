@@ -200,7 +200,7 @@ public class CapedwarfLogService implements LogService, Logable {
     private FetchOptions createAppLogFetchOptions(LogQuery logQuery) {
         FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
         if (logQuery.getBatchSize() != null) {
-            fetchOptions = fetchOptions.limit(logQuery.getBatchSize());
+            fetchOptions = fetchOptions.chunkSize(logQuery.getBatchSize());
         }
         return fetchOptions;
     }
