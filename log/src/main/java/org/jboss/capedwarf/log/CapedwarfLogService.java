@@ -38,6 +38,7 @@ import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
@@ -52,7 +53,6 @@ import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN_OR_EQUAL;
-import static com.google.appengine.api.datastore.Query.FilterOperator.IN;
 import static com.google.appengine.api.datastore.Query.FilterOperator.LESS_THAN_OR_EQUAL;
 import static com.google.appengine.api.datastore.Query.FilterOperator.NOT_EQUAL;
 
@@ -109,14 +109,27 @@ public class CapedwarfLogService implements LogService, Logable {
 
     private Map<Key, RequestLogs> fetchRequestLogs(LogQuery logQuery, List<RequestLogs> list) {
         Map<Key, RequestLogs> map = new HashMap<Key, RequestLogs>();
-
-        List<Entity> entities = datastoreService.prepare(createRequestLogsQuery(logQuery)).asList(withDefaults());
-        for (Entity entity : entities) {
+        for (Entity entity : fetchRequestLogEntities(logQuery)) {
             RequestLogs requestLogs = convertEntityToRequestLogs(entity);
             map.put(entity.getKey(), requestLogs);
             list.add(requestLogs);
         }
         return map;
+    }
+
+    private List<Entity> fetchRequestLogEntities(LogQuery logQuery) {
+        if (logQuery.getRequestIds().isEmpty()) {
+            return datastoreService.prepare(createRequestLogsQuery(logQuery)).asList(withDefaults());
+        } else {
+            List<Entity> entities = new ArrayList<Entity>(logQuery.getRequestIds().size());
+            for (String requestId : logQuery.getRequestIds()) {
+                try {
+                    entities.add(datastoreService.get(KeyFactory.createKey(LOG_REQUEST_ENTITY_KIND, Long.parseLong(requestId))));
+                } catch (EntityNotFoundException ignored) {
+                }
+            }
+            return entities;
+        }
     }
 
     private RequestLogs convertEntityToRequestLogs(Entity entity) {
@@ -134,6 +147,7 @@ public class CapedwarfLogService implements LogService, Logable {
         }
         requestLogs.setResource((String) entity.getProperty(LOG_REQUEST_URI));
         requestLogs.setUserAgent((String) entity.getProperty(LOG_REQUEST_USER_AGENT));
+        requestLogs.setRequestId(String.valueOf(entity.getKey().getId()));
         // TODO: set all other properties
         return requestLogs;
     }
@@ -153,14 +167,6 @@ public class CapedwarfLogService implements LogService, Logable {
         boolean onlyCompleteRequests = !Boolean.TRUE.equals(logQuery.getIncludeIncomplete());
         if (onlyCompleteRequests) {
             filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, NOT_EQUAL, null));
-        }
-
-        if (!logQuery.getRequestIds().isEmpty()) {
-            ArrayList<Key> keys = new ArrayList<Key>();
-            for (String requestId : logQuery.getRequestIds()) {
-                keys.add(KeyFactory.createKey(LOG_REQUEST_ENTITY_KIND, Long.parseLong(requestId)));
-            }
-            filters.add(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, IN, keys));
         }
 
         Query query = new Query(LOG_REQUEST_ENTITY_KIND);

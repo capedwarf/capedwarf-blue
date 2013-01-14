@@ -23,9 +23,13 @@
 package org.jboss.test.capedwarf.log.test;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.log.LogQuery;
+import com.google.appengine.api.log.LogService;
+import com.google.appengine.api.log.LogServiceFactory;
+import com.google.appengine.api.log.RequestLogs;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -41,6 +45,8 @@ import org.junit.runner.RunWith;
 import static com.google.appengine.api.log.LogService.LogLevel.DEBUG;
 import static com.google.appengine.api.log.LogService.LogLevel.ERROR;
 import static com.google.appengine.api.log.LogService.LogLevel.WARN;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -141,11 +147,18 @@ public class LogQueryTestCase extends AbstractLoggingTest {
     @Test
     @InSequence(20)
     public void testRequestIds() throws Exception {
-        assertLogQueryReturns("info_createCompleteRequest1", new LogQuery().includeAppLogs(true).requestIds(Arrays.asList(request1Id)));
-        assertLogQueryDoesNotReturn("info_createCompleteRequest3", new LogQuery().includeAppLogs(true).requestIds(Arrays.asList(request1Id)));
+        LogService service = LogServiceFactory.getLogService();
 
-        assertLogQueryReturns("info_createCompleteRequest3", new LogQuery().includeAppLogs(true).requestIds(Arrays.asList(request3Id)));
-        assertLogQueryDoesNotReturn("info_createCompleteRequest1", new LogQuery().includeAppLogs(true).requestIds(Arrays.asList(request3Id)));
+        LogQuery logQuery = new LogQuery().requestIds(Arrays.asList(request1Id, request2Id));
+        Iterator<RequestLogs> iterator = service.fetch(logQuery).iterator();
+        assertEquals(request1Id, iterator.next().getRequestId());
+        assertEquals(request2Id, iterator.next().getRequestId());
+        assertFalse(iterator.hasNext());
+
+        logQuery = new LogQuery().requestIds(Arrays.asList(request2Id));
+        iterator = service.fetch(logQuery).iterator();
+        assertEquals(request2Id, iterator.next().getRequestId());
+        assertFalse(iterator.hasNext());
     }
 
     private String getCurrentRequestId() {
