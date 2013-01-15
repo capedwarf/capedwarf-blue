@@ -39,8 +39,12 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+import com.google.apphosting.api.ApiProxy;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.threads.DirectFuture;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
@@ -75,12 +79,38 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
         };
     }
 
+    protected <T> Callable<T> env(final ClassLoader appCL, final CapedwarfEnvironment env, final Callable<T> callable) {
+        return new Callable<T>() {
+            public T call() throws Exception {
+                final ClassLoader old = SecurityActions.setThreadContextClassLoader(appCL);
+                try {
+                    CapedwarfEnvironment.setThreadLocalInstance(env);
+                    try {
+                        final ApiProxy.Delegate previous = ApiProxy.getDelegate();
+                        ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
+                        try {
+                            return callable.call();
+                        } finally {
+                            ApiProxy.setDelegate(previous);
+                        }
+                    } finally {
+                        CapedwarfEnvironment.clearThreadLocalInstance();
+                    }
+                } finally {
+                    SecurityActions.setThreadContextClassLoader(old);
+                }
+            }
+        };
+    }
+
     protected <T> Future<T> wrap(final Transaction transaction, final Callable<T> callable, final Runnable pre, final Function<T, Void> post) {
         if (pre != null) {
             pre.run();
         }
+        final ClassLoader appCL = Application.getAppClassloader();
+        final CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
         final TransactionWrapper tw = CapedwarfTransaction.getTxWrapper(transaction);
-        final Future<T> wrap = wrap(new Callable<T>() {
+        final Future<T> wrap = wrap(env(appCL, env, new Callable<T>() {
             public T call() throws Exception {
                 CapedwarfTransaction.attach(tw);
                 try {
@@ -89,7 +119,7 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
                     CapedwarfTransaction.detach(tw);
                 }
             }
-        });
+        }));
         return new PostFuture<T>(wrap) {
             protected void after(T result) {
                 if (post != null) {
@@ -133,8 +163,10 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
             requiredKeys.removeAll(map.keySet()); // remove manually added keys
         }
 
+        final ClassLoader appCL = Application.getAppClassloader();
+        final CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
         final TransactionWrapper tw = CapedwarfTransaction.getTxWrapper(transaction);
-        final Future<Map<Key, Entity>> wrap = wrap(new Callable<Map<Key, Entity>>() {
+        final Future<Map<Key, Entity>> wrap = wrap(env(appCL, env, new Callable<Map<Key, Entity>>() {
             public Map<Key, Entity> call() throws Exception {
                 CapedwarfTransaction.attach(tw);
                 try {
@@ -149,7 +181,7 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
                     CapedwarfTransaction.detach(tw);
                 }
             }
-        });
+        }));
         return new PostFuture<Map<Key,Entity>>(wrap) {
             protected void after(Map<Key, Entity> result) {
                 getDatastoreCallbacks().executePostLoadCallbacks(postTxProvider(transaction), Lists.newArrayList(map.values()));
@@ -178,8 +210,10 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
             }
         };
 
+        final ClassLoader appCL = Application.getAppClassloader();
+        final CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
         final TransactionWrapper tw = CapedwarfTransaction.getTxWrapper(transaction);
-        final Future<List<Key>> wrap = wrap(new Callable<List<Key>>() {
+        final Future<List<Key>> wrap = wrap(env(appCL, env, new Callable<List<Key>>() {
             public List<Key> call() throws Exception {
                 CapedwarfTransaction.attach(tw);
                 try {
@@ -190,7 +224,7 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
                     CapedwarfTransaction.detach(tw);
                 }
             }
-        });
+        }));
         return handleGetWithPost(wrap, CapedwarfTransaction.getTx(), post);
     }
 
@@ -215,8 +249,10 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
             }
         };
 
+        final ClassLoader appCL = Application.getAppClassloader();
+        final CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
         final TransactionWrapper tw = CapedwarfTransaction.getTxWrapper(transaction);
-        final Future<Void> wrap = wrap(new Callable<Void>() {
+        final Future<Void> wrap = wrap(env(appCL, env, new Callable<Void>() {
             public Void call() throws Exception {
                 CapedwarfTransaction.attach(tw);
                 try {
@@ -226,7 +262,7 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
                     CapedwarfTransaction.detach(tw);
                 }
             }
-        });
+        }));
         return handleGetWithPost(wrap, CapedwarfTransaction.getTx(), post);
     }
 
