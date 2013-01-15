@@ -27,21 +27,18 @@ import java.util.Set;
 
 import org.infinispan.notifications.Listenable;
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.shared.AppKey;
+import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.datastore.ns.NamespaceListener;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.Keys;
+import org.jboss.capedwarf.shared.components.SetKey;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CacheListenerRegistry {
-    private static final Key<Set> KEY = new AppKey<Set>(Set.class) {
-        public Object getSlot() {
-            return Keys.CACHE_LISTENERS;
-        }
-    };
+    private static final Key<Set<CacheListenerHandle>> KEY = new SetKey<CacheListenerHandle>(EnvAppIdFactory.INSTANCE, Keys.CACHE_LISTENERS);
 
     /**
      * Cache listener handles
@@ -53,10 +50,9 @@ public class CacheListenerRegistry {
      *
      * @param handle the cache handle
      */
-    @SuppressWarnings("unchecked")
     public static synchronized void registerListener(Listenable listenable, CacheListenerHandle handle) {
         ComponentRegistry registry = ComponentRegistry.getInstance();
-        Set<CacheListenerHandle> handles = (Set<CacheListenerHandle>) registry.getComponent(KEY);
+        Set<CacheListenerHandle> handles = registry.getComponent(KEY);
         if (handles == null || handles.contains(handle) == false) {
             if (handles == null) {
                 handles = new HashSet<CacheListenerHandle>();

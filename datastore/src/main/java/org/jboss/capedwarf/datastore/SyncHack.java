@@ -25,10 +25,11 @@ package org.jboss.capedwarf.datastore;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import org.jboss.capedwarf.common.shared.AppKey;
+import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.Keys;
+import org.jboss.capedwarf.shared.components.SetKey;
 
 /**
  * Do we make DatastoreService force sync ops on cache for certain callers.
@@ -38,17 +39,12 @@ import org.jboss.capedwarf.shared.components.Keys;
  */
 final class SyncHack {
     private static final Logger log = Logger.getLogger(SyncHack.class.getName());
-    private static final Key<Set> KEY;
+    private static final Key<Set<String>> KEY;
 
     static {
-        KEY = new AppKey<Set>(Set.class) {
-            public Object getSlot() {
-                return Keys.SYNC_HACK;
-            }
-        };
+        KEY = new SetKey<String>(EnvAppIdFactory.INSTANCE, Keys.SYNC_HACK);
     }
 
-    @SuppressWarnings("unchecked")
     static boolean forceSync() {
         Set<String> callers = ComponentRegistry.getInstance().getComponent(KEY);
         if (callers == null || callers.isEmpty())

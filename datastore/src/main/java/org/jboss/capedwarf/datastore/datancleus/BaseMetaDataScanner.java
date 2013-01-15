@@ -25,10 +25,11 @@ package org.jboss.capedwarf.datastore.datancleus;
 import java.util.Set;
 
 import org.datanucleus.metadata.PersistenceUnitMetaData;
-import org.jboss.capedwarf.common.shared.AppKey;
+import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.Keys;
+import org.jboss.capedwarf.shared.components.SetKey;
 
 /**
  * Uses prepared Jandex based metadata scanner.
@@ -47,13 +48,8 @@ public class BaseMetaDataScanner extends AbstractMetaDataScanner {
 
     public synchronized Set<String> scanForPersistableClasses(PersistenceUnitMetaData pumd) {
         if (entities == null) {
-            Key<Set> key = new AppKey<Set>(Set.class) {
-                public Object getSlot() {
-                    return Keys.METADATA_SCANNER;
-                }
-            };
-            //noinspection unchecked
-            entities = (Set<String>) ComponentRegistry.getInstance().getComponent(key);
+            Key<Set<String>> key = new SetKey<String>(EnvAppIdFactory.INSTANCE, Keys.METADATA_SCANNER);
+            entities = ComponentRegistry.getInstance().getComponent(key);
         }
         return entities;
     }

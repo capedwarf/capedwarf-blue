@@ -31,9 +31,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.shared.AppSimpleKey;
+import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
+import org.jboss.capedwarf.shared.components.SimpleKey;
 
 /**
  * Allow for custom extensions to GAE API, impl, behavior, etc.
@@ -81,7 +82,7 @@ public class Compatibility {
         }
     }
 
-    private static final Key<Compatibility> KEY = new AppSimpleKey<Compatibility>(Compatibility.class);
+    private static final Key<Compatibility> KEY = new SimpleKey<Compatibility>(EnvAppIdFactory.INSTANCE, Compatibility.class);
     private static final ThreadLocal<Set<Feature>> temps = new ThreadLocal<Set<Feature>>();
 
     private final Properties properties;
