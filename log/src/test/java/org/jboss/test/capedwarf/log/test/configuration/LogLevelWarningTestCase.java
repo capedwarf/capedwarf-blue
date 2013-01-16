@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,50 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.log.test;
+package org.jboss.test.capedwarf.log.test.configuration;
 
-import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
-import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
- * @author Marko Luksa
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
 @Category(All.class)
-public class LoggingConfigurationTestCase extends AbstractLoggingTest {
+public class LogLevelWarningTestCase extends AbstractLoggingConfigurationTest {
 
     @Deployment
     public static Archive getDeployment() {
-        final TestContext context = newTestContext().setAppEngineWebXmlFile("appengine-web-with-logging-properties.xml");
-        final WebArchive war = getDefaultDeployment(context);
-        war.addAsWebInfResource("logging.properties");
-        return war;
+        return getDeploymentWithLoggingLevelSetTo(Level.WARNING);
     }
 
     @Test
-    public void testLoggingPropertiesAreHonored() {
-        String infoHello = "info hello";
-        String severeHello = "severe hello";
-
-        assertLogDoesntContain(infoHello);
-        assertLogDoesntContain(severeHello);
-
-        Logger log = Logger.getLogger(LoggingConfigurationTestCase.class.getName());
-        log.info(infoHello);
-        log.severe(severeHello);
-        flush(log);
-
-        assertLogDoesntContain(infoHello);
-        assertLogContains(severeHello);
+    public void testLogLevelWarning() {
+        assertLogOnlyLogsMessagesAboveOrAtLevel(Level.WARNING);
     }
 
 }

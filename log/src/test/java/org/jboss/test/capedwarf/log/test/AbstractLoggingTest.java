@@ -40,12 +40,23 @@ import org.junit.Before;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author Ales Justin
  * @author Marko Luksa
  */
 public class AbstractLoggingTest extends BaseTest {
+
+    private boolean clearLogAfterEachTestMethod;
+
+    public AbstractLoggingTest() {
+        this(true);
+    }
+
+    public AbstractLoggingTest(boolean clearLogAfterEachTestMethod) {
+        this.clearLogAfterEachTestMethod = clearLogAfterEachTestMethod;
+    }
 
     protected static TestContext newTestContext() {
         return new TestContext();
@@ -57,15 +68,19 @@ public class AbstractLoggingTest extends BaseTest {
 
     @Before
     public void before() {
-        clear();
+        if (clearLogAfterEachTestMethod) {
+            clear();
+        }
     }
 
     @After
     public void after() {
-        clear();
+        if (clearLogAfterEachTestMethod) {
+            clear();
+        }
     }
 
-    protected void clear() {
+    protected static void clear() {
         LogService service = LogServiceFactory.getLogService();
         if (isJBossImpl(service)) {
             final Class<? extends LogService> clazz = service.getClass();
@@ -85,11 +100,15 @@ public class AbstractLoggingTest extends BaseTest {
     }
 
     protected boolean logContains(String text) {
-        return findLogLine(text) != null;
+        return findLogLineContaining(text) != null;
     }
 
-    private AppLogLine findLogLine(String text) {
-        LogQuery logQuery = new LogQuery().includeAppLogs(true).includeIncomplete(true).minLogLevel(LogService.LogLevel.DEBUG);
+    protected AppLogLine findLogLineContaining(String text) {
+        LogQuery logQuery = new LogQuery().includeAppLogs(true).includeIncomplete(true);
+        return findLogLine(text, logQuery);
+    }
+
+    protected AppLogLine findLogLine(String text, LogQuery logQuery) {
         Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(logQuery);
         for (RequestLogs logs : iterable) {
             for (AppLogLine logLine : logs.getAppLogLines()) {
@@ -110,10 +129,21 @@ public class AbstractLoggingTest extends BaseTest {
     }
 
     protected void assertLogContains(String text, LogService.LogLevel logLevel) {
-        AppLogLine logLine = findLogLine(text);
+        AppLogLine logLine = findLogLineContaining(text);
         assertNotNull("log should contain '" + text + "', but it does not", logLine);
         if (logLevel != null) {
             assertEquals("incorrect logLevel for text '" + text + "'", logLevel, logLine.getLogLevel());
         }
     }
+
+    protected void assertLogQueryReturns(String text, LogQuery logQuery) {
+        AppLogLine logLine = findLogLine(text, logQuery);
+        assertNotNull("logQuery should return '" + text + "', but it does not", logLine);
+    }
+
+    protected void assertLogQueryDoesNotReturn(String text, LogQuery logQuery) {
+        AppLogLine logLine = findLogLine(text, logQuery);
+        assertNull("logQuery should not return '" + text + "', but it does", logLine);
+    }
+
 }

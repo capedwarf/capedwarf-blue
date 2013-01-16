@@ -48,11 +48,11 @@ import static org.junit.Assert.fail;
 @Category(All.class)
 public class LogServiceTestCase extends AbstractLoggingTest {
 
-    private LogService logService;
+    private LogService service;
 
     @Before
     public void setUp() throws Exception {
-        logService = LogServiceFactory.getLogService();
+        service = LogServiceFactory.getLogService();
     }
 
     @Deployment
@@ -89,7 +89,7 @@ public class LogServiceTestCase extends AbstractLoggingTest {
     }
 
     private void assertLogQueryExecutes(LogQuery logQuery) {
-        logService.fetch(logQuery);
+        service.fetch(logQuery);
     }
 
     @Test
@@ -98,11 +98,11 @@ public class LogServiceTestCase extends AbstractLoggingTest {
         log.info("hello_testLogLinesAreReturnedOnlyWhenRequested");
         flush(log);
 
-        for (RequestLogs logs : logService.fetch(new LogQuery().includeAppLogs(false))) {
+        for (RequestLogs logs : service.fetch(new LogQuery().includeIncomplete(true).includeAppLogs(false))) {
             assertTrue("AppLogLines should be empty", logs.getAppLogLines().isEmpty());
         }
 
-        for (RequestLogs logs : logService.fetch(new LogQuery().includeAppLogs(true))) {
+        for (RequestLogs logs : service.fetch(new LogQuery().includeIncomplete(true).includeAppLogs(true))) {
             if (!logs.getAppLogLines().isEmpty()) {
                 // if we've found at least one appLogLine, the test passed
                 return;

@@ -22,17 +22,22 @@
 
 package org.jboss.test.capedwarf.log.test;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.NamespaceManager;
-import com.google.appengine.api.log.LogService;
+import com.google.appengine.api.log.AppLogLine;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Marko Luksa
@@ -41,9 +46,16 @@ import org.junit.runner.RunWith;
 @Category(All.class)
 public class LoggingTestCase extends AbstractLoggingTest {
 
+    private Logger log;
+
     @Deployment
     public static WebArchive getDeployment() {
         return getDefaultDeployment(newTestContext());
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        log = Logger.getLogger(LoggingTestCase.class.getName());
     }
 
     @Test
@@ -51,24 +63,10 @@ public class LoggingTestCase extends AbstractLoggingTest {
         String text = "hello_testLogging";
         assertLogDoesntContain(text);
 
-        Logger log = Logger.getLogger(LoggingTestCase.class.getName());
         log.info(text);
         flush(log);
 
         assertLogContains(text);
-    }
-
-    @Test
-    public void testLoggingHonorsLogLevel() {
-        Logger log = Logger.getLogger(LoggingTestCase.class.getName());
-        log.info("info_test");
-        log.warning("warning_test");
-        log.severe("severe_test");
-        flush(log);
-
-        assertLogContains("info_test", LogService.LogLevel.INFO);
-        assertLogContains("warning_test", LogService.LogLevel.WARN);
-        assertLogContains("severe_test", LogService.LogLevel.ERROR);
     }
 
     @Test
@@ -78,7 +76,6 @@ public class LoggingTestCase extends AbstractLoggingTest {
 
         NamespaceManager.set("some-namespace");
         try {
-            Logger log = Logger.getLogger(LoggingTestCase.class.getName());
             log.info(text);
             flush(log);
         } finally {
@@ -86,6 +83,20 @@ public class LoggingTestCase extends AbstractLoggingTest {
         }
 
         assertLogContains(text);
+    }
+
+    @Test
+    public void testLogMessageIsFormatted() {
+        // GAE dev server doesn't handle this properly (see http://code.google.com/p/googleappengine/issues/detail?id=8666)
+        if (isRunningInsideGaeDevServer()) {
+            return;
+        }
+        log.log(Level.INFO, "Parameterized message with params {0} and {1}", new Object[] {"param1", 222});
+        flush(log);
+
+        AppLogLine logLine = findLogLineContaining("Parameterized message with params");
+        assertNotNull("log should contain 'Parameterized message with params param1 and 222', but it does not", logLine);
+        assertEquals("Parameterized message with params param1 and 222", logLine.getLogMessage());
     }
 
 }

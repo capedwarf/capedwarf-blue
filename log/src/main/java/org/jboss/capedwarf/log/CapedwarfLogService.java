@@ -22,9 +22,9 @@
 
 package org.jboss.capedwarf.log;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +38,10 @@ import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogQuery;
@@ -48,6 +50,11 @@ import com.google.appengine.api.log.RequestLogs;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+
+import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
+import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN_OR_EQUAL;
+import static com.google.appengine.api.datastore.Query.FilterOperator.LESS_THAN_OR_EQUAL;
+import static com.google.appengine.api.datastore.Query.FilterOperator.NOT_EQUAL;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -60,6 +67,7 @@ public class CapedwarfLogService implements LogService, Logable {
     private static final String LOG_REQUEST_END_TIME_MILLIS = "endTimeMillis";
     private static final String LOG_REQUEST_URI = "uri";
     private static final String LOG_REQUEST_USER_AGENT = "userAgent";
+    private static final String LOG_REQUEST_MAX_LOG_LEVEL = "maxLogLevel";
 
     private static final String LOG_LINE_ENTITY_KIND = "__org.jboss.capedwarf.LogLine__";
     private static final String LOG_LINE_REQUEST_KEY = "requestKey";
@@ -71,6 +79,7 @@ public class CapedwarfLogService implements LogService, Logable {
 
     private static final String LOG_REQUEST_ENTITY_REQUEST_ATTRIBUTE = "__org.jboss.capedwarf.LogRequest__";
 
+    private static final String REQUEST_LOG_ENTITY = "com.google.appengine.runtime.request_log_entity";
     private static final String REQUEST_LOG_ID = "com.google.appengine.runtime.request_log_id";
 
     private boolean ignoreLogging = Compatibility.getInstance().isEnabled(Compatibility.Feature.IGNORE_LOGGING);
@@ -89,9 +98,6 @@ public class CapedwarfLogService implements LogService, Logable {
                 if (logQuery.getIncludeAppLogs()) {
                     fetchAppLogLines(logQuery, map);
                 }
-                if (logQuery.getMinLogLevel() != null) {
-                    removeRequestsWithNoLogLines(list);
-                }
                 return list;
             } finally {
                 Compatibility.disable(Compatibility.Feature.DISABLE_QUERY_INEQUALITY_FILTER_CHECK);
@@ -101,53 +107,68 @@ public class CapedwarfLogService implements LogService, Logable {
         }
     }
 
-    private void removeRequestsWithNoLogLines(List<RequestLogs> list) {
-        for (Iterator<RequestLogs> iterator = list.iterator(); iterator.hasNext(); ) {
-            RequestLogs requestLogs = iterator.next();
-            if (requestLogs.getAppLogLines().isEmpty()) {
-                iterator.remove();
-            }
-        }
-    }
-
     private Map<Key, RequestLogs> fetchRequestLogs(LogQuery logQuery, List<RequestLogs> list) {
         Map<Key, RequestLogs> map = new HashMap<Key, RequestLogs>();
-
-        Query query = createRequestLogsQuery(logQuery);
-        FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
-
-        List<Entity> entities = datastoreService.prepare(query).asList(fetchOptions);
-        for (Entity entity : entities) {
-            RequestLogs requestLogs = new RequestLogs();
-            Long startTimeUsec = (Long) entity.getProperty(LOG_REQUEST_START_TIME_MILLIS);
-            if (startTimeUsec != null) {
-                requestLogs.setStartTimeUsec(startTimeUsec);
-            }
-            Long endTimeUsec = (Long) entity.getProperty(LOG_REQUEST_END_TIME_MILLIS);
-            if (endTimeUsec == null) {
-                requestLogs.setFinished(false);
-            } else {
-                requestLogs.setEndTimeUsec(endTimeUsec);
-                requestLogs.setPendingTime(requestLogs.getEndTimeUsec() - requestLogs.getStartTimeUsec());
-            }
-            requestLogs.setResource((String) entity.getProperty(LOG_REQUEST_URI));
-            requestLogs.setUserAgent((String) entity.getProperty(LOG_REQUEST_USER_AGENT));
-            // TODO: set all other properties
-
+        for (Entity entity : fetchRequestLogEntities(logQuery)) {
+            RequestLogs requestLogs = convertEntityToRequestLogs(entity);
             map.put(entity.getKey(), requestLogs);
             list.add(requestLogs);
         }
         return map;
     }
 
+    private List<Entity> fetchRequestLogEntities(LogQuery logQuery) {
+        if (logQuery.getRequestIds().isEmpty()) {
+            return datastoreService.prepare(createRequestLogsQuery(logQuery)).asList(withDefaults());
+        } else {
+            List<Entity> entities = new ArrayList<Entity>(logQuery.getRequestIds().size());
+            for (String requestId : logQuery.getRequestIds()) {
+                try {
+                    entities.add(datastoreService.get(KeyFactory.createKey(LOG_REQUEST_ENTITY_KIND, Long.parseLong(requestId))));
+                } catch (EntityNotFoundException ignored) {
+                }
+            }
+            return entities;
+        }
+    }
+
+    private RequestLogs convertEntityToRequestLogs(Entity entity) {
+        RequestLogs requestLogs = new RequestLogs();
+        Long startTimeUsec = (Long) entity.getProperty(LOG_REQUEST_START_TIME_MILLIS);
+        if (startTimeUsec != null) {
+            requestLogs.setStartTimeUsec(startTimeUsec);
+        }
+        Long endTimeUsec = (Long) entity.getProperty(LOG_REQUEST_END_TIME_MILLIS);
+        if (endTimeUsec == null) {
+            requestLogs.setFinished(false);
+        } else {
+            requestLogs.setEndTimeUsec(endTimeUsec);
+            requestLogs.setPendingTime(requestLogs.getEndTimeUsec() - requestLogs.getStartTimeUsec());
+        }
+        requestLogs.setResource((String) entity.getProperty(LOG_REQUEST_URI));
+        requestLogs.setUserAgent((String) entity.getProperty(LOG_REQUEST_USER_AGENT));
+        requestLogs.setRequestId(String.valueOf(entity.getKey().getId()));
+        // TODO: set all other properties
+        return requestLogs;
+    }
+
     private Query createRequestLogsQuery(LogQuery logQuery) {
         List<Query.Filter> filters = new LinkedList<Query.Filter>();
         if (logQuery.getStartTimeUsec() != null) {
-            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, Query.FilterOperator.GREATER_THAN_OR_EQUAL, logQuery.getStartTimeUsec()));
+            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, GREATER_THAN_OR_EQUAL, logQuery.getStartTimeUsec()));
         }
         if (logQuery.getEndTimeUsec() != null) {
-            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, Query.FilterOperator.LESS_THAN_OR_EQUAL, logQuery.getEndTimeUsec()));
+            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, LESS_THAN_OR_EQUAL, logQuery.getEndTimeUsec()));
         }
+        if (logQuery.getMinLogLevel() != null) {
+            filters.add(new Query.FilterPredicate(LOG_REQUEST_MAX_LOG_LEVEL, GREATER_THAN_OR_EQUAL, logQuery.getMinLogLevel().ordinal()));
+        }
+
+        boolean onlyCompleteRequests = !Boolean.TRUE.equals(logQuery.getIncludeIncomplete());
+        if (onlyCompleteRequests) {
+            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, NOT_EQUAL, null));
+        }
+
         Query query = new Query(LOG_REQUEST_ENTITY_KIND);
         addFilters(query, filters);
         query.addSort(LOG_REQUEST_END_TIME_MILLIS);
@@ -174,7 +195,9 @@ public class CapedwarfLogService implements LogService, Logable {
             logLine.setTimeUsec((Long) entity.getProperty(LOG_LINE_MILLIS));
 
             RequestLogs requestLogs = map.get((Key) entity.getProperty(LOG_LINE_REQUEST_KEY));
-            requestLogs.getAppLogLines().add(logLine);
+            if (requestLogs != null) {
+                requestLogs.getAppLogLines().add(logLine);
+            }
         }
     }
 
@@ -182,14 +205,11 @@ public class CapedwarfLogService implements LogService, Logable {
         List<Query.Filter> filters = new ArrayList<Query.Filter>();
 
         Query query = new Query(LOG_LINE_ENTITY_KIND);
-        if (logQuery.getMinLogLevel() != null) {
-            filters.add(new Query.FilterPredicate(LOG_LINE_LEVEL, Query.FilterOperator.GREATER_THAN_OR_EQUAL, logQuery.getMinLogLevel().ordinal()));
-        }
         if (logQuery.getStartTimeUsec() != null) {
-            filters.add(new Query.FilterPredicate(LOG_LINE_MILLIS, Query.FilterOperator.GREATER_THAN_OR_EQUAL, logQuery.getStartTimeUsec()));
+            filters.add(new Query.FilterPredicate(LOG_LINE_MILLIS, GREATER_THAN_OR_EQUAL, logQuery.getStartTimeUsec()));
         }
         if (logQuery.getEndTimeUsec() != null) {
-            filters.add(new Query.FilterPredicate(LOG_LINE_MILLIS, Query.FilterOperator.LESS_THAN_OR_EQUAL, logQuery.getEndTimeUsec()));
+            filters.add(new Query.FilterPredicate(LOG_LINE_MILLIS, LESS_THAN_OR_EQUAL, logQuery.getEndTimeUsec()));
         }
 
         addFilters(query, filters);
@@ -198,9 +218,9 @@ public class CapedwarfLogService implements LogService, Logable {
     }
 
     private FetchOptions createAppLogFetchOptions(LogQuery logQuery) {
-        FetchOptions fetchOptions = FetchOptions.Builder.withDefaults();
+        FetchOptions fetchOptions = withDefaults();
         if (logQuery.getBatchSize() != null) {
-            fetchOptions = fetchOptions.limit(logQuery.getBatchSize());
+            fetchOptions = fetchOptions.chunkSize(logQuery.getBatchSize());
         }
         return fetchOptions;
     }
@@ -215,33 +235,44 @@ public class CapedwarfLogService implements LogService, Logable {
         try {
             CapedwarfDelegate capedwarfDelegate = CapedwarfDelegate.INSTANCE;
             ServletRequest request = capedwarfDelegate.getServletRequest();
+            LogLevel logLevel = getLogLevel(record);
+            String formattedMessage = new MessageFormat(record.getMessage()).format(record.getParameters());
 
             Entity entity = new Entity(LOG_LINE_ENTITY_KIND);
             entity.setProperty(LOG_LINE_LOGGER, record.getLoggerName());
-            entity.setProperty(LOG_LINE_LEVEL, getLogLevel(record).ordinal());
+            entity.setProperty(LOG_LINE_LEVEL, logLevel.ordinal());
             entity.setProperty(LOG_LINE_MILLIS, record.getMillis());
             entity.setProperty(LOG_LINE_THROWN, record.getThrown());
-            entity.setProperty(LOG_LINE_MESSAGE, record.getMessage()); // TODO: format message
+            entity.setProperty(LOG_LINE_MESSAGE, formattedMessage);
             entity.setProperty(LOG_LINE_REQUEST_KEY, getRequestEntityKey(request));
 
             datastoreService.put(entity); // TODO -- async
+
+            CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
+            Entity requestEntity = (Entity) environment.getAttributes().get(REQUEST_LOG_ENTITY);
+
+            Integer maxLogLevelOrdinal = (Integer) requestEntity.getProperty(LOG_REQUEST_MAX_LOG_LEVEL);
+            if (maxLogLevelOrdinal == null || logLevel.ordinal() > maxLogLevelOrdinal) {
+                requestEntity.setProperty(LOG_REQUEST_MAX_LOG_LEVEL, logLevel.ordinal());
+            }
+
         } finally {
             NamespaceManager.set(ns);
         }
     }
 
     private LogLevel getLogLevel(LogRecord record) {
-        // TODO
-        if (record.getLevel().equals(Level.INFO)) {
-            return LogLevel.INFO;
-        } else if (record.getLevel().equals(Level.WARNING)) {
-            return LogLevel.WARN;
-        } else if (record.getLevel().equals(Level.SEVERE)) {
-            return LogLevel.ERROR;
-        } else if (record.getLevel().equals(Level.FINE)) {
+        int level = record.getLevel().intValue();
+        if (level <= Level.CONFIG.intValue()) {
             return LogLevel.DEBUG;
-        } else {
+        } else if (level <= Level.INFO.intValue()) {
             return LogLevel.INFO;
+        } else if (level <= Level.WARNING.intValue()) {
+            return LogLevel.WARN;
+        } else if (level <= Level.SEVERE.intValue()) {
+            return LogLevel.ERROR;
+        } else {
+            return LogLevel.FATAL;
         }
     }
 
@@ -263,6 +294,7 @@ public class CapedwarfLogService implements LogService, Logable {
         servletRequest.setAttribute(LOG_REQUEST_ENTITY_REQUEST_ATTRIBUTE, entity);
 
         CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
+        environment.getAttributes().put(REQUEST_LOG_ENTITY, entity);
         environment.getAttributes().put(REQUEST_LOG_ID, String.valueOf(key.getId()));
     }
 
@@ -271,8 +303,9 @@ public class CapedwarfLogService implements LogService, Logable {
         // check if all went well
         if (entity != null) {
             entity.setProperty(LOG_REQUEST_END_TIME_MILLIS, System.currentTimeMillis());
+            datastoreService.put(entity);
 
-    //            HttpServletResponse response;
+            //            HttpServletResponse response;
             // TODO entity.setProperty("responseStatusCode", response.getStatus());
             // TODO entity.setProperty("responseLength", );
         }

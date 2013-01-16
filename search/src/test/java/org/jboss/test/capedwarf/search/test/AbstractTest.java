@@ -192,7 +192,7 @@ public abstract class AbstractTest extends BaseTest {
     }
 
     protected List<Document> getAllDocumentsIn(Index index) {
-        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
+        if (isRunningInsideGaeDevServer()) {
             fixListDocumentsBugWhenInvokedOnEmptyIndex(index);
         }
         return index.getRange(defaultListRequest()).getResults();

@@ -75,7 +75,7 @@ public class BasicTestCase extends AbstractTest {
 
     @Test
     public void testSubscribeThrowsQuerySyntaxExceptionWhenSchemaIsEmpty() {
-        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
+        if (isRunningInsideGaeDevServer()) {
             // we shouldn't test this on dev appserver, since it doesn't throw this exception
             return;
         }
@@ -139,7 +139,7 @@ public class BasicTestCase extends AbstractTest {
         Subscription subscription = service.getSubscription("myTopic", "mySubscription");
         long expirationTime = subscription.getExpirationTime();
 
-        if (runningInsideDevAppEngine() && isJBossImpl(service) == false) {
+        if (isRunningInsideGaeDevServer()) {
             assertEquals(0L, expirationTime);
         } else {
             long expected = todayPlusHundredYears().getTime() / 1000;
