@@ -33,7 +33,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
-import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -99,11 +98,11 @@ public class LogServiceTestCase extends AbstractLoggingTest {
         log.info("hello_testLogLinesAreReturnedOnlyWhenRequested");
         flush(log);
 
-        for (RequestLogs logs : service.fetch(new LogQuery().includeAppLogs(false))) {
+        for (RequestLogs logs : service.fetch(new LogQuery().includeIncomplete(true).includeAppLogs(false))) {
             assertTrue("AppLogLines should be empty", logs.getAppLogLines().isEmpty());
         }
 
-        for (RequestLogs logs : service.fetch(new LogQuery().includeAppLogs(true))) {
+        for (RequestLogs logs : service.fetch(new LogQuery().includeIncomplete(true).includeAppLogs(true))) {
             if (!logs.getAppLogLines().isEmpty()) {
                 // if we've found at least one appLogLine, the test passed
                 return;
