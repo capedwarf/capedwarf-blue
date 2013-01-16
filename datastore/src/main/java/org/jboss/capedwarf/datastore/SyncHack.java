@@ -28,8 +28,8 @@ import java.util.logging.Logger;
 import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
-import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.components.SetKey;
+import org.jboss.capedwarf.shared.components.Slot;
 
 /**
  * Do we make DatastoreService force sync ops on cache for certain callers.
@@ -42,7 +42,7 @@ final class SyncHack {
     private static final Key<Set<String>> KEY;
 
     static {
-        KEY = new SetKey<String>(EnvAppIdFactory.INSTANCE, Keys.SYNC_HACK);
+        KEY = new SetKey<String>(EnvAppIdFactory.INSTANCE, Slot.SYNC_HACK);
     }
 
     static boolean forceSync() {

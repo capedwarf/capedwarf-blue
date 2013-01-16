@@ -47,8 +47,8 @@ import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
-import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.components.MapKey;
+import org.jboss.capedwarf.shared.components.Slot;
 
 /**
  * JBoss DatastoreService impl.
@@ -91,7 +91,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         if (allocationsMap == null) {
             synchronized (this) {
                 if (allocationsMap == null) {
-                    MapKey<String, Integer> key = new MapKey<String, Integer>(EnvAppIdFactory.INSTANCE, Keys.ALLOCATIONS_MAP);
+                    MapKey<String, Integer> key = new MapKey<String, Integer>(EnvAppIdFactory.INSTANCE, Slot.ALLOCATIONS_MAP);
                     allocationsMap = ComponentRegistry.getInstance().getComponent(key);
                 }
             }
