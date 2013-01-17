@@ -228,13 +228,14 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public void setBaseApplicationUrl(String scheme, String serverName, int port, String context) {
         String sPort = (port == DEFAULT_HTTP_PORT) ? "" : ":" + port;
-        baseApplicationUrl = scheme + DELIMITER + serverName + sPort + context;
+        String defaultVersionHostname = serverName + sPort + context;
+        baseApplicationUrl = scheme + DELIMITER + defaultVersionHostname;
         if (HTTPS.equals(scheme)) {
             secureBaseApplicationUrl = baseApplicationUrl;
         } else {
-            secureBaseApplicationUrl = HTTPS + DELIMITER + serverName + sPort + context;
+            secureBaseApplicationUrl = HTTPS + DELIMITER + defaultVersionHostname;
         }
-        attributes.put(DEFAULT_VERSION_HOSTNAME, baseApplicationUrl);
+        attributes.put(DEFAULT_VERSION_HOSTNAME, defaultVersionHostname);
     }
 
     public String getBaseApplicationUrl() {
