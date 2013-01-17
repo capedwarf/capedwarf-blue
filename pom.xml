@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>9</version>
+        <version>10</version>
     </parent>
     <groupId>org.jboss.capedwarf.blue</groupId>
     <artifactId>capedwarf-build</artifactId>
@@ -101,12 +101,6 @@
         <version.com.google.api-client>1.11.0-beta</version.com.google.api-client>
         <version.com.google.api-services-bigquery>v2-rev33-1.8.0-beta</version.com.google.api-services-bigquery>
         <!-- Build configuration -->
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
-        <version.compiler.plugin>2.5.1-jboss-2</version.compiler.plugin>
-        <version.surefire.plugin>2.12.4</version.surefire.plugin>
-        <version.release.plugin>2.3.2</version.release.plugin>
-        <version.jar.plugin>2.4</version.jar.plugin>
         <version.datanucleus.plugin>3.1.2</version.datanucleus.plugin>
     </properties>
 
