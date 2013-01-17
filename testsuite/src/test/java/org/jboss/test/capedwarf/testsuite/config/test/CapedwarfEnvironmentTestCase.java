@@ -116,9 +116,9 @@ public class CapedwarfEnvironmentTestCase {
 
     @Test
     public void attributesContainDefaultVersionHostname() throws Exception {
-        String BASE_URL = "http://myapp.capedwarf.com";
+        String HOSTNAME = "myapp.capedwarf.com";
         env.setBaseApplicationUrl("http", "myapp.capedwarf.com", 80, "");
-        Assert.assertEquals(BASE_URL, env.getAttributes().get("com.google.appengine.runtime.default_version_hostname"));
+        Assert.assertEquals(HOSTNAME, env.getAttributes().get("com.google.appengine.runtime.default_version_hostname"));
     }
 
 }
