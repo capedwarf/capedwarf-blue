@@ -47,7 +47,6 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 /**
@@ -84,7 +83,7 @@ public class CapedwarfURLFetchService implements URLFetchService {
     }
 
     public HTTPResponse fetch(final HTTPRequest httpRequest) throws IOException {
-        return fetch(httpRequest.getMethod().name(), toURI(httpRequest));
+        return fetch(httpRequest.getMethod().name(), toURI(httpRequest.getURL()));
     }
 
     public Future<HTTPResponse> fetchAsync(URL url) {
@@ -93,7 +92,7 @@ public class CapedwarfURLFetchService implements URLFetchService {
 
     public Future<HTTPResponse> fetchAsync(final HTTPRequest httpRequest) {
         final String method = httpRequest.getMethod().name();
-        final URI uri = toURI(httpRequest);
+        final URI uri = toURI(httpRequest.getURL());
         return ExecutorFactory.wrap(new Callable<HTTPResponse>() {
             public HTTPResponse call() throws Exception {
                 return fetch(method, uri);
@@ -123,18 +122,8 @@ public class CapedwarfURLFetchService implements URLFetchService {
         }
     }
 
-    protected URI toURI(HTTPRequest httpRequest) {
+    protected URI toURI(URL url) {
         try {
-            URL url = httpRequest.getURL();
-            final String host = url.getHost();
-            CapedwarfEnvironment ce = CapedwarfEnvironment.getThreadLocalInstance();
-            String address = ce.getBackendAddress(host); // try host as backend name
-            if (address != null) {
-                String urlString = url.toExternalForm();
-                URL addressUrl = new URL(address);
-                urlString = urlString.replace(host, addressUrl.getHost() + ":" + addressUrl.getPort() + addressUrl.getPath());
-                return new URL(urlString).toURI();
-            }
             return url.toURI();
         } catch (Exception e) {
             throw new IllegalStateException(e);

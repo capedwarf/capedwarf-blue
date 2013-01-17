@@ -84,6 +84,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     private String baseApplicationUrl;
     private String secureBaseApplicationUrl;
+    private String defaultVersionHostname;
 
     public CapedwarfEnvironment() {
         requestStart = System.currentTimeMillis();
@@ -171,7 +172,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
         if (isProduction() == false && attributes.containsKey(BackendService.DEVAPPSERVER_PORTMAPPING_KEY) == false) {
             Map<String, String> portMap = new HashMap<String, String>();
             for (BackendsXml.Backend bb : backends) {
-                portMap.put(bb.getName(), getBaseApplicationUrl());
+                portMap.put(bb.getName(), getDefaultVersionHostname());
             }
             attributes.put(BackendService.DEVAPPSERVER_PORTMAPPING_KEY, portMap);
         }
@@ -228,7 +229,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public void setBaseApplicationUrl(String scheme, String serverName, int port, String context) {
         String sPort = (port == DEFAULT_HTTP_PORT) ? "" : ":" + port;
-        String defaultVersionHostname = serverName + sPort + context;
+        defaultVersionHostname = serverName + sPort + context;
         baseApplicationUrl = scheme + DELIMITER + defaultVersionHostname;
         if (HTTPS.equals(scheme)) {
             secureBaseApplicationUrl = baseApplicationUrl;
@@ -244,6 +245,10 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public String getBaseApplicationUrl(boolean secureUrl) {
         return secureUrl ? secureBaseApplicationUrl : baseApplicationUrl;
+    }
+
+    public String getDefaultVersionHostname() {
+        return defaultVersionHostname;
     }
 
     public static CapedwarfEnvironment createThreadLocalInstance() {
