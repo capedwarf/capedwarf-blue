@@ -28,6 +28,8 @@ quota/target/
 search/target/
 tasks/target/
 testsuite/target/
+tools/target/
+tools/dependency-reduced-pom.xml
 urlfetch/target/
 users/target/
 umpp/target/
