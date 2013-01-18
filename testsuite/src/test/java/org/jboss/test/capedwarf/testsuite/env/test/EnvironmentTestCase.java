@@ -83,8 +83,4 @@ public class EnvironmentTestCase extends BaseTest {
         assertRegexpMatches("1\\.[0-9]+", System.getProperty(SystemProperty.applicationVersion.key()));
     }
 
-    private static void assertRegexpMatches(String regexp, String str) {
-        assertTrue("Expected to match regexp " + regexp + " but was: " + str, str != null && str.matches(regexp));
-    }
-
 }
