@@ -33,6 +33,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -43,8 +44,10 @@ public class GAEFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
-    public void doFilter(ServletRequest req, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest request = new CapedwarfHttpServletRequestWrapper((HttpServletRequest) req);
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+        CapedwarfHttpServletRequestWrapper request = new CapedwarfHttpServletRequestWrapper((HttpServletRequest) req);
+        CapedwarfHttpServletResponseWrapper response = new CapedwarfHttpServletResponseWrapper((HttpServletResponse) res);
+        request.setAttribute(CapedwarfHttpServletResponseWrapper.class.getName(), response);
         chain.doFilter(request, response);
     }
 

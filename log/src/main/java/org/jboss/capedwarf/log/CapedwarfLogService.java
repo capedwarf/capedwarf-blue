@@ -22,7 +22,9 @@
 
 package org.jboss.capedwarf.log;
 
+import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -62,12 +64,44 @@ import static com.google.appengine.api.datastore.Query.FilterOperator.NOT_EQUAL;
  */
 public class CapedwarfLogService implements LogService, Logable {
 
+    public static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z");
+
     private static final String LOG_REQUEST_ENTITY_KIND = "__org.jboss.capedwarf.LogRequest__";
     private static final String LOG_REQUEST_START_TIME_MILLIS = "startTimeMillis";
     private static final String LOG_REQUEST_END_TIME_MILLIS = "endTimeMillis";
     private static final String LOG_REQUEST_URI = "uri";
     private static final String LOG_REQUEST_USER_AGENT = "userAgent";
     private static final String LOG_REQUEST_MAX_LOG_LEVEL = "maxLogLevel";
+
+    private static final String LOG_REQUEST_APP_ID = "appId";
+    private static final String LOG_REQUEST_VERSION_ID = "versionId";
+    private static final String LOG_REQUEST_OFFSET = "offset";
+    private static final String LOG_REQUEST_IP = "ip";
+    private static final String LOG_REQUEST_NICKNAME = "nickname";
+    private static final String LOG_REQUEST_LATENCY = "latency";
+    private static final String LOG_REQUEST_MCYCLES = "mcycles";
+    private static final String LOG_REQUEST_METHOD = "method";
+    private static final String LOG_REQUEST_RESOURCE = "resource";
+    private static final String LOG_REQUEST_HTTP_VERSION = "httpVersion";
+    private static final String LOG_REQUEST_STATUS = "status";
+    private static final String LOG_REQUEST_RESPONSE_SIZE = "responseSize";
+    private static final String LOG_REQUEST_REFERRER = "referrer";
+    private static final String LOG_REQUEST_URL_MAP_ENTRY = "urlMapEntry";
+    private static final String LOG_REQUEST_COMBINED = "combined";
+    private static final String LOG_REQUEST_API_MCYCLES = "apiMcycles";
+    private static final String LOG_REQUEST_HOST = "host";
+    private static final String LOG_REQUEST_COST = "cost";
+    private static final String LOG_REQUEST_TASK_QUEUE_NAME = "taskQueueName";
+    private static final String LOG_REQUEST_TASK_NAME = "taskName";
+    private static final String LOG_REQUEST_LOADING_REQUEST = "wasLoadingRequest";
+    private static final String LOG_REQUEST_PENDING_TIME = "pendingTime";
+    private static final String LOG_REQUEST_REPLICA_INDEX = "replicaIndex";
+    private static final String LOG_REQUEST_FINISHED = "finished";
+    private static final String LOG_REQUEST_INSTANCE_KEY = "instanceKey";
+
+
+
+
 
     private static final String LOG_LINE_ENTITY_KIND = "__org.jboss.capedwarf.LogLine__";
     private static final String LOG_LINE_REQUEST_KEY = "requestKey";
@@ -134,22 +168,68 @@ public class CapedwarfLogService implements LogService, Logable {
 
     private RequestLogs convertEntityToRequestLogs(Entity entity) {
         RequestLogs requestLogs = new RequestLogs();
-        Long startTimeUsec = (Long) entity.getProperty(LOG_REQUEST_START_TIME_MILLIS);
-        if (startTimeUsec != null) {
-            requestLogs.setStartTimeUsec(startTimeUsec);
+        Long startTimeMillis = (Long) entity.getProperty(LOG_REQUEST_START_TIME_MILLIS);
+        if (startTimeMillis != null) {
+            requestLogs.setStartTimeUsec(startTimeMillis * 1000);
         }
-        Long endTimeUsec = (Long) entity.getProperty(LOG_REQUEST_END_TIME_MILLIS);
-        if (endTimeUsec == null) {
+        Long endTimeMillis = (Long) entity.getProperty(LOG_REQUEST_END_TIME_MILLIS);
+        if (endTimeMillis == null) {
             requestLogs.setFinished(false);
         } else {
-            requestLogs.setEndTimeUsec(endTimeUsec);
-            requestLogs.setPendingTime(requestLogs.getEndTimeUsec() - requestLogs.getStartTimeUsec());
+            requestLogs.setFinished(true);
+            requestLogs.setEndTimeUsec(endTimeMillis * 1000);
         }
+
+        requestLogs.setMethod((String) entity.getProperty(LOG_REQUEST_METHOD));
+        requestLogs.setHttpVersion((String) entity.getProperty(LOG_REQUEST_HTTP_VERSION));
+        requestLogs.setHost((String) entity.getProperty(LOG_REQUEST_HOST));
         requestLogs.setResource((String) entity.getProperty(LOG_REQUEST_URI));
         requestLogs.setUserAgent((String) entity.getProperty(LOG_REQUEST_USER_AGENT));
+        requestLogs.setReferrer((String)entity.getProperty(LOG_REQUEST_REFERRER));
         requestLogs.setRequestId(String.valueOf(entity.getKey().getId()));
-        // TODO: set all other properties
+
+        requestLogs.setAppId((String) entity.getProperty(LOG_REQUEST_APP_ID));
+        requestLogs.setVersionId((String) entity.getProperty(LOG_REQUEST_VERSION_ID));
+        requestLogs.setInstanceKey("");     // TODO
+        requestLogs.setReplicaIndex(-1);    // TODO
+
+        requestLogs.setPendingTime(0);      // TODO
+        requestLogs.setLatency(0);          // TODO
+
+//        requestLogs.setUrlMapEntry();
+
+//        requestLogs.setTaskName();
+//        requestLogs.setTaskQueueName();
+//        requestLogs.setWasLoadingRequest();
+
+        requestLogs.setNickname(emptyIfNull((String) entity.getProperty(LOG_REQUEST_NICKNAME)));
+        requestLogs.setIp((String) entity.getProperty(LOG_REQUEST_IP));
+
+
+        requestLogs.setCost(0);
+        requestLogs.setMcycles(0);
+        requestLogs.setApiMcycles(0);
+
+        Long status = (Long) entity.getProperty(LOG_REQUEST_STATUS);
+        requestLogs.setStatus(status == null ? 0 : (int)(long)status);
+
+        Long responseSize = (Long) entity.getProperty(LOG_REQUEST_RESPONSE_SIZE);
+        requestLogs.setResponseSize(responseSize == null ? 0 : (int)(long)responseSize);
+
+        // combined='93.103.26.101 - - [17/Jan/2013:08:07:11 -0800] "GET /favicon.ico HTTP/1.1" 404 0 - "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.52 Safari/537.17"',
+        requestLogs.setCombined(
+            requestLogs.getIp() + " - " + requestLogs.getNickname() + (requestLogs.getNickname().isEmpty() ? "" : " ")
+                + "- [" + DATE_FORMAT.format(requestLogs.getStartTimeUsec() / 1000L) + "] \""
+                + requestLogs.getMethod() + " " + requestLogs.getResource() + " " + requestLogs.getHttpVersion() + "\" "
+                + requestLogs.getStatus() + " " + requestLogs.getResponseSize() + " - \"" + requestLogs.getUserAgent() + "\""
+        );
+
+//        requestLogs.setOffset();  TODO
         return requestLogs;
+    }
+
+    private String emptyIfNull(String str) {
+        return str == null ? "" : str;
     }
 
     private Query createRequestLogsQuery(LogQuery logQuery) {
@@ -280,6 +360,7 @@ public class CapedwarfLogService implements LogService, Logable {
         if (ignoreLogging) {
             return;
         }
+        CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
 
         Entity entity = new Entity(LOG_REQUEST_ENTITY_KIND);
         entity.setProperty(LOG_REQUEST_START_TIME_MILLIS, startTimeMillis);
@@ -288,26 +369,30 @@ public class CapedwarfLogService implements LogService, Logable {
             HttpServletRequest request = (HttpServletRequest) servletRequest;
             entity.setProperty(LOG_REQUEST_URI, request.getRequestURI());
             entity.setProperty(LOG_REQUEST_USER_AGENT, request.getHeader("User-Agent"));
+            entity.setProperty(LOG_REQUEST_METHOD, request.getMethod());
+            entity.setProperty(LOG_REQUEST_REFERRER, request.getHeader("referer"));
+            entity.setProperty(LOG_REQUEST_HOST, request.getServerName() + (request.getServerPort() == 80 ? "" : (":" + request.getServerPort())));
         }
+        entity.setProperty(LOG_REQUEST_HTTP_VERSION, servletRequest.getProtocol());
+        entity.setProperty(LOG_REQUEST_IP, servletRequest.getRemoteAddr());
+        entity.setProperty(LOG_REQUEST_APP_ID, environment.getAppId());
+        entity.setProperty(LOG_REQUEST_VERSION_ID, environment.getVersionId());
 
         Key key = datastoreService.put(entity);
         servletRequest.setAttribute(LOG_REQUEST_ENTITY_REQUEST_ATTRIBUTE, entity);
 
-        CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
         environment.getAttributes().put(REQUEST_LOG_ENTITY, entity);
         environment.getAttributes().put(REQUEST_LOG_ID, String.valueOf(key.getId()));
     }
 
-    public void requestFinished(ServletRequest servletRequest) {
+    public void requestFinished(ServletRequest servletRequest, int status, int contentLength) {
         Entity entity = getRequestEntity(servletRequest);
         // check if all went well
         if (entity != null) {
             entity.setProperty(LOG_REQUEST_END_TIME_MILLIS, System.currentTimeMillis());
+            entity.setProperty(LOG_REQUEST_STATUS, status);
+            entity.setProperty(LOG_REQUEST_RESPONSE_SIZE, contentLength);
             datastoreService.put(entity);
-
-            //            HttpServletResponse response;
-            // TODO entity.setProperty("responseStatusCode", response.getStatus());
-            // TODO entity.setProperty("responseLength", );
         }
     }
 

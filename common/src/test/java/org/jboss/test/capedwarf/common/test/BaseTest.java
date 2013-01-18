@@ -34,6 +34,8 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.JBoss;
 
+import static junit.framework.Assert.assertTrue;
+
 /**
  * Base test class for all CapeDwarf tests.
  *
@@ -114,9 +116,17 @@ public class BaseTest {
         return ProxyFactory.isProxyClass(aClass) || aClass.getName().contains(".jboss.");
     }
 
+    protected static void assertRegexpMatches(String regexp, String str) {
+        assertTrue("Expected to match regexp " + regexp + " but was: " + str, str != null && str.matches(regexp));
+    }
+
     protected boolean isRunningInsideGaeDevServer() {
         return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development
-            && isJBossImpl(LogServiceFactory.getLogService()) == false;
+            && !isRunningInsideCapedwarf();
+    }
+
+    protected boolean isRunningInsideCapedwarf() {
+        return isJBossImpl(LogServiceFactory.getLogService());
     }
 
     protected static void sync() {
