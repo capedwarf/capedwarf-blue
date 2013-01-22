@@ -1,14 +1,12 @@
 package org.jboss.test.capedwarf.cluster.test;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.lang.reflect.Method;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
-import com.google.appengine.api.log.AppLogLine;
-import com.google.appengine.api.log.LogQuery;
-import com.google.appengine.api.log.LogService;
-import com.google.appengine.api.log.LogServiceFactory;
-import com.google.appengine.api.log.RequestLogs;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -22,8 +20,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import com.google.appengine.api.log.AppLogLine;
+import com.google.appengine.api.log.LogQuery;
+import com.google.appengine.api.log.LogService;
+import com.google.appengine.api.log.LogServiceFactory;
+import com.google.appengine.api.log.RequestLogs;
 
 /**
  * @author Matej Lazar
@@ -106,7 +107,7 @@ public class LoggingTestCase extends BaseTest {
     }
 
     private boolean logContains(String text) {
-        LogQuery logQuery = new LogQuery().includeAppLogs(true).includeIncomplete(true).minLogLevel(LogService.LogLevel.DEBUG);
+        LogQuery logQuery = new LogQuery().includeAppLogs(true).includeIncomplete(true);
         Iterable<RequestLogs> iterable = LogServiceFactory.getLogService().fetch(logQuery);
         for (RequestLogs logs : iterable) {
             for (AppLogLine logLine : logs.getAppLogLines()) {
