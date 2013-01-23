@@ -57,6 +57,12 @@ public class LoggingTestCase extends BaseTest {
         Logger log = Logger.getLogger(LoggingTestCase.class.getName());
         log.info("hello");
         flush(log);
+    }
+
+    @InSequence(15)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void readLogOnDep1() {
         waitForSync();
         assertLogContains("hello");
     }
@@ -79,7 +85,7 @@ public class LoggingTestCase extends BaseTest {
 
     @InSequence(2000)
     @Test
-    @OperateOnDeployment("dep1")
+    @OperateOnDeployment("dep2")
     public void shuttingDown2() {
         //dummy test: waiting server to shutdown
         sync();
