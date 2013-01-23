@@ -37,6 +37,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -99,10 +100,6 @@ public class CapedwarfLogService implements LogService, Logable {
     private static final String LOG_REQUEST_FINISHED = "finished";
     private static final String LOG_REQUEST_INSTANCE_KEY = "instanceKey";
 
-
-
-
-
     private static final String LOG_LINE_ENTITY_KIND = "__org.jboss.capedwarf.LogLine__";
     private static final String LOG_LINE_REQUEST_KEY = "requestKey";
     private static final String LOG_LINE_MILLIS = "millis";
@@ -116,9 +113,32 @@ public class CapedwarfLogService implements LogService, Logable {
     private static final String REQUEST_LOG_ENTITY = "com.google.appengine.runtime.request_log_entity";
     private static final String REQUEST_LOG_ID = "com.google.appengine.runtime.request_log_id";
 
-    private boolean ignoreLogging = Compatibility.getInstance().isEnabled(Compatibility.Feature.IGNORE_LOGGING);
+    private final DatastoreService datastoreService;
 
-    private DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+    private final boolean ignoreLogging;
+    private final LogWriter logWriter;
+
+    public CapedwarfLogService() {
+        datastoreService = DatastoreServiceFactory.getDatastoreService();
+        Compatibility instance = Compatibility.getInstance();
+        ignoreLogging = instance.isEnabled(Compatibility.Feature.IGNORE_LOGGING);
+        // do we use async ds
+        if (instance.isEnabled(Compatibility.Feature.ASYNC_LOGGING)) {
+            logWriter = new LogWriter() {
+                private final AsyncDatastoreService ads = DatastoreServiceFactory.getAsyncDatastoreService();
+
+                public void put(Entity entity) {
+                    ads.put(entity);
+                }
+            };
+        } else {
+            logWriter = new LogWriter() {
+                public void put(Entity entity) {
+                    datastoreService.put(entity);
+                }
+            };
+        }
+    }
 
     public Iterable<RequestLogs> fetch(LogQuery logQuery) {
         String ns = NamespaceManager.get();
@@ -326,16 +346,16 @@ public class CapedwarfLogService implements LogService, Logable {
             entity.setProperty(LOG_LINE_MESSAGE, formattedMessage);
             entity.setProperty(LOG_LINE_REQUEST_KEY, getRequestEntityKey(request));
 
-            datastoreService.put(entity); // TODO -- async
+            logWriter.put(entity);
 
             CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
             Entity requestEntity = (Entity) environment.getAttributes().get(REQUEST_LOG_ENTITY);
 
-            Integer maxLogLevelOrdinal = (Integer) requestEntity.getProperty(LOG_REQUEST_MAX_LOG_LEVEL);
+            Long maxLogLevelOrdinal = (Long) requestEntity.getProperty(LOG_REQUEST_MAX_LOG_LEVEL);
             if (maxLogLevelOrdinal == null || logLevel.ordinal() > maxLogLevelOrdinal) {
-                requestEntity.setProperty(LOG_REQUEST_MAX_LOG_LEVEL, logLevel.ordinal());
+                requestEntity.setProperty(LOG_REQUEST_MAX_LOG_LEVEL, (long) logLevel.ordinal());
+                datastoreService.put(requestEntity); // atm, only store on change
             }
-            datastoreService.put(requestEntity);
 
         } finally {
             NamespaceManager.set(ns);
@@ -411,5 +431,9 @@ public class CapedwarfLogService implements LogService, Logable {
         for (Entity entity : entities) {
             datastoreService.delete(entity.getKey());
         }
+    }
+
+    private static interface LogWriter {
+        void put(Entity entity);
     }
 }

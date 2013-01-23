@@ -50,6 +50,7 @@ public class Compatibility {
         DISABLE_QUERY_INEQUALITY_FILTER_CHECK("disable.query.inequality.filter.check"),
         IGNORE_ENTITY_PROPERTY_CONVERSION("ignore.entity.property.conversion"),
         IGNORE_LOGGING("ignore.logging"),
+        ASYNC_LOGGING("async.logging"),
         ENABLE_EAGER_DATASTORE_STATS("enable.eager.datastore.stats", new RegexpValue("(sync|async)")),
         ENABLE_GLOBAL_TIME_LIMIT("enable.globalTimeLimit");
 

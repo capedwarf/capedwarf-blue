@@ -52,6 +52,8 @@ import org.jboss.capedwarf.shared.config.QueueXml;
 public class GAEListener extends ConfigurationAware implements ServletContextListener, ServletRequestListener {
     private static final String API_PROXY = "__API_PROXY";
 
+    private volatile CapedwarfLogService logService;
+
     public static void setup() {
         setupInternal(appEngineWebXmlTL.get(), capedwarfConfigurationTL.get(), queueXmlTL.get(), backendsTL.get());
     }
@@ -133,7 +135,10 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
     }
 
     private CapedwarfLogService getLogService() {
-        return ((CapedwarfLogService) LogServiceFactory.getLogService());
+        if (logService == null) {
+            logService = (CapedwarfLogService) LogServiceFactory.getLogService();
+        }
+        return logService;
     }
 
     private void initJBossEnvironment(HttpServletRequest request) {
