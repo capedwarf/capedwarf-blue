@@ -108,23 +108,29 @@ public class LogQueryTestCase extends AbstractLoggingTest {
     @Test
     @InSequence(20)
     public void testMinLogLevel() throws Exception {
-        LogQuery debugLogQuery = new LogQuery().includeAppLogs(true).minLogLevel(DEBUG);
+        log.info("info_incompleteRequest");
+        flush(log);
+
+        LogQuery debugLogQuery = new LogQuery().includeAppLogs(true).includeIncomplete(true).minLogLevel(DEBUG);
         assertLogQueryReturns("info_createCompleteRequest1", debugLogQuery);
         assertLogQueryReturns("warning_createCompleteRequest1", debugLogQuery);
         assertLogQueryReturns("severe_createCompleteRequest2", debugLogQuery);
         assertLogQueryReturns("info_createCompleteRequest3", debugLogQuery);
+        assertLogQueryReturns("info_incompleteRequest", debugLogQuery);
 
-        LogQuery warnLogQuery = new LogQuery().includeAppLogs(true).minLogLevel(WARN);
+        LogQuery warnLogQuery = new LogQuery().includeAppLogs(true).includeIncomplete(true).minLogLevel(WARN);
         assertLogQueryReturns("info_createCompleteRequest1", warnLogQuery);
         assertLogQueryReturns("warning_createCompleteRequest1", warnLogQuery);
         assertLogQueryReturns("severe_createCompleteRequest2", warnLogQuery);
         assertLogQueryDoesNotReturn("info_createCompleteRequest3", warnLogQuery);
+        assertLogQueryDoesNotReturn("info_incompleteRequest", warnLogQuery);
 
-        LogQuery errorLogQuery = new LogQuery().includeAppLogs(true).minLogLevel(ERROR);
+        LogQuery errorLogQuery = new LogQuery().includeAppLogs(true).includeIncomplete(true).minLogLevel(ERROR);
         assertLogQueryReturns("severe_createCompleteRequest2", errorLogQuery);
         assertLogQueryDoesNotReturn("info_createCompleteRequest1", errorLogQuery);
         assertLogQueryDoesNotReturn("warning_createCompleteRequest1", errorLogQuery);
         assertLogQueryDoesNotReturn("info_createCompleteRequest3", errorLogQuery);
+        assertLogQueryDoesNotReturn("info_incompleteRequest", errorLogQuery);
     }
 
     @Test

@@ -335,6 +335,7 @@ public class CapedwarfLogService implements LogService, Logable {
             if (maxLogLevelOrdinal == null || logLevel.ordinal() > maxLogLevelOrdinal) {
                 requestEntity.setProperty(LOG_REQUEST_MAX_LOG_LEVEL, logLevel.ordinal());
             }
+            datastoreService.put(requestEntity);
 
         } finally {
             NamespaceManager.set(ns);
