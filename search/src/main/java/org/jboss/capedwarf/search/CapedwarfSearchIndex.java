@@ -31,7 +31,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
-import com.google.appengine.api.search.AddResponse;
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Cursor;
 import com.google.appengine.api.search.Document;
@@ -39,8 +38,6 @@ import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.GetRequest;
 import com.google.appengine.api.search.GetResponse;
 import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.ListRequest;
-import com.google.appengine.api.search.ListResponse;
 import com.google.appengine.api.search.OperationResult;
 import com.google.appengine.api.search.PutResponse;
 import com.google.appengine.api.search.Query;
@@ -110,18 +107,6 @@ public class CapedwarfSearchIndex implements Index {
         });
     }
 
-    public Future<AddResponse> addAsync(Document... documents) {
-        return addAsync(Arrays.asList(documents));
-    }
-
-    public Future<AddResponse> addAsync(final Iterable<Document> documents) {
-        return ExecutorFactory.wrap(new Callable<AddResponse>() {
-            public AddResponse call() throws Exception {
-                return add(documents);
-            }
-        });
-    }
-
     public Future<Results<ScoredDocument>> searchAsync(String queryString) {
         return searchAsync(Query.newBuilder().build(queryString));
     }
@@ -130,14 +115,6 @@ public class CapedwarfSearchIndex implements Index {
         return ExecutorFactory.wrap(new Callable<Results<ScoredDocument>>() {
             public Results<ScoredDocument> call() throws Exception {
                 return search(query);
-            }
-        });
-    }
-
-    public Future<ListResponse<Document>> listDocumentsAsync(final ListRequest listRequest) {
-        return ExecutorFactory.wrap(new Callable<ListResponse<Document>>() {
-            public ListResponse<Document> call() throws Exception {
-                return listDocuments(listRequest);
             }
         });
     }
@@ -161,15 +138,6 @@ public class CapedwarfSearchIndex implements Index {
 
     private CacheValue getCacheValue(Document document) {
         return new CacheValue(getName(), getNamespace(), document);
-    }
-
-    public AddResponse add(Document... documents) {
-        return add(Arrays.asList(documents));
-    }
-
-    public AddResponse add(Iterable<Document> documents) {
-        final PutResponse response = put(documents);
-        return new AddResponse(response.getResults(), response.getIds()){};
     }
 
     private String generateId(Document document) {
@@ -251,15 +219,6 @@ public class CapedwarfSearchIndex implements Index {
         return new Results<ScoredDocument>(operationResult, results, numberFound, numberReturned, cursor){};
     }
 
-    public ListResponse<Document> listDocuments(ListRequest request) {
-        final GetRequest.Builder builder = GetRequest.newBuilder();
-        builder.setIncludeStart(request.isIncludeStart());
-        builder.setLimit(request.getLimit());
-        builder.setReturningIdsOnly(request.isReturningIdsOnly());
-        builder.setStartId(request.getStartId());
-        return new ListResponse<Document>(getRange(builder).getResults()){};
-    }
-
     private CacheQuery createListDocumentsQuery(GetRequest request) {
         CacheQuery query;
         if (request.getStartId() == null) {
@@ -315,14 +274,6 @@ public class CapedwarfSearchIndex implements Index {
         });
     }
 
-    public Future<AddResponse> addAsync(final Document.Builder... builders) {
-        return ExecutorFactory.wrap(new Callable<AddResponse>() {
-            public AddResponse call() throws Exception {
-                return add(builders);
-            }
-        });
-    }
-
     public Future<PutResponse> putAsync(Document... documents) {
         return putAsync(Arrays.asList(documents));
     }
@@ -367,10 +318,6 @@ public class CapedwarfSearchIndex implements Index {
         for (String documentId : documentIds) {
             cache.remove(getCacheKey(documentId));
         }
-    }
-
-    public AddResponse add(Document.Builder... builders) {
-        return add(toDocuments(builders));
     }
 
     public PutResponse put(Document... documents) {

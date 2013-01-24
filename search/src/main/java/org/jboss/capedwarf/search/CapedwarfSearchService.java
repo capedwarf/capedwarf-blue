@@ -30,8 +30,6 @@ import com.google.appengine.api.search.GetIndexesRequest;
 import com.google.appengine.api.search.GetResponse;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
 import com.google.appengine.api.search.SearchService;
 import org.infinispan.Cache;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
@@ -39,7 +37,6 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
-import org.jboss.capedwarf.common.util.Util;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -88,33 +85,6 @@ public class CapedwarfSearchService implements SearchService {
         } else {
             return namespace;
         }
-    }
-
-    public ListIndexesResponse listIndexes(ListIndexesRequest request) {
-        final GetIndexesRequest.Builder builder = GetIndexesRequest.newBuilder();
-        boolean includeStartIndex = false;
-        try {
-            includeStartIndex = request.isIncludeStartIndex();
-        } catch (NullPointerException ignore) {
-            // hack around a GAE bug
-        }
-        builder.setIncludeStartIndex(includeStartIndex);
-        builder.setIndexNamePrefix(request.getIndexNamePrefix());
-        builder.setLimit(Util.defaultIfNull(request.getLimit(), 20));
-        builder.setNamespace(request.getNamespace());
-        builder.setOffset(Util.defaultIfNull(request.getOffset(), 0));
-        final Boolean schemaFetched = request.isSchemaFetched();
-        builder.setSchemaFetched(schemaFetched != null && schemaFetched);
-        builder.setStartIndexName(request.getStartIndexName());
-        return new ListIndexesResponse(getIndexes(builder.build()).getResults()){};
-    }
-
-    public Future<ListIndexesResponse> listIndexesAsync(final ListIndexesRequest request) {
-        return ExecutorFactory.wrap(new Callable<ListIndexesResponse>() {
-            public ListIndexesResponse call() throws Exception {
-                return listIndexes(request);
-            }
-        });
     }
 
     @SuppressWarnings("unchecked")

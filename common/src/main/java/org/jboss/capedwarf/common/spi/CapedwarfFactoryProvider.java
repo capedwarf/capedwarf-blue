@@ -30,11 +30,9 @@ import com.google.appengine.spi.FactoryProvider;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class CapedwarfFactoryProvider<T> extends FactoryProvider<T> {
+    public static final int PRECEDENCE = Integer.MIN_VALUE + 1;
+
     protected CapedwarfFactoryProvider(Class<T> baseInterface) {
         super(baseInterface);
-    }
-
-    protected int getPrecedence() {
-        return super.getPrecedence() + 1; // right after GAE defaults
     }
 }

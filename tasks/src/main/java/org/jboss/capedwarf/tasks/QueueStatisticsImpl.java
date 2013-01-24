@@ -42,21 +42,32 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 class QueueStatisticsImpl extends JmsAdapter implements QueueStatisticsInternal {
     static final Class[] types = new Class[]{String.class, TaskQueuePb.TaskQueueFetchQueueStatsResponse.QueueStats.class};
 
+    private final String queueName;
     private final SearchManager manager;
 
-    QueueStatisticsImpl(SearchManager manager) {
+    QueueStatisticsImpl(String queueName, SearchManager manager) {
+        this.queueName = queueName;
         this.manager = manager;
     }
 
-    public QueueStatistics fetchStatistics(String queueName) {
+    public QueueStatistics fetchStatistics() {
         try {
-            return fetchStatisticsInternal(queueName);
+            return fetchStatisticsInternal();
         } finally {
             dispose();
         }
     }
 
-    protected QueueStatistics fetchStatisticsInternal(String queueName) {
+    // TODO - v?
+    public QueueStatistics fetchStatistics(double v) {
+        try {
+            return fetchStatisticsInternal();
+        } finally {
+            dispose();
+        }
+    }
+
+    protected QueueStatistics fetchStatisticsInternal() {
         try {
             TaskQueuePb.TaskQueueFetchQueueStatsResponse.QueueStats stats = new TaskQueuePb.TaskQueueFetchQueueStatsResponse.QueueStats();
 

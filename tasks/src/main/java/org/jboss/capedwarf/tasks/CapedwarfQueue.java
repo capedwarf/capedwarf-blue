@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.google.appengine.api.datastore.DatastoreService;
@@ -56,6 +58,7 @@ import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.reflection.TargetInvocation;
+import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
@@ -274,11 +277,128 @@ public class CapedwarfQueue implements Queue {
     }
 
     protected QueueStatisticsInternal createQueueStatistics() {
-        return new QueueStatisticsImpl(searchManager);
+        return new QueueStatisticsImpl(queueName, searchManager);
     }
 
     public QueueStatistics fetchStatistics() {
-        return createQueueStatistics().fetchStatistics(queueName);
+        return createQueueStatistics().fetchStatistics();
+    }
+
+    public QueueStatistics fetchStatistics(double v) {
+        // TODO -- check what is v?
+        return createQueueStatistics().fetchStatistics(v);
+    }
+
+    public Future<TaskHandle> addAsync() {
+        return ExecutorFactory.wrap(new Callable<TaskHandle>() {
+            public TaskHandle call() throws Exception {
+                return add();
+            }
+        });
+    }
+
+    public Future<TaskHandle> addAsync(final TaskOptions taskOptions) {
+        return ExecutorFactory.wrap(new Callable<TaskHandle>() {
+            public TaskHandle call() throws Exception {
+                return add(taskOptions);
+            }
+        });
+    }
+
+    public Future<List<TaskHandle>> addAsync(final Iterable<TaskOptions> taskOptionses) {
+        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+            public List<TaskHandle> call() throws Exception {
+                return add(taskOptionses);
+            }
+        });
+    }
+
+    public Future<TaskHandle> addAsync(final Transaction transaction, final TaskOptions taskOptions) {
+        return ExecutorFactory.wrap(new Callable<TaskHandle>() {
+            public TaskHandle call() throws Exception {
+                return add(transaction, taskOptions);
+            }
+        });
+    }
+
+    public Future<List<TaskHandle>> addAsync(final Transaction transaction, final Iterable<TaskOptions> taskOptionses) {
+        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+            public List<TaskHandle> call() throws Exception {
+                return add(transaction, taskOptionses);
+            }
+        });
+    }
+
+    public Future<Boolean> deleteTaskAsync(final String taskName) {
+        return ExecutorFactory.wrap(new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                return deleteTask(taskName);
+            }
+        });
+    }
+
+    public Future<Boolean> deleteTaskAsync(final TaskHandle taskHandle) {
+        return ExecutorFactory.wrap(new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                return deleteTask(taskHandle);
+            }
+        });
+    }
+
+    public Future<List<Boolean>> deleteTaskAsync(final List<TaskHandle> taskHandles) {
+        return ExecutorFactory.wrap(new Callable<List<Boolean>>() {
+            public List<Boolean> call() throws Exception {
+                return deleteTask(taskHandles);
+            }
+        });
+    }
+
+    public Future<List<TaskHandle>> leaseTasksAsync(final long lease, final TimeUnit unit, final long countLimit) {
+        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+            public List<TaskHandle> call() throws Exception {
+                return leaseTasks(lease, unit, countLimit);
+            }
+        });
+    }
+
+    public Future<List<TaskHandle>> leaseTasksByTagBytesAsync(final long lease, final TimeUnit unit, final long countLimit, final byte[] tag) {
+        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+            public List<TaskHandle> call() throws Exception {
+                return leaseTasksByTagBytes(lease, unit, countLimit, tag);
+            }
+        });
+    }
+
+    public Future<List<TaskHandle>> leaseTasksByTagAsync(final long lease, final TimeUnit unit, final long countLimit, final String tag) {
+        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+            public List<TaskHandle> call() throws Exception {
+                return leaseTasksByTag(lease, unit, countLimit, tag);
+            }
+        });
+    }
+
+    public Future<List<TaskHandle>> leaseTasksAsync(final LeaseOptions leaseOptions) {
+        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+            public List<TaskHandle> call() throws Exception {
+                return leaseTasks(leaseOptions);
+            }
+        });
+    }
+
+    public Future<QueueStatistics> fetchStatisticsAsync() {
+        return ExecutorFactory.wrap(new Callable<QueueStatistics>() {
+            public QueueStatistics call() throws Exception {
+                return fetchStatistics();
+            }
+        });
+    }
+
+    public Future<QueueStatistics> fetchStatisticsAsync(final double v) {
+        return ExecutorFactory.wrap(new Callable<QueueStatistics>() {
+            public QueueStatistics call() throws Exception {
+                return fetchStatistics(v);
+            }
+        });
     }
 
     static TermTermination toTerm(QueryBuilder builder, String field, Object value) {

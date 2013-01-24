@@ -33,8 +33,15 @@ interface QueueStatisticsInternal {
     /**
      * Fetch stats.
      *
-     * @param queueName the queue name
      * @return queue stats
      */
-    QueueStatistics fetchStatistics(String queueName);
+    QueueStatistics fetchStatistics();
+
+    /**
+     * Fetch stats.
+     *
+     * @param v value
+     * @return queue stats
+     */
+    QueueStatistics fetchStatistics(double v);
 }
