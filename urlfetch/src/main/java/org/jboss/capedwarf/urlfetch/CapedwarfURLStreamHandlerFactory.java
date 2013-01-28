@@ -22,25 +22,34 @@
 
 package org.jboss.capedwarf.urlfetch;
 
-import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.appengine.api.urlfetch.HTTPHeader;
-import com.google.appengine.api.urlfetch.HTTPResponse;
-import com.google.appengine.api.urlfetch.URLFetchService;
-import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.params.HttpParams;
 import org.jboss.capedwarf.shared.servlet.CapedwarfApiProxy;
 import org.kohsuke.MetaInfServices;
 
@@ -52,44 +61,186 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
     private static final Set<String> PROTOCOLS = Sets.newHashSet("http", "https");
     private static final CapedwarfURLStreamHandler HANDLER = new CapedwarfURLStreamHandler();
 
+    private static final Field handlers;
+    private static final Method getURLStreamHandler;
+    private static final Method openConnection;
+    private static final Method openConnectionWithProxy;
+
+    static {
+        try {
+            handlers = URL.class.getDeclaredField("handlers");
+            handlers.setAccessible(true);
+
+            getURLStreamHandler = URL.class.getDeclaredMethod("getURLStreamHandler", String.class);
+            getURLStreamHandler.setAccessible(true);
+
+            openConnection = URLStreamHandler.class.getDeclaredMethod("openConnection", URL.class);
+            openConnection.setAccessible(true);
+
+            openConnectionWithProxy = URLStreamHandler.class.getDeclaredMethod("openConnection", URL.class, Proxy.class);
+            openConnectionWithProxy.setAccessible(true);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static void removeProtocol(String protocol) {
+        try {
+            Map map = (Map) handlers.get(null);
+            map.remove(protocol);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static URLConnection invokeOpenConnection(URLStreamHandler handler, URL u) {
+        try {
+            return (URLConnection) openConnection.invoke(handler, u);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static URLConnection invokeOpenConnectionWithProxy(URLStreamHandler handler, URL u, Proxy p) {
+        try {
+            return (URLConnection) openConnectionWithProxy.invoke(handler, u, p);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static URLStreamHandler getUrlStreamHandler(String protocol) {
+        try {
+            return (URLStreamHandler) getURLStreamHandler.invoke(null, protocol);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final ThreadLocal<Set<String>> reentered = new ThreadLocal<Set<String>>() {
+        protected Set<String> initialValue() {
+            return new HashSet<String>();
+        }
+    };
+
+    private static Map<String, URLStreamHandler> defaultHandlers = new ConcurrentHashMap<String, URLStreamHandler>();
+
     public URLStreamHandler createURLStreamHandler(String protocol) {
         if (PROTOCOLS.contains(protocol) == false)
             return null;
 
-        if (CapedwarfApiProxy.isCapedwarfApp())
-            return null;
+        Set<String> set = reentered.get();
+        try {
+            if (set.add(protocol)) {
+                // fetch defaults
+                defaultHandlers.put(protocol, getDefaultHandler(protocol));
 
-        return HANDLER;
+                return HANDLER;
+            } else {
+                return null;
+            }
+        } finally {
+            reentered.remove();
+        }
+    }
+
+    private URLStreamHandler getDefaultHandler(String protocol) {
+        URLStreamHandler handler = getUrlStreamHandler(protocol);
+        removeProtocol(protocol);
+        return handler;
     }
 
     private static class CapedwarfURLStreamHandler extends URLStreamHandler {
+        protected URLConnection openConnection(URL u, Proxy p, boolean useProxy) throws IOException {
+            if (CapedwarfApiProxy.isCapedwarfApp()) {
+                return new CapedwarfURLConnection(u);
+            } else {
+                String protocol = u.getProtocol();
+                URLStreamHandler handler = defaultHandlers.get(protocol);
+                if (useProxy)
+                    return invokeOpenConnectionWithProxy(handler, u, p);
+                else
+                    return invokeOpenConnection(handler, u);
+            }
+        }
 
         protected URLConnection openConnection(URL u) throws IOException {
-            return new CapedwarfURLConnection(u);
+            return openConnection(u, null, false);
         }
 
         protected URLConnection openConnection(URL u, Proxy p) throws IOException {
-            return openConnection(u);
+            return openConnection(u, p, true);
         }
     }
 
     private static class CapedwarfURLConnection extends URLConnection {
-        private volatile HTTPResponse response;
-        private volatile Map<String, List<String>> headers;
+        private ByteArrayOutputStream baos;
+        private HttpResponse response;
+        private Map<String, List<String>> headers;
+        private ListMultimap<String, String> properties = ArrayListMultimap.create();
 
         private CapedwarfURLConnection(URL url) {
             super(url);
         }
 
-        private HTTPResponse getResponse() throws IOException {
-            if (response == null) {
-                URLFetchService service = URLFetchServiceFactory.getURLFetchService();
-                response = service.fetch(getURL());
+        private HttpResponse getResponse() throws IOException {
+            try {
+                return getResponseInternal();
+            } catch (Exception e) {
+                Throwable cause = e.getCause();
+                throw (cause instanceof IOException) ? (IOException) cause : new IOException(cause);
             }
-            return response;
+        }
+
+        private synchronized HttpResponse getResponseInternal() {
+            try {
+                if (response == null) {
+                    HttpClient client = CapedwarfURLFetchService.getClient();
+                    HttpPost post = new HttpPost(getURL().toURI()); // always post?
+                    if (baos != null) {
+                        post.setEntity(new ByteArrayEntity(baos.toByteArray()));
+                    }
+                    if (properties.size() > 0) {
+                        HttpParams params = post.getParams();
+                        for (String key : properties.keySet()) {
+                            params.setParameter(key, properties.get(key));
+                        }
+                    }
+                    response = client.execute(post);
+                }
+                return response;
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
         }
 
         public void connect() throws IOException {
+        }
+
+        public void setRequestProperty(String key, String value) {
+            properties.removeAll(key);
+            addRequestProperty(key, value);
+        }
+
+        public void addRequestProperty(String key, String value) {
+            properties.put(key, value);
+        }
+
+        public String getRequestProperty(String key) {
+            List<String> list = properties.get(key);
+            return (list != null && list.size() > 0) ? list.get(0) : null;
+        }
+
+        @SuppressWarnings("unchecked")
+        public Map getRequestProperties() {
+            return properties.asMap();
+        }
+
+        public synchronized OutputStream getOutputStream() throws IOException {
+            if (baos == null) {
+                baos = new ByteArrayOutputStream();
+            }
+            return baos;
         }
 
         public String getHeaderField(String name) {
@@ -109,29 +260,25 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
             return (keys.size() > n) ? keys.get(n) : null;
         }
 
-        public Map<String, List<String>> getHeaderFields() {
-            try {
-                if (headers == null) {
-                    Map<String, List<String>> tmp = new LinkedHashMap<String, List<String>>();
-                    for (HTTPHeader h : getResponse().getHeaders()) {
-                        String name = h.getName();
-                        List<String> list = tmp.get(name);
-                        if (list == null) {
-                            list = new ArrayList<String>();
-                            tmp.put(name, list);
-                        }
-                        list.add(h.getValue());
+        public synchronized Map<String, List<String>> getHeaderFields() {
+            if (headers == null) {
+                Map<String, List<String>> tmp = new LinkedHashMap<String, List<String>>();
+                for (Header h : getResponseInternal().getAllHeaders()) {
+                    String name = h.getName();
+                    List<String> list = tmp.get(name);
+                    if (list == null) {
+                        list = new ArrayList<String>();
+                        tmp.put(name, list);
                     }
-                    headers = tmp;
+                    list.add(h.getValue());
                 }
-                return headers;
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
+                headers = tmp;
             }
+            return headers;
         }
 
         public InputStream getInputStream() throws IOException {
-            return new ByteArrayInputStream(getResponse().getContent());
+            return getResponse().getEntity().getContent();
         }
     }
 }

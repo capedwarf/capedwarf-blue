@@ -64,7 +64,7 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
 public class CapedwarfURLFetchService implements URLFetchService {
     private static HttpClient client;
 
-    protected static synchronized HttpClient getClient() {
+    static synchronized HttpClient getClient() {
         if (client == null) {
             // Create and initialize scheme registry
             SchemeRegistry schemeRegistry = new SchemeRegistry();

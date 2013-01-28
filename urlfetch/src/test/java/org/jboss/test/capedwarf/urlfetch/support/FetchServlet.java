@@ -39,6 +39,8 @@ public class FetchServlet extends HttpServlet {
         String content = new String(toBytes(req.getInputStream()));
         if ("Tralala".equals(content)) {
             resp.getWriter().write("Hopsasa");
+        } else if ("Juhuhu".equals(content)) {
+            resp.getWriter().write("Bruhuhu");
         }
     }
 

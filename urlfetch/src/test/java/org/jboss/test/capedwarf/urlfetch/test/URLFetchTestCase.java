@@ -24,7 +24,10 @@ package org.jboss.test.capedwarf.urlfetch.test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +42,6 @@ import com.google.appengine.repackaged.com.google.common.base.Charsets;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
@@ -77,8 +79,7 @@ public class URLFetchTestCase extends BaseTest {
         try {
             stream = url.openStream();
             int x = stream.read();
-            Assert.assertFalse(x == -1);
-            return true;
+            return (x != -1);
         } catch (Exception e) {
             return false;
         } finally {
@@ -100,9 +101,13 @@ public class URLFetchTestCase extends BaseTest {
         throw new IllegalArgumentException("No available url: " + Arrays.toString(urls));
     }
 
+    private static URL getFetchUrl() throws MalformedURLException {
+        ApiProxy.Environment env = ApiProxy.getCurrentEnvironment();
+        Object localhost = env.getAttributes().get("com.google.appengine.runtime.default_version_hostname");
+        return new URL("http://" + localhost + "/fetch");
+    }
 
     @Test
-    @InSequence(1)
     public void testAsyncOps() throws Exception {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
 
@@ -120,7 +125,6 @@ public class URLFetchTestCase extends BaseTest {
     }
 
     @Test
-    @InSequence(2)
     public void testBasicOps() throws Exception {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
 
@@ -136,13 +140,10 @@ public class URLFetchTestCase extends BaseTest {
     }
 
     @Test
-    @InSequence(3)
     public void testPayload() throws Exception {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
 
-        ApiProxy.Environment env = ApiProxy.getCurrentEnvironment();
-        Object localhost = env.getAttributes().get("com.google.appengine.runtime.default_version_hostname");
-        URL url = new URL("http://" + localhost + "/fetch");
+        URL url = getFetchUrl();
 
         HTTPRequest req = new HTTPRequest(url, HTTPMethod.POST);
         req.setHeader(new HTTPHeader("Content-Type", "application/x-www-form-urlencoded"));
@@ -151,6 +152,18 @@ public class URLFetchTestCase extends BaseTest {
         HTTPResponse response = service.fetch(req);
         String content = new String(response.getContent());
         Assert.assertEquals("Hopsasa", content);
+    }
+
+    @Test
+    public void testURLConnection() throws Exception {
+        URL fetch = getFetchUrl();
+        URLConnection conn = fetch.openConnection();
+        conn.setDoOutput(true);
+        conn.addRequestProperty("key", "value");
+        OutputStream out = conn.getOutputStream();
+        out.write("Juhuhu".getBytes());
+        String content = new String(FetchServlet.toBytes(conn.getInputStream()));
+        Assert.assertEquals("Bruhuhu", content);
     }
 
     private void printResponse(HTTPResponse response) throws Exception {
