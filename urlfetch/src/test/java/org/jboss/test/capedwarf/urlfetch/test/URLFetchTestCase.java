@@ -29,15 +29,23 @@ import java.util.Arrays;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.google.appengine.api.urlfetch.HTTPHeader;
+import com.google.appengine.api.urlfetch.HTTPMethod;
+import com.google.appengine.api.urlfetch.HTTPRequest;
 import com.google.appengine.api.urlfetch.HTTPResponse;
 import com.google.appengine.api.urlfetch.URLFetchService;
 import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
+import com.google.appengine.repackaged.com.google.common.base.Charsets;
+import com.google.apphosting.api.ApiProxy;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.BaseTest;
+import org.jboss.test.capedwarf.common.test.TestContext;
+import org.jboss.test.capedwarf.urlfetch.support.FetchServlet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -49,10 +57,13 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @Category(All.class)
 public class URLFetchTestCase extends BaseTest {
-
     @Deployment
     public static Archive getDeployment() {
-        return getCapedwarfDeployment();
+        TestContext context = TestContext.asDefault();
+        context.setWebXmlFile("uf-web.xml");
+        WebArchive war = getCapedwarfDeployment(context);
+        war.addClass(FetchServlet.class);
+        return war;
     }
 
     /**
@@ -122,6 +133,24 @@ public class URLFetchTestCase extends BaseTest {
             response = service.fetch(jbossOrg);
             printResponse(response);
         }
+    }
+
+    @Test
+    @InSequence(3)
+    public void testPayload() throws Exception {
+        URLFetchService service = URLFetchServiceFactory.getURLFetchService();
+
+        ApiProxy.Environment env = ApiProxy.getCurrentEnvironment();
+        Object localhost = env.getAttributes().get("com.google.appengine.runtime.default_version_hostname");
+        URL url = new URL("http://" + localhost + "/fetch");
+
+        HTTPRequest req = new HTTPRequest(url, HTTPMethod.POST);
+        req.setHeader(new HTTPHeader("Content-Type", "application/x-www-form-urlencoded"));
+        req.setPayload("Tralala".getBytes(Charsets.UTF_8));
+
+        HTTPResponse response = service.fetch(req);
+        String content = new String(response.getContent());
+        Assert.assertEquals("Hopsasa", content);
     }
 
     private void printResponse(HTTPResponse response) throws Exception {

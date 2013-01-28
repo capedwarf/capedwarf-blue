@@ -25,24 +25,33 @@ package org.jboss.capedwarf.urlfetch;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
+import com.google.appengine.api.urlfetch.HTTPHeader;
 import com.google.appengine.api.urlfetch.HTTPRequest;
 import com.google.appengine.api.urlfetch.HTTPResponse;
 import com.google.appengine.api.urlfetch.URLFetchService;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
@@ -83,7 +92,7 @@ public class CapedwarfURLFetchService implements URLFetchService {
     }
 
     public HTTPResponse fetch(final HTTPRequest httpRequest) throws IOException {
-        return fetch(httpRequest.getMethod().name(), toURI(httpRequest.getURL()));
+        return fetch(toHttpUriRequest(httpRequest));
     }
 
     public Future<HTTPResponse> fetchAsync(URL url) {
@@ -91,29 +100,63 @@ public class CapedwarfURLFetchService implements URLFetchService {
     }
 
     public Future<HTTPResponse> fetchAsync(final HTTPRequest httpRequest) {
-        final String method = httpRequest.getMethod().name();
-        final URI uri = toURI(httpRequest.getURL());
+        final HttpUriRequest request = toHttpUriRequest(httpRequest);
         return ExecutorFactory.wrap(new Callable<HTTPResponse>() {
             public HTTPResponse call() throws Exception {
-                return fetch(method, uri);
+                return fetch(request);
             }
         });
     }
 
-    protected HTTPResponse fetch(final String method, final URI uri) throws IOException {
-        try {
-            HttpUriRequest request = new HttpRequestBase() {
-                public String getMethod() {
-                    return method;
-                }
+    protected HttpUriRequest toHttpUriRequest(final HTTPRequest request) {
+        final URI uri = toURI(request.getURL());
 
-                public URI getURI() {
-                    return uri;
-                }
-            };
+        final HttpUriRequest base;
+        switch (request.getMethod()) {
+            case POST:
+                base = new HttpPost();
+                break;
+            case GET:
+                base = new HttpGet(uri);
+                break;
+            case PUT:
+                base = new HttpPut(uri);
+                break;
+            case DELETE:
+                base = new HttpDelete(uri);
+                break;
+            case HEAD:
+                base = new HttpHead(uri);
+                break;
+            default:
+                throw new IllegalArgumentException("No such method supported: " + request.getMethod());
+        }
+
+        if (base instanceof HttpEntityEnclosingRequestBase) {
+            HttpEntityEnclosingRequestBase enclosing = (HttpEntityEnclosingRequestBase) base;
+            byte[] payload = request.getPayload();
+            if (payload != null && payload.length > 0) {
+                enclosing.setEntity(new ByteArrayEntity(payload));
+            }
+
+            // TODO -- handle FetchOptions
+        }
+
+        List<HTTPHeader> headers = request.getHeaders();
+        if (headers != null && headers.size() > 0) {
+            for (HTTPHeader header : headers) {
+                base.addHeader(new BasicHeader(header.getName(), header.getValue()));
+            }
+        }
+
+        return base;
+    }
+
+    protected HTTPResponse fetch(final HttpUriRequest request) throws IOException {
+        try {
             HttpResponse response = getClient().execute(request);
             HTTPResponseHack jhr = new HTTPResponseHack(response);
-            jhr.setFinalUrl(uri.toURL()); // TODO -- OK?
+            jhr.setFinalUrl(request.getURI().toURL()); // TODO -- OK?
             return jhr.getResponse();
         } catch (Exception e) {
             IOException ioe = new IOException();
