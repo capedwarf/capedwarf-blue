@@ -50,7 +50,7 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
@@ -62,10 +62,9 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfURLFetchService implements URLFetchService {
+    private static HttpClient client;
 
-    private volatile HttpClient client;
-
-    protected HttpClient getClient() {
+    protected static synchronized HttpClient getClient() {
         if (client == null) {
             // Create and initialize scheme registry
             SchemeRegistry schemeRegistry = new SchemeRegistry();
@@ -80,7 +79,7 @@ public class CapedwarfURLFetchService implements URLFetchService {
             // Create an HttpClient with the ThreadSafeClientConnManager.
             // This connection manager must be used if more than one thread will
             // be using the HttpClient.
-            ClientConnectionManager ccm = new ThreadSafeClientConnManager(schemeRegistry);
+            ClientConnectionManager ccm = new PoolingClientConnectionManager(schemeRegistry);
 
             client = new DefaultHttpClient(ccm, params);
         }
@@ -114,7 +113,7 @@ public class CapedwarfURLFetchService implements URLFetchService {
         final HttpUriRequest base;
         switch (request.getMethod()) {
             case POST:
-                base = new HttpPost();
+                base = new HttpPost(uri);
                 break;
             case GET:
                 base = new HttpGet(uri);

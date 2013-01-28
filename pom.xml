@@ -75,7 +75,7 @@
         <version.org.infinispan>5.2.0.CR1</version.org.infinispan>
         <version.net.jcip>1.0</version.net.jcip>
         <version.metainf>1.1</version.metainf>
-        <version.org.apache.httpcomponents>4.1.1</version.org.apache.httpcomponents>
+        <version.org.apache.httpcomponents>4.2.1</version.org.apache.httpcomponents>
         <version.org.xerial.sqlite>3.7.2</version.org.xerial.sqlite>
         <!-- DataNucleus -->
         <version.org.datanucleus>3.1.2</version.org.datanucleus>

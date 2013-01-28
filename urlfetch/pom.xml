@@ -17,8 +17,18 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.jboss.capedwarf.shared</groupId>
+            <artifactId>capedwarf-shared</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.capedwarf.blue</groupId>
             <artifactId>capedwarf-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.kohsuke.metainf-services</groupId>
+            <artifactId>metainf-services</artifactId>
         </dependency>
 
         <dependency>
