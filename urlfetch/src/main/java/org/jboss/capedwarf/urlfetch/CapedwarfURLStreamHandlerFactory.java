@@ -26,8 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
@@ -50,6 +48,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.params.HttpParams;
+import org.jboss.capedwarf.common.reflection.FieldInvocation;
+import org.jboss.capedwarf.common.reflection.MethodInvocation;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.shared.servlet.CapedwarfApiProxy;
 import org.kohsuke.MetaInfServices;
 
@@ -61,60 +62,21 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
     private static final Set<String> PROTOCOLS = Sets.newHashSet("http", "https");
     private static final CapedwarfURLStreamHandler HANDLER = new CapedwarfURLStreamHandler();
 
-    private static final Field handlers;
-    private static final Method getURLStreamHandler;
-    private static final Method openConnection;
-    private static final Method openConnectionWithProxy;
+    private static final FieldInvocation<Map> handlers;
+    private static final MethodInvocation<URLStreamHandler> getURLStreamHandler;
+    private static final MethodInvocation<URLConnection> openConnectionDirect;
+    private static final MethodInvocation<URLConnection> openConnectionWithProxy;
 
     static {
-        try {
-            handlers = URL.class.getDeclaredField("handlers");
-            handlers.setAccessible(true);
-
-            getURLStreamHandler = URL.class.getDeclaredMethod("getURLStreamHandler", String.class);
-            getURLStreamHandler.setAccessible(true);
-
-            openConnection = URLStreamHandler.class.getDeclaredMethod("openConnection", URL.class);
-            openConnection.setAccessible(true);
-
-            openConnectionWithProxy = URLStreamHandler.class.getDeclaredMethod("openConnection", URL.class, Proxy.class);
-            openConnectionWithProxy.setAccessible(true);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        handlers = ReflectionUtils.cacheField(URL.class, "handlers");
+        getURLStreamHandler = ReflectionUtils.cacheMethod(URL.class, "getURLStreamHandler", String.class);
+        openConnectionDirect = ReflectionUtils.cacheMethod(URLStreamHandler.class, "openConnection", URL.class);
+        openConnectionWithProxy = ReflectionUtils.cacheMethod(URLStreamHandler.class, "openConnection", URL.class, Proxy.class);
     }
 
     private static void removeProtocol(String protocol) {
-        try {
-            Map map = (Map) handlers.get(null);
-            map.remove(protocol);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static URLConnection invokeOpenConnection(URLStreamHandler handler, URL u) {
-        try {
-            return (URLConnection) openConnection.invoke(handler, u);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static URLConnection invokeOpenConnectionWithProxy(URLStreamHandler handler, URL u, Proxy p) {
-        try {
-            return (URLConnection) openConnectionWithProxy.invoke(handler, u, p);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static URLStreamHandler getUrlStreamHandler(String protocol) {
-        try {
-            return (URLStreamHandler) getURLStreamHandler.invoke(null, protocol);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Map map = handlers.invoke();
+        map.remove(protocol);
     }
 
     private static final ThreadLocal<Set<String>> reentered = new ThreadLocal<Set<String>>() {
@@ -145,7 +107,7 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
     }
 
     private URLStreamHandler getDefaultHandler(String protocol) {
-        URLStreamHandler handler = getUrlStreamHandler(protocol);
+        URLStreamHandler handler = getURLStreamHandler.invoke(protocol);
         removeProtocol(protocol);
         return handler;
     }
@@ -158,9 +120,9 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
                 String protocol = u.getProtocol();
                 URLStreamHandler handler = defaultHandlers.get(protocol);
                 if (useProxy)
-                    return invokeOpenConnectionWithProxy(handler, u, p);
+                    return openConnectionWithProxy.invoke(handler, u, p);
                 else
-                    return invokeOpenConnection(handler, u);
+                    return openConnectionDirect.invoke(handler, u);
             }
         }
 

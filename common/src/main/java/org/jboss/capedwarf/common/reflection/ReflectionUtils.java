@@ -326,6 +326,17 @@ public final class ReflectionUtils {
     }
 
     /**
+     * Cache field invocation.
+     *
+     * @param clazz the clas
+     * @param fieldName the field name
+     * @return field invocation
+     */
+    public static <T> FieldInvocation<T> cacheField(Class<?> clazz, String fieldName) {
+        return new FieldInvocation<T>(findField(clazz, fieldName));
+    }
+
+    /**
      * Try loading the class.
      *
      * @param cl the classloader
