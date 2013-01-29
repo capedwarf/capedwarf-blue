@@ -37,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -48,10 +49,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.params.HttpParams;
-import org.jboss.capedwarf.common.reflection.FieldInvocation;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.shared.servlet.CapedwarfApiProxy;
+import org.jboss.capedwarf.shared.url.URLHack;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -62,21 +63,14 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
     private static final Set<String> PROTOCOLS = Sets.newHashSet("http", "https");
     private static final CapedwarfURLStreamHandler HANDLER = new CapedwarfURLStreamHandler();
 
-    private static final FieldInvocation<Map> handlers;
     private static final MethodInvocation<URLStreamHandler> getURLStreamHandler;
     private static final MethodInvocation<URLConnection> openConnectionDirect;
     private static final MethodInvocation<URLConnection> openConnectionWithProxy;
 
     static {
-        handlers = ReflectionUtils.cacheField(URL.class, "handlers");
         getURLStreamHandler = ReflectionUtils.cacheMethod(URL.class, "getURLStreamHandler", String.class);
         openConnectionDirect = ReflectionUtils.cacheMethod(URLStreamHandler.class, "openConnection", URL.class);
         openConnectionWithProxy = ReflectionUtils.cacheMethod(URLStreamHandler.class, "openConnection", URL.class, Proxy.class);
-    }
-
-    private static void removeProtocol(String protocol) {
-        Map map = handlers.invoke();
-        map.remove(protocol);
     }
 
     private static final ThreadLocal<Set<String>> reentered = new ThreadLocal<Set<String>>() {
@@ -87,17 +81,21 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
 
     private static Map<String, URLStreamHandler> defaultHandlers = new ConcurrentHashMap<String, URLStreamHandler>();
 
-    public URLStreamHandler createURLStreamHandler(String protocol) {
+    public URLStreamHandler createURLStreamHandler(final String protocol) {
         if (PROTOCOLS.contains(protocol) == false)
             return null;
 
         Set<String> set = reentered.get();
         try {
             if (set.add(protocol)) {
-                // fetch defaults
-                defaultHandlers.put(protocol, getDefaultHandler(protocol));
+                return URLHack.inLock(new Callable<URLStreamHandler>() {
+                    public URLStreamHandler call() throws Exception {
+                        // fetch defaults
+                        defaultHandlers.put(protocol, getDefaultHandler(protocol));
 
-                return HANDLER;
+                        return HANDLER;
+                    }
+                });
             } else {
                 return null;
             }
@@ -108,7 +106,7 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
 
     private URLStreamHandler getDefaultHandler(String protocol) {
         URLStreamHandler handler = getURLStreamHandler.invoke(protocol);
-        removeProtocol(protocol);
+        URLHack.removeHandlerNoLock(protocol);
         return handler;
     }
 
