@@ -39,9 +39,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
+import com.google.appengine.api.blobstore.BlobInfo;
+import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.ByteRange;
+import com.google.appengine.api.blobstore.RangeFormatException;
 import com.google.appengine.api.blobstore.UnsupportedRangeFormatException;
 import com.google.appengine.api.blobstore.UploadOptions;
 import com.google.appengine.api.files.AppEngineFile;
@@ -57,10 +60,10 @@ import org.jboss.capedwarf.files.CapedwarfFileService;
  */
 public class CapedwarfBlobstoreService implements BlobstoreService {
 
-    private static final String SERVE_HEADER = "X-AppEngine-BlobKey";
+    public static final String BLOB_KEY_HEADER = "X-AppEngine-BlobKey";
+    public static final String BLOB_RANGE_HEADER = "X-AppEngine-BlobRange";
     private static final String UPLOADED_BLOBKEY_ATTR = "com.google.appengine.api.blobstore.upload.blobkeys";
     private static final String UPLOADED_BLOBKEY_LIST_ATTR = "com.google.appengine.api.blobstore.upload.blobkeylists";
-    private static final String BLOB_RANGE_HEADER = "X-AppEngine-BlobRange";
 
     public String createUploadUrl(String successPath) {
         return createUploadUrl(successPath, UploadOptions.Builder.withDefaults());
@@ -84,11 +87,48 @@ public class CapedwarfBlobstoreService implements BlobstoreService {
 
     public void serve(BlobKey blobKey, ByteRange byteRange, HttpServletResponse response) throws IOException {
         assertNotCommited(response);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setHeader(BLOB_KEY_HEADER, blobKey.getKeyString());
+        if (byteRange != null) {
+            response.setHeader(BLOB_RANGE_HEADER, byteRange.toString());
+        }
+    }
+
+    public void serveBlob(BlobKey blobKey, String byteRangeStr, HttpServletResponse response) throws IOException {
+        assertNotCommited(response);
+
+        BlobInfo blobInfo = getBlobInfo(blobKey);
+        response.setContentType(blobInfo.getContentType());
+
+        ByteRange byteRange = null;
+
+        if (byteRangeStr == null) {
+            response.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            try {
+                byteRange = ByteRange.parse(byteRangeStr);
+            } catch (RangeFormatException e) {
+                response.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+                return;
+            }
+
+            if (byteRange.getStart() >= blobInfo.getSize()) {
+                response.setStatus(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+                return;
+            }
+
+            if (byteRange.hasEnd() && byteRange.getEnd() >= blobInfo.getSize()) {
+                byteRange = new ByteRange(byteRange.getStart(), blobInfo.getSize()-1);
+            }
+
+            response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+            response.setHeader("Content-Range", "bytes " + byteRange.getStart() + "-" + byteRange.getEnd() + "/" + blobInfo.getSize());
+        }
+
         try {
             InputStream in = getStream(blobKey);
             try {
-                response.setStatus(HttpServletResponse.SC_OK);
-                setHeaders(response, blobKey, byteRange);
                 copyStream(in, response.getOutputStream(), byteRange);
             } finally {
                 in.close();
@@ -98,16 +138,14 @@ public class CapedwarfBlobstoreService implements BlobstoreService {
         }
     }
 
+    private BlobInfo getBlobInfo(BlobKey blobKey) {
+        BlobInfoFactory blobInfoFactory = new BlobInfoFactory();
+        return blobInfoFactory.loadBlobInfo(blobKey);
+    }
+
     private void assertNotCommited(HttpServletResponse response) {
         if (response.isCommitted()) {
             throw new IllegalStateException("Response was already committed.");
-        }
-    }
-
-    private void setHeaders(HttpServletResponse response, BlobKey blobKey, ByteRange byteRange) {
-        response.setHeader(SERVE_HEADER, blobKey.getKeyString());
-        if (byteRange != null) {
-            response.setHeader(BLOB_RANGE_HEADER, byteRange.toString());
         }
     }
 
