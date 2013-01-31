@@ -35,6 +35,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
+import org.jboss.capedwarf.blobstore.CapedwarfBlobstoreService;
+
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -49,6 +53,16 @@ public class GAEFilter implements Filter {
         CapedwarfHttpServletResponseWrapper response = new CapedwarfHttpServletResponseWrapper((HttpServletResponse) res);
         request.setAttribute(CapedwarfHttpServletResponseWrapper.class.getName(), response);
         chain.doFilter(request, response);
+
+        serveBlobIfNecessary(response);
+    }
+
+    private void serveBlobIfNecessary(CapedwarfHttpServletResponseWrapper response) throws IOException {
+        String blobKey = response.getBlobKey();
+        if (blobKey != null) {
+            CapedwarfBlobstoreService blobstoreService = (CapedwarfBlobstoreService) BlobstoreServiceFactory.getBlobstoreService();
+            blobstoreService.serveBlob(new BlobKey(blobKey), response.getBlobRange(), response);
+        }
     }
 
     public void destroy() {
