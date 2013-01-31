@@ -22,14 +22,20 @@
 
 package org.jboss.capedwarf.common.io;
 
-import com.google.appengine.api.files.FileWriteChannel;
-
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 
+import com.google.appengine.api.files.FileWriteChannel;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class IOUtils {
     /**
@@ -110,7 +116,7 @@ public class IOUtils {
      * @throws IOException for any IO error
      */
     public static void copyStream(final InputStream in, final OutputStream out, long offset) throws IOException {
-        skip(in, offset);
+        skipFully(in, offset);
         copyStream(in, out);
     }
 
@@ -124,13 +130,28 @@ public class IOUtils {
      * @throws IOException for any IO error
      */
     public static void copyStream(final InputStream in, final OutputStream out, long offset, long length) throws IOException {
-        skip(in, offset);
+        skipFully(in, offset);
         copyStreamBounded(in, out, length);
     }
 
-    public static void skip(InputStream stream, long count) throws IOException {
+    /**
+     * Skips over and discards exactly count bytes from the stream. If stream contains less than count bytes, this method
+     * throws an EOFException.
+     * @param stream    the input stream
+     * @param count     number of bytes to skip
+     * @throws EOFException  when the stream does not contain enough bytes
+     * @throws IOException  when any other IO error occurs
+     */
+    public static void skipFully(InputStream stream, long count) throws IOException {
         while (count > 0) {
-            count -= stream.skip(count);
+            long skipped = stream.skip(count);
+            if (skipped < count) {
+                if (stream.read() == -1) {
+                    throw new EOFException("Reached end of stream prematurely.");
+                }
+                skipped++;
+            }
+            count -= skipped;
         }
     }
 
