@@ -1,0 +1,5 @@
+DO NOT PUT TESTS HERE!!
+
+[CapeDwarf Blue] Common tests are in Testsuite sub-module,
+in order not to re-run multiple times,
+as Common test jar is shared; see CapeDwarf Testsuite project.

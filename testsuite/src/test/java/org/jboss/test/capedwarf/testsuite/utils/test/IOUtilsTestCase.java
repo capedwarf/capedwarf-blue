@@ -1,4 +1,4 @@
-package org.jboss.test.capedwarf.common.test;
+package org.jboss.test.capedwarf.testsuite.utils.test;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
