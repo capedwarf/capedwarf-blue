@@ -59,11 +59,11 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @Category(All.class)
 public class URLFetchTestCase extends BaseTest {
-    static final String[] URLS = {"http://localhost:9990", "http://localhost:8080/capedwarf-tests/_ah/admin", "http://capedwarf-test.appspot.com/index.html"};
+    static final String[] URLS = {"http://localhost:9990", "http://localhost:8080/_ah/admin", "http://capedwarf-test.appspot.com/index.html"};
 
     @Deployment
     public static Archive getDeployment() {
-        TestContext context = TestContext.asDefault();
+        TestContext context = TestContext.asRoot();
         context.setWebXmlFile("uf-web.xml");
         WebArchive war = getCapedwarfDeployment(context);
         war.addClass(FetchServlet.class);
