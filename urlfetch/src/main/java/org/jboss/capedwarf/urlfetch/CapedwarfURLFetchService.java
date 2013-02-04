@@ -34,7 +34,6 @@ import com.google.appengine.api.urlfetch.HTTPRequest;
 import com.google.appengine.api.urlfetch.HTTPResponse;
 import com.google.appengine.api.urlfetch.URLFetchService;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -43,49 +42,16 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Keys;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfURLFetchService implements URLFetchService {
-    private static HttpClient client;
-
-    static synchronized HttpClient getClient() {
-        if (client == null) {
-            // Create and initialize scheme registry
-            SchemeRegistry schemeRegistry = new SchemeRegistry();
-            schemeRegistry.register(new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
-            schemeRegistry.register(new Scheme("https", 443, SSLSocketFactory.getSocketFactory()));
-
-            HttpParams params = new BasicHttpParams();
-            HttpConnectionParams.setConnectionTimeout(params, 30 * 1000);
-            HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-            HttpProtocolParams.setContentCharset(params, "UTF-8");
-
-            // Create an HttpClient with the ThreadSafeClientConnManager.
-            // This connection manager must be used if more than one thread will
-            // be using the HttpClient.
-            ClientConnectionManager ccm = new PoolingClientConnectionManager(schemeRegistry);
-
-            client = new DefaultHttpClient(ccm, params);
-        }
-        return client;
-    }
-
     public HTTPResponse fetch(URL url) throws IOException {
         return fetch(new HTTPRequest(url));
     }
@@ -153,7 +119,8 @@ public class CapedwarfURLFetchService implements URLFetchService {
 
     protected HTTPResponse fetch(final HttpUriRequest request) throws IOException {
         try {
-            HttpResponse response = getClient().execute(request);
+            HttpClient client = ComponentRegistry.getInstance().getComponent(Keys.HTTP_CLIENT);
+            HttpResponse response = client.execute(request);
             HTTPResponseHack jhr = new HTTPResponseHack(response);
             jhr.setFinalUrl(request.getURI().toURL()); // TODO -- OK?
             return jhr.getResponse();

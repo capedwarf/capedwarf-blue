@@ -51,6 +51,8 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.params.HttpParams;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.servlet.CapedwarfApiProxy;
 import org.jboss.capedwarf.shared.url.URLHack;
 import org.kohsuke.MetaInfServices;
@@ -155,7 +157,7 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
         private synchronized HttpResponse getResponseInternal() {
             try {
                 if (response == null) {
-                    HttpClient client = CapedwarfURLFetchService.getClient();
+                    HttpClient client = ComponentRegistry.getInstance().getComponent(Keys.HTTP_CLIENT);
                     HttpPost post = new HttpPost(getURL().toURI()); // always post?
                     if (baos != null) {
                         post.setEntity(new ByteArrayEntity(baos.toByteArray()));

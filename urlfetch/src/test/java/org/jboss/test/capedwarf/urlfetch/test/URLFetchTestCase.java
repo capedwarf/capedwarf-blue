@@ -59,6 +59,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @Category(All.class)
 public class URLFetchTestCase extends BaseTest {
+    static final String[] URLS = {"http://localhost:9990", "http://localhost:8080/capedwarf-tests/_ah/admin", "http://capedwarf-test.appspot.com/index.html"};
+
     @Deployment
     public static Archive getDeployment() {
         TestContext context = TestContext.asDefault();
@@ -111,7 +113,7 @@ public class URLFetchTestCase extends BaseTest {
     public void testAsyncOps() throws Exception {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
 
-        URL adminConsole = findAvailableUrl("http://localhost:9990", "http://localhost:8080/_ah/admin", "http://capedwarf-test.appspot.com/index.html");
+        URL adminConsole = findAvailableUrl(URLS);
         Future<HTTPResponse> response = service.fetchAsync(adminConsole);
         printResponse(response.get(5, TimeUnit.SECONDS));
 
@@ -128,7 +130,7 @@ public class URLFetchTestCase extends BaseTest {
     public void testBasicOps() throws Exception {
         URLFetchService service = URLFetchServiceFactory.getURLFetchService();
 
-        URL adminConsole = findAvailableUrl("http://localhost:9990", "http://localhost:8080/_ah/admin", "http://capedwarf-test.appspot.com/index.html");
+        URL adminConsole = findAvailableUrl(URLS);
         HTTPResponse response = service.fetch(adminConsole);
         printResponse(response);
 
