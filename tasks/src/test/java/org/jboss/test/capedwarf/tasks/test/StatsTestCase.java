@@ -30,11 +30,8 @@ import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.QueueStatistics;
 import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.test.capedwarf.common.support.JBoss;
-import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,12 +42,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Category(JBoss.class) // should be @All, once GAE local supports stats
-public class StatsTestCase extends BaseTest {
-    @Deployment
-    public static Archive getDeployment() {
-        return getCapedwarfDeployment().addAsWebInfResource("queue.xml");
-    }
-
+public class StatsTestCase extends AbstractTasksTest {
     @Test
     public void testStatsAPI() throws Exception {
         final Queue queue = QueueFactory.getQueue("pull-queue");

@@ -31,14 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
-import org.jboss.test.capedwarf.common.test.BaseTest;
-import org.jboss.test.capedwarf.common.test.TestContext;
-import org.jboss.test.capedwarf.tasks.support.PrintListener;
 import org.jboss.test.capedwarf.tasks.support.PrintServlet;
 import org.junit.After;
 import org.junit.Test;
@@ -54,32 +48,8 @@ import static junit.framework.Assert.assertNotNull;
  */
 @RunWith(Arquillian.class)
 @Category(All.class)
-public class TasksTestCase extends BaseTest {
+public class TasksTestCase extends AbstractTasksTest {
     private static final String URL = "/_ah/test";
-    private static final String WEB_XML =
-        "<web>" +
-            " <listener>" +
-            "  <listener-class>" + PrintListener.class.getName() + "</listener-class>" +
-            " </listener>" +
-            " <servlet>" +
-            "  <servlet-name>PrintServlet</servlet-name>" +
-            "  <servlet-class>" + PrintServlet.class.getName() + "</servlet-class>" +
-            " </servlet>" +
-            " <servlet-mapping>" +
-            "  <servlet-name>PrintServlet</servlet-name>" +
-            "  <url-pattern>" + URL + "</url-pattern>" +
-            " </servlet-mapping>" +
-            "</web>";
-
-    @Deployment
-    public static Archive getDeployment() {
-        final TestContext context = new TestContext();
-        context.setWebXmlContent(WEB_XML);
-        final WebArchive war = getCapedwarfDeployment(context);
-        war.addClasses(PrintServlet.class, PrintListener.class);
-        war.addAsWebInfResource("queue-tasks.xml", "queue.xml");
-        return war;
-    }
 
     @After
     public void tearDown() throws Exception {

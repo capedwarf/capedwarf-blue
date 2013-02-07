@@ -30,11 +30,8 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
-import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.test.capedwarf.common.support.All;
-import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,12 +42,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Category(All.class)
-public class PullTestCase extends BaseTest {
-    @Deployment
-    public static Archive getDeployment() {
-        return getCapedwarfDeployment().addAsWebInfResource("queue.xml");
-    }
-
+public class PullTestCase extends AbstractTasksTest {
     @Test
     public void testPullParams() throws Exception {
         final Queue queue = QueueFactory.getQueue("pull-queue");

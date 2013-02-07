@@ -1,5 +1,9 @@
 <queue-entries>
     <queue>
+        <name>tasks-queue</name>
+        <rate>10/s</rate>
+    </queue>
+    <queue>
         <name>pull-queue</name>
         <mode>pull</mode>
         <retry-parameters>

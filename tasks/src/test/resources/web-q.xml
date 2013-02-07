@@ -1,0 +1,13 @@
+<web>
+    <listener>
+        <listener-class>org.jboss.test.capedwarf.tasks.support.PrintListener</listener-class>
+    </listener>
+    <servlet>
+        <servlet-name>PrintServlet</servlet-name>
+        <servlet-class>org.jboss.test.capedwarf.tasks.support.PrintServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PrintServlet</servlet-name>
+        <url-pattern>/_ah/test</url-pattern>
+    </servlet-mapping>
+</web>
