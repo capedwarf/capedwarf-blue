@@ -72,7 +72,7 @@
         <version.javax.mail>1.4.4</version.javax.mail>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
         <version.org.hibernate.search>4.2.0.Final</version.org.hibernate.search>
-        <version.org.infinispan>5.2.0.Final</version.org.infinispan>
+        <version.org.infinispan>5.2.1.Final</version.org.infinispan>
         <version.net.jcip>1.0</version.net.jcip>
         <version.metainf>1.1</version.metainf>
         <version.org.apache.httpcomponents>4.2.1</version.org.apache.httpcomponents>
