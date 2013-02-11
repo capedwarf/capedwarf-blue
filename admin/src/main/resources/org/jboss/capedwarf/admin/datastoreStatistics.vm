@@ -1,6 +1,9 @@
 #include("/org/jboss/capedwarf/admin/header.vm")
 
 <h2>Datastore statistics</h2>
+
+
+#if($datastoreStatistics.enabled)
 <form action="datastoreStatistics.vm">
     <label for="entityKindSelect">Namespace:</label>
     <select id="namespaceSelect" name="selectedNamespace" onchange="this.form.submit()">
@@ -24,7 +27,7 @@
 
 <br/><br/>
 
-#if($datastoreStatistics.selectedEntityKind)
+    #if($datastoreStatistics.selectedEntityKind)
     <table width="100%">
         <tr>
             <th></th>
@@ -58,6 +61,12 @@
             <td></td>
         </tr>
     </table>
+    #end
+
+#else
+
+    <p>Datastore statistics are not enabled. To enable them, use -Denable.eager.datastore.stats=(sync|async)</p>
+
 #end
 
 #include("/org/jboss/capedwarf/admin/footer.vm")

@@ -35,6 +35,7 @@ import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
+import org.jboss.capedwarf.common.compatibility.Compatibility;
 import org.jboss.capedwarf.datastore.NamespaceServiceFactory;
 import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
 
@@ -62,6 +63,10 @@ public class DatastoreStatistics extends DatastoreHolder {
 
     @PostConstruct
     private void loadStatEntity() {
+        if (!isEnabled()) {
+            return;
+        }
+
         if (getSelectedNamespace().equals(ALL_NAMESPACES)) {
             NamespaceManager.set("");
             if (selectedEntityKind == null || selectedEntityKind.equals("")) {
@@ -159,6 +164,11 @@ public class DatastoreStatistics extends DatastoreHolder {
         } else {
             return namespaceService.getKindsPerNamespace(getSelectedNamespace());
         }
+    }
+
+    public boolean isEnabled() {
+        String stats = Compatibility.getInstance().getValue(Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
+        return "sync".equals(stats) || "async".equals(stats);
     }
 
     public static class Column {
