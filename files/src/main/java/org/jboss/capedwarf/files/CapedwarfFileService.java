@@ -28,8 +28,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.blobstore.BlobInfo;
@@ -137,7 +137,7 @@ public class CapedwarfFileService implements FileService {
     }
 
     private String generateUniqueFileName() {
-        return Long.toHexString(new Random().nextLong());   // TODO
+        return UUID.randomUUID().toString();
     }
 
     public AppEngineFile createNewGSFile(GSFileOptions gsFileOptions) throws IOException {

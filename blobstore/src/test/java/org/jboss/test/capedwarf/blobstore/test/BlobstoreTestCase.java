@@ -66,7 +66,7 @@ public class BlobstoreTestCase extends BaseTest {
     }
 
     @Test
-    public void testBasicOps() throws Exception {
+    public void testFetchData() throws Exception {
         final String text = "Uploaded text";
         BlobstoreService service = BlobstoreServiceFactory.getBlobstoreService();
 
