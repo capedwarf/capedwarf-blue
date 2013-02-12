@@ -56,6 +56,18 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.capedwarf.blue</groupId>
             <artifactId>capedwarf-common</artifactId>
             <type>test-jar</type>

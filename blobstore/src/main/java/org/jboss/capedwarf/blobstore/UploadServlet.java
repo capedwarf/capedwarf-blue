@@ -27,8 +27,6 @@ package org.jboss.capedwarf.blobstore;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,8 +38,6 @@ import org.jboss.capedwarf.common.url.URLUtils;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@WebServlet(urlPatterns = UploadServlet.URI)
-@MultipartConfig()  // TODO
 public class UploadServlet extends HttpServlet {
 
     public static final String URI = "/_ah/blobstore/upload";
@@ -51,7 +47,7 @@ public class UploadServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         CapedwarfBlobstoreService blobstoreService = new CapedwarfBlobstoreService();
         blobstoreService.storeUploadedBlobs(request);
-        response.sendRedirect(getSuccessPath(request));
+        request.getRequestDispatcher(getSuccessPath(request)).forward(request, response);
     }
 
     private String getSuccessPath(HttpServletRequest request) {
