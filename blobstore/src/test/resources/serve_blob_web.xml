@@ -29,7 +29,7 @@
 
     <servlet>
         <servlet-name>serveblob</servlet-name>
-        <servlet-class>org.jboss.test.capedwarf.blobstore.test.ServeBlobServlet</servlet-class>
+        <servlet-class>org.jboss.test.capedwarf.blobstore.support.ServeBlobServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>serveblob</servlet-name>

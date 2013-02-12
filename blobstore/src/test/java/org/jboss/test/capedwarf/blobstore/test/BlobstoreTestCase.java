@@ -40,7 +40,8 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.blobstore.support.ServeBlobServlet;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
@@ -59,10 +60,9 @@ import static junit.framework.Assert.assertNull;
 @Category(All.class)
 public class BlobstoreTestCase extends BaseTest {
     @Deployment
-    public static Archive getDeployment() {
-        TestContext testContext = new TestContext().setWebXmlFile("serve_blob_web.xml");
-        return getCapedwarfDeployment(testContext)
-            .addClass(ServeBlobServlet.class);
+    public static WebArchive getDeployment() {
+        TestContext testContext = TestContext.asDefault().setWebXmlFile("serve_blob_web.xml");
+        return getCapedwarfDeployment(testContext).addClass(ServeBlobServlet.class);
     }
 
     @Test

@@ -20,44 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.blobstore.test;
+package org.jboss.test.capedwarf.blobstore.support;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class UploadHandlerServlet extends HttpServlet {
-
-    private static BlobKey lastUploadedBlobKey;
+public class UploadUrlServerServlet extends HttpServlet {
 
     @Override
-    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         BlobstoreService blobstore = BlobstoreServiceFactory.getBlobstoreService();
-
-        PrintWriter out = response.getWriter();
-        Map<String,List<BlobKey>> uploadMap = blobstore.getUploads(request);
-        for (Map.Entry<String, List<BlobKey>> entry : uploadMap.entrySet()) {
-            for (BlobKey blobKey : entry.getValue()) {
-                out.println(entry.getKey() + ": " + blobKey);
-                lastUploadedBlobKey = blobKey;
-            }
-        }
+        response.getWriter().println(blobstore.createUploadUrl("/uploadHandler"));
     }
 
-    public static BlobKey getLastUploadedBlobKey() {
-        return lastUploadedBlobKey;
-    }
 }

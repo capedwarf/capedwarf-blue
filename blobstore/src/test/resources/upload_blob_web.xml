@@ -29,7 +29,7 @@
 
     <servlet>
         <servlet-name>uploadUrl</servlet-name>
-        <servlet-class>org.jboss.test.capedwarf.blobstore.test.UploadUrlServerServlet</servlet-class>
+        <servlet-class>org.jboss.test.capedwarf.blobstore.support.UploadUrlServerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>uploadUrl</servlet-name>
@@ -38,7 +38,7 @@
 
     <servlet>
         <servlet-name>uploadHandler</servlet-name>
-        <servlet-class>org.jboss.test.capedwarf.blobstore.test.UploadHandlerServlet</servlet-class>
+        <servlet-class>org.jboss.test.capedwarf.blobstore.support.UploadHandlerServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>uploadHandler</servlet-name>

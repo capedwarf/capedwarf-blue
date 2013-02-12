@@ -37,6 +37,9 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.test.capedwarf.blobstore.support.FileUploader;
+import org.jboss.test.capedwarf.blobstore.support.UploadHandlerServlet;
+import org.jboss.test.capedwarf.blobstore.support.UploadUrlServerServlet;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.BaseTest;
 import org.jboss.test.capedwarf.common.test.TestContext;
@@ -59,7 +62,7 @@ public class BlobstoreUploadTestCase extends BaseTest {
 
     @Deployment
     public static Archive getDeployment() {
-        TestContext testContext = new TestContext().setWebXmlFile("upload_blob_web.xml");
+        TestContext testContext = TestContext.asDefault().setWebXmlFile("upload_blob_web.xml");
         return getCapedwarfDeployment(testContext)
             .addClass(FileUploader.class)
             .addClass(UploadUrlServerServlet.class)
@@ -95,7 +98,6 @@ public class BlobstoreUploadTestCase extends BaseTest {
         return fileService.getBlobFile(blobKey);
     }
 
-
     private String getFileContents(AppEngineFile file) throws IOException {
         FileReadChannel channel = FileServiceFactory.getFileService().openReadChannel(file, true);
         try {
@@ -115,6 +117,5 @@ public class BlobstoreUploadTestCase extends BaseTest {
 
         return new String(bytes);
     }
-
 
 }
