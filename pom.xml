@@ -89,7 +89,7 @@
         <version.shrinkwrap.maven-resolver>2.0.0-alpha-4</version.shrinkwrap.maven-resolver>
         <version.jboss.as7>7.2.0.Alpha1-SNAPSHOT</version.jboss.as7>
         <version.org.jboss.xnio>3.0.7.GA</version.org.jboss.xnio>
-        <version.arquillian.gae>1.0.0.Alpha3</version.arquillian.gae>
+        <version.arquillian.gae>1.0.0.Alpha6</version.arquillian.gae>
         <version.jboss.maven.transformer>1.0.0.Beta4</version.jboss.maven.transformer>
         <version.jboss.maven.arquillian>1.0.0.Alpha1</version.jboss.maven.arquillian>
         <!-- Testing - MapReduce -->
@@ -730,7 +730,7 @@
 
             <dependency>
                 <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-gae-remote</artifactId>
+                <artifactId>arquillian-gae-tools</artifactId>
                 <version>${version.arquillian.gae}</version>
                 <scope>test</scope>
             </dependency>
@@ -872,7 +872,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                            <!-- Ignore grooups for now - weird output -->
+                            <!-- Ignore groups for now - weird output -->
                             <!-- groups>org.jboss.test.capedwarf.common.support.JBoss</groups -->
                             <includes>
                                 <include>org/jboss/test/**/*TestCase.java</include>
@@ -923,7 +923,7 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <property>
-                    <name>appengine.sdk.root</name>
+                    <name>gae</name>
                 </property>
             </activation>
             <build>
@@ -933,8 +933,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                            <!-- Ignore grooups for now - weird output -->
-                            <!-- groups>org.jboss.test.capedwarf.common.support.GAE</groups -->
+                            <groups>org.jboss.test.capedwarf.common.support.GAE</groups>
                             <includes>
                                 <include>org/jboss/test/**/*TestCase.java</include>
                             </includes>
@@ -1003,7 +1002,7 @@
                 </dependency>
                 <dependency>
                     <groupId>org.jboss.arquillian.container</groupId>
-                    <artifactId>arquillian-gae-remote</artifactId>
+                    <artifactId>arquillian-gae-tools</artifactId>
                     <scope>test</scope>
                 </dependency>
             </dependencies>

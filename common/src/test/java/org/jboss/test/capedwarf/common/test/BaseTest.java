@@ -24,11 +24,11 @@ package org.jboss.test.capedwarf.common.test;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
-import javassist.util.proxy.ProxyFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -45,6 +45,17 @@ public class BaseTest {
     protected static final long DEFAULT_SLEEP = 3000L;
 
     protected final Logger log = Logger.getLogger(getClass().getName());
+
+    private static Method isProxyClass;
+
+    static {
+        try {
+            Class<?> pfc = BaseTest.class.getClassLoader().loadClass("javassist.util.proxy.ProxyFactory");
+            isProxyClass = pfc.getMethod("isProxyClass", new Class[]{Class.class});
+        } catch (Throwable ignore) {
+            isProxyClass = null;
+        }
+    }
 
     protected static WebArchive getCapedwarfDeployment(TestContext context) {
         final WebArchive war;
@@ -113,7 +124,15 @@ public class BaseTest {
 
         // good enough?
         final Class<?> aClass = service.getClass();
-        return ProxyFactory.isProxyClass(aClass) || aClass.getName().contains(".jboss.");
+        return isProxyClass(aClass) || aClass.getName().contains(".jboss.");
+    }
+
+    protected static boolean isProxyClass(Class<?> clazz) {
+        try {
+            return (isProxyClass != null) && (Boolean) isProxyClass.invoke(null, clazz);
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     protected static void assertRegexpMatches(String regexp, String str) {
