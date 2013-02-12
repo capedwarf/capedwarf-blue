@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.config;
+package org.jboss.capedwarf.common.async;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;

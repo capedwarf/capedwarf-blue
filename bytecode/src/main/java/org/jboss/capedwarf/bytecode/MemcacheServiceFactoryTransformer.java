@@ -31,12 +31,14 @@ import javassist.NotFoundException;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class MemcacheServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         transformGetMemcacheServiceMethod(clazz);
         transformParameterizedGetMemcacheServiceMethod(clazz);
-//        transformGetAsyncMemcacheServiceMethod(clazz);
+        transformGetAsyncMemcacheServiceMethod(clazz);
+        transformParameterizedGetAsyncMemcacheServiceMethod(clazz);
     }
 
     private void transformGetMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
@@ -52,5 +54,10 @@ public class MemcacheServiceFactoryTransformer extends JavassistTransformer {
     private void transformGetAsyncMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
         CtMethod method = clazz.getDeclaredMethod("getAsyncMemcacheService");
         method.setBody("return new org.jboss.capedwarf.memcache.CapedwarfAsyncMemcacheService();");
+    }
+
+    private void transformParameterizedGetAsyncMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
+        CtMethod method = clazz.getDeclaredMethod("getAsyncMemcacheService", new CtClass[]{clazz.getClassPool().get("java.lang.String")});
+        method.setBody("return new org.jboss.capedwarf.memcache.CapedwarfAsyncMemcacheService($1);");
     }
 }

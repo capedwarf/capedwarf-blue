@@ -26,9 +26,7 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.concurrent.ThreadFactory;
 
-import com.google.apphosting.api.ApiProxy;
-import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
-import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Keys;
 
@@ -38,7 +36,6 @@ import org.jboss.capedwarf.shared.components.Keys;
 class LazyThreadFactory implements ThreadFactory, Serializable {
     private static final long serialVersionUID = 1L;
 
-    private static String[] defaultJndiNames = {"java:jboss/threads/threadfactory/capedwarf"};
     static final ThreadFactory INSTANCE = new LazyThreadFactory();
 
     private transient volatile ThreadFactory factory;
@@ -61,40 +58,8 @@ class LazyThreadFactory implements ThreadFactory, Serializable {
         return INSTANCE;
     }
 
+    @SuppressWarnings("NullableProblems")
     public Thread newThread(final Runnable runnable) {
-        return getFactory().newThread(new RunnableWrapper(runnable));
+        return getFactory().newThread(Wrappers.wrap(runnable));
     }
-
-    private static class RunnableWrapper implements Runnable {
-        private final ClassLoader appCL;
-        private final CapedwarfEnvironment env;
-        private final Runnable runnable;
-
-        private RunnableWrapper(Runnable runnable) {
-            this.appCL = Application.getAppClassloader();
-            this.env = CapedwarfEnvironment.getThreadLocalInstance();
-            this.runnable = runnable;
-        }
-
-        public void run() {
-            final ClassLoader old = SecurityActions.setThreadContextClassLoader(appCL);
-            try {
-                CapedwarfEnvironment.setThreadLocalInstance(env);
-                try {
-                    final ApiProxy.Delegate previous = ApiProxy.getDelegate();
-                    ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
-                    try {
-                        runnable.run();
-                    } finally {
-                        ApiProxy.setDelegate(previous);
-                    }
-                } finally {
-                    CapedwarfEnvironment.clearThreadLocalInstance();
-                }
-            } finally {
-                SecurityActions.setThreadContextClassLoader(old);
-            }
-        }
-    }
-
 }

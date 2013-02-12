@@ -88,6 +88,7 @@
         <version.shrinkwrap>1.1.0</version.shrinkwrap>
         <version.shrinkwrap.maven-resolver>2.0.0-alpha-4</version.shrinkwrap.maven-resolver>
         <version.jboss.as7>7.2.0.Alpha1-SNAPSHOT</version.jboss.as7>
+        <version.org.jboss.xnio>3.0.7.GA</version.org.jboss.xnio>
         <version.arquillian.gae>1.0.0.Alpha3</version.arquillian.gae>
         <version.jboss.maven.transformer>1.0.0.Beta4</version.jboss.maven.transformer>
         <version.jboss.maven.arquillian>1.0.0.Alpha1</version.jboss.maven.arquillian>
@@ -707,6 +708,20 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.xnio</groupId>
+                <artifactId>xnio-api</artifactId>
+                <version>${version.org.jboss.xnio}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.xnio</groupId>
+                <artifactId>xnio-nio</artifactId>
+                <version>${version.org.jboss.xnio}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.arquillian.container</groupId>
                 <artifactId>arquillian-gae-local</artifactId>
                 <version>${version.arquillian.gae}</version>
@@ -871,7 +886,30 @@
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-arquillian-container-remote</artifactId>
                     <scope>test</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.jboss.xnio</groupId>
+                            <artifactId>xnio-api</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.jboss.xnio</groupId>
+                            <artifactId>xnio-nio</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.xnio</groupId>
+                    <artifactId>xnio-api</artifactId>
+                    <scope>test</scope>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.xnio</groupId>
+                    <artifactId>xnio-nio</artifactId>
+                    <scope>test</scope>
+                </dependency>
+
                 <dependency>
                     <groupId>org.jboss.arquillian.protocol</groupId>
                     <artifactId>arquillian-protocol-servlet</artifactId>
