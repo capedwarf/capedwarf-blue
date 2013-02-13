@@ -43,7 +43,7 @@ import static junit.framework.Assert.fail;
  */
 @RunWith(Arquillian.class)
 @Category(All.class)
-public class BlobstoreFetchDataTestCase extends BlobstoreTestBase {
+public class BlobstoreFetchDataTest extends BlobstoreTestBase {
 
     private BlobstoreService blobstore;
     private BlobKey blobKey;
