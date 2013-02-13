@@ -2,7 +2,7 @@
 <%@ page import="com.google.appengine.api.datastore.DatastoreServiceFactory" %>
 <%@ page import="com.google.appengine.api.datastore.Entity" %>
 <%@ page import="com.google.apphosting.api.ApiProxy" %>
-<%@ page import="org.jboss.test.capedwarf.log.test.RequestLogsTestCase" %>
+<%@ page import="org.jboss.test.capedwarf.log.test.RequestLogsTest" %>
 <%--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2013, Red Hat, Inc., and individual contributors
@@ -28,8 +28,8 @@
     String requestId = (String) ApiProxy.getCurrentEnvironment().getAttributes().get("com.google.appengine.runtime.request_log_id");
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    Entity entity = new Entity(RequestLogsTestCase.ENTITY_KIND, request.getParameter("entityName"));
-    entity.setProperty(RequestLogsTestCase.REQUEST_ID_PROPERTY, requestId);
+    Entity entity = new Entity(RequestLogsTest.ENTITY_KIND, request.getParameter("entityName"));
+    entity.setProperty(RequestLogsTest.REQUEST_ID_PROPERTY, requestId);
     datastore.put(entity);
 
     throw new RuntimeException("test exception");

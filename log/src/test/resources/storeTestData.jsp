@@ -1,7 +1,7 @@
 <%@ page import="com.google.appengine.api.datastore.DatastoreService" %>
 <%@ page import="com.google.appengine.api.datastore.DatastoreServiceFactory" %>
 <%@ page import="com.google.appengine.api.datastore.Entity" %>
-<%@ page import="org.jboss.test.capedwarf.log.test.RequestLogsTestCase" %>
+<%@ page import="org.jboss.test.capedwarf.log.test.RequestLogsTest" %>
 <%--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2013, Red Hat, Inc., and individual contributors
@@ -25,7 +25,7 @@
   --%>
 <%
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    Entity entity = new Entity(RequestLogsTestCase.ENTITY_KIND, RequestLogsTestCase.ENTITY_NAME);
+    Entity entity = new Entity(RequestLogsTest.ENTITY_KIND, RequestLogsTest.ENTITY_NAME);
     entity.setProperty("time1", Long.parseLong(request.getParameter("time1")));
     entity.setProperty("time2", Long.parseLong(request.getParameter("time2")));
     entity.setProperty("serverName", request.getServerName());

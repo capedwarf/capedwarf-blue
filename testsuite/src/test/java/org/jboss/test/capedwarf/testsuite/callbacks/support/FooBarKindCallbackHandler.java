@@ -38,8 +38,8 @@ import com.google.appengine.api.datastore.PreQuery;
 import com.google.appengine.api.datastore.PreQueryContext;
 import com.google.appengine.api.datastore.PutContext;
 
-import static org.jboss.test.capedwarf.testsuite.callbacks.test.AbstractCallbacksTest.KIND;
-import static org.jboss.test.capedwarf.testsuite.callbacks.test.AbstractCallbacksTest.KIND2;
+import static org.jboss.test.capedwarf.testsuite.callbacks.test.CallbacksTestBase.KIND;
+import static org.jboss.test.capedwarf.testsuite.callbacks.test.CallbacksTestBase.KIND2;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

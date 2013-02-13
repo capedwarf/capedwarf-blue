@@ -38,7 +38,7 @@ import com.google.appengine.api.datastore.PreQuery;
 import com.google.appengine.api.datastore.PreQueryContext;
 import com.google.appengine.api.datastore.PutContext;
 
-import static org.jboss.test.capedwarf.testsuite.callbacks.test.AbstractCallbacksTest.KIND;
+import static org.jboss.test.capedwarf.testsuite.callbacks.test.CallbacksTestBase.KIND;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>

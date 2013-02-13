@@ -37,7 +37,7 @@ import com.google.appengine.api.datastore.PrePut;
 import com.google.appengine.api.datastore.PreQuery;
 import com.google.appengine.api.datastore.PreQueryContext;
 import com.google.appengine.api.datastore.PutContext;
-import org.jboss.test.capedwarf.testsuite.callbacks.test.AbstractCallbacksTest;
+import org.jboss.test.capedwarf.testsuite.callbacks.test.CallbacksTestBase;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -47,43 +47,43 @@ public class BarKindCallbackHandler {
 
     public static List<String> states = new ArrayList<String>();
 
-    @PrePut(kinds = {AbstractCallbacksTest.KIND2})
+    @PrePut(kinds = {CallbacksTestBase.KIND2})
     public void prePut(PutContext context) {
         states.add("PrePut");
         System.out.println("context = " + context);
     }
 
-    @PostPut(kinds = {AbstractCallbacksTest.KIND2})
+    @PostPut(kinds = {CallbacksTestBase.KIND2})
     public void postPut(PutContext context) {
         states.add("PostPut");
         System.out.println("context = " + context);
     }
 
-    @PreGet(kinds = {AbstractCallbacksTest.KIND2})
+    @PreGet(kinds = {CallbacksTestBase.KIND2})
     public void preGet(PreGetContext context) {
         states.add("PreGet");
         System.out.println("context = " + context);
     }
 
-    @PostLoad(kinds = {AbstractCallbacksTest.KIND2})
+    @PostLoad(kinds = {CallbacksTestBase.KIND2})
     public void postLoad(PostLoadContext context) {
         states.add("PostLoad");
         System.out.println("context = " + context);
     }
 
-    @PreQuery(kinds = {AbstractCallbacksTest.KIND2})
+    @PreQuery(kinds = {CallbacksTestBase.KIND2})
     public void preQuery(PreQueryContext context) {
         states.add("PreQuery");
         System.out.println("context = " + context);
     }
 
-    @PreDelete(kinds = {AbstractCallbacksTest.KIND2})
+    @PreDelete(kinds = {CallbacksTestBase.KIND2})
     public void preDelete(DeleteContext context) {
         states.add("PreDelete");
         System.out.println("context = " + context);
     }
 
-    @PostDelete(kinds = {AbstractCallbacksTest.KIND2})
+    @PostDelete(kinds = {CallbacksTestBase.KIND2})
     public void postDelete(DeleteContext context) {
         states.add("PostDelete");
         System.out.println("context = " + context);
