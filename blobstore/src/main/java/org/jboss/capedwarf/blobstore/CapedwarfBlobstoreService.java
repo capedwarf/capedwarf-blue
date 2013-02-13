@@ -42,6 +42,7 @@ import javax.servlet.http.Part;
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreFailureException;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.ByteRange;
 import com.google.appengine.api.blobstore.RangeFormatException;
@@ -162,12 +163,27 @@ public class CapedwarfBlobstoreService implements BlobstoreService {
         }
     }
 
-    public byte[] fetchData(BlobKey blobKey, long start, long end) {
+    public byte[] fetchData(BlobKey blobKey, long startIndex, long endIndex) {
+        if (startIndex < 0) {
+            throw new IllegalArgumentException("startIndex must be >= 0");
+        }
+
+        if (endIndex < startIndex) {
+            throw new IllegalArgumentException("endIndex must be >= startIndex");
+        }
+
+        long fetchSize = endIndex - startIndex + 1;
+        if (fetchSize > MAX_BLOB_FETCH_SIZE) {
+            throw new IllegalArgumentException("Blob fetch size " + fetchSize + " is larger than MAX_BLOB_FETCH_SIZE (" + MAX_BLOB_FETCH_SIZE + ")");
+        }
+
         try {
             InputStream stream = getStream(blobKey);
-            return IOUtils.toBytes(stream, start, end, true);
+            return IOUtils.toBytes(stream, startIndex, endIndex, true);
+        } catch (FileNotFoundException e) {
+            throw new IllegalArgumentException("Blob does not exist");
         } catch (IOException e) {
-            throw new IllegalStateException(e);
+            throw new BlobstoreFailureException("An unexpected error occured", e);
         }
     }
 
