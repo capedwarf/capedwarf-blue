@@ -27,21 +27,14 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 
-import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.blobstore.BlobstoreService;
-import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
-import com.google.appengine.api.files.AppEngineFile;
-import com.google.appengine.api.files.FileService;
-import com.google.appengine.api.files.FileServiceFactory;
-import com.google.appengine.api.files.FileWriteChannel;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.test.capedwarf.blobstore.support.ServeBlobServlet;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.jboss.test.capedwarf.common.test.TestContext;
@@ -58,34 +51,14 @@ import static junit.framework.Assert.assertNull;
  */
 @RunWith(Arquillian.class)
 @Category(All.class)
-public class BlobstoreTest extends TestBase {
+public class BlobstoreTest extends BlobstoreTestBase {
     @Deployment
-    public static WebArchive getDeployment() {
-        TestContext testContext = TestContext.asDefault().setWebXmlFile("serve_blob_web.xml");
-        return getCapedwarfDeployment(testContext).addClass(ServeBlobServlet.class);
-    }
-
-    @Test
-    public void testFetchData() throws Exception {
-        final String text = "Uploaded text";
-        BlobstoreService service = BlobstoreServiceFactory.getBlobstoreService();
-
-        FileService fileService = FileServiceFactory.getFileService();
-        AppEngineFile file = fileService.createNewBlobFile("text/plain", "uploadedText.txt");
-        FileWriteChannel channel = fileService.openWriteChannel(file, true);
-        try {
-            channel.write(ByteBuffer.wrap(text.getBytes()));
-        } finally {
-            channel.closeFinally();
-        }
-
-        BlobKey blobKey = fileService.getBlobKey(file);
-        byte[] bytes = service.fetchData(blobKey, 0, Long.MAX_VALUE);
-        try {
-            assertEquals(text, new String(bytes));
-        } finally {
-            service.delete(blobKey);
-        }
+    public static Archive getDeployment() {
+        TestContext testContext = new TestContext().setWebXmlFile("serve_blob_web.xml");
+        return getCapedwarfDeployment(testContext)
+            .addClass(BlobstoreTestBase.class)
+            .addClass(IOUtils.class)
+            .addClass(ServeBlobServlet.class);
     }
 
     @Test

@@ -68,22 +68,21 @@ public class IOUtils {
      *
      * @param is          the input stream
      * @param start       the start
-     * @param end         the end
+     * @param end         the end (inclusive)
      * @param closeStream should we close the stream
      * @return bytes
      * @throws IOException for any IO error
      */
     public static byte[] toBytes(InputStream is, long start, long end, boolean closeStream) throws IOException {
         try {
+            skipFully(is, start);
+            end -= start;
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             int b;
-            while ((b = is.read()) != -1 && end > 0) {
-                if (start > 0)
-                    continue;
-
-                baos.write(b);
-                start--;
+            while ((b = is.read()) != -1 && end >= 0) {
                 end--;
+                baos.write(b);
             }
             return baos.toByteArray();
         } finally {
