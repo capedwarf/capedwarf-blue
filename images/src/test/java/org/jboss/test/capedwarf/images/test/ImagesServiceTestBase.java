@@ -30,11 +30,23 @@ import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
 import com.google.appengine.api.images.Image;
+import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.capedwarf.images.util.ColorUtils;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.test.TestBase;
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -43,7 +55,41 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class AbstractImagesServiceTestBase {
+@RunWith(Arquillian.class)
+@Category(All.class)
+public abstract class ImagesServiceTestBase extends TestBase {
+
+    protected static final String CAPEDWARF_BMP = "capedwarf.bmp";
+    protected static final String CAPEDWARF_GIF = "capedwarf.gif";
+    protected static final String CAPEDWARF_JPG = "capedwarf.jpg";
+    protected static final String CAPEDWARF_PNG = "capedwarf.png";
+    protected static final String CAPEDWARF_TIF = "capedwarf.tif";
+
+    protected ImagesService imagesService;
+
+    @Deployment
+    public static Archive getDeployment() {
+        WebArchive war = getCapedwarfDeployment();
+        war.addClass(ImagesServiceTestBase.class);
+        war.addAsResource(CAPEDWARF_BMP);
+        war.addAsResource(CAPEDWARF_GIF);
+        war.addAsResource(CAPEDWARF_JPG);
+        war.addAsResource(CAPEDWARF_PNG);
+        war.addAsResource(CAPEDWARF_TIF);
+        return war;
+    }
+
+    @Before
+    public void setUp() {
+        imagesService = ImagesServiceFactory.getImagesService();
+    }
+
+    protected int[] getARGBPixel(Image image, int x, int y) {
+        BufferedImage bufferedImage = getBufferedImage(image);
+        int rgb = bufferedImage.getRGB(x, y);
+        return ColorUtils.toIntArray((long) rgb);
+    }
+
     protected static int[] getPixel(Raster raster, int x, int y) {
         return raster.getPixel(x, y, (int[]) null);
     }
@@ -162,4 +208,37 @@ public class AbstractImagesServiceTestBase {
         }
         return histogram;
     }
+
+    protected Image loadTestImage() {
+        try {
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(CAPEDWARF_PNG);
+            byte[] byteArray = toBytes(inputStream, 0, Long.MAX_VALUE, true);
+            return ImagesServiceFactory.makeImage(byteArray);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected static byte[] toBytes(InputStream is, long start, long end, boolean closeStream) throws IOException {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            int b;
+            while ((b = is.read()) != -1 && end > 0) {
+                if (start > 0)
+                    continue;
+
+                baos.write(b);
+                start--;
+                end--;
+            }
+            return baos.toByteArray();
+        } finally {
+            if (closeStream)
+                try {
+                    is.close();
+                } catch (IOException ignored) {
+                }
+        }
+    }
+
 }

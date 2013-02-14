@@ -28,50 +28,48 @@ import java.io.InputStream;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import org.jboss.capedwarf.common.io.IOUtils;
-import org.jboss.test.capedwarf.common.support.JBoss;
-import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(JBoss.class)
-public class MakeImageTest {
+public class MakeImageTest extends ImagesServiceTestBase {
 
     @Test
     public void makeImageCanReadJPG() throws IOException {
-        byte[] imageData = readImageResource("capedwarf.jpg");
-        Image image = ImagesServiceFactory.makeImage(imageData);
-        Assert.assertNotNull(image);
+        byte[] imageData = readImageResource(CAPEDWARF_JPG);
+        assertMakeImageCanReadImage(imageData);
     }
 
     @Test
     public void makeImageCanReadPNG() throws IOException {
-        byte[] imageData = readImageResource("capedwarf.png");
-        Image image = ImagesServiceFactory.makeImage(imageData);
-        Assert.assertNotNull(image);
+        byte[] imageData = readImageResource(CAPEDWARF_PNG);
+        assertMakeImageCanReadImage(imageData);
     }
 
     @Test
     public void makeImageCanReadGIF() throws IOException {
-        byte[] imageData = readImageResource("capedwarf.gif");
-        Image image = ImagesServiceFactory.makeImage(imageData);
-        Assert.assertNotNull(image);
+        byte[] imageData = readImageResource(CAPEDWARF_GIF);
+        assertMakeImageCanReadImage(imageData);
     }
 
     @Test
     public void makeImageCanReadBMP() throws IOException {
-        byte[] imageData = readImageResource("capedwarf.bmp");
-        Image image = ImagesServiceFactory.makeImage(imageData);
-        Assert.assertNotNull(image);
+        byte[] imageData = readImageResource(CAPEDWARF_BMP);
+        assertMakeImageCanReadImage(imageData);
     }
 
     @Test
     public void makeImageCanReadTIF() throws IOException {
-        byte[] imageData = readImageResource("capedwarf.tif");
+        byte[] imageData = readImageResource(CAPEDWARF_TIF);
+        assertMakeImageCanReadImage(imageData);
+    }
+
+    private void assertMakeImageCanReadImage(byte[] imageData) {
         Image image = ImagesServiceFactory.makeImage(imageData);
-        Assert.assertNotNull(image);
+        assertNotNull(image);
     }
 
     private byte[] readImageResource(String resourceName) throws IOException {

@@ -25,13 +25,7 @@
 package org.jboss.test.capedwarf.images.test;
 
 import com.google.appengine.api.blobstore.BlobKey;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.images.ImageServlet;
-import org.jboss.test.capedwarf.common.support.JBoss;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -39,42 +33,30 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(JBoss.class)
-public class ImageServletTest {
+@SuppressWarnings("deprecation")
+public class ImageServingUrlTest extends ImagesServiceTestBase {
 
     private static final String BLOB_KEY_STRING = "key123";
     private static final BlobKey BLOB_KEY = new BlobKey(BLOB_KEY_STRING);
 
-    @Before
-    public void setUp() {
-        CapedwarfEnvironment.createThreadLocalInstance();
-    }
-
-    @After
-    public void tearDown() {
-        CapedwarfEnvironment.clearThreadLocalInstance();
-    }
-
     @Test
     public void servingUrlContainsBlobKey() throws Exception {
-        String url = ImageServlet.getServingUrl(BLOB_KEY);
+        String url = imagesService.getServingUrl(BLOB_KEY);
         assertTrue(url.contains(BLOB_KEY_STRING));
     }
 
     @Test
     public void servingUrlWithImageSize() throws Exception {
-        String baseUrl = ImageServlet.getServingUrl(BLOB_KEY);
-
-        String actualUrl = ImageServlet.getServingUrl(BLOB_KEY, 32, false);
+        String baseUrl = imagesService.getServingUrl(BLOB_KEY);
+        String actualUrl = imagesService.getServingUrl(BLOB_KEY, 32, false);
         String expectedUrl = baseUrl + "=s32";
         assertEquals(expectedUrl, actualUrl);
     }
 
     @Test
     public void servingUrlWithImageSizeAndCrop() throws Exception {
-        String baseUrl = ImageServlet.getServingUrl(BLOB_KEY);
-
-        String actualUrl = ImageServlet.getServingUrl(BLOB_KEY, 32, true);
+        String baseUrl = imagesService.getServingUrl(BLOB_KEY);
+        String actualUrl = imagesService.getServingUrl(BLOB_KEY, 32, true);
         String expectedUrl = baseUrl + "=s32-c";
         assertEquals(expectedUrl, actualUrl);
     }

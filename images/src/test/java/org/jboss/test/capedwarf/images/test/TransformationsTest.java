@@ -28,17 +28,14 @@ import java.util.Arrays;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
-import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@Category(JBoss.class)
-public class TransformationsTest extends CapedwarfImagesServiceTestBase {
+public class TransformationsTest extends ImagesServiceTestBase {
 
     @Test
     public void testResize() {
@@ -122,9 +119,8 @@ public class TransformationsTest extends CapedwarfImagesServiceTestBase {
     @Test
     public void testRotate0Degrees() {
         Image image = createTestImage();
-        Transform resize = ImagesServiceFactory.makeRotate(0);
-
-        Image rotatedImage = imagesService.applyTransform(resize, image);
+        Transform rotate0 = ImagesServiceFactory.makeRotate(0);
+        Image rotatedImage = imagesService.applyTransform(rotate0, image);
 
         assertImagesEqual(image, rotatedImage);
     }
@@ -132,9 +128,8 @@ public class TransformationsTest extends CapedwarfImagesServiceTestBase {
     @Test
     public void testRotate90Degrees() {
         Image image = createTestImage();
-        Transform resize = ImagesServiceFactory.makeRotate(90);
-
-        Image rotatedImage = imagesService.applyTransform(resize, image);
+        Transform rotate90 = ImagesServiceFactory.makeRotate(90);
+        Image rotatedImage = imagesService.applyTransform(rotate90, image);
 
         Raster raster = getRaster(image);
         Raster rotatedRaster = getRaster(rotatedImage);
@@ -150,12 +145,11 @@ public class TransformationsTest extends CapedwarfImagesServiceTestBase {
     @Test
     public void testRotate180Degrees() {
         Image image = createTestImage();
-        Transform resize = ImagesServiceFactory.makeRotate(180);
-
-        Image rotatedImage = imagesService.applyTransform(resize, image);
+        Transform rotate = ImagesServiceFactory.makeRotate(180);
+        Image rotate180 = imagesService.applyTransform(rotate, image);
 
         Raster raster = getRaster(image);
-        Raster rotatedRaster = getRaster(rotatedImage);
+        Raster rotatedRaster = getRaster(rotate180);
         assertEquals(raster.getWidth(), rotatedRaster.getWidth());
         assertEquals(raster.getHeight(), rotatedRaster.getHeight());
         for (int y = 0; y < raster.getHeight(); y++) {
@@ -168,9 +162,8 @@ public class TransformationsTest extends CapedwarfImagesServiceTestBase {
     @Test
     public void testRotate270Degrees() {
         Image image = createTestImage();
-        Transform resize = ImagesServiceFactory.makeRotate(270);
-
-        Image rotatedImage = imagesService.applyTransform(resize, image);
+        Transform rotate270 = ImagesServiceFactory.makeRotate(270);
+        Image rotatedImage = imagesService.applyTransform(rotate270, image);
 
         Raster raster = getRaster(image);
         Raster rotatedRaster = getRaster(rotatedImage);
@@ -187,7 +180,6 @@ public class TransformationsTest extends CapedwarfImagesServiceTestBase {
     public void imFeelingLuckyReturnsTheSameImage() {
         Image image = createTestImage();
         Transform feelingLuckyTransform = ImagesServiceFactory.makeImFeelingLucky();
-
         Image improvedImage = imagesService.applyTransform(feelingLuckyTransform, image);
 
         assertEquals(image.getWidth(), improvedImage.getWidth());
