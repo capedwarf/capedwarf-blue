@@ -39,6 +39,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -92,6 +93,9 @@ public class CapedwarfURLFetchService implements URLFetchService {
                 break;
             case HEAD:
                 base = new HttpHead(uri);
+                break;
+            case PATCH:
+                base = new HttpPatch(uri);
                 break;
             default:
                 throw new IllegalArgumentException("No such method supported: " + request.getMethod());
