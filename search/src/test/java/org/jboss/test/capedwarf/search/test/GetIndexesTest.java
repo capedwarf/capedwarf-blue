@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -27,8 +27,6 @@ import java.util.Arrays;
 import com.google.appengine.api.search.GetIndexesRequest;
 import com.google.appengine.api.search.GetResponse;
 import com.google.appengine.api.search.Index;
-import com.google.appengine.api.search.ListIndexesRequest;
-import com.google.appengine.api.search.ListIndexesResponse;
 import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -49,10 +47,6 @@ public class GetIndexesTest extends SearchTestBase {
 
         GetResponse<Index> response = service.getIndexes(GetIndexesRequest.newBuilder());
         assertEquals(Arrays.asList(barIndex, fooIndex), response.getResults());
-
-        // test legacy usage
-        ListIndexesResponse lir = service.listIndexes(ListIndexesRequest.newBuilder().build());
-        assertEquals(Arrays.asList(barIndex, fooIndex), lir.getIndexes());
     }
 
 }
