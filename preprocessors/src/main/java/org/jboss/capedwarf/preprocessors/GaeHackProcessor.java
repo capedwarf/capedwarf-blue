@@ -22,11 +22,15 @@
 
 package org.jboss.capedwarf.preprocessors;
 
-import com.google.appengine.tools.compilation.DatastoreCallbacksProcessor;
-import org.kohsuke.MetaInfServices;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.annotation.processing.Filer;
-import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
@@ -35,13 +39,8 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Set;
-import java.util.logging.Logger;
+
+import com.google.appengine.tools.compilation.DatastoreCallbacksProcessor;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -57,7 +56,8 @@ import java.util.logging.Logger;
         "com.google.appengine.api.datastore.PreQuery"})
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedOptions({"debug"})
-@MetaInfServices(Processor.class)
+// @MetaInfServices(Processor.class)
+@Deprecated // Should be fixed in GAE 1.7.5.
 public class GaeHackProcessor extends DatastoreCallbacksProcessor {
 
     private static final String CALLBACKS_FILE = "META-INF/datastorecallbacks.xml";
