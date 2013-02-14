@@ -66,6 +66,15 @@ public class CapedwarfBlobstoreService implements BlobstoreService {
     private static final String UPLOADED_BLOBKEY_ATTR = "com.google.appengine.api.blobstore.upload.blobkeys";
     private static final String UPLOADED_BLOBKEY_LIST_ATTR = "com.google.appengine.api.blobstore.upload.blobkeylists";
 
+    private CapedwarfFileService fileService;
+
+    private synchronized CapedwarfFileService getFileService() {
+        if (fileService == null) {
+            fileService = (CapedwarfFileService) FileServiceFactory.getFileService();
+        }
+        return fileService;
+    }
+
     public String createUploadUrl(String successPath) {
         return createUploadUrl(successPath, UploadOptions.Builder.withDefaults());
     }
@@ -262,10 +271,6 @@ public class CapedwarfBlobstoreService implements BlobstoreService {
 
     public InputStream getStream(BlobKey blobKey) throws FileNotFoundException {
         return getFileService().getStream(blobKey);
-    }
-
-    private CapedwarfFileService getFileService() {
-        return (CapedwarfFileService) FileServiceFactory.getFileService();
     }
 
     public BlobKey createGsBlobKey(String name) {
