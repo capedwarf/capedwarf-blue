@@ -61,4 +61,19 @@ public class ImageServingUrlTest extends ImagesServiceTestBase {
         assertEquals(expectedUrl, actualUrl);
     }
 
+    @Test
+    public void servingUrlWithSecureFlag() throws Exception {
+        String url = imagesService.getServingUrl(BLOB_KEY, true);
+        assertTrue(url.startsWith("https://"));
+
+        url = imagesService.getServingUrl(BLOB_KEY, false);
+        assertTrue(url.startsWith("http://"));
+
+        url = imagesService.getServingUrl(BLOB_KEY, 32, false, true);
+        assertTrue(url.startsWith("https://"));
+
+        url = imagesService.getServingUrl(BLOB_KEY, 32, false, false);
+        assertTrue(url.startsWith("http://"));
+    }
+
 }
