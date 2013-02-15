@@ -95,12 +95,16 @@ public class RequestLogsTest extends LoggingTestBase {
 
     @Before
     public void setUp() throws Exception {
-        service = LogServiceFactory.getLogService();
+        if (isInContainer()) {
+            service = LogServiceFactory.getLogService();
+        }
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
-        clear();
+        if (isInContainer()) {
+            clear();
+        }
     }
 
     @Test @RunAsClient

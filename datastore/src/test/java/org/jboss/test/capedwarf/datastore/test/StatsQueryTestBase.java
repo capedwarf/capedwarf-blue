@@ -40,6 +40,7 @@ import com.google.appengine.api.datastore.Query;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.jboss.test.capedwarf.common.test.TestContext;
+import org.junit.Before;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -55,7 +56,12 @@ public abstract class StatsQueryTestBase extends TestBase {
     public static final String STAT_NS_KIND = "__Stat_Ns_Kind__";
     public static final String STAT_NS_TOTAL = "__Stat_Ns_Total__";
 
-    private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    private DatastoreService datastore;
+
+    @Before
+    public void setUp() {
+        datastore = DatastoreServiceFactory.getDatastoreService();
+    }
 
     protected static WebArchive getDefaultDeployment(boolean sync) {
         TestContext context = TestContext.asDefault();

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,6 +29,7 @@ import java.util.logging.Logger;
 
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
+import com.google.apphosting.api.ApiProxy;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -137,6 +138,14 @@ public class TestBase {
 
     protected static void assertRegexpMatches(String regexp, String str) {
         assertTrue("Expected to match regexp " + regexp + " but was: " + str, str != null && str.matches(regexp));
+    }
+
+    protected static boolean isInContainer() {
+        try {
+            return ApiProxy.getCurrentEnvironment().getAppId() != null;
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     protected boolean isRunningInsideGaeDevServer() {

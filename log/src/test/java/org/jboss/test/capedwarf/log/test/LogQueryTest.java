@@ -36,7 +36,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -73,11 +72,6 @@ public class LogQueryTest extends LoggingTestBase {
     @Before
     public void setUp() throws Exception {
         log = Logger.getLogger(LogQueryTest.class.getName());
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-        clear();
     }
 
     @Test
