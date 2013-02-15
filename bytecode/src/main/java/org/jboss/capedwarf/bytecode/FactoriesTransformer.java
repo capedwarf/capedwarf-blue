@@ -34,25 +34,23 @@ final class FactoriesTransformer extends MultipleTransformer {
 
     public FactoriesTransformer() {
         // GAE API
-        register("com.google.appengine.api.appidentity.AppIdentityServiceFactory", new AppIdentityServiceFactoryTransformer());
-        register("com.google.appengine.api.blobstore.BlobstoreServiceFactory", new BlobstoreServiceFactoryTransformer());
-        register("com.google.appengine.api.capabilities.CapabilitiesServiceFactory", new CapabilitiesServiceFactoryTransformer());
-        register("com.google.appengine.api.channel.ChannelServiceFactory", new ChannelServiceFactoryTransformer());
+//        register("com.google.appengine.api.appidentity.AppIdentityServiceFactory", new AppIdentityServiceFactoryTransformer());
+//        register("com.google.appengine.api.blobstore.BlobstoreServiceFactory", new BlobstoreServiceFactoryTransformer());
+//        register("com.google.appengine.api.capabilities.CapabilitiesServiceFactory", new CapabilitiesServiceFactoryTransformer());
+//        register("com.google.appengine.api.channel.ChannelServiceFactory", new ChannelServiceFactoryTransformer());
 //        register("com.google.appengine.api.datastore.DatastoreServiceFactory", new DatastoreServiceFactoryTransformer());
-        register("com.google.appengine.api.files.FileServiceFactory", new FileServiceFactoryTransformer());
-        register("com.google.appengine.api.images.ImagesServiceFactory", new ImagesServiceFactoryTransformer());
-        register("com.google.appengine.api.log.LogServiceFactory", new LogServiceFactoryTransformer());
-        register("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
-        register("com.google.appengine.api.memcache.MemcacheServiceFactory", new MemcacheServiceFactoryTransformer());
+//        register("com.google.appengine.api.files.FileServiceFactory", new FileServiceFactoryTransformer());
+//        register("com.google.appengine.api.images.ImagesServiceFactory", new ImagesServiceFactoryTransformer());
+//        register("com.google.appengine.api.log.LogServiceFactory", new LogServiceFactoryTransformer());
+//        register("com.google.appengine.api.mail.MailServiceFactory", new MailServiceFactoryTransformer());
+//        register("com.google.appengine.api.memcache.MemcacheServiceFactory", new MemcacheServiceFactoryTransformer());
         register("com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory", new ProspectiveSearchServiceFactoryTransformer());
-        register("com.google.appengine.api.quota.QuotaServiceFactory", new QuotaFactoryTransformer());
-        register("com.google.appengine.api.search.SearchServiceFactory", new SearchServiceFactoryTransformer());
-        register("com.google.appengine.api.oauth.OAuthServiceFactory", new OAuthServiceFactoryTransformer());
-        register("com.google.appengine.api.taskqueue.QueueFactory", new QueueFactoryTransformer());
-        register("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());
-        register("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
-        register("com.google.appengine.api.xmpp.XMPPServiceFactory", new XMPPServiceFactoryTransformer());
-        // GAE MapReduce
-        register("com.google.appengine.tools.mapreduce.impl.ShuffleServiceImpl", new ShuffleServiceTransformer());
+//        register("com.google.appengine.api.quota.QuotaServiceFactory", new QuotaFactoryTransformer());
+//        register("com.google.appengine.api.search.SearchServiceFactory", new SearchServiceFactoryTransformer());
+//        register("com.google.appengine.api.oauth.OAuthServiceFactory", new OAuthServiceFactoryTransformer());
+//        register("com.google.appengine.api.taskqueue.QueueFactory", new QueueFactoryTransformer());
+//        register("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());
+//        register("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
+//        register("com.google.appengine.api.xmpp.XMPPServiceFactory", new XMPPServiceFactoryTransformer());
     }
 }

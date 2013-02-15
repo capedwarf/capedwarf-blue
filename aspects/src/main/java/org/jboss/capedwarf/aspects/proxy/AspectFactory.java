@@ -30,23 +30,28 @@ import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
+import org.jboss.capedwarf.common.util.Util;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public final class AspectFactory {
     @SuppressWarnings("unchecked")
-    public static <T> T createProxy(Class<T> apiInterface, T apiImpl) throws Exception {
-        final ProxyFactory factory = new ProxyFactory();
-        factory.setFilter(FINALIZE_FILTER);
-        factory.setInterfaces(new Class[]{apiInterface});
-        factory.setSuperclass(apiImpl.getClass()); // expose impl
-        // ProxyFactory already caches classes
-        Class<?> proxyClass = getProxyClass(factory);
-        ProxyObject proxyObject = (ProxyObject) proxyClass.newInstance();
-        MethodHandler handler = new AspectHandler(apiInterface, apiImpl);
-        proxyObject.setHandler(handler);
-        return (T) proxyObject;
+    public static <T> T createProxy(Class<T> apiInterface, T apiImpl) {
+        try {
+            final ProxyFactory factory = new ProxyFactory();
+            factory.setFilter(FINALIZE_FILTER);
+            factory.setInterfaces(new Class[]{apiInterface});
+            factory.setSuperclass(apiImpl.getClass()); // expose impl
+            // ProxyFactory already caches classes
+            Class<?> proxyClass = getProxyClass(factory);
+            ProxyObject proxyObject = (ProxyObject) proxyClass.newInstance();
+            MethodHandler handler = new AspectHandler(apiInterface, apiImpl);
+            proxyObject.setHandler(handler);
+            return (T) proxyObject;
+        } catch (Throwable t) {
+            throw Util.toRuntimeException(t);
+        }
     }
 
     protected static Class<?> getProxyClass(ProxyFactory factory) {

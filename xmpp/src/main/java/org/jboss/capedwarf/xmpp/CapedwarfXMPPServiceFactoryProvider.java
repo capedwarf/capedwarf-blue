@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.spi;
+package org.jboss.capedwarf.xmpp;
 
+import com.google.appengine.api.xmpp.IXMPPServiceFactory;
+import com.google.appengine.api.xmpp.XMPPService;
 import com.google.appengine.spi.FactoryProvider;
+import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
+import org.kohsuke.MetaInfServices;
 
 /**
- * Common factory provider.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class CapedwarfFactoryProvider<T> extends FactoryProvider<T> {
-    public static final int PRECEDENCE = Integer.MAX_VALUE - 1; // leave some space for override :-)
+@MetaInfServices(FactoryProvider.class)
+@ServiceProvider(value = IXMPPServiceFactory.class, precedence = CapedwarfFactoryProvider.PRECEDENCE)
+public class CapedwarfXMPPServiceFactoryProvider extends CapedwarfFactoryProvider<IXMPPServiceFactory> {
+    private final IXMPPServiceFactory factory = new IXMPPServiceFactory() {
+        public XMPPService getXMPPService() {
+            return new CapedwarfXMPPService();
+        }
+    };
 
-    protected CapedwarfFactoryProvider(Class<T> baseInterface) {
-        super(baseInterface);
+    public CapedwarfXMPPServiceFactoryProvider() {
+        super(IXMPPServiceFactory.class);
+    }
+
+    protected IXMPPServiceFactory getFactoryInstance() {
+        return factory;
     }
 }

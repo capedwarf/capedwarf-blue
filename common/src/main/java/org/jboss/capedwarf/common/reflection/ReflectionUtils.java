@@ -60,6 +60,16 @@ public final class ReflectionUtils {
     /**
      * Create new instance.
      *
+     * @param className the class name
+     * @return new instance
+     */
+    public static <T> T newInstance(String className) {
+        return newInstance(className, EMPTY_CLASSES, EMPTY_ARGS);
+    }
+
+    /**
+     * Create new instance.
+     *
      * @param clazz the class
      * @return new instance
      */

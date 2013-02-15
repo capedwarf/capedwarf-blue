@@ -40,5 +40,7 @@ final class MiscTransformer extends MultipleTransformer {
         register("com.google.appengine.api.datastore.Entity", new EntityTransformer());
         register("com.google.appengine.api.datastore.Key", new KeyTransformer());
         register("com.google.appengine.api.datastore.RawValue", new RawValueTransformer());
+        // GAE MapReduce
+        register("com.google.appengine.tools.mapreduce.impl.ShuffleServiceImpl", new ShuffleServiceTransformer());
     }
 }
