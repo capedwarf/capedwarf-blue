@@ -26,6 +26,7 @@ import com.google.appengine.api.channel.ChannelService;
 import com.google.appengine.api.channel.IChannelServiceFactory;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -37,7 +38,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfChannelServiceFactoryProvider extends CapedwarfFactoryProvider<IChannelServiceFactory> {
     private final IChannelServiceFactory factory = new IChannelServiceFactory() {
         public ChannelService getChannelService() {
-            return new CapedwarfChannelService();
+            return AspectFactory.createProxy(ExposedChannelService.class, new CapedwarfChannelService());
         }
     };
 

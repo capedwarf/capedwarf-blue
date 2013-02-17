@@ -20,44 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.aspects.proxy;
+package org.jboss.capedwarf.blobstore;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletResponse;
+
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreService;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public final class AspectContext {
-    private AspectInfo info;
+public interface ExposedBlobstoreService extends BlobstoreService {
+    public static final String BLOB_KEY_HEADER = "X-AppEngine-BlobKey";
+    public static final String BLOB_RANGE_HEADER = "X-AppEngine-BlobRange";
 
-    private AspectWrapper[] aspects;
-    private int index;
-
-    public AspectContext(AspectInfo info) {
-        this.info = info;
-        this.aspects = AspectRegistry.findAspects(info);
-    }
-
-    public Object proceed() throws Throwable {
-        if (index == aspects.length) {
-            final Method method = info.getMethod();
-            try {
-                return method.invoke(info.getApiImpl(), info.getParams());
-            } catch (InvocationTargetException e) {
-                throw e.getCause(); // we need to throw the cause
-            }
-        } else {
-            return aspects[index++].invoke(this);
-        }
-    }
-
-    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-        return annotationClass.cast(aspects[index - 1].getAnnotation());
-    }
-
-    public AspectInfo getInfo() {
-        return info;
-    }
+    void serveBlob(BlobKey blobKey, String byteRangeStr, HttpServletResponse response) throws IOException;
 }

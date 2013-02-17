@@ -26,6 +26,7 @@ import com.google.appengine.api.urlfetch.IURLFetchServiceFactory;
 import com.google.appengine.api.urlfetch.URLFetchService;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -37,7 +38,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfURLFetchServiceFactoryProvider extends CapedwarfFactoryProvider<IURLFetchServiceFactory> {
     private final IURLFetchServiceFactory factory = new IURLFetchServiceFactory() {
         public URLFetchService getURLFetchService() {
-            return new CapedwarfURLFetchService();
+            return AspectFactory.createProxy(URLFetchService.class, new CapedwarfURLFetchService());
         }
     };
 

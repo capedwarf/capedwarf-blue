@@ -26,6 +26,7 @@ import com.google.appengine.api.files.FileService;
 import com.google.appengine.api.files.IFileServiceFactory;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -37,7 +38,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfFileServiceFactoryProvider extends CapedwarfFactoryProvider<IFileServiceFactory> {
     private final IFileServiceFactory factory = new IFileServiceFactory() {
         public FileService getFileService() {
-            return new CapedwarfFileService();
+            return AspectFactory.createProxy(ExposedFileService.class, new CapedwarfFileService());
         }
     };
 

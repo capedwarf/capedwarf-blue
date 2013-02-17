@@ -20,26 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.aspects;
+package org.jboss.capedwarf.datastore;
 
-import org.jboss.capedwarf.aspects.proxy.AspectContext;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import java.util.Iterator;
+
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceConfig;
+import com.google.appengine.api.datastore.Entity;
 
 /**
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * Add exposed interface; e.g. cleanup
  */
-public class InvocationTimeLimitAspect extends AbstractAspect<TimeLimit> {
-    public InvocationTimeLimitAspect() {
-        super(TimeLimit.class);
-    }
-
-    public Object invoke(AspectContext context) throws Throwable {
-        final long start = System.currentTimeMillis();
-        try {
-            return context.proceed();
-        } finally {
-            CapedwarfEnvironment ce = CapedwarfEnvironment.getThreadLocalInstance();
-            ce.checkTimeLimit(start, context.getAnnotation(TimeLimit.class).limit());
-        }
-    }
+public interface ExposedDatastoreService extends DatastoreService {
+    DatastoreServiceConfig getDatastoreServiceConfig();
+    Iterator<Entity> getAllEntitiesIterator();
+    void clearCache();
 }

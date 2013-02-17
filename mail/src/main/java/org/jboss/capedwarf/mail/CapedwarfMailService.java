@@ -38,7 +38,7 @@ import org.jboss.capedwarf.shared.components.Keys;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfMailService implements MailService {
+class CapedwarfMailService implements MailService {
 
     private volatile Session session;
 

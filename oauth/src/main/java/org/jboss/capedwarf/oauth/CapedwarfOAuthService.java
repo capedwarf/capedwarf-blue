@@ -31,7 +31,7 @@ import com.google.appengine.api.users.User;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfOAuthService implements OAuthService {
+class CapedwarfOAuthService implements OAuthService {
     public User getCurrentUser() throws OAuthRequestException {
         return null;  // TODO
     }

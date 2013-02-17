@@ -31,6 +31,7 @@ import com.google.appengine.api.images.IImagesServiceFactory;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.Transform;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
@@ -47,7 +48,7 @@ class CapedwarfImagesServiceFactory implements IImagesServiceFactory {
     }
 
     public ImagesService getImagesService() {
-        return new CapedwarfImagesService();
+        return AspectFactory.createProxy(ImagesService.class, new CapedwarfImagesService());
     }
 
     public Image makeImage(byte[] bytes) {

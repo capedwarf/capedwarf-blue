@@ -26,6 +26,7 @@ import com.google.appengine.api.xmpp.IXMPPServiceFactory;
 import com.google.appengine.api.xmpp.XMPPService;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -37,7 +38,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfXMPPServiceFactoryProvider extends CapedwarfFactoryProvider<IXMPPServiceFactory> {
     private final IXMPPServiceFactory factory = new IXMPPServiceFactory() {
         public XMPPService getXMPPService() {
-            return new CapedwarfXMPPService();
+            return AspectFactory.createProxy(XMPPService.class, new CapedwarfXMPPService());
         }
     };
 

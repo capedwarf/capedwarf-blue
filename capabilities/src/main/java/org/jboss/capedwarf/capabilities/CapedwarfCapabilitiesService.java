@@ -35,7 +35,7 @@ import org.jboss.capedwarf.environment.EnvironmentFactory;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfCapabilitiesService implements CapabilitiesService {
+class CapedwarfCapabilitiesService implements CapabilitiesService {
     public CapabilityState getStatus(Capability capability) {
         return EnvironmentFactory.getEnvironment().getState(capability);
     }

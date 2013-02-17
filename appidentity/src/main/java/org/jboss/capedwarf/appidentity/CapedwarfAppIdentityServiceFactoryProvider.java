@@ -26,6 +26,7 @@ import com.google.appengine.api.appidentity.AppIdentityService;
 import com.google.appengine.api.appidentity.IAppIdentityServiceFactory;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -37,7 +38,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfAppIdentityServiceFactoryProvider extends CapedwarfFactoryProvider<IAppIdentityServiceFactory> {
     private final IAppIdentityServiceFactory factory = new IAppIdentityServiceFactory() {
         public AppIdentityService getAppIdentityService() {
-            return new CapedwarfAppIdentityService();
+            return AspectFactory.createProxy(AppIdentityService.class, new CapedwarfAppIdentityService());
         }
     };
 

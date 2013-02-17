@@ -32,5 +32,5 @@ import org.jboss.capedwarf.aspects.proxy.AspectContext;
 public interface Aspect<T extends Annotation> {
     int priority();
     Class<T> annotation();
-    Object invoke(AspectContext context) throws Exception;
+    Object invoke(AspectContext context) throws Throwable;
 }

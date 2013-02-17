@@ -52,7 +52,7 @@ import org.jboss.capedwarf.shared.components.Keys;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfURLFetchService implements URLFetchService {
+class CapedwarfURLFetchService implements URLFetchService {
     public HTTPResponse fetch(URL url) throws IOException {
         return fetch(new HTTPRequest(url));
     }

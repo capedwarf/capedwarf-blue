@@ -26,6 +26,7 @@ import com.google.appengine.api.log.ILogServiceFactory;
 import com.google.appengine.api.log.LogService;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -37,7 +38,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfLogServiceFactoryProvider extends CapedwarfFactoryProvider<ILogServiceFactory> {
     private final ILogServiceFactory factory = new ILogServiceFactory() {
         public LogService getLogService() {
-            return new CapedwarfLogService();
+            return AspectFactory.createProxy(ExposedLogService.class, new CapedwarfLogService());
         }
     };
 

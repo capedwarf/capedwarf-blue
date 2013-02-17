@@ -43,7 +43,6 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileReadChannel;
-import com.google.appengine.api.files.FileService;
 import com.google.appengine.api.files.FileStat;
 import com.google.appengine.api.files.FileWriteChannel;
 import com.google.appengine.api.files.FinalizationException;
@@ -61,7 +60,7 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfFileService implements FileService {
+class CapedwarfFileService implements ExposedFileService {
 
     private static final String DEFAULT_MIME_TYPE = "application/octet-stream";
     private static final String KIND_TEMP_BLOB_INFO = "__BlobInfo_temp__";

@@ -27,6 +27,7 @@ import com.google.appengine.api.memcache.IMemcacheServiceFactory;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -38,11 +39,11 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfMemcacheServiceFactoryProvider extends CapedwarfFactoryProvider<IMemcacheServiceFactory> {
     private final IMemcacheServiceFactory factory = new IMemcacheServiceFactory() {
         public MemcacheService getMemcacheService(String s) {
-            return new CapedwarfMemcacheService(s);
+            return AspectFactory.createProxy(MemcacheService.class, new CapedwarfMemcacheService(s));
         }
 
         public AsyncMemcacheService getAsyncMemcacheService(String s) {
-            return new CapedwarfAsyncMemcacheService(s);
+            return AspectFactory.createProxy(AsyncMemcacheService.class, new CapedwarfAsyncMemcacheService(s));
         }
     };
 

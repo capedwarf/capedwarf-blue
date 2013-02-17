@@ -63,7 +63,7 @@ public class Logger {
             if (logable == null) {
                 synchronized (this) {
                     if (logable == null) {
-                        logable = ((CapedwarfLogService)LogServiceFactory.getLogService());
+                        logable = ((ExposedLogService)LogServiceFactory.getLogService());
                     }
                 }
             }

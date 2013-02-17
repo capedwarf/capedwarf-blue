@@ -37,7 +37,7 @@ public class GlobalTimeLimitAspect extends AbstractAspect<TimeLimit> {
         return Integer.MAX_VALUE;
     }
 
-    public Object invoke(AspectContext context) throws Exception {
+    public Object invoke(AspectContext context) throws Throwable {
         CapedwarfEnvironment ce = CapedwarfEnvironment.getThreadLocalInstance();
         ce.checkGlobalTimeLimit(); // always check global limit
 

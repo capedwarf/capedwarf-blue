@@ -38,7 +38,7 @@ import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.security.CapedwarfUserPrincipal;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
-import org.jboss.capedwarf.log.CapedwarfLogService;
+import org.jboss.capedwarf.log.ExposedLogService;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.BackendsXml;
 import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
@@ -52,7 +52,7 @@ import org.jboss.capedwarf.shared.config.QueueXml;
 public class GAEListener extends ConfigurationAware implements ServletContextListener, ServletRequestListener {
     private static final String API_PROXY = "__API_PROXY";
 
-    private volatile CapedwarfLogService logService;
+    private volatile ExposedLogService logService;
 
     public static void setup() {
         setupInternal(appEngineWebXmlTL.get(), capedwarfConfigurationTL.get(), queueXmlTL.get(), backendsTL.get());
@@ -134,9 +134,9 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         }
     }
 
-    private CapedwarfLogService getLogService() {
+    private ExposedLogService getLogService() {
         if (logService == null) {
-            logService = (CapedwarfLogService) LogServiceFactory.getLogService();
+            logService = (ExposedLogService) LogServiceFactory.getLogService();
         }
         return logService;
     }

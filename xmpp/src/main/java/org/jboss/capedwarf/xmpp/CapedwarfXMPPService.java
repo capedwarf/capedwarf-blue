@@ -46,7 +46,7 @@ import org.jivesoftware.smack.XMPPConnection;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfXMPPService implements XMPPService {
+class CapedwarfXMPPService implements XMPPService {
     private static final Logger log = Logger.getLogger(CapedwarfXMPPService.class.getName());
 
     private static final PresenceConverter presenceConverter = new PresenceConverter();

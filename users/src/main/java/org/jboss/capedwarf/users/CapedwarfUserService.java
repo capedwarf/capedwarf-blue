@@ -34,7 +34,7 @@ import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfUserService implements UserService {
+class CapedwarfUserService implements UserService {
 
     public String createLoginURL(String destinationURL) {
         return createLoginURL(destinationURL, null);

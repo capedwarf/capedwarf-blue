@@ -26,6 +26,7 @@ import com.google.appengine.api.capabilities.CapabilitiesService;
 import com.google.appengine.api.capabilities.ICapabilitiesServiceFactory;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -39,7 +40,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfCapabilitiesServiceFactoryProvider extends CapedwarfFactoryProvider<ICapabilitiesServiceFactory> {
     private final ICapabilitiesServiceFactory factory = new ICapabilitiesServiceFactory() {
         public CapabilitiesService getCapabilitiesService() {
-            return new CapedwarfCapabilitiesService();
+            return AspectFactory.createProxy(CapabilitiesService.class, new CapedwarfCapabilitiesService());
         }
     };
 

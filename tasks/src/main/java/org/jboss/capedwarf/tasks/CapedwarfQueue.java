@@ -66,7 +66,7 @@ import org.jboss.capedwarf.shared.config.QueueXml;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfQueue implements Queue {
+class CapedwarfQueue implements Queue {
     private static final String ID = "ID:";
     private static final Sort SORT = new Sort(new SortField("eta", SortField.LONG));
 

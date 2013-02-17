@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
@@ -53,7 +52,7 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService implements AsyncDatastoreService {
+class CapedwarfAsyncDatastoreService extends AbstractDatastoreService implements ExposedAsyncDatastoreService {
 
     public CapedwarfAsyncDatastoreService() {
         this(null);

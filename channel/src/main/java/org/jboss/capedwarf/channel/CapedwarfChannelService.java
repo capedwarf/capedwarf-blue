@@ -28,14 +28,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.google.appengine.api.channel.ChannelMessage;
 import com.google.appengine.api.channel.ChannelPresence;
-import com.google.appengine.api.channel.ChannelService;
 import org.jboss.capedwarf.channel.manager.Channel;
 import org.jboss.capedwarf.channel.manager.ChannelManager;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfChannelService implements ChannelService {
+class CapedwarfChannelService implements ExposedChannelService {
 
     public static final int DEFAULT_DURATION_MINUTES = 120;
 

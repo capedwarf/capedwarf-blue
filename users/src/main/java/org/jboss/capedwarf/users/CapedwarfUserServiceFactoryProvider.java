@@ -26,6 +26,7 @@ import com.google.appengine.api.users.IUserServiceFactory;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -37,7 +38,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfUserServiceFactoryProvider extends CapedwarfFactoryProvider<IUserServiceFactory> {
     private final IUserServiceFactory factory = new IUserServiceFactory() {
         public UserService getUserService() {
-            return new CapedwarfUserService();
+            return AspectFactory.createProxy(UserService.class, new CapedwarfUserService());
         }
     };
 

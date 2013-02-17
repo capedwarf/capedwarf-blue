@@ -31,7 +31,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import com.google.appengine.api.datastore.DatastoreAttributes;
-import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -50,7 +49,7 @@ import org.jboss.capedwarf.common.threads.DirectFuture;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfDatastoreService extends AbstractDatastoreService implements DatastoreService {
+class CapedwarfDatastoreService extends AbstractDatastoreService implements ExposedDatastoreService {
     public CapedwarfDatastoreService() {
         this(null);
     }

@@ -39,7 +39,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityTranslator;
 import com.google.storage.onestore.v3.OnestoreEntity;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
-import org.jboss.capedwarf.datastore.CapedwarfDatastoreService;
+import org.jboss.capedwarf.datastore.ExposedDatastoreService;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -51,7 +51,7 @@ public class RemoteApiServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Compatibility.enable(Compatibility.Feature.IGNORE_LOGGING);
         try {
-            CapedwarfDatastoreService datastore = (CapedwarfDatastoreService) datastoreService;
+            ExposedDatastoreService datastore = (ExposedDatastoreService) datastoreService;
             DataOutputStream out = new DataOutputStream(resp.getOutputStream());
             try {
                 Iterator<Entity> entities = datastore.getAllEntitiesIterator();

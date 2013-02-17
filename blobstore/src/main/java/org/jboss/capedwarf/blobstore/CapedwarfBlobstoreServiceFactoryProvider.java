@@ -26,6 +26,7 @@ import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.IBlobstoreServiceFactory;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -37,7 +38,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfBlobstoreServiceFactoryProvider extends CapedwarfFactoryProvider<IBlobstoreServiceFactory> {
     private final IBlobstoreServiceFactory factory = new IBlobstoreServiceFactory() {
         public BlobstoreService getBlobstoreService() {
-            return new CapedwarfBlobstoreService();
+            return AspectFactory.createProxy(ExposedBlobstoreService.class, new CapedwarfBlobstoreService());
         }
     };
 

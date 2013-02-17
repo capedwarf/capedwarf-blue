@@ -22,15 +22,17 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.prospectivesearch.ProspectiveSearchService;
 import javassist.CtClass;
 import javassist.CtMethod;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ProspectiveSearchServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getProspectiveSearchService");
-        method.setBody("return new org.jboss.capedwarf.prospectivesearch.CapedwarfProspectiveSearchService();");
+        method.setBody(toProxy(ProspectiveSearchService.class, "new org.jboss.capedwarf.prospectivesearch.CapedwarfProspectiveSearchService()"));
     }
 }

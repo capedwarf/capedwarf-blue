@@ -46,7 +46,7 @@ final class AspectWrapper {
         return aspect.priority();
     }
 
-    public Object invoke(AspectContext context) throws Exception {
+    public Object invoke(AspectContext context) throws Throwable {
         return aspect.invoke(context);
     }
 

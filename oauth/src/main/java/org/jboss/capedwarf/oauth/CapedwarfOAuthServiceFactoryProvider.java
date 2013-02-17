@@ -26,6 +26,7 @@ import com.google.appengine.api.oauth.IOAuthServiceFactory;
 import com.google.appengine.api.oauth.OAuthService;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -39,7 +40,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfOAuthServiceFactoryProvider extends CapedwarfFactoryProvider<IOAuthServiceFactory> {
     private final IOAuthServiceFactory factory = new IOAuthServiceFactory() {
         public OAuthService getOAuthService() {
-            return new CapedwarfOAuthService();
+            return AspectFactory.createProxy(OAuthService.class, new CapedwarfOAuthService());
         }
     };
 

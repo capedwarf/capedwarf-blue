@@ -36,13 +36,19 @@ import org.jboss.capedwarf.common.util.Util;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public final class AspectFactory {
-    @SuppressWarnings("unchecked")
     public static <T> T createProxy(Class<T> apiInterface, T apiImpl) {
+        return createProxy(apiInterface, apiImpl, false);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static <T> T createProxy(Class<T> apiInterface, T apiImpl, boolean exposeImpl) {
         try {
             final ProxyFactory factory = new ProxyFactory();
             factory.setFilter(FINALIZE_FILTER);
             factory.setInterfaces(new Class[]{apiInterface});
-            factory.setSuperclass(apiImpl.getClass()); // expose impl
+            if (exposeImpl) {
+                factory.setSuperclass(apiImpl.getClass()); // expose impl
+            }
             // ProxyFactory already caches classes
             Class<?> proxyClass = getProxyClass(factory);
             ProxyObject proxyObject = (ProxyObject) proxyClass.newInstance();

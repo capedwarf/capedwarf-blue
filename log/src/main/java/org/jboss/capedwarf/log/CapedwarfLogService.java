@@ -48,7 +48,6 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogQuery;
-import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.RequestLogs;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
@@ -63,7 +62,7 @@ import static com.google.appengine.api.datastore.Query.FilterOperator.NOT_EQUAL;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfLogService implements LogService, Logable {
+class CapedwarfLogService implements ExposedLogService {
 
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z");
 

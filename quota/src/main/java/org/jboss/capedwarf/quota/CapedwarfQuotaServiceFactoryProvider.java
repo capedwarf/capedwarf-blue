@@ -26,6 +26,7 @@ import com.google.appengine.api.quota.IQuotaServiceFactory;
 import com.google.appengine.api.quota.QuotaService;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -37,7 +38,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfQuotaServiceFactoryProvider extends CapedwarfFactoryProvider<IQuotaServiceFactory> {
     private final IQuotaServiceFactory factory = new IQuotaServiceFactory() {
         public QuotaService getQuotaService() {
-            return new CapedwarfQuotaService();
+            return AspectFactory.createProxy(QuotaService.class, new CapedwarfQuotaService());
         }
     };
 

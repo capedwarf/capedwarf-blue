@@ -44,7 +44,6 @@ import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreFailureException;
-import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.ByteRange;
 import com.google.appengine.api.blobstore.FileInfo;
 import com.google.appengine.api.blobstore.RangeFormatException;
@@ -55,24 +54,21 @@ import com.google.appengine.api.files.FileServiceFactory;
 import com.google.appengine.api.files.FileWriteChannel;
 import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.capedwarf.common.servlet.ServletUtils;
-import org.jboss.capedwarf.files.CapedwarfFileService;
+import org.jboss.capedwarf.files.ExposedFileService;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class CapedwarfBlobstoreService implements BlobstoreService {
-
-    public static final String BLOB_KEY_HEADER = "X-AppEngine-BlobKey";
-    public static final String BLOB_RANGE_HEADER = "X-AppEngine-BlobRange";
+class CapedwarfBlobstoreService implements ExposedBlobstoreService {
     private static final String UPLOADED_BLOBKEY_ATTR = "com.google.appengine.api.blobstore.upload.blobkeys";
     private static final String UPLOADED_BLOBKEY_LIST_ATTR = "com.google.appengine.api.blobstore.upload.blobkeylists";
 
-    private CapedwarfFileService fileService;
+    private ExposedFileService fileService;
 
-    private synchronized CapedwarfFileService getFileService() {
+    private synchronized ExposedFileService getFileService() {
         if (fileService == null) {
-            fileService = (CapedwarfFileService) FileServiceFactory.getFileService();
+            fileService = (ExposedFileService) FileServiceFactory.getFileService();
         }
         return fileService;
     }
@@ -235,7 +231,7 @@ public class CapedwarfBlobstoreService implements BlobstoreService {
     }
 
     private BlobKey storeUploadedBlob(Part part) throws IOException {
-        CapedwarfFileService fileService = getFileService();
+        ExposedFileService fileService = getFileService();
         AppEngineFile file = fileService.createNewBlobFile(part.getContentType(), ServletUtils.getFileName(part));
 
         ReadableByteChannel in = Channels.newChannel(part.getInputStream());

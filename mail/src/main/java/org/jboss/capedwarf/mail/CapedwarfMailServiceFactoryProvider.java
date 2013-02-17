@@ -26,6 +26,7 @@ import com.google.appengine.api.mail.IMailServiceFactory;
 import com.google.appengine.api.mail.MailService;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -37,7 +38,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfMailServiceFactoryProvider extends CapedwarfFactoryProvider<IMailServiceFactory> {
     private final IMailServiceFactory factory = new IMailServiceFactory() {
         public MailService getMailService() {
-            return new CapedwarfMailService();
+            return AspectFactory.createProxy(MailService.class, new CapedwarfMailService());
         }
     };
 

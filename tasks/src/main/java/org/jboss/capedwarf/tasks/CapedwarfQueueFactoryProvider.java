@@ -26,6 +26,7 @@ import com.google.appengine.api.taskqueue.IQueueFactory;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
+import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -39,7 +40,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfQueueFactoryProvider extends CapedwarfFactoryProvider<IQueueFactory> {
     private final IQueueFactory factory = new IQueueFactory() {
         public Queue getQueue(String s) {
-            return CapedwarfQueue.getQueue(s);
+            return AspectFactory.createProxy(Queue.class, CapedwarfQueue.getQueue(s));
         }
     };
 

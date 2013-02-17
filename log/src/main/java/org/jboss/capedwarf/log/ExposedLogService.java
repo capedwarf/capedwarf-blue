@@ -20,44 +20,18 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.aspects.proxy;
+package org.jboss.capedwarf.log;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import javax.servlet.ServletRequest;
+
+import com.google.appengine.api.log.LogService;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public final class AspectContext {
-    private AspectInfo info;
+public interface ExposedLogService extends LogService, Logable {
+    void requestStarted(ServletRequest req, long requestStartMillis);
+    void requestFinished(ServletRequest req, int status, int contentLength);
 
-    private AspectWrapper[] aspects;
-    private int index;
-
-    public AspectContext(AspectInfo info) {
-        this.info = info;
-        this.aspects = AspectRegistry.findAspects(info);
-    }
-
-    public Object proceed() throws Throwable {
-        if (index == aspects.length) {
-            final Method method = info.getMethod();
-            try {
-                return method.invoke(info.getApiImpl(), info.getParams());
-            } catch (InvocationTargetException e) {
-                throw e.getCause(); // we need to throw the cause
-            }
-        } else {
-            return aspects[index++].invoke(this);
-        }
-    }
-
-    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-        return annotationClass.cast(aspects[index - 1].getAnnotation());
-    }
-
-    public AspectInfo getInfo() {
-        return info;
-    }
+    void clearLog();
 }

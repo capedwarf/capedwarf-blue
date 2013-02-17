@@ -3,7 +3,7 @@ package org.jboss.capedwarf.appidentity;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
-import org.jboss.capedwarf.blobstore.CapedwarfBlobstoreService;
+import org.jboss.capedwarf.blobstore.ExposedBlobstoreService;
 
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -43,10 +43,10 @@ public class CapedwarfHttpServletResponseWrapper extends HttpServletResponseWrap
     }
 
     private boolean handleBlobHeaders(String name, String value) {
-        if (CapedwarfBlobstoreService.BLOB_KEY_HEADER.equals(name)) {
+        if (ExposedBlobstoreService.BLOB_KEY_HEADER.equals(name)) {
             blobKey = value;
             return true;
-        } else if (CapedwarfBlobstoreService.BLOB_RANGE_HEADER.equals(name)) {
+        } else if (ExposedBlobstoreService.BLOB_RANGE_HEADER.equals(name)) {
             blobRange = value;
             return true;
         }

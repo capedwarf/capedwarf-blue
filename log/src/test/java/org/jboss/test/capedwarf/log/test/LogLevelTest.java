@@ -25,13 +25,11 @@ package org.jboss.test.capedwarf.log.test;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.log.LogService;
-import com.google.appengine.api.log.LogServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.TestContext;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -42,13 +40,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @Category(All.class)
 public class LogLevelTest extends LoggingTestBase {
-
-    private LogService service;
-
-    @Before
-    public void setUp() throws Exception {
-        service = LogServiceFactory.getLogService();
-    }
 
     @Deployment
     public static WebArchive getDeployment() {

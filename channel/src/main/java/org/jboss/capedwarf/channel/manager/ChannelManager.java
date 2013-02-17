@@ -33,7 +33,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
-import org.jboss.capedwarf.channel.CapedwarfChannelService;
+import org.jboss.capedwarf.channel.ExposedChannelService;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -100,7 +100,7 @@ public class ChannelManager {
     }
 
     public static ChannelManager getInstance() {
-        return ((CapedwarfChannelService) ChannelServiceFactory.getChannelService()).getChannelManager();
+        return ((ExposedChannelService) ChannelServiceFactory.getChannelService()).getChannelManager();
     }
 
 }
