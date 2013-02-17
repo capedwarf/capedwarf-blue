@@ -53,31 +53,18 @@ public final class Wrappers {
      * @param callable the callable
      * @return wrapped callable in future
      */
-    public static <T> Future<T> wrap(final Callable<T> callable) {
-        final ClassLoader appCL = Application.getAppClassloader();
-        final CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
+    public static <T> Callable<T> wrap(final Callable<T> callable) {
+        return new CallableWrapper<T>(callable);
+    }
 
-        return ExecutorFactory.wrap(new Callable<T>() {
-            public T call() throws Exception {
-                final ClassLoader old = SecurityActions.setThreadContextClassLoader(appCL);
-                try {
-                    CapedwarfEnvironment.setThreadLocalInstance(env);
-                    try {
-                        final ApiProxy.Delegate previous = ApiProxy.getDelegate();
-                        ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
-                        try {
-                            return callable.call();
-                        } finally {
-                            ApiProxy.setDelegate(previous);
-                        }
-                    } finally {
-                        CapedwarfEnvironment.clearThreadLocalInstance();
-                    }
-                } finally {
-                    SecurityActions.setThreadContextClassLoader(old);
-                }
-            }
-        });
+    /**
+     * Wrap callable to Future.
+     *
+     * @param callable the callable
+     * @return wrapped callable in future
+     */
+    public static <T> Future<T> future(Callable<T> callable) {
+        return ExecutorFactory.wrap(wrap(callable));
     }
 
     private static class RunnableWrapper implements Runnable {
@@ -100,6 +87,38 @@ public final class Wrappers {
                     ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
                     try {
                         runnable.run();
+                    } finally {
+                        ApiProxy.setDelegate(previous);
+                    }
+                } finally {
+                    CapedwarfEnvironment.clearThreadLocalInstance();
+                }
+            } finally {
+                SecurityActions.setThreadContextClassLoader(old);
+            }
+        }
+    }
+
+    private static class CallableWrapper<V> implements Callable<V> {
+        private final ClassLoader appCL;
+        private final CapedwarfEnvironment env;
+        private final Callable<V> callable;
+
+        private CallableWrapper(Callable<V> callable) {
+            this.appCL = Application.getAppClassloader();
+            this.env = CapedwarfEnvironment.getThreadLocalInstance();
+            this.callable = callable;
+        }
+
+        public V call() throws Exception {
+            final ClassLoader old = SecurityActions.setThreadContextClassLoader(appCL);
+            try {
+                CapedwarfEnvironment.setThreadLocalInstance(env);
+                try {
+                    final ApiProxy.Delegate previous = ApiProxy.getDelegate();
+                    ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
+                    try {
+                        return callable.call();
                     } finally {
                         ApiProxy.setDelegate(previous);
                     }
