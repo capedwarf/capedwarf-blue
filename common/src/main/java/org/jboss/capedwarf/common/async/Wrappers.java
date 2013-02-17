@@ -30,6 +30,7 @@ import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.common.util.Util;
 
 /**
  * Wrappers - env, CL, ApiProxy, ...
@@ -37,16 +38,6 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public final class Wrappers {
-    /**
-     * Wrap runnable.
-     *
-     * @param runnable the runnable
-     * @return wrapped runnable
-     */
-    public static Runnable wrap(Runnable runnable) {
-        return new RunnableWrapper(runnable);
-    }
-
     /**
      * Wrap callable.
      *
@@ -67,36 +58,14 @@ public final class Wrappers {
         return ExecutorFactory.wrap(wrap(callable));
     }
 
-    private static class RunnableWrapper implements Runnable {
-        private final ClassLoader appCL;
-        private final CapedwarfEnvironment env;
-        private final Runnable runnable;
-
-        private RunnableWrapper(Runnable runnable) {
-            this.appCL = Application.getAppClassloader();
-            this.env = CapedwarfEnvironment.getThreadLocalInstance();
-            this.runnable = runnable;
-        }
-
-        public void run() {
-            final ClassLoader old = SecurityActions.setThreadContextClassLoader(appCL);
-            try {
-                CapedwarfEnvironment.setThreadLocalInstance(env);
-                try {
-                    final ApiProxy.Delegate previous = ApiProxy.getDelegate();
-                    ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
-                    try {
-                        runnable.run();
-                    } finally {
-                        ApiProxy.setDelegate(previous);
-                    }
-                } finally {
-                    CapedwarfEnvironment.clearThreadLocalInstance();
-                }
-            } finally {
-                SecurityActions.setThreadContextClassLoader(old);
-            }
-        }
+    /**
+     * Wrap runnable.
+     *
+     * @param runnable the runnable
+     * @return wrapped runnable
+     */
+    public static Runnable wrap(Runnable runnable) {
+        return new RunnableWrapper(runnable);
     }
 
     private static class CallableWrapper<V> implements Callable<V> {
@@ -127,6 +96,27 @@ public final class Wrappers {
                 }
             } finally {
                 SecurityActions.setThreadContextClassLoader(old);
+            }
+        }
+    }
+
+    private static class RunnableWrapper implements Runnable {
+        private final Callable<Void> callable;
+
+        private RunnableWrapper(final Runnable runnable) {
+            this.callable = new CallableWrapper<Void>(new Callable<Void>() {
+                public Void call() throws Exception {
+                    runnable.run();
+                    return null;
+                }
+            });
+        }
+
+        public void run() {
+            try {
+                callable.call();
+            } catch (Exception e) {
+                throw Util.toRuntimeException(e);
             }
         }
     }
