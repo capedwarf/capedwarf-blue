@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
@@ -135,7 +136,7 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
         }
     }
 
-    private static class CapedwarfURLConnection extends URLConnection {
+    private static class CapedwarfURLConnection extends HttpURLConnection {
         private ByteArrayOutputStream baos;
         private HttpResponse response;
         private Map<String, List<String>> headers;
@@ -177,6 +178,9 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
         }
 
         public void connect() throws IOException {
+        }
+
+        public void disconnect() {
         }
 
         public void setRequestProperty(String key, String value) {
@@ -241,6 +245,18 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
 
         public InputStream getInputStream() throws IOException {
             return getResponse().getEntity().getContent();
+        }
+
+        public boolean usingProxy() {
+            return false; // TODO - wtd?
+        }
+
+        public int getResponseCode() throws IOException {
+            return getResponse().getStatusLine().getStatusCode();
+        }
+
+        public String getResponseMessage() throws IOException {
+            return getResponse().getStatusLine().getReasonPhrase();
         }
     }
 }
