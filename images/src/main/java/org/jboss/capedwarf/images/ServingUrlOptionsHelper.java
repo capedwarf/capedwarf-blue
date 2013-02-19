@@ -15,7 +15,7 @@ public class ServingUrlOptionsHelper {
     }
 
     public boolean hasBlobKey() {
-        return invokeMethod("hasBlobKey");
+        return (Boolean) invokeMethod("hasBlobKey");
     }
 
     public BlobKey getBlobKey() {
@@ -23,27 +23,27 @@ public class ServingUrlOptionsHelper {
     }
 
     public boolean hasImageSize() {
-        return invokeMethod("hasImageSize");
+        return (Boolean) invokeMethod("hasImageSize");
     }
 
     public int getImageSize() {
-        return invokeMethod("getImageSize");
+        return (Integer) invokeMethod("getImageSize");
     }
 
     public boolean hasCrop() {
-        return invokeMethod("hasCrop");
+        return (Boolean) invokeMethod("hasCrop");
     }
 
     public boolean getCrop() {
-        return invokeMethod("getCrop");
+        return (Boolean) invokeMethod("getCrop");
     }
 
     public boolean hasSecureUrl() {
-        return invokeMethod("hasSecureUrl");
+        return (Boolean) invokeMethod("hasSecureUrl");
     }
 
     public boolean getSecureUrl() {
-        return invokeMethod("getSecureUrl");
+        return (Boolean) invokeMethod("getSecureUrl");
     }
 
     @SuppressWarnings("unchecked")
