@@ -37,16 +37,9 @@ import javax.imageio.ImageIO;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.capedwarf.images.util.ColorUtils;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -55,8 +48,6 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@RunWith(Arquillian.class)
-@Category(All.class)
 public abstract class ImagesServiceTestBase extends TestBase {
 
     protected static final String CAPEDWARF_BMP = "capedwarf.bmp";
@@ -67,20 +58,8 @@ public abstract class ImagesServiceTestBase extends TestBase {
 
     protected ImagesService imagesService;
 
-    @Deployment
-    public static Archive getDeployment() {
-        WebArchive war = getCapedwarfDeployment();
-        war.addClass(ImagesServiceTestBase.class);
-        war.addAsResource(CAPEDWARF_BMP);
-        war.addAsResource(CAPEDWARF_GIF);
-        war.addAsResource(CAPEDWARF_JPG);
-        war.addAsResource(CAPEDWARF_PNG);
-        war.addAsResource(CAPEDWARF_TIF);
-        return war;
-    }
-
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         imagesService = ImagesServiceFactory.getImagesService();
     }
 

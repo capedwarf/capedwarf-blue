@@ -25,7 +25,14 @@
 package org.jboss.test.capedwarf.images.test;
 
 import com.google.appengine.api.blobstore.BlobKey;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -34,10 +41,19 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @SuppressWarnings("deprecation")
+@RunWith(Arquillian.class)
+@Category(All.class)
 public class ImageServingUrlTest extends ImagesServiceTestBase {
 
     private static final String BLOB_KEY_STRING = "key123";
     private static final BlobKey BLOB_KEY = new BlobKey(BLOB_KEY_STRING);
+
+    @Deployment
+    public static Archive getDeployment() {
+        WebArchive war = getCapedwarfDeployment();
+        war.addClass(ImagesServiceTestBase.class);
+        return war;
+    }
 
     @Test
     public void servingUrlContainsBlobKey() throws Exception {

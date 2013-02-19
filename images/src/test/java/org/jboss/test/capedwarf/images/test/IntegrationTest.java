@@ -28,14 +28,31 @@ import java.util.concurrent.Future;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@RunWith(Arquillian.class)
+@Category(All.class)
 public class IntegrationTest extends ImagesServiceTestBase {
+
+    @Deployment
+    public static Archive getDeployment() {
+        WebArchive war = getCapedwarfDeployment();
+        war.addClass(ImagesServiceTestBase.class);
+        war.addAsResource(CAPEDWARF_PNG);
+        return war;
+    }
 
     @Test
     public void testMakeImage() {
@@ -55,6 +72,9 @@ public class IntegrationTest extends ImagesServiceTestBase {
 
     @Test
     public void asyncTransformRendersSameImageAsNonAsyncTransform() throws ExecutionException, InterruptedException {
+        if (!isRunningInsideCapedwarf()) {
+            return;
+        }
         Transform transform = ImagesServiceFactory.makeHorizontalFlip();
         Image synchronouslyTransformedImage = imagesService.applyTransform(transform, loadTestImage());
         Future<Image> future = imagesService.applyTransformAsync(transform, loadTestImage());

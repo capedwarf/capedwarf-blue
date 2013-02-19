@@ -28,14 +28,31 @@ import java.util.Arrays;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@RunWith(Arquillian.class)
+@Category(JBoss.class)
 public class TransformationsTest extends ImagesServiceTestBase {
+
+    @Deployment
+    public static Archive getDeployment() {
+        WebArchive war = getCapedwarfDeployment();
+        war.addClass(ImagesServiceTestBase.class);
+        war.addAsResource(CAPEDWARF_PNG);
+        return war;
+    }
 
     @Test
     public void testResize() {

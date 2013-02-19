@@ -27,15 +27,37 @@ import java.io.InputStream;
 
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.capedwarf.common.io.IOUtils;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@RunWith(Arquillian.class)
+@Category(All.class)
 public class MakeImageTest extends ImagesServiceTestBase {
+
+    @Deployment
+    public static Archive getDeployment() {
+        WebArchive war = getCapedwarfDeployment();
+        war.addClass(ImagesServiceTestBase.class);
+        war.addClass(IOUtils.class);
+        war.addAsResource(CAPEDWARF_BMP);
+        war.addAsResource(CAPEDWARF_GIF);
+        war.addAsResource(CAPEDWARF_JPG);
+        war.addAsResource(CAPEDWARF_PNG);
+        war.addAsResource(CAPEDWARF_TIF);
+        return war;
+    }
 
     @Test
     public void makeImageCanReadJPG() throws IOException {
