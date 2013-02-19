@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
-import com.google.apphosting.api.ApiProxy;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -51,11 +50,15 @@ public class TestBase {
 
     static {
         try {
-            Class<?> pfc = TestBase.class.getClassLoader().loadClass("javassist.util.proxy.ProxyFactory");
+            Class<?> pfc = loadClass("javassist.util.proxy.ProxyFactory");
             isProxyClass = pfc.getMethod("isProxyClass", new Class[]{Class.class});
         } catch (Throwable ignore) {
             isProxyClass = null;
         }
+    }
+
+    protected static Class<?> loadClass(String className) throws ClassNotFoundException {
+        return TestBase.class.getClassLoader().loadClass(className);
     }
 
     protected static WebArchive getCapedwarfDeployment(TestContext context) {
@@ -141,11 +144,8 @@ public class TestBase {
     }
 
     protected static boolean isInContainer() {
-        try {
-            return ApiProxy.getCurrentEnvironment().getAppId() != null;
-        } catch (Throwable ignored) {
-            return false;
-        }
+        // TODO -- add similar for GAE
+        return System.getProperty("jboss.home.dir") != null;
     }
 
     protected boolean isRunningInsideGaeDevServer() {
