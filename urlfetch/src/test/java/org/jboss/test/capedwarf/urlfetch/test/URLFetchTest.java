@@ -163,10 +163,10 @@ public class URLFetchTest extends TestBase {
         URLConnection conn = fetch.openConnection();
         Assert.assertTrue(conn instanceof HttpURLConnection);
         HttpURLConnection huc = (HttpURLConnection) conn;
+        conn.setDoOutput(true);
+        conn.addRequestProperty("key", "value");
         huc.connect();
         try {
-            conn.setDoOutput(true);
-            conn.addRequestProperty("key", "value");
             OutputStream out = conn.getOutputStream();
             out.write("Juhuhu".getBytes());
             String content = new String(FetchServlet.toBytes(conn.getInputStream()));
