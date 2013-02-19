@@ -24,28 +24,48 @@ package org.jboss.test.capedwarf.images.test;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
 import com.google.appengine.api.images.Image;
+import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
+import org.jboss.capedwarf.images.util.ColorUtils;
+import org.jboss.test.capedwarf.common.test.TestBase;
+import org.jboss.test.capedwarf.images.support.ImageUtils;
+import org.junit.Before;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class AbstractImagesServiceTestBase {
-    protected static int[] getPixel(Raster raster, int x, int y) {
-        return raster.getPixel(x, y, (int[]) null);
+public abstract class ImagesServiceTestBase extends TestBase {
+
+    protected static final String CAPEDWARF_BMP = "capedwarf.bmp";
+    protected static final String CAPEDWARF_GIF = "capedwarf.gif";
+    protected static final String CAPEDWARF_JPG = "capedwarf.jpg";
+    protected static final String CAPEDWARF_PNG = "capedwarf.png";
+    protected static final String CAPEDWARF_TIF = "capedwarf.tif";
+
+    protected ImagesService imagesService;
+
+    @Before
+    public void setUp() throws Exception {
+        imagesService = ImagesServiceFactory.getImagesService();
+    }
+
+    protected int[] getARGBPixel(Image image, int x, int y) {
+        BufferedImage bufferedImage = getBufferedImage(image);
+        int rgb = bufferedImage.getRGB(x, y);
+        return ColorUtils.toIntArray((long) rgb);
     }
 
     protected static WritableRaster getRaster(Image image) {
@@ -64,51 +84,7 @@ public class AbstractImagesServiceTestBase {
     protected static void assertImagesEqual(Image image1, Image image2) {
         assertEquals(image1.getWidth(), image2.getWidth());
         assertEquals(image1.getHeight(), image2.getHeight());
-
-        Raster raster1 = getRaster(image1);
-        Raster raster2 = getRaster(image2);
-        for (int y = 0; y < raster1.getHeight(); y++) {
-            for (int x = 0; x < raster1.getWidth(); x++) {
-                assertPixelsEqual(raster1, x, y, raster2, x, y);
-            }
-        }
-    }
-
-    protected static void assertPixelEqual(int[] expectedPixel, int[] actualPixel) {
-        if (!arraysEqual(expectedPixel, actualPixel)) {
-            fail("Expected pixel " + formatPixel(expectedPixel) + "; was: " + formatPixel(actualPixel));
-        }
-    }
-
-    protected static void assertPixelsEqual(Raster raster, int x1, int y1, Raster transformedRaster, int x2, int y2) {
-        int pixel1[] = getPixel(raster, x1, y1);
-        int pixel2[] = getPixel(transformedRaster, x2, y2);
-
-        if (!arraysEqual(pixel1, pixel2)) {
-            fail("Original image's pixel at (" + x1 + "," + y1 + ") doesn't match transformed image's pixel at (" + x2 + "," + y2 + "). Original: " + formatPixel(pixel1) + "; transformed: " + formatPixel(pixel2));
-        }
-    }
-
-    protected static String formatPixel(int[] pixel) {
-        StringBuilder sbuf = new StringBuilder();
-        for (int p : pixel) {
-            sbuf.append(",").append(p);
-        }
-        return sbuf.substring(1);
-    }
-
-    protected static boolean arraysEqual(int[] array1, int[] array2) {
-        if (array1.length != array2.length) {
-            return false;
-        }
-
-        for (int i = 0; i < array1.length; i++) {
-            if (array1[i] != array2[i]) {
-                return false;
-            }
-        }
-
-        return true;
+        ImageUtils.assertRasterEquals(getRaster(image1), getRaster(image2));
     }
 
     protected Image createTestImage() {
@@ -162,4 +138,37 @@ public class AbstractImagesServiceTestBase {
         }
         return histogram;
     }
+
+    protected Image loadTestImage() {
+        try {
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(CAPEDWARF_PNG);
+            byte[] byteArray = toBytes(inputStream, 0, Long.MAX_VALUE, true);
+            return ImagesServiceFactory.makeImage(byteArray);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected static byte[] toBytes(InputStream is, long start, long end, boolean closeStream) throws IOException {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            int b;
+            while ((b = is.read()) != -1 && end > 0) {
+                if (start > 0)
+                    continue;
+
+                baos.write(b);
+                start--;
+                end--;
+            }
+            return baos.toByteArray();
+        } finally {
+            if (closeStream)
+                try {
+                    is.close();
+                } catch (IOException ignored) {
+                }
+        }
+    }
+
 }

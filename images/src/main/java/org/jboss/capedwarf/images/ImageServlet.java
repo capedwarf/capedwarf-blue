@@ -1,24 +1,24 @@
 /*
  *
- *  * JBoss, Home of Professional Open Source.
- *  * Copyright 2011, Red Hat, Inc., and individual contributors
- *  * as indicated by the @author tags. See the copyright.txt file in the
- *  * distribution for a full listing of individual contributors.
- *  *
- *  * This is free software; you can redistribute it and/or modify it
- *  * under the terms of the GNU Lesser General Public License as
- *  * published by the Free Software Foundation; either version 2.1 of
- *  * the License, or (at your option) any later version.
- *  *
- *  * This software is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *  * Lesser General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU Lesser General Public
- *  * License along with this software; if not, write to the Free
- *  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- *  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  *
  */
 
@@ -91,28 +91,19 @@ public class ImageServlet extends HttpServlet {
 
     private Transform makeTransform(int imageSize, boolean crop) {
         if (crop)
-            return ImagesServiceFactory.makeCrop(0, 0, imageSize, imageSize);
+            return ImagesServiceFactory.makeResize(imageSize, imageSize, 0.5f, 0.5f);
         else
             return ImagesServiceFactory.makeResize(imageSize, imageSize);
     }
 
-    public static String getServingUrl(BlobKey blobKey) {
-        return getServingUrl(blobKey, false);
-    }
-
-    public static String getServingUrl(BlobKey blobKey, boolean secureUrl) {
+    public static String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
         if (blobKey == null)
             throw new IllegalArgumentException("Null blob key!");
 
-        return getServletUrl(secureUrl) + "/" + blobKey.getKeyString() + "/";
-    }
-
-    public static String getServingUrl(BlobKey blobKey, int imageSize, boolean crop) {
-        return getServingUrl(blobKey, imageSize, crop, false);
-    }
-
-    public static String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
-        final StringBuilder builder = new StringBuilder(getServingUrl(blobKey, secureUrl));
+        StringBuilder builder = new StringBuilder(getServletUrl(secureUrl));
+        builder.append("/");
+        builder.append(blobKey.getKeyString());
+        builder.append("/");
         if (imageSize > 0)
             builder.append(ImageRequest.SIZE_TOKEN).append(imageSize);
         if (crop)

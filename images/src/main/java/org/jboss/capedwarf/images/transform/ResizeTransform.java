@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -41,9 +41,33 @@ public class ResizeTransform extends CapedwarfTransform {
     public BufferedImage applyTo(BufferedImage image) {
         double scaleXFactor = (double) getWidth() / image.getWidth();
         double scaleYFactor = (double) getHeight() / image.getHeight();
+
+        if (isCropToFit()) {
+            double maxFactor = Math.max(scaleXFactor, scaleYFactor);
+            scaleXFactor = maxFactor;
+            scaleYFactor = maxFactor;
+        } else if (isRetainAspectRatio()) {
+            double minFactor = Math.min(scaleXFactor, scaleYFactor);
+            scaleXFactor = minFactor;
+            scaleYFactor = minFactor;
+        }
+
         AffineTransform tx = AffineTransform.getScaleInstance(scaleXFactor, scaleYFactor);
         AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
-        return op.filter(image, null);
+        BufferedImage transformedImage = op.filter(image, null);
+
+        if (isCropToFit()) {
+            transformedImage = transformedImage.getSubimage(
+                (int) (getCropOffsetX() * (transformedImage.getWidth() - getWidth())),
+                (int) (getCropOffsetY() * (transformedImage.getHeight() - getHeight())),
+                getWidth(),
+                getHeight());
+        }
+        return transformedImage;
+    }
+
+    private boolean isRetainAspectRatio() {
+        return !isAllowStretch();
     }
 
     private int getWidth() {
@@ -52,6 +76,22 @@ public class ResizeTransform extends CapedwarfTransform {
 
     private int getHeight() {
         return (Integer) getFieldValue("height");
+    }
+
+    private boolean isCropToFit() {
+        return (Boolean) getFieldValue("cropToFit");
+    }
+
+    private float getCropOffsetX() {
+        return (Float) getFieldValue("cropOffsetX");
+    }
+
+    private float getCropOffsetY() {
+        return (Float) getFieldValue("cropOffsetY");
+    }
+
+    private boolean isAllowStretch() {
+        return (Boolean) getFieldValue("allowStretch");
     }
 
 }

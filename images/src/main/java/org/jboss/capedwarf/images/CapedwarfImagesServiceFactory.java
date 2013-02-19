@@ -25,6 +25,8 @@ package org.jboss.capedwarf.images;
 import java.util.Collection;
 
 import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreService;
+import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.images.Composite;
 import com.google.appengine.api.images.CompositeTransform;
 import com.google.appengine.api.images.IImagesServiceFactory;
@@ -36,6 +38,7 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 class CapedwarfImagesServiceFactory implements IImagesServiceFactory {
     private volatile IImagesServiceFactory delegate;
@@ -51,40 +54,41 @@ class CapedwarfImagesServiceFactory implements IImagesServiceFactory {
         return AspectFactory.createProxy(ImagesService.class, new CapedwarfImagesService());
     }
 
-    public Image makeImage(byte[] bytes) {
-        return getDelegate().makeImage(bytes);
+    public Image makeImage(byte[] imageData) {
+        return getDelegate().makeImage(imageData);
     }
 
     public Image makeImageFromBlob(BlobKey blobKey) {
-        return getDelegate().makeImageFromBlob(blobKey);
+        byte[] bytes = BlobstoreServiceFactory.getBlobstoreService().fetchData(blobKey, 0, BlobstoreService.MAX_BLOB_FETCH_SIZE - 1);
+        return makeImage(bytes);
     }
 
-    public Image makeImageFromFilename(String s) {
-        return getDelegate().makeImageFromFilename(s);
+    public Image makeImageFromFilename(String filename) {
+        return getDelegate().makeImageFromFilename(filename);
     }
 
-    public Transform makeResize(int i, int i2) {
-        return getDelegate().makeResize(i, i2);
+    public Transform makeResize(int width, int height) {
+        return getDelegate().makeResize(width, height);
     }
 
-    public Transform makeResize(int i, int i2, boolean b) {
-        return getDelegate().makeResize(i, i2, b);
+    public Transform makeResize(int width, int height, boolean allowStretch) {
+        return getDelegate().makeResize(width, height, allowStretch);
     }
 
-    public Transform makeResize(int i, int i2, float v, float v2) {
-        return getDelegate().makeResize(i, i2, v, v2);
+    public Transform makeResize(int width, int height, float cropOffsetX, float cropOffsetY) {
+        return getDelegate().makeResize(width, height, cropOffsetX, cropOffsetY);
     }
 
-    public Transform makeResize(int i, int i2, double v, double v2) {
-        return getDelegate().makeResize(i, i2, v, v2);
+    public Transform makeResize(int width, int height, double cropOffsetX, double cropOffsetY) {
+        return getDelegate().makeResize(width, height, cropOffsetX, cropOffsetY);
     }
 
-    public Transform makeCrop(float v, float v2, float v3, float v4) {
-        return getDelegate().makeCrop(v, v2, v3, v4);
+    public Transform makeCrop(float leftX, float topY, float rightX, float bottomY) {
+        return getDelegate().makeCrop(leftX, topY, rightX, bottomY);
     }
 
-    public Transform makeCrop(double v, double v2, double v3, double v4) {
-        return getDelegate().makeCrop(v, v2, v3, v4);
+    public Transform makeCrop(double leftX, double topY, double rightX, double bottomY) {
+        return getDelegate().makeCrop(leftX, topY, rightX, bottomY);
     }
 
     public Transform makeVerticalFlip() {
@@ -95,8 +99,8 @@ class CapedwarfImagesServiceFactory implements IImagesServiceFactory {
         return getDelegate().makeHorizontalFlip();
     }
 
-    public Transform makeRotate(int i) {
-        return getDelegate().makeRotate(i);
+    public Transform makeRotate(int degrees) {
+        return getDelegate().makeRotate(degrees);
     }
 
     public Transform makeImFeelingLucky() {
@@ -111,7 +115,7 @@ class CapedwarfImagesServiceFactory implements IImagesServiceFactory {
         return getDelegate().makeCompositeTransform();
     }
 
-    public Composite makeComposite(Image image, int i, int i2, float v, Composite.Anchor anchor) {
-        return getDelegate().makeComposite(image, i, i2, v, anchor);
+    public Composite makeComposite(Image image, int xOffset, int yOffset, float opacity, Composite.Anchor anchor) {
+        return getDelegate().makeComposite(image, xOffset, yOffset, opacity, anchor);
     }
 }

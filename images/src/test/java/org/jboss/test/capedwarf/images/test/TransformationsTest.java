@@ -28,25 +28,72 @@ import java.util.Arrays;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.JBoss;
+import org.jboss.test.capedwarf.images.support.ImageUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
+import static org.jboss.test.capedwarf.images.support.ImageUtils.assertPixelsEqual;
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@RunWith(Arquillian.class)
 @Category(JBoss.class)
-public class TransformationsTest extends CapedwarfImagesServiceTestBase {
+public class TransformationsTest extends ImagesServiceTestBase {
+
+    @Deployment
+    public static Archive getDeployment() {
+        WebArchive war = getCapedwarfDeployment();
+        war.addClass(ImagesServiceTestBase.class);
+        war.addClass(ImageUtils.class);
+        war.addAsResource(CAPEDWARF_PNG);
+        return war;
+    }
 
     @Test
     public void testResize() {
+        Image originalImage = loadTestImage();
+        assertEquals(200, originalImage.getWidth());
+        assertEquals(143, originalImage.getHeight());
+
+        Image resizedImage = imagesService.applyTransform(ImagesServiceFactory.makeResize(400, 286), originalImage);
+        assertEquals(400, resizedImage.getWidth());
+        assertEquals(286, resizedImage.getHeight());
+
+        resizedImage = imagesService.applyTransform(ImagesServiceFactory.makeResize(300, 286), originalImage);
+        assertEquals(300, resizedImage.getWidth());
+        assertEquals(215, resizedImage.getHeight());
+
+        resizedImage = imagesService.applyTransform(ImagesServiceFactory.makeResize(400, 200), originalImage);
+        assertEquals(280, resizedImage.getWidth());
+        assertEquals(200, resizedImage.getHeight());
+    }
+
+    @Test
+    public void testResizeWithStretch() {
         int resizedWidth = 300;
         int resizedHeight = 200;
-        Image originalImage = createTestImage();
-        Transform resize = ImagesServiceFactory.makeResize(resizedWidth, resizedHeight);
+        Image originalImage = loadTestImage();
+        Transform resize = ImagesServiceFactory.makeResize(resizedWidth, resizedHeight, true);
+        Image resizedImage = imagesService.applyTransform(resize, originalImage);
 
+        assertEquals(resizedWidth, resizedImage.getWidth());
+        assertEquals(resizedHeight, resizedImage.getHeight());
+    }
+
+    @Test
+    public void testResizeWithCrop() {
+        int resizedWidth = 300;
+        int resizedHeight = 200;
+        Image originalImage = loadTestImage();
+        Transform resize = ImagesServiceFactory.makeResize(resizedWidth, resizedHeight, 0.5f, 0.5f);
         Image resizedImage = imagesService.applyTransform(resize, originalImage);
 
         assertEquals(resizedWidth, resizedImage.getWidth());
@@ -122,9 +169,8 @@ public class TransformationsTest extends CapedwarfImagesServiceTestBase {
     @Test
     public void testRotate0Degrees() {
         Image image = createTestImage();
-        Transform resize = ImagesServiceFactory.makeRotate(0);
-
-        Image rotatedImage = imagesService.applyTransform(resize, image);
+        Transform rotate0 = ImagesServiceFactory.makeRotate(0);
+        Image rotatedImage = imagesService.applyTransform(rotate0, image);
 
         assertImagesEqual(image, rotatedImage);
     }
@@ -132,9 +178,8 @@ public class TransformationsTest extends CapedwarfImagesServiceTestBase {
     @Test
     public void testRotate90Degrees() {
         Image image = createTestImage();
-        Transform resize = ImagesServiceFactory.makeRotate(90);
-
-        Image rotatedImage = imagesService.applyTransform(resize, image);
+        Transform rotate90 = ImagesServiceFactory.makeRotate(90);
+        Image rotatedImage = imagesService.applyTransform(rotate90, image);
 
         Raster raster = getRaster(image);
         Raster rotatedRaster = getRaster(rotatedImage);
@@ -150,12 +195,11 @@ public class TransformationsTest extends CapedwarfImagesServiceTestBase {
     @Test
     public void testRotate180Degrees() {
         Image image = createTestImage();
-        Transform resize = ImagesServiceFactory.makeRotate(180);
-
-        Image rotatedImage = imagesService.applyTransform(resize, image);
+        Transform rotate = ImagesServiceFactory.makeRotate(180);
+        Image rotate180 = imagesService.applyTransform(rotate, image);
 
         Raster raster = getRaster(image);
-        Raster rotatedRaster = getRaster(rotatedImage);
+        Raster rotatedRaster = getRaster(rotate180);
         assertEquals(raster.getWidth(), rotatedRaster.getWidth());
         assertEquals(raster.getHeight(), rotatedRaster.getHeight());
         for (int y = 0; y < raster.getHeight(); y++) {
@@ -168,9 +212,8 @@ public class TransformationsTest extends CapedwarfImagesServiceTestBase {
     @Test
     public void testRotate270Degrees() {
         Image image = createTestImage();
-        Transform resize = ImagesServiceFactory.makeRotate(270);
-
-        Image rotatedImage = imagesService.applyTransform(resize, image);
+        Transform rotate270 = ImagesServiceFactory.makeRotate(270);
+        Image rotatedImage = imagesService.applyTransform(rotate270, image);
 
         Raster raster = getRaster(image);
         Raster rotatedRaster = getRaster(rotatedImage);
@@ -187,7 +230,6 @@ public class TransformationsTest extends CapedwarfImagesServiceTestBase {
     public void imFeelingLuckyReturnsTheSameImage() {
         Image image = createTestImage();
         Transform feelingLuckyTransform = ImagesServiceFactory.makeImFeelingLucky();
-
         Image improvedImage = imagesService.applyTransform(feelingLuckyTransform, image);
 
         assertEquals(image.getWidth(), improvedImage.getWidth());

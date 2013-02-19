@@ -25,23 +25,36 @@ package org.jboss.test.capedwarf.images.test;
 import java.awt.image.BufferedImage;
 
 import com.google.appengine.api.images.Image;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@RunWith(Arquillian.class)
 @Category(JBoss.class)
-public class HistogramTest extends CapedwarfImagesServiceTestBase {
+public class HistogramTest extends ImagesServiceTestBase {
 
     private static final int[] WHITE_PIXEL = new int[]{255, 255, 255};
 
     private static final int RED = 0;
     private static final int GREEN = 1;
     private static final int BLUE = 2;
+
+    @Deployment
+    public static Archive getDeployment() {
+        WebArchive war = getCapedwarfDeployment();
+        war.addClass(ImagesServiceTestBase.class);
+        return war;
+    }
 
     @Test
     public void histogramReturnsArrayOf3ArraysOfLength256() {
