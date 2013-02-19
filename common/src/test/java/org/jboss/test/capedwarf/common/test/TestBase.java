@@ -27,6 +27,9 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -143,9 +146,23 @@ public class TestBase {
         assertTrue("Expected to match regexp " + regexp + " but was: " + str, str != null && str.matches(regexp));
     }
 
+    /**
+     * Should work in all envs?
+     *
+     * @return true if in-container, false otherewise
+     */
     protected static boolean isInContainer() {
-        // TODO -- add similar for GAE
-        return System.getProperty("jboss.home.dir") != null;
+        try {
+            DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
+            Transaction tx = ds.beginTransaction();
+            try {
+                return (ds.getCurrentTransaction() != null);
+            } finally {
+                tx.rollback();
+            }
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     protected boolean isRunningInsideGaeDevServer() {
