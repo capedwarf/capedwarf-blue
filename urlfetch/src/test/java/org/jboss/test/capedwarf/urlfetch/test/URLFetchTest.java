@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,6 +25,7 @@ package org.jboss.test.capedwarf.urlfetch.test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -160,12 +161,20 @@ public class URLFetchTest extends TestBase {
     public void testURLConnection() throws Exception {
         URL fetch = getFetchUrl();
         URLConnection conn = fetch.openConnection();
-        conn.setDoOutput(true);
-        conn.addRequestProperty("key", "value");
-        OutputStream out = conn.getOutputStream();
-        out.write("Juhuhu".getBytes());
-        String content = new String(FetchServlet.toBytes(conn.getInputStream()));
-        Assert.assertEquals("Bruhuhu", content);
+        Assert.assertTrue(conn instanceof HttpURLConnection);
+        HttpURLConnection huc = (HttpURLConnection) conn;
+        huc.connect();
+        try {
+            conn.setDoOutput(true);
+            conn.addRequestProperty("key", "value");
+            OutputStream out = conn.getOutputStream();
+            out.write("Juhuhu".getBytes());
+            String content = new String(FetchServlet.toBytes(conn.getInputStream()));
+            Assert.assertEquals("Bruhuhu", content);
+            Assert.assertEquals(200, huc.getResponseCode());
+        } finally {
+            huc.disconnect();
+        }
     }
 
     private void printResponse(HTTPResponse response) throws Exception {
