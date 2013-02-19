@@ -38,7 +38,6 @@ import com.google.appengine.api.images.InputSettings;
 import com.google.appengine.api.images.OutputSettings;
 import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.images.Transform;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.files.ExposedFileService;
 import org.jboss.capedwarf.images.transform.CapedwarfTransform;
@@ -126,11 +125,12 @@ public class CapedwarfImagesService implements ImagesService {
 
 
     public String getServingUrl(ServingUrlOptions options) {
-        BlobKey blobKey = (BlobKey) ReflectionUtils.invokeInstanceMethod(options, "getBlobKey");
-        Integer imageSize = (Integer) ReflectionUtils.invokeInstanceMethod(options, "getImageSize");
-        Boolean crop = (Boolean) ReflectionUtils.invokeInstanceMethod(options, "getCrop");
-        Boolean secureUrl = (Boolean) ReflectionUtils.invokeInstanceMethod(options, "getSecureUrl");
-        return getServingUrl(blobKey, imageSize != null ? imageSize : -1, crop != null && crop, secureUrl != null && secureUrl);
+        ServingUrlOptionsHelper helper = new ServingUrlOptionsHelper(options);
+        return getServingUrl(
+            helper.getBlobKey(),
+            helper.hasImageSize() ? helper.getImageSize() : -1,
+            helper.hasCrop() && helper.getCrop(),
+            helper.hasSecureUrl() && helper.getSecureUrl());
     }
 
     public String getServingUrl(BlobKey blobKey) {

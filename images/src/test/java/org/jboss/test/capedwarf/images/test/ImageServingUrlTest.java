@@ -34,6 +34,7 @@ import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileService;
 import com.google.appengine.api.files.FileServiceFactory;
 import com.google.appengine.api.files.FileWriteChannel;
+import com.google.appengine.api.images.ServingUrlOptions;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.capedwarf.common.io.IOUtils;
@@ -137,6 +138,35 @@ public class ImageServingUrlTest extends ImagesServiceTestBase {
             url = imagesService.getServingUrl(blobKey, 32, false, true);
             assertStartsWith("https://", url);
         }
+    }
+
+    @Test
+    public void servingUrlWithOptionsWithImageSize() throws Exception {
+        String baseUrl = imagesService.getServingUrl(ServingUrlOptions.Builder.withBlobKey(blobKey));
+        String actualUrl = imagesService.getServingUrl(ServingUrlOptions.Builder.withBlobKey(blobKey).imageSize(32));
+        assertEquals(baseUrl + "=s32", actualUrl);
+    }
+
+    @Test
+    public void servingUrlWithOptionsWithImageSizeAndCrop() throws Exception {
+        String baseUrl = imagesService.getServingUrl(ServingUrlOptions.Builder.withBlobKey(blobKey));
+        String actualUrl = imagesService.getServingUrl(ServingUrlOptions.Builder.withBlobKey(blobKey).imageSize(32).crop(true));
+        assertEquals(baseUrl + "=s32-c", actualUrl);
+    }
+
+    @Test
+    public void servingUrlWithOptionsWithSecureFlag() throws Exception {
+        if (isRunningInsideGaeDevServer()) {
+            return;
+        }
+
+        ServingUrlOptions options = ServingUrlOptions.Builder.withBlobKey(blobKey);
+
+        String url = imagesService.getServingUrl(options);
+        assertStartsWith("http://", url);
+
+        url = imagesService.getServingUrl(options.secureUrl(true));
+        assertStartsWith("https://", url);
     }
 
     private void assertStartsWith(String prefix, String url) {
