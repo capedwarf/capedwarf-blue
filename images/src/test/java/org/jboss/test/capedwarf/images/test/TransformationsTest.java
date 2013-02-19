@@ -33,10 +33,12 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.JBoss;
+import org.jboss.test.capedwarf.images.support.ImageUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import static org.jboss.test.capedwarf.images.support.ImageUtils.assertPixelsEqual;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -50,17 +52,48 @@ public class TransformationsTest extends ImagesServiceTestBase {
     public static Archive getDeployment() {
         WebArchive war = getCapedwarfDeployment();
         war.addClass(ImagesServiceTestBase.class);
+        war.addClass(ImageUtils.class);
         war.addAsResource(CAPEDWARF_PNG);
         return war;
     }
 
     @Test
     public void testResize() {
+        Image originalImage = loadTestImage();
+        assertEquals(200, originalImage.getWidth());
+        assertEquals(143, originalImage.getHeight());
+
+        Image resizedImage = imagesService.applyTransform(ImagesServiceFactory.makeResize(400, 286), originalImage);
+        assertEquals(400, resizedImage.getWidth());
+        assertEquals(286, resizedImage.getHeight());
+
+        resizedImage = imagesService.applyTransform(ImagesServiceFactory.makeResize(300, 286), originalImage);
+        assertEquals(300, resizedImage.getWidth());
+        assertEquals(215, resizedImage.getHeight());
+
+        resizedImage = imagesService.applyTransform(ImagesServiceFactory.makeResize(400, 200), originalImage);
+        assertEquals(280, resizedImage.getWidth());
+        assertEquals(200, resizedImage.getHeight());
+    }
+
+    @Test
+    public void testResizeWithStretch() {
         int resizedWidth = 300;
         int resizedHeight = 200;
-        Image originalImage = createTestImage();
-        Transform resize = ImagesServiceFactory.makeResize(resizedWidth, resizedHeight);
+        Image originalImage = loadTestImage();
+        Transform resize = ImagesServiceFactory.makeResize(resizedWidth, resizedHeight, true);
+        Image resizedImage = imagesService.applyTransform(resize, originalImage);
 
+        assertEquals(resizedWidth, resizedImage.getWidth());
+        assertEquals(resizedHeight, resizedImage.getHeight());
+    }
+
+    @Test
+    public void testResizeWithCrop() {
+        int resizedWidth = 300;
+        int resizedHeight = 200;
+        Image originalImage = loadTestImage();
+        Transform resize = ImagesServiceFactory.makeResize(resizedWidth, resizedHeight, 0.5f, 0.5f);
         Image resizedImage = imagesService.applyTransform(resize, originalImage);
 
         assertEquals(resizedWidth, resizedImage.getWidth());

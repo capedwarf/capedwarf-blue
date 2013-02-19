@@ -25,13 +25,9 @@ package org.jboss.test.capedwarf.images.test;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 import com.google.appengine.api.images.Composite;
 import com.google.appengine.api.images.Image;
@@ -39,10 +35,10 @@ import com.google.appengine.api.images.ImagesServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.capedwarf.images.util.ColorUtils;
-import org.jboss.capedwarf.images.util.ImageUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.JBoss;
+import org.jboss.test.capedwarf.images.support.ImageUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -57,6 +53,8 @@ import static com.google.appengine.api.images.Composite.Anchor.CENTER_RIGHT;
 import static com.google.appengine.api.images.Composite.Anchor.TOP_CENTER;
 import static com.google.appengine.api.images.Composite.Anchor.TOP_LEFT;
 import static com.google.appengine.api.images.Composite.Anchor.TOP_RIGHT;
+import static org.jboss.test.capedwarf.images.support.ImageUtils.assertPixelEqual;
+import static org.jboss.test.capedwarf.images.support.ImageUtils.getPixel;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -74,6 +72,7 @@ public class CompositeImagesTest extends ImagesServiceTestBase {
     public static Archive getDeployment() {
         WebArchive war = getCapedwarfDeployment();
         war.addClass(ImagesServiceTestBase.class);
+        war.addClass(ImageUtils.class);
         return war;
     }
 
@@ -189,15 +188,4 @@ public class CompositeImagesTest extends ImagesServiceTestBase {
         return createImageFrom(bufferedImage);
     }
 
-    private void dumpImage(Image image, String filename) {
-        try {
-            BufferedImage bufferedImage = ImageUtils.convertToBufferedImage(image.getImageData());
-            if (!filename.endsWith(".png")) {
-                filename += ".png";
-            }
-            ImageIO.write(bufferedImage, "PNG", new File(filename));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

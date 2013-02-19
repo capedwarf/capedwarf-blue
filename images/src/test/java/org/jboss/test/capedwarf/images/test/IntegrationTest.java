@@ -33,6 +33,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.images.support.ImageUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -50,6 +51,7 @@ public class IntegrationTest extends ImagesServiceTestBase {
     public static Archive getDeployment() {
         WebArchive war = getCapedwarfDeployment();
         war.addClass(ImagesServiceTestBase.class);
+        war.addClass(ImageUtils.class);
         war.addAsResource(CAPEDWARF_PNG);
         return war;
     }
