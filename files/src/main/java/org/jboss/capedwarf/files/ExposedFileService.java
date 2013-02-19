@@ -26,12 +26,15 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileService;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public interface ExposedFileService extends FileService {
     InputStream getStream(BlobKey blobKey) throws FileNotFoundException;
     void delete(BlobKey... blobKeys);
+    boolean exists(AppEngineFile file);
 }

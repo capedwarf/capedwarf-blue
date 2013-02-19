@@ -28,6 +28,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.files.AppEngineFile;
+import com.google.appengine.api.files.FileServiceFactory;
 import com.google.appengine.api.images.Composite;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesService;
@@ -38,6 +40,7 @@ import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.images.Transform;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.files.ExposedFileService;
 import org.jboss.capedwarf.images.transform.CapedwarfTransform;
 import org.jboss.capedwarf.images.transform.CapedwarfTransformFactory;
 import org.jboss.capedwarf.images.util.ImageUtils;
@@ -47,6 +50,8 @@ import org.jboss.capedwarf.images.util.ImageUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfImagesService implements ImagesService {
+
+    private ExposedFileService fileService = (ExposedFileService) FileServiceFactory.getFileService();
 
     public Image applyTransform(Transform transform, Image image) {
         return applyTransform(transform, image, OutputEncoding.PNG);
@@ -120,28 +125,32 @@ public class CapedwarfImagesService implements ImagesService {
     }
 
 
-    public String getServingUrl(BlobKey blobKey) {
-        return ImageServlet.getServingUrl(blobKey);
-    }
-
-    public String getServingUrl(BlobKey blobKey, boolean secureUrl) {
-        return ImageServlet.getServingUrl(blobKey, secureUrl);
-    }
-
-    public String getServingUrl(BlobKey blobKey, int imageSize, boolean crop) {
-        return ImageServlet.getServingUrl(blobKey, imageSize, crop);
-    }
-
-    public String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
-        return ImageServlet.getServingUrl(blobKey, imageSize, crop, secureUrl);
-    }
-
     public String getServingUrl(ServingUrlOptions options) {
-        final BlobKey blobKey = (BlobKey) ReflectionUtils.invokeInstanceMethod(options, "getBlobKey");
+        BlobKey blobKey = (BlobKey) ReflectionUtils.invokeInstanceMethod(options, "getBlobKey");
         Integer imageSize = (Integer) ReflectionUtils.invokeInstanceMethod(options, "getImageSize");
         Boolean crop = (Boolean) ReflectionUtils.invokeInstanceMethod(options, "getCrop");
         Boolean secureUrl = (Boolean) ReflectionUtils.invokeInstanceMethod(options, "getSecureUrl");
         return getServingUrl(blobKey, imageSize != null ? imageSize : -1, crop != null && crop, secureUrl != null && secureUrl);
+    }
+
+    public String getServingUrl(BlobKey blobKey) {
+        return getServingUrl(blobKey, false);
+    }
+
+    public String getServingUrl(BlobKey blobKey, boolean secureUrl) {
+        return getServingUrl(blobKey, -1, false, secureUrl);
+    }
+
+    public String getServingUrl(BlobKey blobKey, int imageSize, boolean crop) {
+        return getServingUrl(blobKey, imageSize, crop, false);
+    }
+
+    public String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
+        AppEngineFile file = fileService.getBlobFile(blobKey);
+        if (!fileService.exists(file)) {
+            throw new IllegalArgumentException("Could not read blob");
+        }
+        return ImageServlet.getServingUrl(blobKey, imageSize, crop, secureUrl);
     }
 
     public void deleteServingUrl(BlobKey blobKey) {

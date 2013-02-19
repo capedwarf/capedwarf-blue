@@ -96,23 +96,14 @@ public class ImageServlet extends HttpServlet {
             return ImagesServiceFactory.makeResize(imageSize, imageSize);
     }
 
-    public static String getServingUrl(BlobKey blobKey) {
-        return getServingUrl(blobKey, false);
-    }
-
-    public static String getServingUrl(BlobKey blobKey, boolean secureUrl) {
+    public static String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
         if (blobKey == null)
             throw new IllegalArgumentException("Null blob key!");
 
-        return getServletUrl(secureUrl) + "/" + blobKey.getKeyString() + "/";
-    }
-
-    public static String getServingUrl(BlobKey blobKey, int imageSize, boolean crop) {
-        return getServingUrl(blobKey, imageSize, crop, false);
-    }
-
-    public static String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
-        final StringBuilder builder = new StringBuilder(getServingUrl(blobKey, secureUrl));
+        StringBuilder builder = new StringBuilder(getServletUrl(secureUrl));
+        builder.append("/");
+        builder.append(blobKey.getKeyString());
+        builder.append("/");
         if (imageSize > 0)
             builder.append(ImageRequest.SIZE_TOKEN).append(imageSize);
         if (crop)

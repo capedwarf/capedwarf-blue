@@ -24,12 +24,24 @@
 
 package org.jboss.test.capedwarf.images.test;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+
 import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.files.AppEngineFile;
+import com.google.appengine.api.files.FileService;
+import com.google.appengine.api.files.FileServiceFactory;
+import com.google.appengine.api.files.FileWriteChannel;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -45,51 +57,90 @@ import static org.junit.Assert.assertTrue;
 @Category(All.class)
 public class ImageServingUrlTest extends ImagesServiceTestBase {
 
-    private static final String BLOB_KEY_STRING = "key123";
-    private static final BlobKey BLOB_KEY = new BlobKey(BLOB_KEY_STRING);
+    private BlobKey blobKey;
+    private FileService fileService;
 
     @Deployment
     public static Archive getDeployment() {
         WebArchive war = getCapedwarfDeployment();
         war.addClass(ImagesServiceTestBase.class);
+        war.addClass(IOUtils.class);
+        war.addAsResource(CAPEDWARF_PNG);
         return war;
     }
 
-    @Test
-    public void servingUrlContainsBlobKey() throws Exception {
-        String url = imagesService.getServingUrl(BLOB_KEY);
-        assertTrue(url.contains(BLOB_KEY_STRING));
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        fileService = FileServiceFactory.getFileService();
+        AppEngineFile file = fileService.createNewBlobFile("image/png");
+        FileWriteChannel channel = fileService.openWriteChannel(file, true);
+        try {
+            ReadableByteChannel in = Channels.newChannel(getCapedwarfPngInputStream());
+            try {
+                IOUtils.copy(in, channel);
+            } finally {
+                in.close();
+            }
+        } finally {
+            channel.closeFinally();
+        }
+
+        blobKey = fileService.getBlobKey(file);
+    }
+
+    private InputStream getCapedwarfPngInputStream() {
+        return ImageServingUrlTest.class.getResourceAsStream("/" + CAPEDWARF_PNG);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        try {
+            fileService.delete(fileService.getBlobFile(blobKey));
+        } catch (IOException ignored) {
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void servingUrlWithNonexistentBlobKeyThrowsException() throws Exception {
+        imagesService.getServingUrl(new BlobKey("nonexistentBlob"));
     }
 
     @Test
     public void servingUrlWithImageSize() throws Exception {
-        String baseUrl = imagesService.getServingUrl(BLOB_KEY);
-        String actualUrl = imagesService.getServingUrl(BLOB_KEY, 32, false);
+        String baseUrl = imagesService.getServingUrl(blobKey);
+        String actualUrl = imagesService.getServingUrl(blobKey, 32, false);
         String expectedUrl = baseUrl + "=s32";
         assertEquals(expectedUrl, actualUrl);
     }
 
     @Test
     public void servingUrlWithImageSizeAndCrop() throws Exception {
-        String baseUrl = imagesService.getServingUrl(BLOB_KEY);
-        String actualUrl = imagesService.getServingUrl(BLOB_KEY, 32, true);
+        String baseUrl = imagesService.getServingUrl(blobKey);
+        String actualUrl = imagesService.getServingUrl(blobKey, 32, true);
         String expectedUrl = baseUrl + "=s32-c";
         assertEquals(expectedUrl, actualUrl);
     }
 
     @Test
     public void servingUrlWithSecureFlag() throws Exception {
-        String url = imagesService.getServingUrl(BLOB_KEY, true);
-        assertTrue(url.startsWith("https://"));
+        String url = imagesService.getServingUrl(blobKey, false);
+        assertStartsWith("http://", url);
 
-        url = imagesService.getServingUrl(BLOB_KEY, false);
-        assertTrue(url.startsWith("http://"));
+        url = imagesService.getServingUrl(blobKey, 32, false, false);
+        assertStartsWith("http://", url);
 
-        url = imagesService.getServingUrl(BLOB_KEY, 32, false, true);
-        assertTrue(url.startsWith("https://"));
+        if (!isRunningInsideGaeDevServer()) {
+            url = imagesService.getServingUrl(blobKey, true);
+            assertStartsWith("https://", url);
 
-        url = imagesService.getServingUrl(BLOB_KEY, 32, false, false);
-        assertTrue(url.startsWith("http://"));
+            url = imagesService.getServingUrl(blobKey, 32, false, true);
+            assertStartsWith("https://", url);
+        }
+    }
+
+    private void assertStartsWith(String prefix, String url) {
+        assertTrue("Expected string to start with \"" + prefix + "\", but was: " + url, url.startsWith(prefix));
     }
 
 }

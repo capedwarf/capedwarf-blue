@@ -196,7 +196,8 @@ class CapedwarfFileService implements ExposedFileService {
         return null; // TODO
     }
 
-    private boolean exists(AppEngineFile file) {
+    @Override
+    public boolean exists(AppEngineFile file) {
         return getGfsFile(file).exists();
     }
 
