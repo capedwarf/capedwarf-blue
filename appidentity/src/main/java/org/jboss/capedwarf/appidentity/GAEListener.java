@@ -124,7 +124,11 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         final ServletRequest req = sre.getServletRequest();
         try {
             CapedwarfHttpServletResponseWrapper response = (CapedwarfHttpServletResponseWrapper) req.getAttribute(CapedwarfHttpServletResponseWrapper.class.getName());
-            getLogService().requestFinished(req, response.getStatus(), response.getContentLength());
+            if (response != null) {
+                getLogService().requestFinished(req, response.getStatus(), response.getContentLength());
+            } else {
+                // TODO -- looks like some error before GAEFilter kicked in.
+            }
         } finally {
             try {
                 CapedwarfDelegate.INSTANCE.removeRequest();
