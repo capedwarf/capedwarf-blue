@@ -1,0 +1,6 @@
+<queue-entries>
+    <queue>
+        <name>pull-queue</name>
+        <mode>pull</mode>
+    </queue>
+</queue-entries>
