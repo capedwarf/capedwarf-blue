@@ -15,24 +15,33 @@ import javax.servlet.ServletResponse;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class SingleThreadFilter implements Filter {
+    private static ThreadLocal<Object> reentered = new ThreadLocal<Object>();
     private Semaphore semaphore;
 
-    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         String mcr = filterConfig.getInitParameter("max-concurrent-requests");
         int maxConcurrentRequests = (mcr != null) ? Integer.parseInt(mcr) : 1;
         semaphore = new Semaphore(maxConcurrentRequests);
     }
 
-    @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
+        final boolean isNew = (reentered.get() == null);
         try {
             // make the app process one request at a time
-            semaphore.acquire();
+            if (isNew) {
+                semaphore.acquire();
+            }
             try {
-                chain.doFilter(servletRequest, servletResponse);
+                reentered.set(this);
+                try {
+                    chain.doFilter(servletRequest, servletResponse);
+                } finally {
+                    reentered.remove();
+                }
             } finally {
-                semaphore.release();
+                if (isNew) {
+                    semaphore.release();
+                }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -40,7 +49,6 @@ public class SingleThreadFilter implements Filter {
         }
     }
 
-    @Override
     public void destroy() {
         semaphore = null;
     }
