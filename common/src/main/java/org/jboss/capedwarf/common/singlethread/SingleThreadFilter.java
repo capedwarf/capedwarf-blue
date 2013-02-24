@@ -32,11 +32,15 @@ public class SingleThreadFilter implements Filter {
                 semaphore.acquire();
             }
             try {
-                reentered.set(this);
+                if (isNew) {
+                    reentered.set(this);
+                }
                 try {
                     chain.doFilter(servletRequest, servletResponse);
                 } finally {
-                    reentered.remove();
+                    if (isNew) {
+                        reentered.remove();
+                    }
                 }
             } finally {
                 if (isNew) {
