@@ -16,7 +16,7 @@ public abstract class AuthHandler {
 
     public void handleLogoutRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            request.getSession().setAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY, null);
+            request.getSession().removeAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY);
 
             String destinationUrl = request.getParameter(AuthServlet.DESTINATION_URL_PARAM);
             response.sendRedirect(destinationUrl);

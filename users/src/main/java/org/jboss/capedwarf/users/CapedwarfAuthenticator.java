@@ -24,6 +24,7 @@ package org.jboss.capedwarf.users;
 
 import java.io.IOException;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
@@ -36,6 +37,8 @@ import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfAuthenticator extends AuthenticatorBase {
+    private static final String KEY = CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY;
+
     protected boolean authenticate(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
         HttpSession session = request.getSession();
         if (session == null)
@@ -50,7 +53,19 @@ public class CapedwarfAuthenticator extends AuthenticatorBase {
         }
     }
 
+    @Override
+    public void logout(Request request) throws ServletException {
+        try {
+            super.logout(request);
+        } finally {
+            HttpSession session = request.getSession();
+            if (session != null) {
+                session.removeAttribute(KEY);
+            }
+        }
+    }
+
     protected CapedwarfUserPrincipal getPrincipal(HttpSession session) {
-        return (CapedwarfUserPrincipal) session.getAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY);
+        return (CapedwarfUserPrincipal) session.getAttribute(KEY);
     }
 }
