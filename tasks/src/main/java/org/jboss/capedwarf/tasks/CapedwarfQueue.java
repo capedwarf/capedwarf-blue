@@ -262,7 +262,7 @@ class CapedwarfQueue implements Queue {
                 .sort(SORT);
 
         final List<TaskHandle> handles = new ArrayList<TaskHandle>();
-        for (Object obj : query) {
+        for (Object obj : query.list()) {   // must not use query.iterator() because of ISPN-2852
             TaskOptionsEntity toe = (TaskOptionsEntity) obj;
             final String name = toe.getName();
             final Cache<String, Object> cache = getTasks();
