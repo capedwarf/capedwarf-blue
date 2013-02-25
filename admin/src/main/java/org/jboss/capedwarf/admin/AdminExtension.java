@@ -10,6 +10,7 @@ import javax.enterprise.inject.spi.Extension;
  * Register admin console beans.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class AdminExtension implements Extension {
 
@@ -32,6 +33,7 @@ public class AdminExtension implements Extension {
         addAnnotatedType(bbd, bm, LogViewer.class);
         addAnnotatedType(bbd, bm, TimeFormatter.class);
         addAnnotatedType(bbd, bm, SizeFormatter.class);
+        addAnnotatedType(bbd, bm, ContextPathProducer.class);
     }
 
     private <E> void addAnnotatedType(BeforeBeanDiscovery bbd, BeanManager bm, Class<E> clazz) {

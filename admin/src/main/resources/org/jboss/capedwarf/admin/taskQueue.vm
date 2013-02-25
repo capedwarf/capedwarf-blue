@@ -1,4 +1,4 @@
-#include("/org/jboss/capedwarf/admin/header.vm")
+#parse("/org/jboss/capedwarf/admin/header.vm")
 
 <h2>Tasks for queue: $taskQueue.name</h2>
 
@@ -26,4 +26,4 @@ Push the 'Run' button to execute each task.
     #end
 </table>
 
-#include("/org/jboss/capedwarf/admin/footer.vm")
+#parse("/org/jboss/capedwarf/admin/footer.vm")

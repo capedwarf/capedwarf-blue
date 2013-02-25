@@ -1,4 +1,4 @@
-#include("/org/jboss/capedwarf/admin/header.vm")
+#parse("/org/jboss/capedwarf/admin/header.vm")
 
 <h2>Datastore statistics</h2>
 
@@ -69,4 +69,4 @@
 
 #end
 
-#include("/org/jboss/capedwarf/admin/footer.vm")
+#parse("/org/jboss/capedwarf/admin/footer.vm")
