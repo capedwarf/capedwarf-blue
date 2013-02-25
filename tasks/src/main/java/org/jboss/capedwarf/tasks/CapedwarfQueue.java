@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.taskqueue.InvalidQueueModeException;
 import com.google.appengine.api.taskqueue.LeaseOptions;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueConstants;
@@ -65,6 +66,7 @@ import org.jboss.capedwarf.shared.config.QueueXml;
  * JBoss Queue.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 class CapedwarfQueue implements Queue {
     private static final String ID = "ID:";
@@ -77,6 +79,7 @@ class CapedwarfQueue implements Queue {
     static final TargetInvocation<Integer> getTaskRetryLimit = ReflectionUtils.cacheInvocation(RetryOptions.class, "getTaskRetryLimit");
 
     private final String queueName;
+    private final boolean isPushQueue;
     private final Cache<String, Object> tasks;
     private final SearchManager searchManager;
     private final DatastoreService datastoreService;
@@ -96,6 +99,7 @@ class CapedwarfQueue implements Queue {
         }
 
         this.queueName = queueName;
+        this.isPushQueue = queue.getMode() == QueueXml.Mode.PUSH;
         AdvancedCache<String,Object> ac = getCache().getAdvancedCache();
         this.tasks = ac.with(Application.getAppClassloader());
         this.searchManager = Search.getSearchManager(tasks);
@@ -217,6 +221,7 @@ class CapedwarfQueue implements Queue {
 
     @SuppressWarnings("unchecked")
     protected List<TaskHandle> leaseTasks(LeaseOptionsInternal options) {
+        assertPullQueue();
         final QueryBuilder builder = searchManager.buildQueryBuilderForClass(TaskOptionsEntity.class).get();
         final Query queueQuery = toTerm(builder, "queue", queueName).createQuery();
         final String tag = options.getTag();
@@ -274,6 +279,12 @@ class CapedwarfQueue implements Queue {
             }
         }
         return taskHandle;
+    }
+
+    private void assertPullQueue() {
+        if (isPushQueue) {
+            throw new InvalidQueueModeException("Target queue mode does not support this operation");
+        }
     }
 
     protected QueueStatisticsInternal createQueueStatistics() {
