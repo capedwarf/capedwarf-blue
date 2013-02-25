@@ -43,6 +43,7 @@ import org.junit.runner.RunWith;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.fail;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -145,5 +146,36 @@ public class TasksTest extends TasksTestBase {
     public void testLeaseTaskFromPushQueueThrowsException() {
         Queue pushQueue = QueueFactory.getDefaultQueue();
         pushQueue.leaseTasks(1000, TimeUnit.SECONDS, 1);
+    }
+
+    @Test
+    public void testOnlyPullTasksCanBeAddedToPullQueue() {
+        Queue pullQueue = QueueFactory.getQueue("pull-queue");
+        pullQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL));
+        assertAddThrowsExceptionForMethod(TaskOptions.Method.DELETE, pullQueue);
+        assertAddThrowsExceptionForMethod(TaskOptions.Method.GET, pullQueue);
+        assertAddThrowsExceptionForMethod(TaskOptions.Method.HEAD, pullQueue);
+        assertAddThrowsExceptionForMethod(TaskOptions.Method.PUT, pullQueue);
+        assertAddThrowsExceptionForMethod(TaskOptions.Method.POST, pullQueue);
+    }
+
+    @Test
+    public void testPullTasksCannotBeAddedToPushQueue() {
+        Queue pushQueue = QueueFactory.getDefaultQueue();
+//        pushQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.DELETE)); // TODO
+//        pushQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.GET));
+//        pushQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.HEAD));
+//        pushQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PUT));
+        pushQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.POST));
+        assertAddThrowsExceptionForMethod(TaskOptions.Method.PULL, pushQueue);
+    }
+
+    private void assertAddThrowsExceptionForMethod(TaskOptions.Method method, Queue queue) {
+        try {
+            queue.add(TaskOptions.Builder.withMethod(method));
+            fail("Expected InvalidQueueModeException");
+        } catch (InvalidQueueModeException e) {
+            // pass
+        }
     }
 }

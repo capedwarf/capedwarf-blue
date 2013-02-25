@@ -34,7 +34,6 @@ import javax.jms.Session;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-import org.jboss.capedwarf.common.reflection.TargetInvocation;
 import org.jboss.capedwarf.shared.jms.ServletRequestCreator;
 
 /**
@@ -122,9 +121,11 @@ public class TasksMessageCreator implements MessageCreator {
             }
         }
         map.put(QUEUE_NAME_HEADER, queueName);
-        map.put(TASK_NAME_HEADER, toHeaderValue(invoke(CapedwarfQueue.getTaskName)));
-        map.put(TASK_RETRY_COUNT, toHeaderValue(invoke(CapedwarfQueue.getTaskRetryLimit, invoke(CapedwarfQueue.getRetryOptions))));
-        map.put(TASK_ETA, toHeaderValue(invoke(CapedwarfQueue.getEtaMillis)));
+
+        TaskOptionsHelper helper = new TaskOptionsHelper(taskOptions);
+        map.put(TASK_NAME_HEADER, toHeaderValue(helper.getTaskName()));
+        map.put(TASK_RETRY_COUNT, toHeaderValue(helper.getTaskRetryLimit()));
+        map.put(TASK_ETA, toHeaderValue(helper.getEtaMillis()));
         map.put(FAIL_FAST, Boolean.FALSE.toString()); // TODO?
         TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
     }
@@ -139,20 +140,5 @@ public class TasksMessageCreator implements MessageCreator {
 
     private static String toHeaderValue(Object value) {
         return (value != null) ? value.toString() : null;
-    }
-
-    private <T> T invoke(TargetInvocation<T> invocation) {
-        return invoke(invocation, taskOptions);
-    }
-
-    private <T> T invoke(TargetInvocation<T> invocation, Object target) {
-        if (target == null)
-            return null;
-
-        try {
-            return invocation.invoke(target);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 }

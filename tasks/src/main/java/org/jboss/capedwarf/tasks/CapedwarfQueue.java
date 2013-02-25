@@ -57,8 +57,6 @@ import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-import org.jboss.capedwarf.common.reflection.TargetInvocation;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.shared.config.QueueXml;
 
@@ -71,12 +69,6 @@ import org.jboss.capedwarf.shared.config.QueueXml;
 class CapedwarfQueue implements Queue {
     private static final String ID = "ID:";
     private static final Sort SORT = new Sort(new SortField("eta", SortField.LONG));
-
-    static final TargetInvocation<TaskOptions.Method> getMethod = ReflectionUtils.cacheInvocation(TaskOptions.class, "getMethod");
-    static final TargetInvocation<String> getTaskName = ReflectionUtils.cacheInvocation(TaskOptions.class, "getTaskName");
-    static final TargetInvocation<Long> getEtaMillis = ReflectionUtils.cacheInvocation(TaskOptions.class, "getEtaMillis");
-    static final TargetInvocation<RetryOptions> getRetryOptions = ReflectionUtils.cacheInvocation(TaskOptions.class, "getRetryOptions");
-    static final TargetInvocation<Integer> getTaskRetryLimit = ReflectionUtils.cacheInvocation(RetryOptions.class, "getTaskRetryLimit");
 
     private final String queueName;
     private final boolean isPushQueue;
@@ -100,7 +92,7 @@ class CapedwarfQueue implements Queue {
 
         this.queueName = queueName;
         this.isPushQueue = queue.getMode() == QueueXml.Mode.PUSH;
-        AdvancedCache<String,Object> ac = getCache().getAdvancedCache();
+        AdvancedCache<String, Object> ac = getCache().getAdvancedCache();
         this.tasks = ac.with(Application.getAppClassloader());
         this.searchManager = Search.getSearchManager(tasks);
 
@@ -151,38 +143,58 @@ class CapedwarfQueue implements Queue {
         return add(transaction, Collections.singleton(taskOptions)).get(0);
     }
 
-    public List<TaskHandle> add(Transaction transaction, Iterable<TaskOptions> taskOptionses) {
-        final ServletExecutorProducer producer = new ServletExecutorProducer();
+    public List<TaskHandle> add(Transaction transaction, Iterable<TaskOptions> taskOptions) {
+        assertTaskOptionsMatchQueueType(taskOptions);
+        ServletExecutorProducer producer = new ServletExecutorProducer();
         try {
-            final List<TaskHandle> handles = new ArrayList<TaskHandle>();
-            for (TaskOptions to : taskOptionses) {
-                TaskOptions copy = null;
-                final TaskOptions.Method m = getMethod.invoke(to);
-                if (m == TaskOptions.Method.PULL) {
-                    copy = new TaskOptions(to);
-                    String taskName = getTaskName.invoke(to);
-                    if (taskName == null) {
-                        taskName = UUID.randomUUID().toString(); // TODO -- unique enough?
-                        copy.taskName(taskName);
-                    }
-                    Long lifespan = getEtaMillis.invoke(to);
-                    RetryOptions retryOptions = getRetryOptions.invoke(to);
-                    getTasks().put(taskName, new TaskOptionsEntity(taskName, queueName, copy.getTag(), lifespan, copy, retryOptions), lifespan == null ? -1 : lifespan, TimeUnit.MILLISECONDS);
-                } else if (m == TaskOptions.Method.POST) {
-                    final MessageCreator mc = createMessageCreator(to);
-                    final String id = producer.sendMessage(mc);
-                    copy = new TaskOptions(to);
-                    if (getTaskName.invoke(to) == null)
-                        copy.taskName(toTaskName(id));
-                }
+            List<TaskHandle> handles = new ArrayList<TaskHandle>();
+            for (TaskOptions to : taskOptions) {
+                TaskOptions copy = addInternal(producer, to);
                 if (copy != null)
                     handles.add(new TaskHandle(copy, getQueueName()));
             }
             return handles;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         } finally {
             producer.dispose();
+        }
+    }
+
+    private void assertTaskOptionsMatchQueueType(Iterable<TaskOptions> taskOptions) {
+        for (TaskOptions options : taskOptions) {
+            TaskOptionsHelper helper = new TaskOptionsHelper(options);
+            TaskOptions.Method method = helper.getMethod();
+            if (isPushQueue ? method == TaskOptions.Method.PULL : method != TaskOptions.Method.PULL) {
+                throw new InvalidQueueModeException("Target queue mode does not support this operation");
+            }
+        }
+    }
+
+    private TaskOptions addInternal(ServletExecutorProducer producer, TaskOptions to) {
+        try {
+            TaskOptionsHelper helper = new TaskOptionsHelper(to);
+            TaskOptions copy = null;
+            TaskOptions.Method m = helper.getMethod();
+            if (m == TaskOptions.Method.PULL) {
+                copy = new TaskOptions(to);
+                String taskName = helper.getTaskName();
+                if (taskName == null) {
+                    taskName = UUID.randomUUID().toString(); // TODO -- unique enough?
+                    copy.taskName(taskName);
+                }
+                Long lifespan = helper.getEtaMillis();
+                RetryOptions retryOptions = helper.getRetryOptions();
+                TaskOptionsEntity taskOptionsEntity = new TaskOptionsEntity(taskName, queueName, copy.getTag(), lifespan, copy, retryOptions);
+                getTasks().put(taskName, taskOptionsEntity, lifespan == null ? -1 : lifespan, TimeUnit.MILLISECONDS);
+            } else if (m == TaskOptions.Method.POST) {
+                MessageCreator mc = createMessageCreator(to);
+                String id = producer.sendMessage(mc);
+                copy = new TaskOptions(to);
+                if (helper.getTaskName() == null)
+                    copy.taskName(toTaskName(id));
+            }
+            return copy;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -250,7 +262,7 @@ class CapedwarfQueue implements Queue {
                 .sort(SORT);
 
         final List<TaskHandle> handles = new ArrayList<TaskHandle>();
-        for (Object obj : query) {
+        for (Object obj : query.list()) {   // must not use query.iterator() because of ISPN-2852
             TaskOptionsEntity toe = (TaskOptionsEntity) obj;
             final String name = toe.getName();
             final Cache<String, Object> cache = getTasks();
