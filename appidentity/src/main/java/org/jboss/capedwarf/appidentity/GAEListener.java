@@ -36,7 +36,7 @@ import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.common.security.CapedwarfUserPrincipal;
+import org.jboss.capedwarf.common.security.PrincipalInfo;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.log.ExposedLogService;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
@@ -161,7 +161,7 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         HttpSession session = request.getSession();
         // our fake request doesn't create session
         if (session != null) {
-            CapedwarfUserPrincipal principal = (CapedwarfUserPrincipal) session.getAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY);
+            PrincipalInfo principal = (PrincipalInfo) session.getAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY);
             if (principal != null) {
                 environment.setUserId(principal.getUserId());
                 environment.setEmail(principal.getName());

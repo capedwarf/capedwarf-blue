@@ -22,33 +22,33 @@
  *
  */
 
-package org.jboss.capedwarf.common.security;
+package org.jboss.capedwarf.users;
 
-import java.security.Principal;
+import java.util.Collections;
+
+import org.apache.catalina.realm.GenericPrincipal;
+import org.jboss.capedwarf.common.security.PrincipalInfo;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfUserPrincipal implements Principal {
+class CapedwarfUserPrincipal extends GenericPrincipal implements PrincipalInfo {
 
     private final String userId;
-    private final String email;
     private final String authDomain;
     private final boolean isAdmin;
 
-    public CapedwarfUserPrincipal(String userId, String email, String authDomain, boolean isAdmin) {
+    CapedwarfUserPrincipal(String userId, String email, String authDomain, boolean isAdmin) {
+        // TODO -- roles ok?
+        super(null, email, null, isAdmin ? Collections.singletonList("admin") : Collections.singletonList("user"));
         this.userId = userId;
-        this.email = email;
         this.authDomain = authDomain;
         this.isAdmin = isAdmin;
     }
 
     public String getUserId() {
         return userId;
-    }
-
-    public String getName() {
-        return email;
     }
 
     public String getAuthDomain() {
