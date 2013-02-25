@@ -39,8 +39,8 @@ import org.kohsuke.MetaInfServices;
 @ServiceProvider(value = IQueueFactory.class, precedence = CapedwarfFactoryProvider.PRECEDENCE)
 public class CapedwarfQueueFactoryProvider extends CapedwarfFactoryProvider<IQueueFactory> {
     private final IQueueFactory factory = new IQueueFactory() {
-        public Queue getQueue(String s) {
-            return AspectFactory.createProxy(Queue.class, CapedwarfQueue.getQueue(s));
+        public Queue getQueue(String name) {
+            return AspectFactory.createProxy(Queue.class, CapedwarfQueue.getQueue(name));
         }
     };
 
