@@ -24,10 +24,12 @@ package org.jboss.test.capedwarf.tasks.test;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.appengine.api.taskqueue.InvalidQueueModeException;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
@@ -137,5 +139,11 @@ public class TasksTest extends TasksTestBase {
         assertEquals(
             new HashSet<String>(Arrays.asList("param_value1", "param_value2")),
             new HashSet<String>(Arrays.asList(handler.paramValues)));
+    }
+
+    @Test(expected = InvalidQueueModeException.class)
+    public void testLeaseTaskFromPushQueueThrowsException() {
+        Queue pushQueue = QueueFactory.getDefaultQueue();
+        pushQueue.leaseTasks(1000, TimeUnit.SECONDS, 1);
     }
 }
