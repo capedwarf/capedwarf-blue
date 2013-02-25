@@ -144,6 +144,7 @@ class CapedwarfQueue implements Queue {
     }
 
     public List<TaskHandle> add(Transaction transaction, Iterable<TaskOptions> taskOptions) {
+        assertTaskOptionsMatchQueueType(taskOptions);
         ServletExecutorProducer producer = new ServletExecutorProducer();
         try {
             List<TaskHandle> handles = new ArrayList<TaskHandle>();
@@ -155,6 +156,16 @@ class CapedwarfQueue implements Queue {
             return handles;
         } finally {
             producer.dispose();
+        }
+    }
+
+    private void assertTaskOptionsMatchQueueType(Iterable<TaskOptions> taskOptions) {
+        for (TaskOptions options : taskOptions) {
+            TaskOptionsHelper helper = new TaskOptionsHelper(options);
+            TaskOptions.Method method = helper.getMethod();
+            if (isPushQueue ? method == TaskOptions.Method.PULL : method != TaskOptions.Method.PULL) {
+                throw new InvalidQueueModeException("Target queue mode does not support this operation");
+            }
         }
     }
 
