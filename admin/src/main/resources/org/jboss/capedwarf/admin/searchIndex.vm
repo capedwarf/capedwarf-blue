@@ -1,4 +1,4 @@
-#include("/org/jboss/capedwarf/admin/header.vm")
+#parse("/org/jboss/capedwarf/admin/header.vm")
 
 <h2>Text search</h2>
 <br/><br/>
@@ -23,4 +23,4 @@
     #end
 </table>
 
-#include("/org/jboss/capedwarf/admin/footer.vm")
+#parse("/org/jboss/capedwarf/admin/footer.vm")

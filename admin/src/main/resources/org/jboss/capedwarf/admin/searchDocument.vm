@@ -1,4 +1,4 @@
-#include("/org/jboss/capedwarf/admin/header.vm")
+#parse("/org/jboss/capedwarf/admin/header.vm")
 
 <h2>Search document: ${searchDocument.docId}</h2>
 
@@ -26,4 +26,4 @@
     </tbody>
 </table>
 
-#include("/org/jboss/capedwarf/admin/footer.vm")
+#parse("/org/jboss/capedwarf/admin/footer.vm")

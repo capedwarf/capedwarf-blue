@@ -1,4 +1,4 @@
-#include("/org/jboss/capedwarf/admin/header.vm")
+#parse("/org/jboss/capedwarf/admin/header.vm")
 
 <h2>Task Queues</h2>
 
@@ -48,4 +48,4 @@
     #end
 </table>
 
-#include("/org/jboss/capedwarf/admin/footer.vm")
+#parse("/org/jboss/capedwarf/admin/footer.vm")
