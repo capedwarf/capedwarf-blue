@@ -23,6 +23,7 @@
 package org.jboss.test.capedwarf.tasks.test;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.TestBase;
@@ -43,6 +44,7 @@ public abstract class TasksTestBase extends TestBase {
         context.setWebXmlFile("web-q.xml");
         final WebArchive war = getCapedwarfDeployment(context);
         war.addClass(TasksTestBase.class);
+        war.addClass(IOUtils.class);
         war.addClass(RequestData.class);
         war.addClass(DefaultQueueServlet.class);
         war.addClass(TestQueueServlet.class);
