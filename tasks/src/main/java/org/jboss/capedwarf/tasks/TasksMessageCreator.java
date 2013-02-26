@@ -40,6 +40,7 @@ import org.jboss.capedwarf.shared.jms.ServletRequestCreator;
  * Tasks message creator.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class TasksMessageCreator implements MessageCreator {
 
@@ -50,7 +51,7 @@ public class TasksMessageCreator implements MessageCreator {
     private static final String FAIL_FAST = "X-AppEngine-FailFast";
 
     private final String queueName;
-    private final TaskOptions taskOptions;
+    private final TaskOptionsHelper taskOptions;
 
     public TasksMessageCreator(String queueName, TaskOptions taskOptions) {
         if (queueName == null)
@@ -59,13 +60,13 @@ public class TasksMessageCreator implements MessageCreator {
             throw new IllegalArgumentException("Null task options");
 
         this.queueName = queueName;
-        this.taskOptions = taskOptions;
+        this.taskOptions = new TaskOptionsHelper(taskOptions);
     }
 
     public Message createMessage(Session session) throws Exception {
-        final byte[] payload = (byte[]) ReflectionUtils.invokeInstanceMethod(taskOptions, "getPayload");
+        byte[] payload = taskOptions.getPayload();
         if (payload != null && payload.length > 0) {
-            final BytesMessage bytesMessage = session.createBytesMessage();
+            BytesMessage bytesMessage = session.createBytesMessage();
             bytesMessage.writeBytes(payload);
 
             enhanceMessage(bytesMessage);
@@ -77,18 +78,23 @@ public class TasksMessageCreator implements MessageCreator {
     }
 
     public void enhanceMessage(Message message) throws Exception {
+        addMethod(message);
         addHeaders(message);
         addParameters(message);
     }
 
+    private void addMethod(Message message) throws JMSException {
+        message.setStringProperty(TasksServletRequestCreator.METHOD, taskOptions.getMethod().name());
+    }
+
     @SuppressWarnings("unchecked")
     private void addParameters(Message message) throws JMSException {
-        final List<Object> params = (List<Object>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getParams");
+        List<Object> params = taskOptions.getParams();
         if (params != null && params.size() > 0) {
-            final Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<String, String>();
             for (Object param : params) {
-                final String key = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedName");
-                final String value = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedValue");
+                String key = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedName");
+                String value = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedValue");
 
                 String values = map.get(key);
                 if (values == null) {
@@ -104,28 +110,26 @@ public class TasksMessageCreator implements MessageCreator {
 
     @SuppressWarnings("unchecked")
     private void addHeaders(Message message) throws JMSException {
-        final Map<String, List<String>> headers = (Map<String, List<String>>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getHeaders");
-        final Map<String, String> map = new HashMap<String, String>();
+        Map<String, List<String>> headers = taskOptions.getHeaders();
+        Map<String, String> map = new HashMap<String, String>();
         if (headers != null && headers.size() > 0) {
             for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-                final StringBuilder builder = new StringBuilder();
-                final List<String> list = entry.getValue();
+                StringBuilder builder = new StringBuilder();
+                List<String> list = entry.getValue();
                 if (list.isEmpty() == false) {
                     builder.append(list.get(0));
                     for (int i = 1; i < list.size(); i++) {
                         builder.append(TasksServletRequestCreator.DELIMITER).append(list.get(i));
                     }
                 }
-                final String key = entry.getKey();
+                String key = entry.getKey();
                 map.put(key, builder.toString());
             }
         }
         map.put(QUEUE_NAME_HEADER, queueName);
-
-        TaskOptionsHelper helper = new TaskOptionsHelper(taskOptions);
-        map.put(TASK_NAME_HEADER, toHeaderValue(helper.getTaskName()));
-        map.put(TASK_RETRY_COUNT, toHeaderValue(helper.getTaskRetryLimit()));
-        map.put(TASK_ETA, toHeaderValue(helper.getEtaMillis()));
+        map.put(TASK_NAME_HEADER, toHeaderValue(taskOptions.getTaskName()));
+        map.put(TASK_RETRY_COUNT, toHeaderValue(taskOptions.getTaskRetryLimit()));
+        map.put(TASK_ETA, toHeaderValue(taskOptions.getEtaMillis()));
         map.put(FAIL_FAST, Boolean.FALSE.toString()); // TODO?
         TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
     }
