@@ -31,6 +31,7 @@ import org.jboss.test.capedwarf.common.test.TestContext;
 import org.jboss.test.capedwarf.tasks.support.DefaultQueueServlet;
 import org.jboss.test.capedwarf.tasks.support.PrintServlet;
 import org.jboss.test.capedwarf.tasks.support.RequestData;
+import org.jboss.test.capedwarf.tasks.support.RetryTestServlet;
 import org.jboss.test.capedwarf.tasks.support.TestQueueServlet;
 
 /**
@@ -49,6 +50,7 @@ public abstract class TasksTestBase extends TestBase {
         war.addClass(DefaultQueueServlet.class);
         war.addClass(TestQueueServlet.class);
         war.addClass(PrintServlet.class);
+        war.addClass(RetryTestServlet.class);
         war.addAsWebInfResource("queue.xml");
         return war;
     }

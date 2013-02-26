@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.google.appengine.api.taskqueue.InvalidQueueModeException;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.arquillian.junit.Arquillian;
@@ -39,9 +40,11 @@ import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.tasks.support.DefaultQueueServlet;
 import org.jboss.test.capedwarf.tasks.support.PrintServlet;
 import org.jboss.test.capedwarf.tasks.support.RequestData;
+import org.jboss.test.capedwarf.tasks.support.RetryTestServlet;
 import org.jboss.test.capedwarf.tasks.support.TestQueueServlet;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -71,11 +74,16 @@ import static junit.framework.Assert.fail;
 @Category(All.class)
 public class TasksTest extends TasksTestBase {
     private static final String URL = "/_ah/test";
+    public static final String TASK_RETRY_COUNT = "X-AppEngine-TaskRetryCount";
+    public static final String TASK_EXECUTION_COUNT = "X-AppEngine-TaskExecutionCount";
+    public static final String QUEUE_NAME = "X-AppEngine-QueueName";
+    public static final String TASK_NAME = "X-AppEngine-TaskName";
 
     @Before
     public void setUp() throws Exception {
         DefaultQueueServlet.reset();
         TestQueueServlet.reset();
+        RetryTestServlet.reset();
     }
 
     @After
@@ -130,10 +138,10 @@ public class TasksTest extends TasksTestBase {
         sync();
 
         RequestData request = DefaultQueueServlet.getLastRequest();
-        assertEquals("default", request.getHeader("X-AppEngine-QueueName"));
-        assertEquals("task1", request.getHeader("X-AppEngine-TaskName"));
-        assertNotNull(request.getHeader("X-AppEngine-TaskRetryCount"));
-        assertNotNull(request.getHeader("X-AppEngine-TaskExecutionCount"));
+        assertEquals("default", request.getHeader(QUEUE_NAME));
+        assertEquals("task1", request.getHeader(TASK_NAME));
+        assertNotNull(request.getHeader(TASK_RETRY_COUNT));
+        assertNotNull(request.getHeader(TASK_EXECUTION_COUNT));
 //        assertNotNull(request.getHeader("X-AppEngine-TaskETA"));    // TODO
 
         Queue testQueue = QueueFactory.getQueue("test");
@@ -141,8 +149,8 @@ public class TasksTest extends TasksTestBase {
         sync();
 
         request = TestQueueServlet.getLastRequest();
-        assertEquals("test", request.getHeader("X-AppEngine-QueueName"));
-        assertEquals("task2", request.getHeader("X-AppEngine-TaskName"));
+        assertEquals("test", request.getHeader(QUEUE_NAME));
+        assertEquals("task2", request.getHeader(TASK_NAME));
     }
 
     @Test
@@ -231,6 +239,26 @@ public class TasksTest extends TasksTestBase {
         assertEquals(
             new HashSet<String>(Arrays.asList("param_value1", "param_value2")),
             new HashSet<String>(Arrays.asList(handler.paramValues)));
+    }
+
+    @Ignore("CAPEDWARF-112")
+    @Test
+    public void testRetry() throws Exception {
+        RetryTestServlet.setNumberOfTimesToFail(1);
+
+        Queue queue = QueueFactory.getDefaultQueue();
+        queue.add(withUrl("/_ah/retryTest").retryOptions(RetryOptions.Builder.withTaskRetryLimit(2)));
+        sync();
+
+        assertEquals(2, RetryTestServlet.getInvocationCount());
+
+        RequestData request1 = RetryTestServlet.getRequest(0);
+        assertEquals("0", request1.getHeader(TASK_RETRY_COUNT));
+        assertEquals("0", request1.getHeader(TASK_EXECUTION_COUNT));
+
+        RequestData request2 = RetryTestServlet.getRequest(1);
+        assertEquals("1", request2.getHeader(TASK_RETRY_COUNT));
+        assertEquals("1", request2.getHeader(TASK_EXECUTION_COUNT));
     }
 
     @Test(expected = InvalidQueueModeException.class)
