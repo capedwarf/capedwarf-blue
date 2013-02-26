@@ -47,6 +47,7 @@ public class TasksMessageCreator implements MessageCreator {
     private static final String QUEUE_NAME_HEADER = "X-AppEngine-QueueName";
     private static final String TASK_NAME_HEADER = "X-AppEngine-TaskName";
     private static final String TASK_RETRY_COUNT = "X-AppEngine-TaskRetryCount";
+    private static final String TASK_EXECUTION_COUNT = "X-AppEngine-TaskExecutionCount";
     private static final String TASK_ETA = "X-AppEngine-TaskETA";
     private static final String FAIL_FAST = "X-AppEngine-FailFast";
 
@@ -128,7 +129,8 @@ public class TasksMessageCreator implements MessageCreator {
         }
         map.put(QUEUE_NAME_HEADER, queueName);
         map.put(TASK_NAME_HEADER, toHeaderValue(taskOptions.getTaskName()));
-        map.put(TASK_RETRY_COUNT, toHeaderValue(taskOptions.getTaskRetryLimit()));
+        map.put(TASK_RETRY_COUNT, "0"); // TODO
+        map.put(TASK_EXECUTION_COUNT, "0"); // TODO
         map.put(TASK_ETA, toHeaderValue(taskOptions.getEtaMillis()));
         map.put(FAIL_FAST, Boolean.FALSE.toString()); // TODO?
         TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);

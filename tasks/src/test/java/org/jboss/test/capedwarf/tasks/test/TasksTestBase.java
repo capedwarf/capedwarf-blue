@@ -28,7 +28,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.jboss.test.capedwarf.tasks.support.DefaultQueueServlet;
-import org.jboss.test.capedwarf.tasks.support.PrintListener;
 import org.jboss.test.capedwarf.tasks.support.PrintServlet;
 import org.jboss.test.capedwarf.tasks.support.RequestData;
 import org.jboss.test.capedwarf.tasks.support.TestQueueServlet;
@@ -47,7 +46,7 @@ public abstract class TasksTestBase extends TestBase {
         war.addClass(RequestData.class);
         war.addClass(DefaultQueueServlet.class);
         war.addClass(TestQueueServlet.class);
-        war.addClasses(PrintServlet.class, PrintListener.class);
+        war.addClass(PrintServlet.class);
         war.addAsWebInfResource("queue.xml");
         return war;
     }
