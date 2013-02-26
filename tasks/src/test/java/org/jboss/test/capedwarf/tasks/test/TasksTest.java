@@ -46,6 +46,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withMethod;
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withPayload;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withTaskName;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
 import static com.google.appengine.api.taskqueue.TaskOptions.Method.DELETE;
@@ -144,9 +145,14 @@ public class TasksTest extends TasksTestBase {
 
     @Test
     public void testPayload() throws Exception {
-        final Queue queue = QueueFactory.getQueue("tasks-queue");
-        queue.add(withUrl(URL).payload("payload"));
+        String sentPayload = "payload";
+
+        Queue queue = QueueFactory.getDefaultQueue();
+        queue.add(withPayload(sentPayload));
         sync();
+
+        String receivedPayload = new String(DefaultQueueServlet.getLastRequest().getBody(), "UTF-8");
+        assertEquals(sentPayload, receivedPayload);
     }
 
     @Test
