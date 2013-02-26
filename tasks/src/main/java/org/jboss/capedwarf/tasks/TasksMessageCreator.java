@@ -50,7 +50,7 @@ public class TasksMessageCreator implements MessageCreator {
     private static final String FAIL_FAST = "X-AppEngine-FailFast";
 
     private final String queueName;
-    private final TaskOptions taskOptions;
+    private final TaskOptionsHelper taskOptions;
 
     public TasksMessageCreator(String queueName, TaskOptions taskOptions) {
         if (queueName == null)
@@ -59,11 +59,11 @@ public class TasksMessageCreator implements MessageCreator {
             throw new IllegalArgumentException("Null task options");
 
         this.queueName = queueName;
-        this.taskOptions = taskOptions;
+        this.taskOptions = new TaskOptionsHelper(taskOptions);
     }
 
     public Message createMessage(Session session) throws Exception {
-        final byte[] payload = (byte[]) ReflectionUtils.invokeInstanceMethod(taskOptions, "getPayload");
+        final byte[] payload = taskOptions.getPayload();
         if (payload != null && payload.length > 0) {
             final BytesMessage bytesMessage = session.createBytesMessage();
             bytesMessage.writeBytes(payload);
@@ -83,7 +83,7 @@ public class TasksMessageCreator implements MessageCreator {
 
     @SuppressWarnings("unchecked")
     private void addParameters(Message message) throws JMSException {
-        final List<Object> params = (List<Object>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getParams");
+        final List<Object> params = taskOptions.getParams();
         if (params != null && params.size() > 0) {
             final Map<String, String> map = new HashMap<String, String>();
             for (Object param : params) {
@@ -104,7 +104,7 @@ public class TasksMessageCreator implements MessageCreator {
 
     @SuppressWarnings("unchecked")
     private void addHeaders(Message message) throws JMSException {
-        final Map<String, List<String>> headers = (Map<String, List<String>>) ReflectionUtils.invokeInstanceMethod(taskOptions, "getHeaders");
+        final Map<String, List<String>> headers = taskOptions.getHeaders();
         final Map<String, String> map = new HashMap<String, String>();
         if (headers != null && headers.size() > 0) {
             for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
@@ -121,11 +121,9 @@ public class TasksMessageCreator implements MessageCreator {
             }
         }
         map.put(QUEUE_NAME_HEADER, queueName);
-
-        TaskOptionsHelper helper = new TaskOptionsHelper(taskOptions);
-        map.put(TASK_NAME_HEADER, toHeaderValue(helper.getTaskName()));
-        map.put(TASK_RETRY_COUNT, toHeaderValue(helper.getTaskRetryLimit()));
-        map.put(TASK_ETA, toHeaderValue(helper.getEtaMillis()));
+        map.put(TASK_NAME_HEADER, toHeaderValue(taskOptions.getTaskName()));
+        map.put(TASK_RETRY_COUNT, toHeaderValue(taskOptions.getTaskRetryLimit()));
+        map.put(TASK_ETA, toHeaderValue(taskOptions.getEtaMillis()));
         map.put(FAIL_FAST, Boolean.FALSE.toString()); // TODO?
         TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
     }
