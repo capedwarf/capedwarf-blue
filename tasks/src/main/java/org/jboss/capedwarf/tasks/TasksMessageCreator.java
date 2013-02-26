@@ -135,7 +135,11 @@ public class TasksMessageCreator implements MessageCreator {
     }
 
     public String getPath() {
-        return taskOptions.getUrl();
+        return taskOptions.getUrl() == null ? getDefaultUrl() : taskOptions.getUrl();
+    }
+
+    private String getDefaultUrl() {
+        return "/_ah/queue/" + queueName;
     }
 
     public Class<? extends ServletRequestCreator> getServletRequestCreator() {
