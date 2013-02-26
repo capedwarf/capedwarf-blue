@@ -37,13 +37,16 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.tasks.support.DefaultQueueServlet;
 import org.jboss.test.capedwarf.tasks.support.PrintServlet;
+import org.jboss.test.capedwarf.tasks.support.RequestData;
 import org.jboss.test.capedwarf.tasks.support.TestQueueServlet;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withMethod;
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withTaskName;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
 import static com.google.appengine.api.taskqueue.TaskOptions.Method.DELETE;
 import static com.google.appengine.api.taskqueue.TaskOptions.Method.GET;
@@ -65,6 +68,12 @@ import static junit.framework.Assert.fail;
 public class TasksTest extends TasksTestBase {
     private static final String URL = "/_ah/test";
 
+    @Before
+    public void setUp() throws Exception {
+        DefaultQueueServlet.reset();
+        TestQueueServlet.reset();
+    }
+
     @After
     public void tearDown() throws Exception {
         PrintServlet.reset();
@@ -80,9 +89,6 @@ public class TasksTest extends TasksTestBase {
 
     @Test
     public void testTaskWithoutUrlIsSubmittedToDefaultUrl() throws Exception {
-        DefaultQueueServlet.reset();
-        TestQueueServlet.reset();
-
         Queue defaultQueue = QueueFactory.getDefaultQueue();
         defaultQueue.add(withMethod(POST));
         sync();
@@ -92,6 +98,28 @@ public class TasksTest extends TasksTestBase {
         testQueue.add(withMethod(POST));
         sync();
         assertTrue("TestQueueServlet was not invoked", TestQueueServlet.wasInvoked());
+    }
+
+    @Test
+    public void testRequestHeaders() throws Exception {
+        Queue defaultQueue = QueueFactory.getDefaultQueue();
+        defaultQueue.add(withTaskName("task1"));
+        sync();
+
+        RequestData request = DefaultQueueServlet.getLastRequest();
+        assertEquals("default", request.getHeader("X-AppEngine-QueueName"));
+        assertEquals("task1", request.getHeader("X-AppEngine-TaskName"));
+        assertNotNull(request.getHeader("X-AppEngine-TaskRetryCount"));
+        assertNotNull(request.getHeader("X-AppEngine-TaskExecutionCount"));
+//        assertNotNull(request.getHeader("X-AppEngine-TaskETA"));    // TODO
+
+        Queue testQueue = QueueFactory.getQueue("test");
+        testQueue.add(withTaskName("task2"));
+        sync();
+
+        request = TestQueueServlet.getLastRequest();
+        assertEquals("test", request.getHeader("X-AppEngine-QueueName"));
+        assertEquals("task2", request.getHeader("X-AppEngine-TaskName"));
     }
 
     @Test
