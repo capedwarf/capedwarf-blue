@@ -63,9 +63,9 @@ public class TasksMessageCreator implements MessageCreator {
     }
 
     public Message createMessage(Session session) throws Exception {
-        final byte[] payload = taskOptions.getPayload();
+        byte[] payload = taskOptions.getPayload();
         if (payload != null && payload.length > 0) {
-            final BytesMessage bytesMessage = session.createBytesMessage();
+            BytesMessage bytesMessage = session.createBytesMessage();
             bytesMessage.writeBytes(payload);
 
             enhanceMessage(bytesMessage);
@@ -83,12 +83,12 @@ public class TasksMessageCreator implements MessageCreator {
 
     @SuppressWarnings("unchecked")
     private void addParameters(Message message) throws JMSException {
-        final List<Object> params = taskOptions.getParams();
+        List<Object> params = taskOptions.getParams();
         if (params != null && params.size() > 0) {
-            final Map<String, String> map = new HashMap<String, String>();
+            Map<String, String> map = new HashMap<String, String>();
             for (Object param : params) {
-                final String key = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedName");
-                final String value = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedValue");
+                String key = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedName");
+                String value = (String) ReflectionUtils.invokeInstanceMethod(param, "getURLEncodedValue");
 
                 String values = map.get(key);
                 if (values == null) {
@@ -104,19 +104,19 @@ public class TasksMessageCreator implements MessageCreator {
 
     @SuppressWarnings("unchecked")
     private void addHeaders(Message message) throws JMSException {
-        final Map<String, List<String>> headers = taskOptions.getHeaders();
-        final Map<String, String> map = new HashMap<String, String>();
+        Map<String, List<String>> headers = taskOptions.getHeaders();
+        Map<String, String> map = new HashMap<String, String>();
         if (headers != null && headers.size() > 0) {
             for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
-                final StringBuilder builder = new StringBuilder();
-                final List<String> list = entry.getValue();
+                StringBuilder builder = new StringBuilder();
+                List<String> list = entry.getValue();
                 if (list.isEmpty() == false) {
                     builder.append(list.get(0));
                     for (int i = 1; i < list.size(); i++) {
                         builder.append(TasksServletRequestCreator.DELIMITER).append(list.get(i));
                     }
                 }
-                final String key = entry.getKey();
+                String key = entry.getKey();
                 map.put(key, builder.toString());
             }
         }
