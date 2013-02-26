@@ -25,4 +25,13 @@
         <servlet-name>TestQueueServlet</servlet-name>
         <url-pattern>/_ah/queue/test</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RetryTestServlet</servlet-name>
+        <servlet-class>org.jboss.test.capedwarf.tasks.support.RetryTestServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RetryTestServlet</servlet-name>
+        <url-pattern>/_ah/retryTest</url-pattern>
+    </servlet-mapping>
 </web>
