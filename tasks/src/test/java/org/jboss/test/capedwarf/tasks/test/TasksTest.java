@@ -35,7 +35,9 @@ import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.tasks.support.DefaultQueueServlet;
 import org.jboss.test.capedwarf.tasks.support.PrintServlet;
+import org.jboss.test.capedwarf.tasks.support.TestQueueServlet;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -51,6 +53,7 @@ import static com.google.appengine.api.taskqueue.TaskOptions.Method.PULL;
 import static com.google.appengine.api.taskqueue.TaskOptions.Method.PUT;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 /**
@@ -73,6 +76,22 @@ public class TasksTest extends TasksTestBase {
         queue.add(withUrl(URL));
         sync();
         assertNotNull(PrintServlet.getLastRequest());
+    }
+
+    @Test
+    public void testTaskWithoutUrlIsSubmittedToDefaultUrl() throws Exception {
+        DefaultQueueServlet.reset();
+        TestQueueServlet.reset();
+
+        Queue defaultQueue = QueueFactory.getDefaultQueue();
+        defaultQueue.add(withMethod(POST));
+        sync();
+        assertTrue("DefaultQueueServlet was not invoked", DefaultQueueServlet.wasInvoked());
+
+        Queue testQueue = QueueFactory.getQueue("test");
+        testQueue.add(withMethod(POST));
+        sync();
+        assertTrue("TestQueueServlet was not invoked", TestQueueServlet.wasInvoked());
     }
 
     @Test
