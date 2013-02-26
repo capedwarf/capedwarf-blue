@@ -22,13 +22,6 @@
 
 package org.jboss.capedwarf.common.servlet;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -42,6 +35,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
+
 /**
  * Abstract http servlet request.
  *
@@ -50,6 +51,7 @@ import java.util.Set;
  */
 public abstract class AbstractHttpServletRequest extends AbstractServletRequest implements HttpServletRequest {
 
+    private String method;
     private List<Cookie> cookies = new ArrayList<Cookie>();
     private Map<String, Set<String>> headers = new HashMap<String, Set<String>>();
     private Map<String, Part> parts = new HashMap<String, Part>();
@@ -121,7 +123,11 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
     }
 
     public String getMethod() {
-        return "POST";  // TODO
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
     }
 
     public String getPathInfo() {

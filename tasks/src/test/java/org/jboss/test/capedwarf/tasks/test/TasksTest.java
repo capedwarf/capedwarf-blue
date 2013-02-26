@@ -41,6 +41,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withMethod;
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
+import static com.google.appengine.api.taskqueue.TaskOptions.Method.DELETE;
+import static com.google.appengine.api.taskqueue.TaskOptions.Method.GET;
+import static com.google.appengine.api.taskqueue.TaskOptions.Method.HEAD;
+import static com.google.appengine.api.taskqueue.TaskOptions.Method.POST;
+import static com.google.appengine.api.taskqueue.TaskOptions.Method.PULL;
+import static com.google.appengine.api.taskqueue.TaskOptions.Method.PUT;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.fail;
@@ -62,15 +70,35 @@ public class TasksTest extends TasksTestBase {
     @Test
     public void testSmoke() throws Exception {
         final Queue queue = QueueFactory.getQueue("tasks-queue");
-        queue.add(TaskOptions.Builder.withUrl(URL));
+        queue.add(withUrl(URL));
         sync();
         assertNotNull(PrintServlet.getLastRequest());
     }
 
     @Test
+    public void testAllPushMethodsAreSupported() throws Exception {
+        assertServletReceivesCorrectMethod(GET);
+        assertServletReceivesCorrectMethod(PUT);
+        assertServletReceivesCorrectMethod(HEAD);
+        assertServletReceivesCorrectMethod(POST);
+        assertServletReceivesCorrectMethod(DELETE);
+    }
+
+    private void assertServletReceivesCorrectMethod(TaskOptions.Method method) {
+        MethodRequestHandler handler = new MethodRequestHandler();
+        PrintServlet.setRequestHandler(handler);
+
+        Queue queue = QueueFactory.getQueue("tasks-queue");
+        queue.add(withUrl(URL).method(method));
+        sync();
+
+        assertEquals("Servlet received invalid HTTP method.", method.name(), handler.method);
+    }
+
+    @Test
     public void testPayload() throws Exception {
         final Queue queue = QueueFactory.getQueue("tasks-queue");
-        queue.add(TaskOptions.Builder.withPayload("payload").url(URL));
+        queue.add(withUrl(URL).payload("payload"));
         sync();
     }
 
@@ -89,7 +117,7 @@ public class TasksTest extends TasksTestBase {
         PrintServlet.setRequestHandler(handler);
 
         final Queue queue = QueueFactory.getQueue("tasks-queue");
-        queue.add(TaskOptions.Builder.withHeader("header_key", "header_value").url(URL));
+        queue.add(withUrl(URL).header("header_key", "header_value"));
         sync();
 
         assertEquals("header_value", handler.headerValue);
@@ -109,7 +137,7 @@ public class TasksTest extends TasksTestBase {
         PrintServlet.setRequestHandler(handler);
 
         final Queue queue = QueueFactory.getQueue("tasks-queue");
-        queue.add(TaskOptions.Builder.withParam("single_value", "param_value").url(URL));
+        queue.add(withUrl(URL).param("single_value", "param_value"));
         sync();
 
         assertEquals("param_value", handler.paramValue);
@@ -130,10 +158,9 @@ public class TasksTest extends TasksTestBase {
 
         final Queue queue = QueueFactory.getQueue("tasks-queue");
         queue.add(
-            TaskOptions.Builder
-                .withParam("multi_value", "param_value1")
-                .param("multi_value", "param_value2")
-                .url(URL));
+            withUrl(URL)
+                .param("multi_value", "param_value1")
+                .param("multi_value", "param_value2"));
         sync();
 
         assertNotNull(handler.paramValues);
@@ -151,31 +178,40 @@ public class TasksTest extends TasksTestBase {
     @Test
     public void testOnlyPullTasksCanBeAddedToPullQueue() {
         Queue pullQueue = QueueFactory.getQueue("pull-queue");
-        pullQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PULL));
-        assertAddThrowsExceptionForMethod(TaskOptions.Method.DELETE, pullQueue);
-        assertAddThrowsExceptionForMethod(TaskOptions.Method.GET, pullQueue);
-        assertAddThrowsExceptionForMethod(TaskOptions.Method.HEAD, pullQueue);
-        assertAddThrowsExceptionForMethod(TaskOptions.Method.PUT, pullQueue);
-        assertAddThrowsExceptionForMethod(TaskOptions.Method.POST, pullQueue);
+        pullQueue.add(withMethod(PULL));
+        assertAddThrowsExceptionForMethod(DELETE, pullQueue);
+        assertAddThrowsExceptionForMethod(GET, pullQueue);
+        assertAddThrowsExceptionForMethod(HEAD, pullQueue);
+        assertAddThrowsExceptionForMethod(PUT, pullQueue);
+        assertAddThrowsExceptionForMethod(POST, pullQueue);
     }
 
     @Test
     public void testPullTasksCannotBeAddedToPushQueue() {
         Queue pushQueue = QueueFactory.getDefaultQueue();
-//        pushQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.DELETE)); // TODO
-//        pushQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.GET));
-//        pushQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.HEAD));
-//        pushQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.PUT));
-        pushQueue.add(TaskOptions.Builder.withMethod(TaskOptions.Method.POST));
-        assertAddThrowsExceptionForMethod(TaskOptions.Method.PULL, pushQueue);
+        pushQueue.add(withMethod(DELETE));
+        pushQueue.add(withMethod(GET));
+        pushQueue.add(withMethod(HEAD));
+        pushQueue.add(withMethod(PUT));
+        pushQueue.add(withMethod(POST));
+        assertAddThrowsExceptionForMethod(PULL, pushQueue);
     }
 
     private void assertAddThrowsExceptionForMethod(TaskOptions.Method method, Queue queue) {
         try {
-            queue.add(TaskOptions.Builder.withMethod(method));
+            queue.add(withMethod(method));
             fail("Expected InvalidQueueModeException");
         } catch (InvalidQueueModeException e) {
             // pass
         }
     }
+
+    private class MethodRequestHandler implements PrintServlet.RequestHandler {
+        private String method;
+
+        public void handleRequest(ServletRequest req) {
+            method = ((HttpServletRequest) req).getMethod();
+        }
+    }
+
 }

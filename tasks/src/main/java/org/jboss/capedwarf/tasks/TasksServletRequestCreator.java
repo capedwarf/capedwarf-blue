@@ -45,26 +45,27 @@ import org.jboss.capedwarf.shared.jms.ServletRequestCreator;
  * Tasks servlet request creator.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class TasksServletRequestCreator implements ServletRequestCreator {
 
     private static final String COPY = "_copy";
 
     static final String DELIMITER = "||";
+    static final String METHOD = "task_option_method";
     static final String HEADERS = "task_option_headers_";
     static final String PARAMS = "task_option_params_";
 
     public HttpServletRequest createServletRequest(ServletContext context, Message message) throws Exception {
-        final AbstractHttpServletRequest request;
+        AbstractHttpServletRequest request;
         if (message instanceof BytesMessage) {
             request = new BytesServletRequest(context, (BytesMessage) message);
         } else {
             request = new TasksServletRequest(context);
         }
-        final Map<String, Set<String>> headers = get(message, HEADERS);
-        request.addHeaders(headers);
-        final Map<String, Set<String>> params = get(message, PARAMS);
-        request.addParameters(params);
+        request.setMethod(message.getStringProperty(METHOD));
+        request.addHeaders(get(message, HEADERS));
+        request.addParameters(get(message, PARAMS));
         return request;
     }
 
