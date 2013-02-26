@@ -149,9 +149,8 @@ class CapedwarfQueue implements Queue {
         try {
             List<TaskHandle> handles = new ArrayList<TaskHandle>();
             for (TaskOptions to : taskOptions) {
-                TaskOptions copy = addInternal(producer, to);
-                if (copy != null)
-                    handles.add(new TaskHandle(copy, getQueueName()));
+                TaskHandle handle = addTask(producer, to);
+                handles.add(handle);
             }
             return handles;
         } finally {
@@ -169,7 +168,7 @@ class CapedwarfQueue implements Queue {
         }
     }
 
-    private TaskOptions addInternal(ServletExecutorProducer producer, TaskOptions to) {
+    private TaskHandle addTask(ServletExecutorProducer producer, TaskOptions to) {
         try {
             TaskOptionsHelper helper = new TaskOptionsHelper(to);
             TaskOptions copy = new TaskOptions(to);
@@ -189,7 +188,7 @@ class CapedwarfQueue implements Queue {
                 if (helper.getTaskName() == null)
                     copy.taskName(toTaskName(id));
             }
-            return copy;
+            return new TaskHandle(copy, getQueueName());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
