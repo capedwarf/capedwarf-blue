@@ -45,6 +45,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withHeader;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withMethod;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withPayload;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withTaskName;
@@ -157,23 +158,12 @@ public class TasksTest extends TasksTestBase {
 
     @Test
     public void testHeaders() throws Exception {
-
-        class HeaderHandler implements PrintServlet.RequestHandler {
-            private String headerValue;
-
-            public void handleRequest(ServletRequest req) {
-                headerValue = ((HttpServletRequest) req).getHeader("header_key");
-            }
-        }
-
-        HeaderHandler handler = new HeaderHandler();
-        PrintServlet.setRequestHandler(handler);
-
-        final Queue queue = QueueFactory.getQueue("tasks-queue");
-        queue.add(withUrl(URL).header("header_key", "header_value"));
+        Queue queue = QueueFactory.getDefaultQueue();
+        queue.add(withHeader("header_key", "header_value"));
         sync();
 
-        assertEquals("header_value", handler.headerValue);
+        RequestData lastRequest = DefaultQueueServlet.getLastRequest();
+        assertEquals("header_value", lastRequest.getHeader("header_key"));
     }
 
     @Test
