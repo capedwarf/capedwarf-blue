@@ -20,26 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.files;
+package org.jboss.capedwarf.common.io;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-
-import com.google.appengine.api.blobstore.BlobInfo;
-import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.blobstore.FileInfo;
-import com.google.appengine.api.files.AppEngineFile;
-import com.google.appengine.api.files.FileService;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public interface ExposedFileService extends FileService {
-    InputStream getStream(BlobKey blobKey) throws FileNotFoundException;
-    void delete(BlobKey... blobKeys);
-    boolean exists(AppEngineFile file);
-    // infos
-    BlobInfo getBlobInfo(BlobKey key);
-    FileInfo getFileInfo(BlobKey key);
+abstract class AbstractDigest implements Digest {
+    protected final Logger log = Logger.getLogger(getClass().getName());
+    private static final char[] Hexadecimal = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+    static String toHexString(byte[] bytes) {
+        final char[] chars = new char[bytes.length * 2];
+        for (int b = 0, c = 0; b < bytes.length; b++) {
+            int v = (int) bytes[b] & 0xFF;
+            chars[c++] = Hexadecimal[v / 16];
+            chars[c++] = Hexadecimal[v % 16];
+        }
+        return new String(chars);
+    }
+
+    public DigestResult digest() {
+        return new DigestResult(dump(), toHexString(internalDigest()));
+    }
+
+    protected abstract byte[] dump();
+    protected abstract byte[] internalDigest();
 }

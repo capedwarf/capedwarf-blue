@@ -20,26 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.files;
-
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-
-import com.google.appengine.api.blobstore.BlobInfo;
-import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.blobstore.FileInfo;
-import com.google.appengine.api.files.AppEngineFile;
-import com.google.appengine.api.files.FileService;
+package org.jboss.capedwarf.common.io;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public interface ExposedFileService extends FileService {
-    InputStream getStream(BlobKey blobKey) throws FileNotFoundException;
-    void delete(BlobKey... blobKeys);
-    boolean exists(AppEngineFile file);
-    // infos
-    BlobInfo getBlobInfo(BlobKey key);
-    FileInfo getFileInfo(BlobKey key);
+public final class DigestResult {
+    private byte[] state;
+    private String digest;
+
+    public DigestResult(byte[] state, String digest) {
+        this.state = state;
+        this.digest = digest;
+    }
+
+    public byte[] getState() {
+        return state;
+    }
+
+    public String getDigest() {
+        return digest;
+    }
 }

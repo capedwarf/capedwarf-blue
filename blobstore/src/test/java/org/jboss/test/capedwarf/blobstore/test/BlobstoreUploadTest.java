@@ -25,8 +25,11 @@ package org.jboss.test.capedwarf.blobstore.test;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 
+import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.FileInfo;
 import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileReadChannel;
 import com.google.appengine.api.files.FileService;
@@ -43,6 +46,7 @@ import org.jboss.test.capedwarf.blobstore.support.UploadUrlServerServlet;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.jboss.test.capedwarf.common.test.TestContext;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -58,7 +62,31 @@ import static junit.framework.Assert.assertNotNull;
 @Category(All.class)
 public class BlobstoreUploadTest extends TestBase {
 
-    public static final String UPLOADED_CONTENT = "uploaded content";
+    private static final char[] Hexadecimal = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+    public static final String FILENAME = "uploadedFile.txt";
+    public static final String CONTENT_TYPE = "text/plain";
+    public static final byte[] UPLOADED_CONTENT = "uploaded content".getBytes();
+    public static final String MD5_HASH;
+
+    static String toHexString(byte[] bytes) {
+        final char[] chars = new char[bytes.length * 2];
+        for (int b = 0, c = 0; b < bytes.length; b++) {
+            int v = (int) bytes[b] & 0xFF;
+            chars[c++] = Hexadecimal[v / 16];
+            chars[c++] = Hexadecimal[v % 16];
+        }
+        return new String(chars);
+    }
+
+    static {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            MD5_HASH = toHexString(md.digest(UPLOADED_CONTENT));
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
 
     @Deployment
     public static Archive getDeployment() {
@@ -75,7 +103,7 @@ public class BlobstoreUploadTest extends TestBase {
     public void uploadFile(@ArquillianResource URL url) throws Exception {
         FileUploader fileUploader = new FileUploader();
         String uploadUrl = fileUploader.getUploadUrl(new URL(url, "getUploadUrl"));
-        fileUploader.uploadFile(uploadUrl, "file", "uploadedFile.txt", UPLOADED_CONTENT);
+        fileUploader.uploadFile(uploadUrl, "file", FILENAME, CONTENT_TYPE, UPLOADED_CONTENT);
     }
 
     @Test
@@ -85,7 +113,22 @@ public class BlobstoreUploadTest extends TestBase {
         assertNotNull("blobKey should not be null", blobKey);
 
         String contents = getFileContents(blobKey);
-        assertEquals(UPLOADED_CONTENT, contents);
+        assertEquals(new String(UPLOADED_CONTENT), contents);
+
+        BlobInfo blobInfo = UploadHandlerServlet.getLastUploadedBlobInfo();
+        assertNotNull("blobInfo should not be null", blobInfo);
+        Assert.assertEquals(blobKey, blobInfo.getBlobKey());
+        Assert.assertEquals(FILENAME, blobInfo.getFilename());
+        Assert.assertEquals(CONTENT_TYPE, blobInfo.getContentType());
+        Assert.assertEquals(UPLOADED_CONTENT.length, blobInfo.getSize());
+        // TODO Assert.assertEquals(MD5_HASH, blobInfo.getMd5Hash());
+
+        FileInfo fileInfo = UploadHandlerServlet.getLastUploadedFileInfo();
+        assertNotNull("fileInfo should not be null", fileInfo);
+        Assert.assertEquals(FILENAME, fileInfo.getFilename());
+        Assert.assertEquals(CONTENT_TYPE, fileInfo.getContentType());
+        Assert.assertEquals(UPLOADED_CONTENT.length, fileInfo.getSize());
+        // TODO Assert.assertEquals(MD5_HASH, fileInfo.getMd5Hash());
     }
 
     private String getFileContents(BlobKey blobKey) throws IOException {

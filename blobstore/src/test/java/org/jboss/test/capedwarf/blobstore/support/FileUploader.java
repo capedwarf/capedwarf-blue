@@ -37,6 +37,7 @@ import org.apache.http.util.EntityUtils;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class FileUploader {
 
@@ -48,17 +49,17 @@ public class FileUploader {
         return EntityUtils.toString(response.getEntity()).trim();
     }
 
-    public String uploadFile(String uri, String partName, String filename, String contents) throws URISyntaxException, IOException {
+    public String uploadFile(String uri, String partName, String filename, String mimeType, byte[] contents) throws URISyntaxException, IOException {
         HttpClient httpClient = new DefaultHttpClient();
 
         HttpPost post = new HttpPost(uri);
         MultipartEntity entity = new MultipartEntity();
-        entity.addPart(partName, new ByteArrayBody(contents.getBytes(), filename));
+        ByteArrayBody contentBody = new ByteArrayBody(contents, mimeType, filename);
+        entity.addPart(partName, contentBody);
         post.setEntity(entity);
 
         HttpResponse response = httpClient.execute(post);
         return EntityUtils.toString(response.getEntity());
     }
-
 
 }

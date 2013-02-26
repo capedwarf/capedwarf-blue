@@ -32,32 +32,62 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
+import com.google.appengine.api.blobstore.FileInfo;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class UploadHandlerServlet extends HttpServlet {
 
     private static BlobKey lastUploadedBlobKey;
+    private static BlobInfo lastUploadedBlobInfo;
+    private static FileInfo lastUploadedFileInfo;
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         BlobstoreService blobstore = BlobstoreServiceFactory.getBlobstoreService();
 
         PrintWriter out = response.getWriter();
-        Map<String,List<BlobKey>> uploadMap = blobstore.getUploads(request);
+
+        Map<String, List<BlobKey>> uploadMap = blobstore.getUploads(request);
         for (Map.Entry<String, List<BlobKey>> entry : uploadMap.entrySet()) {
             for (BlobKey blobKey : entry.getValue()) {
                 out.println(entry.getKey() + ": " + blobKey);
                 lastUploadedBlobKey = blobKey;
             }
         }
+
+        Map<String, List<BlobInfo>> bInfos = blobstore.getBlobInfos(request);
+        for (Map.Entry<String, List<BlobInfo>> entry : bInfos.entrySet()) {
+            for (BlobInfo blobInfo : entry.getValue()) {
+                out.println(entry.getKey() + ": " + blobInfo);
+                lastUploadedBlobInfo = blobInfo;
+            }
+        }
+
+        Map<String, List<FileInfo>> fInfos = blobstore.getFileInfos(request);
+        for (Map.Entry<String, List<FileInfo>> entry : fInfos.entrySet()) {
+            for (FileInfo fileInfo : entry.getValue()) {
+                out.println(entry.getKey() + ": " + fileInfo);
+                lastUploadedFileInfo = fileInfo;
+            }
+        }
     }
 
     public static BlobKey getLastUploadedBlobKey() {
         return lastUploadedBlobKey;
+    }
+
+    public static BlobInfo getLastUploadedBlobInfo() {
+        return lastUploadedBlobInfo;
+    }
+
+    public static FileInfo getLastUploadedFileInfo() {
+        return lastUploadedFileInfo;
     }
 }

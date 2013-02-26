@@ -20,26 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.files;
+package org.jboss.capedwarf.common.io;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-
-import com.google.appengine.api.blobstore.BlobInfo;
-import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.blobstore.FileInfo;
-import com.google.appengine.api.files.AppEngineFile;
-import com.google.appengine.api.files.FileService;
+import java.nio.ByteBuffer;
+import java.security.MessageDigest;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public interface ExposedFileService extends FileService {
-    InputStream getStream(BlobKey blobKey) throws FileNotFoundException;
-    void delete(BlobKey... blobKeys);
-    boolean exists(AppEngineFile file);
-    // infos
-    BlobInfo getBlobInfo(BlobKey key);
-    FileInfo getFileInfo(BlobKey key);
+class JDKDigest extends AbstractDigest {
+    private final MessageDigest digest;
+
+    JDKDigest(String algorithm) throws Exception {
+        this.digest = MessageDigest.getInstance(algorithm);
+    }
+
+    protected byte[] internalDigest() {
+        return digest.digest();
+    }
+
+    protected byte[] dump() {
+        throw new UnsupportedOperationException("Dump not supported for digest: " + digest);
+    }
+
+    public void initialize(DigestResult previous) {
+        throw new UnsupportedOperationException("Initialization not supported for digest: " + digest);
+    }
+
+    public void update(byte[] bytes) {
+        digest.update(bytes);
+    }
+
+    public void update(ByteBuffer buffer) {
+        digest.update(buffer);
+    }
 }

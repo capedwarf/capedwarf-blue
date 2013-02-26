@@ -35,6 +35,8 @@ import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.FileInfo;
+import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -52,6 +54,7 @@ import com.google.appengine.api.files.RecordWriteChannel;
 import org.infinispan.io.GridFilesystem;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.io.DigestResult;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
@@ -64,8 +67,38 @@ class CapedwarfFileService implements ExposedFileService {
 
     private static final String DEFAULT_MIME_TYPE = "application/octet-stream";
     private static final String KIND_TEMP_BLOB_INFO = "__BlobInfo_temp__";
+    private static final String MD5_HASH_STATE = BlobInfoFactory.MD5_HASH + "__State";
 
     private DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+
+    private BlobInfoFactory blobInfoFactory;
+
+    private synchronized BlobInfoFactory getBlobInfoFactory() {
+        if (blobInfoFactory == null) {
+            blobInfoFactory = new BlobInfoFactory(datastoreService);
+        }
+        return blobInfoFactory;
+    }
+
+    public BlobInfo getBlobInfo(BlobKey key) {
+        return getBlobInfoFactory().loadBlobInfo(key);
+    }
+
+    public FileInfo getFileInfo(BlobKey key) {
+        Entity info = getFileInfo(KeyFactory.createKey(BlobInfoFactory.KIND, key.getKeyString()));
+        if (info != null) {
+            String contentType = (String) info.getProperty(BlobInfoFactory.CONTENT_TYPE);
+            Date creation = (Date) info.getProperty(BlobInfoFactory.CREATION);
+            String filename = (String) info.getProperty(BlobInfoFactory.FILENAME);
+            Object sp = info.getProperty(BlobInfoFactory.SIZE);
+            long size = (sp != null ? (Long) sp : -1);
+            String md5Hash = (String) info.getProperty(BlobInfoFactory.MD5_HASH);
+            String gsObjectName = null; // TODO
+            return new FileInfo(contentType, creation, filename, size, md5Hash, gsObjectName);
+        } else {
+            return null;
+        }
+    }
 
     public AppEngineFile createNewBlobFile(String mimeType) throws IOException {
         return createNewBlobFile(mimeType, "");
@@ -101,16 +134,36 @@ class CapedwarfFileService implements ExposedFileService {
         return KeyFactory.createKey(KIND_TEMP_BLOB_INFO, file.getFullPath());
     }
 
+    private Entity getTemporaryInfo(AppEngineFile file) {
+        try {
+            return datastoreService.get(getTempBlobInfoKey(file));
+        } catch (EntityNotFoundException e) {
+            throw new IllegalStateException("Cannot finalize file " + file + ". Cannot find temp blob info.");
+        }
+    }
+
+    void saveMd5(AppEngineFile file, DigestResult dg) {
+        Entity info = getTemporaryInfo(file);
+        byte[] bytes = dg.getState();
+        if (bytes != null) {
+            info.setProperty(MD5_HASH_STATE, new Blob(bytes));
+        }
+        info.setProperty(BlobInfoFactory.MD5_HASH, dg.getDigest());
+        datastoreService.put(info);
+    }
+
+    DigestResult readMd5(AppEngineFile file) {
+        Entity info = getTemporaryInfo(file);
+        Blob state = (Blob) info.getProperty(MD5_HASH_STATE);
+        String md5 = (String) info.getProperty(BlobInfoFactory.MD5_HASH);
+        return new DigestResult(state != null ? state.getBytes() : null, md5);
+    }
+
     void finalizeFile(AppEngineFile file) {
         String origNamespace = NamespaceManager.get();
         NamespaceManager.set("");
         try {
-            Entity tempBlobInfo;
-            try {
-                tempBlobInfo = datastoreService.get(getTempBlobInfoKey(file));
-            } catch (EntityNotFoundException e) {
-                throw new IllegalStateException("Cannot finalize file " + file + ". Cannot find temp blob info.");
-            }
+            Entity tempBlobInfo = getTemporaryInfo(file);
 
             File gfsFile = getGfsFile(file);
             if (!gfsFile.exists()) {
@@ -123,6 +176,7 @@ class CapedwarfFileService implements ExposedFileService {
             blobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, tempBlobInfo.getProperty(BlobInfoFactory.CONTENT_TYPE));
             blobInfo.setProperty(BlobInfoFactory.CREATION, tempBlobInfo.getProperty(BlobInfoFactory.CREATION));
             blobInfo.setProperty(BlobInfoFactory.FILENAME, tempBlobInfo.getProperty(BlobInfoFactory.FILENAME));
+            blobInfo.setProperty(BlobInfoFactory.MD5_HASH, tempBlobInfo.getProperty(BlobInfoFactory.MD5_HASH));
             blobInfo.setProperty(BlobInfoFactory.SIZE, fileSize);
             datastoreService.put(blobInfo);
         } finally {
@@ -172,7 +226,7 @@ class CapedwarfFileService implements ExposedFileService {
 
     private boolean isFinalized(AppEngineFile file) {
         BlobKey blobKey = getBlobKey(file);
-        BlobInfo blobInfo = new BlobInfoFactory().loadBlobInfo(blobKey);
+        BlobInfo blobInfo = getBlobInfo(blobKey);
         return blobInfo != null;
     }
 

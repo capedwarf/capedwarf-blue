@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -41,7 +40,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import com.google.appengine.api.blobstore.BlobInfo;
-import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreFailureException;
 import com.google.appengine.api.blobstore.ByteRange;
@@ -52,6 +50,9 @@ import com.google.appengine.api.blobstore.UploadOptions;
 import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileServiceFactory;
 import com.google.appengine.api.files.FileWriteChannel;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.files.ExposedFileService;
@@ -63,6 +64,30 @@ import org.jboss.capedwarf.files.ExposedFileService;
 class CapedwarfBlobstoreService implements ExposedBlobstoreService {
     private static final String UPLOADED_BLOBKEY_ATTR = "com.google.appengine.api.blobstore.upload.blobkeys";
     private static final String UPLOADED_BLOBKEY_LIST_ATTR = "com.google.appengine.api.blobstore.upload.blobkeylists";
+
+    private Function<List<BlobKey>, List<BlobInfo>> BLOB_LIST_KEY_TO_INFO_FN = new Function<List<BlobKey>, List<BlobInfo>>() {
+        public List<BlobInfo> apply(List<BlobKey> input) {
+            return Lists.transform(input, BLOB_KEY_TO_INFO_FN);
+        }
+    };
+
+    private Function<BlobKey, BlobInfo> BLOB_KEY_TO_INFO_FN = new Function<BlobKey, BlobInfo>() {
+        public BlobInfo apply(BlobKey input) {
+            return getBlobInfo(input);
+        }
+    };
+
+    private Function<List<BlobKey>, List<FileInfo>> FILE_LIST_KEY_TO_INFO_FN = new Function<List<BlobKey>, List<FileInfo>>() {
+        public List<FileInfo> apply(List<BlobKey> input) {
+            return Lists.transform(input, FILE_KEY_TO_INFO_FN);
+        }
+    };
+
+    private Function<BlobKey, FileInfo> FILE_KEY_TO_INFO_FN = new Function<BlobKey, FileInfo>() {
+        public FileInfo apply(BlobKey input) {
+            return getFileService().getFileInfo(input);
+        }
+    };
 
     private ExposedFileService fileService;
 
@@ -147,8 +172,7 @@ class CapedwarfBlobstoreService implements ExposedBlobstoreService {
     }
 
     private BlobInfo getBlobInfo(BlobKey blobKey) {
-        BlobInfoFactory blobInfoFactory = new BlobInfoFactory();
-        return blobInfoFactory.loadBlobInfo(blobKey);
+        return getFileService().getBlobInfo(blobKey);
     }
 
     private void assertNotCommited(HttpServletResponse response) {
@@ -276,10 +300,10 @@ class CapedwarfBlobstoreService implements ExposedBlobstoreService {
     }
 
     public Map<String, List<BlobInfo>> getBlobInfos(HttpServletRequest httpServletRequest) {
-        return Collections.emptyMap(); // TODO
+        return Maps.transformValues(getUploads(httpServletRequest), BLOB_LIST_KEY_TO_INFO_FN);
     }
 
     public Map<String, List<FileInfo>> getFileInfos(HttpServletRequest httpServletRequest) {
-        return Collections.emptyMap(); // TODO
+        return Maps.transformValues(getUploads(httpServletRequest), FILE_LIST_KEY_TO_INFO_FN);
     }
 }

@@ -28,6 +28,9 @@ import java.nio.ByteBuffer;
 import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileWriteChannel;
 import org.infinispan.io.WritableGridFileChannel;
+import org.jboss.capedwarf.common.io.Digest;
+import org.jboss.capedwarf.common.io.DigestResult;
+import org.jboss.capedwarf.common.io.IOUtils;
 
 /**
  * JBoss file write channel.
@@ -41,6 +44,8 @@ class CapedwarfFileWriteChannel implements FileWriteChannel {
     private CapedwarfFileService fileService;
     private boolean lockHeld;
 
+    private volatile Digest digest;
+
     CapedwarfFileWriteChannel(AppEngineFile file, WritableGridFileChannel channel, CapedwarfFileService fileService, boolean lock) {
         this.file = file;
         this.delegate = channel;
@@ -53,7 +58,9 @@ class CapedwarfFileWriteChannel implements FileWriteChannel {
     }
 
     public int write(ByteBuffer buffer) throws IOException {
-        return delegate.write(buffer);
+        int write = delegate.write(buffer);
+        getDigest().update(buffer);
+        return write;
     }
 
     public boolean isOpen() {
@@ -61,7 +68,13 @@ class CapedwarfFileWriteChannel implements FileWriteChannel {
     }
 
     public void close() throws IOException {
-        delegate.close();
+        try {
+            Digest md = getDigest();
+            digest = null;
+            fileService.saveMd5(file, md.digest());
+        } finally {
+            delegate.close();
+        }
     }
 
     public void closeFinally() throws IllegalStateException, IOException {
@@ -70,5 +83,18 @@ class CapedwarfFileWriteChannel implements FileWriteChannel {
         }
         close();
         fileService.finalizeFile(file);
+    }
+
+    protected synchronized Digest getDigest() {
+        if (digest == null) {
+            try {
+                digest = IOUtils.getDigest("MD5");
+                DigestResult previousResult = fileService.readMd5(file);
+                digest.initialize(previousResult);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return digest;
     }
 }

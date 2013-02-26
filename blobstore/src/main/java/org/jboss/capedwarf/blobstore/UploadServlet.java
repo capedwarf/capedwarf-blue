@@ -39,14 +39,20 @@ import org.jboss.capedwarf.common.url.URLUtils;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class UploadServlet extends HttpServlet {
+    private CapedwarfBlobstoreService service;
 
     public static final String URI = "/_ah/blobstore/upload";
     private static final String SUCCESS_PATH_PARAM = "successPath";
 
     @Override
+    public void init() throws ServletException {
+        super.init();
+        service = new CapedwarfBlobstoreService();
+    }
+
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        CapedwarfBlobstoreService blobstoreService = new CapedwarfBlobstoreService();
-        blobstoreService.storeUploadedBlobs(request);
+        service.storeUploadedBlobs(request);
         request.getRequestDispatcher(getSuccessPath(request)).forward(request, response);
     }
 
