@@ -40,6 +40,7 @@ import org.jboss.capedwarf.shared.jms.ServletRequestCreator;
  * Tasks message creator.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class TasksMessageCreator implements MessageCreator {
 
@@ -77,8 +78,13 @@ public class TasksMessageCreator implements MessageCreator {
     }
 
     public void enhanceMessage(Message message) throws Exception {
+        addMethod(message);
         addHeaders(message);
         addParameters(message);
+    }
+
+    private void addMethod(Message message) throws JMSException {
+        message.setStringProperty(TasksServletRequestCreator.METHOD, taskOptions.getMethod().name());
     }
 
     @SuppressWarnings("unchecked")
