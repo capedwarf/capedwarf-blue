@@ -40,11 +40,12 @@ class JDKDigest extends AbstractDigest {
     }
 
     protected byte[] dump() {
-        throw new UnsupportedOperationException("Dump not supported for digest: " + digest);
+        log.warning("State dump not supported for digest: " + digest);
+        return null;
     }
 
     public void initialize(DigestResult previous) {
-        throw new UnsupportedOperationException("Initialization not supported for digest: " + digest);
+        log.warning("State initialization not supported for digest: " + digest);
     }
 
     public void update(byte[] bytes) {

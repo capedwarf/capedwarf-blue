@@ -30,8 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
-
-import com.google.appengine.api.files.FileWriteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -182,7 +181,7 @@ public class IOUtils {
         }
     }
 
-    public static void copy(ReadableByteChannel in, FileWriteChannel out) throws IOException {
+    public static void copy(ReadableByteChannel in, WritableByteChannel out) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(16 * 1024);
         while (in.read(buffer) != -1) {
             buffer.flip(); // Prepare the buffer to be drained
