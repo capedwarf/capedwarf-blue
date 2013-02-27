@@ -32,7 +32,7 @@
             <th>Write ops</th>
             <th>ID/Name</th>
             #foreach ($property in $datastoreViewer.properties)
-                <th>$property</th>
+                <th>$esc.html($property)</th>
             #end
         </tr>
 
@@ -43,7 +43,7 @@
                 <td>$row.idName</td>
 
                 #foreach ($cell in $row.cells)
-                    <td>$cell</td>
+                    <td>$esc.html($cell)</td>
                 #end
             </tr>
         #end
