@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.velocity.tools.generic.EscapeTool;
+
 /**
  *
  */
@@ -62,6 +64,7 @@ public class CapedwarfVelocityContext extends AbstractContext {
     public void init(HttpServletRequest request) {
         this.req = request;
         put("request", request);
+        put("esc", new EscapeTool());
     }
 
     @Override

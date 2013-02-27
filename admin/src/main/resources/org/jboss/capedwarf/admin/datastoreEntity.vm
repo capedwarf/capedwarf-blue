@@ -14,8 +14,8 @@ Key: ${datastoreEntity.key}
     <tbody>
         #foreach($property in $datastoreEntity.properties)
         <tr>
-            <td>$property.key</td>
-            <td>$property.value</td>
+            <td>#if($property.key) $esc.html($property.key) #end</td>
+            <td>#if($property.value) $esc.html($property.value) #end</td>
         </tr>
         #end
     </tbody>

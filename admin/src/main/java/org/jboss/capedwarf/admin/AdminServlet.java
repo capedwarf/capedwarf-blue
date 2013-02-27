@@ -60,6 +60,8 @@ public class AdminServlet extends HttpServlet {
             Properties props = new Properties();
             props.put("resource.loader", "class");
             props.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
+            props.put("tools.toolbox", "application");
+            props.put("tools.application.esc", "org.apache.velocity.tools.generic.EscapeTool");
             velocity = new VelocityEngine(props);
         } catch (Exception e) {
             throw new ServletException(e);
