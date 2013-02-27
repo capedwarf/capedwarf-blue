@@ -1,5 +1,6 @@
 package org.jboss.capedwarf.tasks;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -75,5 +76,13 @@ public class TaskOptionsHelper {
 
     public String getUrl() {
         return taskOptions.getUrl();
+    }
+
+    public String getTag() throws UnsupportedEncodingException {
+        return taskOptions.getTag();
+    }
+
+    public byte[] getTagAsBytes() {
+        return taskOptions.getTagAsBytes();
     }
 }

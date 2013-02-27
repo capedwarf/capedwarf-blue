@@ -165,6 +165,9 @@ class CapedwarfQueue implements Queue {
             if (isPushQueue ? method == TaskOptions.Method.PULL : method != TaskOptions.Method.PULL) {
                 throw new InvalidQueueModeException("Target queue mode does not support this operation");
             }
+            if (isPushQueue && helper.getTagAsBytes() != null) {
+                throw new IllegalArgumentException("Only PULL tasks can have a tag.");
+            }
         }
     }
 
