@@ -247,7 +247,7 @@ public class TasksTest extends TasksTestBase {
         RetryTestServlet.setNumberOfTimesToFail(1);
 
         Queue queue = QueueFactory.getDefaultQueue();
-        queue.add(withUrl("/_ah/retryTest").retryOptions(RetryOptions.Builder.withTaskRetryLimit(2)));
+        queue.add(withUrl("/_ah/retryTest").retryOptions(RetryOptions.Builder.withTaskRetryLimit(5)));
         sync();
 
         assertEquals(2, RetryTestServlet.getInvocationCount());
@@ -259,6 +259,18 @@ public class TasksTest extends TasksTestBase {
         RequestData request2 = RetryTestServlet.getRequest(1);
         assertEquals("1", request2.getHeader(TASK_RETRY_COUNT));
         assertEquals("1", request2.getHeader(TASK_EXECUTION_COUNT));
+    }
+
+    @Ignore("CAPEDWARF-112")
+    @Test
+    public void testRetryLimitIsHonored() throws Exception {
+        RetryTestServlet.setNumberOfTimesToFail(10);
+
+        Queue queue = QueueFactory.getDefaultQueue();
+        TaskHandle handle = queue.add(withUrl("/_ah/retryTest").retryOptions(RetryOptions.Builder.withTaskRetryLimit(2)));
+        sync();
+
+        assertEquals(2, RetryTestServlet.getInvocationCount());
     }
 
     @Test(expected = InvalidQueueModeException.class)
