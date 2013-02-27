@@ -1,5 +1,9 @@
 <queue-entries>
     <queue>
+        <name>test</name>
+        <rate>10/s</rate>
+    </queue>
+    <queue>
         <name>tasks-queue</name>
         <rate>10/s</rate>
     </queue>

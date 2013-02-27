@@ -149,9 +149,8 @@ class CapedwarfQueue implements Queue {
         try {
             List<TaskHandle> handles = new ArrayList<TaskHandle>();
             for (TaskOptions to : taskOptions) {
-                TaskOptions copy = addInternal(producer, to);
-                if (copy != null)
-                    handles.add(new TaskHandle(copy, getQueueName()));
+                TaskHandle handle = addTask(producer, to);
+                handles.add(handle);
             }
             return handles;
         } finally {
@@ -166,16 +165,17 @@ class CapedwarfQueue implements Queue {
             if (isPushQueue ? method == TaskOptions.Method.PULL : method != TaskOptions.Method.PULL) {
                 throw new InvalidQueueModeException("Target queue mode does not support this operation");
             }
+            if (isPushQueue && helper.getTagAsBytes() != null) {
+                throw new IllegalArgumentException("Only PULL tasks can have a tag.");
+            }
         }
     }
 
-    private TaskOptions addInternal(ServletExecutorProducer producer, TaskOptions to) {
+    private TaskHandle addTask(ServletExecutorProducer producer, TaskOptions to) {
         try {
             TaskOptionsHelper helper = new TaskOptionsHelper(to);
-            TaskOptions copy = null;
-            TaskOptions.Method m = helper.getMethod();
-            if (m == TaskOptions.Method.PULL) {
-                copy = new TaskOptions(to);
+            TaskOptions copy = new TaskOptions(to);
+            if (helper.getMethod() == TaskOptions.Method.PULL) {
                 String taskName = helper.getTaskName();
                 if (taskName == null) {
                     taskName = UUID.randomUUID().toString(); // TODO -- unique enough?
@@ -185,14 +185,13 @@ class CapedwarfQueue implements Queue {
                 RetryOptions retryOptions = helper.getRetryOptions();
                 TaskOptionsEntity taskOptionsEntity = new TaskOptionsEntity(taskName, queueName, copy.getTag(), lifespan, copy, retryOptions);
                 getTasks().put(taskName, taskOptionsEntity, lifespan == null ? -1 : lifespan, TimeUnit.MILLISECONDS);
-            } else if (m == TaskOptions.Method.POST) {
+            } else {
                 MessageCreator mc = createMessageCreator(to);
                 String id = producer.sendMessage(mc);
-                copy = new TaskOptions(to);
                 if (helper.getTaskName() == null)
                     copy.taskName(toTaskName(id));
             }
-            return copy;
+            return new TaskHandle(copy, getQueueName());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

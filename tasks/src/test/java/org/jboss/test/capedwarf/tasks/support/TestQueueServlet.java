@@ -22,21 +22,34 @@
 
 package org.jboss.test.capedwarf.tasks.support;
 
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import java.util.logging.Logger;
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class PrintListener implements ServletRequestListener {
-    private Logger log = Logger.getLogger(PrintListener.class.getName());
+public class TestQueueServlet extends HttpServlet {
 
-    public void requestInitialized(ServletRequestEvent sre) {
-        log.info("Init - " + sre);
+    private static RequestData lastRequestData;
+
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        lastRequestData = new RequestData(req);
     }
 
-    public void requestDestroyed(ServletRequestEvent sre) {
-        log.info("Destroy - " + sre);
+    public static RequestData getLastRequest() {
+        return lastRequestData;
+    }
+
+    public static void reset() {
+        lastRequestData = null;
+    }
+
+    public static boolean wasInvoked() {
+        return lastRequestData != null;
     }
 }

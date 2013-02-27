@@ -1,7 +1,4 @@
 <web>
-    <listener>
-        <listener-class>org.jboss.test.capedwarf.tasks.support.PrintListener</listener-class>
-    </listener>
     <servlet>
         <servlet-name>PrintServlet</servlet-name>
         <servlet-class>org.jboss.test.capedwarf.tasks.support.PrintServlet</servlet-class>
@@ -9,5 +6,32 @@
     <servlet-mapping>
         <servlet-name>PrintServlet</servlet-name>
         <url-pattern>/_ah/test</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DefaultQueueServlet</servlet-name>
+        <servlet-class>org.jboss.test.capedwarf.tasks.support.DefaultQueueServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DefaultQueueServlet</servlet-name>
+        <url-pattern>/_ah/queue/default</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>TestQueueServlet</servlet-name>
+        <servlet-class>org.jboss.test.capedwarf.tasks.support.TestQueueServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TestQueueServlet</servlet-name>
+        <url-pattern>/_ah/queue/test</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RetryTestServlet</servlet-name>
+        <servlet-class>org.jboss.test.capedwarf.tasks.support.RetryTestServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RetryTestServlet</servlet-name>
+        <url-pattern>/_ah/retryTest</url-pattern>
     </servlet-mapping>
 </web>
