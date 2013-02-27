@@ -121,14 +121,14 @@ public class BlobstoreUploadTest extends TestBase {
         Assert.assertEquals(FILENAME, blobInfo.getFilename());
         Assert.assertEquals(CONTENT_TYPE, blobInfo.getContentType());
         Assert.assertEquals(UPLOADED_CONTENT.length, blobInfo.getSize());
-        // TODO Assert.assertEquals(MD5_HASH, blobInfo.getMd5Hash());
+        Assert.assertEquals(MD5_HASH, blobInfo.getMd5Hash());
 
         FileInfo fileInfo = UploadHandlerServlet.getLastUploadedFileInfo();
         assertNotNull("fileInfo should not be null", fileInfo);
         Assert.assertEquals(FILENAME, fileInfo.getFilename());
         Assert.assertEquals(CONTENT_TYPE, fileInfo.getContentType());
         Assert.assertEquals(UPLOADED_CONTENT.length, fileInfo.getSize());
-        // TODO Assert.assertEquals(MD5_HASH, fileInfo.getMd5Hash());
+        Assert.assertEquals(MD5_HASH, fileInfo.getMd5Hash());
     }
 
     private String getFileContents(BlobKey blobKey) throws IOException {

@@ -22,8 +22,6 @@
 
 package org.jboss.capedwarf.common.io;
 
-import java.nio.ByteBuffer;
-
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
@@ -31,7 +29,6 @@ public interface Digest {
     void initialize(DigestResult previous);
 
     void update(byte[] bytes);
-    void update(ByteBuffer buffer);
 
     DigestResult digest();
 }

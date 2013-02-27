@@ -22,8 +22,6 @@
 
 package org.jboss.capedwarf.common.io;
 
-import java.nio.ByteBuffer;
-
 import org.bouncycastle.crypto.digests.MD5Digest;
 
 /**
@@ -67,9 +65,5 @@ class BCMD5Digest extends AbstractDigest {
 
     public void update(byte[] bytes) {
         getDigest().update(bytes, 0, bytes.length);
-    }
-
-    public void update(ByteBuffer buffer) {
-        update(buffer.array());
     }
 }

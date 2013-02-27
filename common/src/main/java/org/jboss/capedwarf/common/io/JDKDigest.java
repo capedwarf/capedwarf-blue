@@ -22,7 +22,6 @@
 
 package org.jboss.capedwarf.common.io;
 
-import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 
 /**
@@ -50,9 +49,5 @@ class JDKDigest extends AbstractDigest {
 
     public void update(byte[] bytes) {
         digest.update(bytes);
-    }
-
-    public void update(ByteBuffer buffer) {
-        digest.update(buffer);
     }
 }
