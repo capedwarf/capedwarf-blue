@@ -56,6 +56,8 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
     static final String HEADERS = "task_option_headers_";
     static final String PARAMS = "task_option_params_";
 
+    private static final String JMSX_DELIVERY_COUNT = "JMSXDeliveryCount";
+
     public HttpServletRequest createServletRequest(ServletContext context, Message message) throws Exception {
         AbstractHttpServletRequest request;
         if (message instanceof BytesMessage) {
@@ -66,6 +68,11 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
         request.setMethod(message.getStringProperty(METHOD));
         request.addHeaders(get(message, HEADERS));
         request.addParameters(get(message, PARAMS));
+
+        int deliveryCount = message.getIntProperty(JMSX_DELIVERY_COUNT);
+        String executionCount = String.valueOf(deliveryCount - 1);
+        request.addHeader(TasksMessageCreator.TASK_EXECUTION_COUNT, executionCount);
+        request.addHeader(TasksMessageCreator.TASK_RETRY_COUNT, executionCount);
         return request;
     }
 

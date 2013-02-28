@@ -255,9 +255,9 @@ public class TasksTest extends TasksTestBase {
         assertEquals("0", request1.getHeader(TASK_RETRY_COUNT));
         assertEquals("0", request1.getHeader(TASK_EXECUTION_COUNT));
 
-//        RequestData request2 = RetryTestServlet.getRequest(1);    // TODO
-//        assertEquals("1", request2.getHeader(TASK_RETRY_COUNT));
-//        assertEquals("1", request2.getHeader(TASK_EXECUTION_COUNT));
+        RequestData request2 = RetryTestServlet.getRequest(1);
+        assertEquals("1", request2.getHeader(TASK_RETRY_COUNT));
+        assertEquals("1", request2.getHeader(TASK_EXECUTION_COUNT));
     }
 
     @Ignore("CAPEDWARF-112")
