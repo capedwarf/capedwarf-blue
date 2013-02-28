@@ -22,8 +22,6 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -38,23 +36,24 @@ import org.infinispan.remoting.transport.Address;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.common.util.Util;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.Keys;
+import org.jboss.capedwarf.shared.components.SimpleKey;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class InfinispanUtils {
-    private static volatile int cacheManagerUsers;
-    private static EmbeddedCacheManager cacheManager;
-    private static final Map<String, GridFilesystem> gridFilesystems = new HashMap<String, GridFilesystem>();
-
     protected static EmbeddedCacheManager getCacheManager() {
-        return cacheManager;
+        EmbeddedCacheManager manager = ComponentRegistry.getInstance().getComponent(Keys.CACHE_MANAGER);
+        if (manager == null)
+            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
+        return manager;
     }
 
     protected static <K, V> Cache<K, V> getCache(CacheName template, String appId) {
         final String cacheName = toCacheName(template, appId);
-        final Cache<K, V> cache = cacheManager.getCache(cacheName, false);
+        final Cache<K, V> cache = getCacheManager().getCache(cacheName, false);
         if (cache == null)
             throw new IllegalArgumentException("No such cache?! - " + cacheName);
         return cache;
@@ -65,8 +64,6 @@ public class InfinispanUtils {
     }
 
     public static <K, V> Cache<K, V> getCache(String appId, CacheName template) {
-        if (cacheManager == null)
-            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
         if (template == null)
             throw new IllegalArgumentException("Null template!");
 
@@ -89,9 +86,6 @@ public class InfinispanUtils {
     }
 
     private static <R> Future<R> distribute(final String appId, final CacheName template, final Callable<R> task, final boolean direct, final Object... keys) {
-        if (cacheManager == null)
-            throw new IllegalArgumentException("CacheManager is null, should not be here?!");
-
         final Cache cache = getCache(appId, template);
         final ExecutorService executor = (direct ? ExecutorFactory.getDirectExecutor() : ExecutorFactory.getInstance());
         final DistributedExecutorService des = new DefaultExecutorService(cache, executor);
@@ -99,37 +93,22 @@ public class InfinispanUtils {
     }
 
     public static GridFilesystem getGridFilesystem(String appId) {
-        GridFilesystem gfs = gridFilesystems.get(appId);
+        final ComponentRegistry registry = ComponentRegistry.getInstance();
+        final Key<GridFilesystem> key = new SimpleKey<GridFilesystem>(appId, GridFilesystem.class);
+
+        GridFilesystem gfs = registry.getComponent(key);
         if (gfs == null) {
-            synchronized (gridFilesystems) {
-                gfs = gridFilesystems.get(appId);
+            synchronized (InfinispanUtils.class) {
+                gfs = registry.getComponent(key);
                 if (gfs == null) {
                     final Cache<String, byte[]> data = getCache(appId, CacheName.DATA);
                     final Cache<String, GridFile.Metadata> metadata = getCache(appId, CacheName.METADATA);
                     gfs = new GridFilesystem(data, metadata);
-                    gridFilesystems.put(appId, gfs);
+                    registry.setComponent(key, gfs);
                 }
             }
         }
         return gfs;
-    }
-
-    @SuppressWarnings("UnusedParameters")
-    public static synchronized void initApplicationData(String appId) {
-        if (cacheManager == null) {
-            cacheManager = ComponentRegistry.getInstance().getComponent(Keys.CACHE_MANAGER);
-        }
-        cacheManagerUsers++;
-    }
-
-    public static synchronized void clearApplicationData(String appId) {
-        synchronized (gridFilesystems) {
-            gridFilesystems.remove(appId);
-        }
-        cacheManagerUsers--;
-        if (cacheManagerUsers == 0) {
-            cacheManager = null;
-        }
     }
 
     public static Address getLocalNode(String appId) {

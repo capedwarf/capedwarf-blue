@@ -35,7 +35,6 @@ import com.google.appengine.api.log.LogServiceFactory;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.security.PrincipalInfo;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.log.ExposedLogService;
@@ -93,7 +92,6 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
 
         final String appId = appEngineWebXml.getApplication();
 
-        InfinispanUtils.initApplicationData(appId);
         ExecutorFactory.registerApp(appId);
 
         ServletContext servletContext = sce.getServletContext();
@@ -104,7 +102,6 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         final String appId = appEngineWebXml.getApplication();
 
         ExecutorFactory.unregisterApp(appId);
-        InfinispanUtils.clearApplicationData(appId);
     }
 
     public void requestInitialized(ServletRequestEvent sre) {

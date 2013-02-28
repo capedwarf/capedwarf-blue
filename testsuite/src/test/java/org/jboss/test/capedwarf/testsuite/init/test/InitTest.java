@@ -28,6 +28,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.jboss.test.capedwarf.testsuite.init.support.InitTestFilter;
+import org.jboss.test.capedwarf.testsuite.init.support.InitTestListener;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,8 +41,9 @@ public class InitTest extends TestBase {
     public static WebArchive getDeployment() {
         TestContext context = TestContext.asDefault();
         context.setWebXmlFile("init/web.xml");
-        WebArchive war = getCapedwarfDeployment();
+        WebArchive war = getCapedwarfDeployment(context);
         war.addClass(InitTestFilter.class);
+        war.addClass(InitTestListener.class);
         return war;
     }
 
