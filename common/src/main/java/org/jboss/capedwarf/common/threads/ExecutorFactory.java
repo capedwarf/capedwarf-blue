@@ -36,9 +36,6 @@ import org.jboss.capedwarf.shared.components.Keys;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ExecutorFactory {
-    private static String[] defaultJndiNames = {"java:jboss/threads/executor/capedwarf"};
-
-    private static volatile ExecutorService executor;
     private static volatile ExecutorService direct = new WithinThreadExecutor();
 
     private static int refCount = 0;
@@ -50,14 +47,7 @@ public class ExecutorFactory {
      * @return the Executor instance
      */
     public static ExecutorService getInstance() {
-        if (executor == null) {
-            synchronized (ExecutorFactory.class) {
-                if (executor == null) {
-                    executor = ComponentRegistry.getInstance().getComponent(Keys.EXECUTOR_SERVICE);
-                }
-            }
-        }
-        return executor;
+        return ComponentRegistry.getInstance().getComponent(Keys.EXECUTOR_SERVICE);
     }
 
     /**
@@ -80,30 +70,5 @@ public class ExecutorFactory {
         final Executor executor = getInstance();
         executor.execute(task);
         return task;
-    }
-
-    /**
-     * Register app.
-     *
-     * @param appId app id
-     */
-    public static void registerApp(String appId) {
-        synchronized (ExecutorFactory.class) {
-            refCount++;
-        }
-    }
-
-    /**
-     * Unregister app.
-     *
-     * @param appId app id
-     */
-    public static void unregisterApp(String appId) {
-        synchronized (ExecutorFactory.class) {
-            refCount--;
-            if (refCount == 0) {
-                executor = null;
-            }
-        }
     }
 }

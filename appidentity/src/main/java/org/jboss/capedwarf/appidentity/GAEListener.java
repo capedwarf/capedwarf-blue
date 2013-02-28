@@ -36,8 +36,10 @@ import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.security.PrincipalInfo;
-import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.log.ExposedLogService;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Key;
+import org.jboss.capedwarf.shared.components.SimpleKey;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.BackendsXml;
 import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
@@ -59,15 +61,19 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
 
     protected static ApiProxy.Delegate setupInternal(AppEngineWebXml appEngineWebXml, CapedwarfConfiguration capedwarfConfiguration, QueueXml queueXml, BackendsXml backends) {
         final CapedwarfEnvironment environment = CapedwarfEnvironment.createThreadLocalInstance();
-        environment.setAppEngineWebXml(appEngineWebXml);
-        environment.setCapedwarfConfiguration(capedwarfConfiguration);
-        environment.setQueueXml(queueXml);
-        environment.setBackends(backends);
+        setupInternal(environment, appEngineWebXml, capedwarfConfiguration, queueXml, backends);
 
         final ApiProxy.Delegate previous = ApiProxy.getDelegate();
         ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
 
         return previous;
+    }
+
+    private static void setupInternal(CapedwarfEnvironment environment, AppEngineWebXml appEngineWebXml, CapedwarfConfiguration capedwarfConfiguration, QueueXml queueXml, BackendsXml backends) {
+        environment.setAppEngineWebXml(appEngineWebXml);
+        environment.setCapedwarfConfiguration(capedwarfConfiguration);
+        environment.setQueueXml(queueXml);
+        environment.setBackends(backends);
     }
 
     public static boolean isSetup() {
@@ -92,16 +98,16 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
 
         final String appId = appEngineWebXml.getApplication();
 
-        ExecutorFactory.registerApp(appId);
-
         ServletContext servletContext = sce.getServletContext();
         servletContext.setAttribute("org.jboss.capedwarf.appId", appId);
+
+        CapedwarfEnvironment globalEnv = new CapedwarfEnvironment();
+        setupInternal(globalEnv, appEngineWebXml, capedwarfConfiguration, queueXml, backendsXml);
+        Key<CapedwarfEnvironment> key = new SimpleKey<CapedwarfEnvironment>(appId, CapedwarfEnvironment.class);
+        ComponentRegistry.getInstance().setComponent(key, globalEnv);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
-        final String appId = appEngineWebXml.getApplication();
-
-        ExecutorFactory.unregisterApp(appId);
     }
 
     public void requestInitialized(ServletRequestEvent sre) {

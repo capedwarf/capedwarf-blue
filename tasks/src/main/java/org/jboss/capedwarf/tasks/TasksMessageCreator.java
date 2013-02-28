@@ -31,6 +31,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 
+import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
@@ -50,6 +51,7 @@ public class TasksMessageCreator implements MessageCreator {
     public static final String TASK_EXECUTION_COUNT = "X-AppEngine-TaskExecutionCount";
     private static final String TASK_ETA = "X-AppEngine-TaskETA";
     private static final String FAIL_FAST = "X-AppEngine-FailFast";
+    static final String CURRENT_NAMESPACE = "X-AppEngine-Current-Namespace";
 
     private final String queueName;
     private final TaskOptionsHelper taskOptions;
@@ -131,6 +133,10 @@ public class TasksMessageCreator implements MessageCreator {
         map.put(TASK_NAME_HEADER, toHeaderValue(taskOptions.getTaskName()));
         map.put(TASK_ETA, toHeaderValue(taskOptions.getEtaMillis()));
         map.put(FAIL_FAST, Boolean.FALSE.toString()); // TODO?
+        if (map.containsKey(CURRENT_NAMESPACE) == false) {
+            String namespace = NamespaceManager.get();
+            map.put(CURRENT_NAMESPACE, namespace == null ? "" : namespace);
+        }
         TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
     }
 

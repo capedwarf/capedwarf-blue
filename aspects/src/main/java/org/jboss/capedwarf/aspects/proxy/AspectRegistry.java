@@ -44,7 +44,7 @@ import org.jboss.capedwarf.aspects.InvocationTimeLimitAspect;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-final class AspectRegistry {
+public final class AspectRegistry {
     private static final AspectWrapperComparator COMPARATOR = new AspectWrapperComparator();
     private static final Map<Key, AspectWrapper[]> aspectsMap = new ConcurrentHashMap<Key, AspectWrapper[]>();
 

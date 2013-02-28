@@ -66,15 +66,19 @@ import org.jboss.capedwarf.shared.config.QueueXml;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
+@QueueInitialization
 class CapedwarfQueue implements Queue {
     private static final String ID = "ID:";
     private static final Sort SORT = new Sort(new SortField("eta", SortField.LONG));
 
     private final String queueName;
-    private final boolean isPushQueue;
-    private final Cache<String, Object> tasks;
-    private final SearchManager searchManager;
-    private final DatastoreService datastoreService;
+
+    private volatile boolean initilized;
+
+    private boolean isPushQueue;
+    private Cache<String, Object> tasks;
+    private SearchManager searchManager;
+    private DatastoreService datastoreService;
 
     public static Queue getQueue(String queueName) {
         return new CapedwarfQueue(queueName); // do not cache
@@ -82,21 +86,31 @@ class CapedwarfQueue implements Queue {
 
     private CapedwarfQueue(String queueName) {
         validateQueueName(queueName);
-
-        CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
-        QueueXml qx = env.getQueueXml();
-        QueueXml.Queue queue = qx.getQueues().get(queueName);
-        if (queue == null) {
-            throw new IllegalStateException("No such queue " + queueName + " in queue.xml!");
-        }
-
         this.queueName = queueName;
-        this.isPushQueue = queue.getMode() == QueueXml.Mode.PUSH;
-        AdvancedCache<String, Object> ac = getCache().getAdvancedCache();
-        this.tasks = ac.with(Application.getAppClassloader());
-        this.searchManager = Search.getSearchManager(tasks);
+    }
 
-        this.datastoreService = DatastoreServiceFactory.getDatastoreService();
+    void initialize() {
+        if (initilized == false) {
+            synchronized (this) {
+                if (initilized == false) {
+                    CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
+                    QueueXml qx = env.getQueueXml();
+                    QueueXml.Queue queue = qx.getQueues().get(queueName);
+                    if (queue == null) {
+                        throw new IllegalStateException("No such queue " + queueName + " in queue.xml!");
+                    }
+
+                    this.isPushQueue = queue.getMode() == QueueXml.Mode.PUSH;
+                    AdvancedCache<String, Object> ac = getCache().getAdvancedCache();
+                    this.tasks = ac.with(Application.getAppClassloader());
+                    this.searchManager = Search.getSearchManager(tasks);
+
+                    this.datastoreService = DatastoreServiceFactory.getDatastoreService();
+
+                    initilized = true;
+                }
+            }
+        }
     }
 
     private Cache<String, Object> getCache() {

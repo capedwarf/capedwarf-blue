@@ -38,8 +38,15 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.appengine.api.NamespaceManager;
+import com.google.apphosting.api.ApiProxy;
+import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.servlet.AbstractHttpServletRequest;
-import org.jboss.capedwarf.shared.jms.ServletRequestCreator;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Key;
+import org.jboss.capedwarf.shared.components.SimpleKey;
+import org.jboss.capedwarf.shared.jms.AbstractServletRequestCreator;
 
 /**
  * Tasks servlet request creator.
@@ -47,7 +54,7 @@ import org.jboss.capedwarf.shared.jms.ServletRequestCreator;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class TasksServletRequestCreator implements ServletRequestCreator {
+public class TasksServletRequestCreator extends AbstractServletRequestCreator {
 
     private static final String COPY = "_copy";
 
@@ -74,6 +81,25 @@ public class TasksServletRequestCreator implements ServletRequestCreator {
         request.addHeader(TasksMessageCreator.TASK_EXECUTION_COUNT, executionCount);
         request.addHeader(TasksMessageCreator.TASK_RETRY_COUNT, executionCount);
         return request;
+    }
+
+    public void prepare(HttpServletRequest request, String appId) {
+        Key<CapedwarfEnvironment> key = new SimpleKey<CapedwarfEnvironment>(appId, CapedwarfEnvironment.class);
+        CapedwarfEnvironment env = ComponentRegistry.getInstance().getComponent(key);
+
+        CapedwarfEnvironment.setThreadLocalInstance(env.clone());
+        ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
+
+        String namespace = request.getHeader(TasksMessageCreator.CURRENT_NAMESPACE);
+        NamespaceManager.set(namespace);
+    }
+
+    public void finish() {
+        try {
+            ApiProxy.setDelegate(null);
+        } finally {
+            CapedwarfEnvironment.clearThreadLocalInstance();
+        }
     }
 
     private static class TasksServletRequest extends AbstractHttpServletRequest {

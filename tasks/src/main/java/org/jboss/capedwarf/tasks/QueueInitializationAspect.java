@@ -22,38 +22,22 @@
 
 package org.jboss.capedwarf.tasks;
 
-import com.google.appengine.api.taskqueue.IQueueFactory;
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.spi.FactoryProvider;
-import com.google.appengine.spi.ServiceProvider;
-import org.jboss.capedwarf.aspects.proxy.AspectFactory;
-import org.jboss.capedwarf.aspects.proxy.AspectRegistry;
-import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
-import org.kohsuke.MetaInfServices;
+import org.jboss.capedwarf.aspects.AbstractAspect;
+import org.jboss.capedwarf.aspects.proxy.AspectContext;
 
 /**
- * JBoss Queue.
+ * Initialization aspect.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-@MetaInfServices(FactoryProvider.class)
-@ServiceProvider(value = IQueueFactory.class, precedence = CapedwarfFactoryProvider.PRECEDENCE)
-public class CapedwarfQueueFactoryProvider extends CapedwarfFactoryProvider<IQueueFactory> {
-    static {
-        AspectRegistry.addAspect(new QueueInitializationAspect());
+class QueueInitializationAspect extends AbstractAspect<QueueInitialization> {
+    QueueInitializationAspect() {
+        super(QueueInitialization.class);
     }
 
-    private final IQueueFactory factory = new IQueueFactory() {
-        public Queue getQueue(String name) {
-            return AspectFactory.createProxy(Queue.class, CapedwarfQueue.getQueue(name));
-        }
-    };
-
-    public CapedwarfQueueFactoryProvider() {
-        super(IQueueFactory.class);
-    }
-
-    protected IQueueFactory getFactoryInstance() {
-        return factory;
+    public Object invoke(AspectContext context) throws Throwable {
+        CapedwarfQueue.class.cast(context.getInfo().getApiImpl()).initialize();
+        return context.proceed();
     }
 }

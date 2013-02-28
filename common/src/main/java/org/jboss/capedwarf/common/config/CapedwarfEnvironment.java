@@ -48,7 +48,7 @@ import org.jboss.capedwarf.shared.config.QueueXml;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable {
+public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable, Cloneable {
     private static final long serialVersionUID = 1L;
 
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
@@ -69,13 +69,13 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     private static final long GLOBAL_TIME_LIMIT = Long.parseLong(System.getProperty("jboss.capedwarf.globalTimeLimit", "60000"));
 
-    private final long requestStart;
+    private long requestStart;
     private volatile Boolean checkGlobalTimeLimit;
 
     private String email;
     private boolean isAdmin;
     private String authDomain;
-    private Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+    private Map<String, Object> attributes;
 
     private CapedwarfConfiguration capedwarfConfiguration;
     private AppEngineWebXml appEngineWebXml;
@@ -87,12 +87,29 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private String defaultVersionHostname;
 
     public CapedwarfEnvironment() {
+        init();
+    }
+
+    private void init() {
         requestStart = System.currentTimeMillis();
+        // attributes
+        attributes = new ConcurrentHashMap<String, Object>();
         // a bit of a workaround for LocalServiceTestHelper::tearDown NPE
         attributes.put(REQUEST_END_LISTENERS, new ArrayList());
         // add thread factory
         attributes.put(REQUEST_THREAD_FACTORY_ATTR, LazyThreadFactory.INSTANCE);
         attributes.put(BACKGROUND_THREAD_FACTORY_ATTR, LazyThreadFactory.INSTANCE);
+    }
+
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    public CapedwarfEnvironment clone() {
+        try {
+            CapedwarfEnvironment clone = (CapedwarfEnvironment) super.clone();
+            clone.init();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private boolean doCheckGlobalTimeLimit() {
