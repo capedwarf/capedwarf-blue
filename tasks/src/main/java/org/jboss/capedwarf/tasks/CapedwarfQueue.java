@@ -249,7 +249,7 @@ class CapedwarfQueue implements Queue {
         assertPullQueue();
         final QueryBuilder builder = searchManager.buildQueryBuilderForClass(TaskOptionsEntity.class).get();
         final Query queueQuery = toTerm(builder, "queue", queueName).createQuery();
-        final String tag = options.getTag();
+        final String tag = options.getTagAsString();
         final Query lq;
         if (tag == null) {
             if (options.isGroupByTag()) {

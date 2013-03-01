@@ -44,16 +44,24 @@ class LeaseOptionsInternal {
     private long lease;
     private TimeUnit unit;
     private long countLimit;
-    private String tag;
+    private byte[] tag;
     private boolean groupByTag;
     private Double deadlineInSeconds;
 
-    LeaseOptionsInternal(long lease, TimeUnit unit, long countLimit, String tag) {
-        this(lease, unit, countLimit, tag, false);
+    static LeaseOptions toLeaseOptions(long lease, TimeUnit unit, long countLimit, byte[] tag, boolean groupByTag, Double deadlineInSeconds) {
+        LeaseOptions options = LeaseOptions.Builder.withLeasePeriod(lease, unit).countLimit(countLimit);
+        if (tag != null) {
+            options.tag(tag);
+        }
+        if (groupByTag) {
+            options.groupByTag();
+        }
+        options.deadlineInSeconds(deadlineInSeconds);
+        return options;
     }
 
-    private LeaseOptionsInternal(long lease, TimeUnit unit, long countLimit, byte[] tag, boolean groupByTag, Double deadlineInSeconds) {
-        this(lease, unit, countLimit, (tag != null) ? new String(tag) : null, groupByTag, deadlineInSeconds);
+    LeaseOptionsInternal(long lease, TimeUnit unit, long countLimit, String tag) {
+        this(lease, unit, countLimit, tag, false);
     }
 
     LeaseOptionsInternal(long lease, TimeUnit unit, long countLimit, String tag, boolean groupByTag) {
@@ -61,23 +69,20 @@ class LeaseOptionsInternal {
     }
 
     LeaseOptionsInternal(long lease, TimeUnit unit, long countLimit, String tag, boolean groupByTag, Double deadlineInSeconds) {
-        this.lease = lease;
-        this.unit = unit;
-        this.countLimit = countLimit;
-        this.tag = tag;
-        this.groupByTag = groupByTag;
-        this.deadlineInSeconds = deadlineInSeconds;
+        this(lease, unit, countLimit, (tag != null) ? tag.getBytes() : null, groupByTag, deadlineInSeconds);
+    }
+
+    LeaseOptionsInternal(long lease, TimeUnit unit, long countLimit, byte[] tag, boolean groupByTag, Double deadlineInSeconds) {
+        this(toLeaseOptions(lease, unit, countLimit, tag, groupByTag, deadlineInSeconds));
     }
 
     LeaseOptionsInternal(LeaseOptions options) {
-        this(
-            invoke(getLease, options, 0L),
-            invoke(getUnit, options, TimeUnit.MILLISECONDS),
-            invoke(getCountLimit, options, 0L),
-            invoke(getTag, options, null),
-            invoke(getGroupByTag, options, false),
-            invoke(getDeadlineInSeconds, options, 0.0)
-        );
+        this.lease = invoke(getLease, options, 0L);
+        this.unit = invoke(getUnit, options, TimeUnit.MILLISECONDS);
+        this.countLimit = invoke(getCountLimit, options, 0L);
+        this.tag = invoke(getTag, options, null);
+        this.groupByTag = invoke(getGroupByTag, options, false);
+        this.deadlineInSeconds = invoke(getDeadlineInSeconds, options, 0.0);
     }
 
     private static <T> T invoke(TargetInvocation<T> ti, LeaseOptions options, T defaultValue) {
@@ -101,8 +106,12 @@ class LeaseOptionsInternal {
         return countLimit;
     }
 
-    public String getTag() {
+    public byte[] getTag() {
         return tag;
+    }
+
+    public String getTagAsString() {
+        return (tag != null) ? new String(tag) : null;
     }
 
     public boolean isGroupByTag() {
