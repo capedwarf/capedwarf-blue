@@ -44,7 +44,6 @@ import org.jboss.test.capedwarf.tasks.support.RetryTestServlet;
 import org.jboss.test.capedwarf.tasks.support.TestQueueServlet;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -260,7 +259,6 @@ public class TasksTest extends TasksTestBase {
         assertEquals("1", request2.getHeader(TASK_EXECUTION_COUNT));
     }
 
-    @Ignore("CAPEDWARF-112")
     @Test
     public void testRetryLimitIsHonored() throws Exception {
         RetryTestServlet.setNumberOfTimesToFail(10);

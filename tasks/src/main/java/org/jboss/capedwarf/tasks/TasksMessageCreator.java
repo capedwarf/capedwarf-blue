@@ -35,6 +35,7 @@ import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.jms.MessageConstants;
 import org.jboss.capedwarf.shared.jms.ServletRequestCreator;
 
 /**
@@ -84,6 +85,8 @@ public class TasksMessageCreator implements MessageCreator {
         addMethod(message);
         addHeaders(message);
         addParameters(message);
+
+        message.setIntProperty(MessageConstants.MAX_ATTEMPTS, taskOptions.getTaskRetryLimit() == null ? -1 : taskOptions.getTaskRetryLimit());
     }
 
     private void addMethod(Message message) throws JMSException {
@@ -130,8 +133,8 @@ public class TasksMessageCreator implements MessageCreator {
             }
         }
         map.put(QUEUE_NAME_HEADER, queueName);
-        map.put(TASK_NAME_HEADER, toHeaderValue(taskOptions.getTaskName()));
-        map.put(TASK_ETA, toHeaderValue(taskOptions.getEtaMillis()));
+        map.put(TASK_NAME_HEADER, toStringOrNull(taskOptions.getTaskName()));
+        map.put(TASK_ETA, toStringOrNull(taskOptions.getEtaMillis()));
         map.put(FAIL_FAST, Boolean.FALSE.toString()); // TODO?
         if (map.containsKey(CURRENT_NAMESPACE) == false) {
             String namespace = NamespaceManager.get();
@@ -152,7 +155,7 @@ public class TasksMessageCreator implements MessageCreator {
         return TasksServletRequestCreator.class;
     }
 
-    private static String toHeaderValue(Object value) {
+    private static String toStringOrNull(Object value) {
         return (value != null) ? value.toString() : null;
     }
 }
