@@ -25,8 +25,6 @@ package org.jboss.capedwarf.common.async;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import com.google.apphosting.api.ApiProxy;
-import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
@@ -84,13 +82,7 @@ public final class Wrappers {
             try {
                 CapedwarfEnvironment.setThreadLocalInstance(env);
                 try {
-                    final ApiProxy.Delegate previous = ApiProxy.getDelegate();
-                    ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
-                    try {
-                        return callable.call();
-                    } finally {
-                        ApiProxy.setDelegate(previous);
-                    }
+                    return callable.call();
                 } finally {
                     CapedwarfEnvironment.clearThreadLocalInstance();
                 }

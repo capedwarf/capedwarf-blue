@@ -86,6 +86,8 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
     private String secureBaseApplicationUrl;
     private String defaultVersionHostname;
 
+    private int counter;
+
     public CapedwarfEnvironment() {
         init();
     }
@@ -99,17 +101,6 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
         // add thread factory
         attributes.put(REQUEST_THREAD_FACTORY_ATTR, LazyThreadFactory.INSTANCE);
         attributes.put(BACKGROUND_THREAD_FACTORY_ATTR, LazyThreadFactory.INSTANCE);
-    }
-
-    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
-    public CapedwarfEnvironment clone() {
-        try {
-            CapedwarfEnvironment clone = (CapedwarfEnvironment) super.clone();
-            clone.init();
-            return clone;
-        } catch (CloneNotSupportedException e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     private boolean doCheckGlobalTimeLimit() {
@@ -186,7 +177,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
     }
 
     public Map<String, Object> getAttributes() {
-        if (isProduction() == false && attributes.containsKey(BackendService.DEVAPPSERVER_PORTMAPPING_KEY) == false) {
+        if (backends != null && isProduction() == false && attributes.containsKey(BackendService.DEVAPPSERVER_PORTMAPPING_KEY) == false) {
             Map<String, String> portMap = new HashMap<String, String>();
             for (BackendsXml.Backend bb : backends) {
                 portMap.put(bb.getName(), getDefaultVersionHostname());
@@ -269,8 +260,13 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
     }
 
     public static CapedwarfEnvironment createThreadLocalInstance() {
-        CapedwarfEnvironment environment = new CapedwarfEnvironment();
-        ApiProxy.setEnvironmentForCurrentThread(environment);
+        CapedwarfEnvironment environment = getThreadLocalInstanceInternal();
+        if (environment == null) {
+            environment = new CapedwarfEnvironment();
+            ApiProxy.setEnvironmentForCurrentThread(environment);
+            environment.counter++;
+        }
+
         return environment;
     }
 
@@ -287,12 +283,24 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
      *
      * @return env or null if not set
      */
-    public static CapedwarfEnvironment getThreadLocalInstanceInternal() {
+    protected static CapedwarfEnvironment getThreadLocalInstanceInternal() {
         return (CapedwarfEnvironment) ApiProxy.getCurrentEnvironment();
     }
 
+    /**
+     * Check if env already exists.
+     *
+     * @return true if already exists, false otherwise
+     */
+    public static boolean hasThreadLocalInstance() {
+        return (getThreadLocalInstanceInternal() != null);
+    }
+
     public static void clearThreadLocalInstance() {
-        ApiProxy.clearEnvironmentForCurrentThread();
+        CapedwarfEnvironment env = getThreadLocalInstanceInternal();
+        if (--env.counter == 0) {
+            ApiProxy.clearEnvironmentForCurrentThread();
+        }
     }
 
     public static CapedwarfEnvironment setThreadLocalInstance(final CapedwarfEnvironment environment) {

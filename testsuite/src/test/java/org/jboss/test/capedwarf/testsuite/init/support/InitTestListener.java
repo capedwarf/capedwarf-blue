@@ -26,15 +26,19 @@ import java.util.Collections;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.apphosting.api.ApiProxy;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class InitTestListener implements ServletContextListener {
+public class InitTestListener implements ServletContextListener, ServletRequestListener {
+    private static final String KEY = "__KEY";
     @SuppressWarnings("UnusedDeclaration")
     private static final DatastoreService service;
 
@@ -44,6 +48,17 @@ public class InitTestListener implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent sce) {
         service.get(Collections.singleton(KeyFactory.createKey("NO_SUCH_KIND", 1)));
+    }
+
+    public void requestInitialized(ServletRequestEvent sre) {
+        ApiProxy.getCurrentEnvironment().getAttributes().put(KEY, KEY);
+    }
+
+    public void requestDestroyed(ServletRequestEvent sre) {
+        Object value = ApiProxy.getCurrentEnvironment().getAttributes().get(KEY);
+        if (value == null) {
+            throw new RuntimeException("Missing KEY!");
+        }
     }
 
     public void contextDestroyed(ServletContextEvent sce) {

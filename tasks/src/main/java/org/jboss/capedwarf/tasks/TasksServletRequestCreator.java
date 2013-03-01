@@ -39,13 +39,8 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.appengine.api.NamespaceManager;
-import com.google.apphosting.api.ApiProxy;
-import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.servlet.AbstractHttpServletRequest;
-import org.jboss.capedwarf.shared.components.ComponentRegistry;
-import org.jboss.capedwarf.shared.components.Key;
-import org.jboss.capedwarf.shared.components.SimpleKey;
 import org.jboss.capedwarf.shared.jms.AbstractServletRequestCreator;
 
 /**
@@ -84,22 +79,13 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
     }
 
     public void prepare(HttpServletRequest request, String appId) {
-        Key<CapedwarfEnvironment> key = new SimpleKey<CapedwarfEnvironment>(appId, CapedwarfEnvironment.class);
-        CapedwarfEnvironment env = ComponentRegistry.getInstance().getComponent(key);
-
-        CapedwarfEnvironment.setThreadLocalInstance(env.clone());
-        ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
-
+        CapedwarfEnvironment.createThreadLocalInstance();
         String namespace = request.getHeader(TasksMessageCreator.CURRENT_NAMESPACE);
         NamespaceManager.set(namespace);
     }
 
     public void finish() {
-        try {
-            ApiProxy.setDelegate(null);
-        } finally {
-            CapedwarfEnvironment.clearThreadLocalInstance();
-        }
+        CapedwarfEnvironment.clearThreadLocalInstance();
     }
 
     private static class TasksServletRequest extends AbstractHttpServletRequest {
