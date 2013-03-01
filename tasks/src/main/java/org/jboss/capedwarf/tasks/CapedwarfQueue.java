@@ -296,6 +296,7 @@ class CapedwarfQueue implements Queue {
             .maxResults((int) options.getCountLimit())
             .sort(SORT);
 
+        //noinspection unchecked
         return (List<Task>) (List)query.list();
     }
 
@@ -316,7 +317,7 @@ class CapedwarfQueue implements Queue {
             throw new IllegalArgumentException("No such task: " + name);
         }
 
-        if (!isLeased(task)) {
+        if (isLeased(task) == false) {
             throw new IllegalStateException("Cannot modify non leased task: " + taskHandle);
         }
 

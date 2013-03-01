@@ -264,8 +264,8 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
         if (environment == null) {
             environment = new CapedwarfEnvironment();
             ApiProxy.setEnvironmentForCurrentThread(environment);
-            environment.counter++;
         }
+        environment.counter++;
 
         return environment;
     }
