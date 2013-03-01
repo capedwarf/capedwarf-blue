@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.tasks;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +47,6 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.TermTermination;
-import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
@@ -101,8 +101,7 @@ class CapedwarfQueue implements Queue {
                     }
 
                     this.isPushQueue = queue.getMode() == QueueXml.Mode.PUSH;
-                    AdvancedCache<String, Object> ac = getCache().getAdvancedCache();
-                    this.tasks = ac.with(Application.getAppClassloader());
+                    this.tasks = getCache().getAdvancedCache().with(Application.getAppClassloader());
                     this.searchManager = Search.getSearchManager(tasks);
 
                     this.datastoreService = DatastoreServiceFactory.getDatastoreService();
@@ -163,7 +162,8 @@ class CapedwarfQueue implements Queue {
         try {
             List<TaskHandle> handles = new ArrayList<TaskHandle>();
             for (TaskOptions to : taskOptions) {
-                TaskHandle handle = addTask(producer, to);
+                TaskOptionsHelper options = new TaskOptionsHelper(to);
+                TaskHandle handle = addTask(producer, options);
                 handles.add(handle);
             }
             return handles;
@@ -185,36 +185,45 @@ class CapedwarfQueue implements Queue {
         }
     }
 
-    private TaskHandle addTask(ServletExecutorProducer producer, TaskOptions to) {
+    private TaskHandle addTask(ServletExecutorProducer producer, TaskOptionsHelper options) {
         try {
-            TaskOptionsHelper helper = new TaskOptionsHelper(to);
-            TaskOptions copy = new TaskOptions(to);
-            if (helper.getMethod() == TaskOptions.Method.PULL) {
-                String taskName = helper.getTaskName();
-                if (taskName == null) {
-                    taskName = UUID.randomUUID().toString(); // TODO -- unique enough?
-                    copy.taskName(taskName);
-                }
-                Long lifespan = helper.getEtaMillis();
-                RetryOptions retryOptions = helper.getRetryOptions();
-                TaskOptionsEntity taskOptionsEntity = new TaskOptionsEntity(taskName, queueName, copy.getTag(), lifespan, copy, retryOptions);
-                getTasks().put(taskName, taskOptionsEntity, lifespan == null ? -1 : lifespan, TimeUnit.MILLISECONDS);
+            if (options.getMethod() == TaskOptions.Method.PULL) {
+                return addPullTask(options);
             } else {
-                MessageCreator mc = createMessageCreator(to);
-                String id = producer.sendMessage(mc);
-                if (helper.getTaskName() == null)
-                    copy.taskName(toTaskName(id));
+                return addPushTask(producer, options);
             }
-            return new TaskHandle(copy, getQueueName());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    private TaskHandle addPullTask(TaskOptionsHelper options) throws UnsupportedEncodingException {
+        TaskOptions copy = new TaskOptions(options.getTaskOptions());
+        String taskName = options.getTaskName();
+        if (taskName == null) {
+            taskName = UUID.randomUUID().toString(); // TODO -- unique enough?
+            copy.taskName(taskName);
+        }
+        Long lifespan = options.getEtaMillis();
+        RetryOptions retryOptions = options.getRetryOptions();
+        Task task = new Task(taskName, queueName, copy.getTag(), lifespan, copy, retryOptions);
+        storeTask(task);
+        return new TaskHandle(copy, getQueueName());
+    }
+
+    private TaskHandle addPushTask(ServletExecutorProducer producer, TaskOptionsHelper options) throws Exception {
+        TaskOptions copy = new TaskOptions(options.getTaskOptions());
+        MessageCreator mc = createMessageCreator(options.getTaskOptions());
+        String id = producer.sendMessage(mc);
+        if (options.getTaskName() == null) {
+            copy.taskName(toTaskName(id));
+        }
+        return new TaskHandle(copy, getQueueName());
+    }
+
     public boolean deleteTask(String taskName) {
         validateTaskName(taskName);
-        final Cache<String, Object> cache = getTasks();
-        return (cache.remove(TaskLeaseEntity.LEASE + taskName) != null) || (cache.remove(taskName) != null);
+        return getTasks().remove(taskName) != null;
     }
 
     public boolean deleteTask(TaskHandle taskHandle) {
@@ -247,43 +256,53 @@ class CapedwarfQueue implements Queue {
     @SuppressWarnings("unchecked")
     protected List<TaskHandle> leaseTasks(LeaseOptionsInternal options) {
         assertPullQueue();
-        final QueryBuilder builder = searchManager.buildQueryBuilderForClass(TaskOptionsEntity.class).get();
-        final Query queueQuery = toTerm(builder, "queue", queueName).createQuery();
-        final String tag = options.getTagAsString();
-        final Query lq;
-        if (tag == null) {
-            if (options.isGroupByTag()) {
-                final CacheQuery first = searchManager.getQuery(queueQuery, TaskOptionsEntity.class).maxResults(1).sort(SORT);
-                final List<Object> singleton = first.list();
-                if (singleton.isEmpty()) {
-                    return Collections.emptyList();
-                } else {
-                    final String tmp = TaskOptionsEntity.class.cast(singleton.get(0)).getTag();
-                    final Query tagQuery = toTerm(builder, "tag", tmp).createQuery();
-                    lq = builder.bool().must(queueQuery).must(tagQuery).createQuery();
-                }
-            } else {
-                lq = queueQuery;
-            }
-        } else {
-            final Query tagQuery = toTerm(builder, "tag", tag).createQuery();
-            lq = builder.bool().must(queueQuery).must(tagQuery).createQuery();
-        }
 
-        final CacheQuery query = searchManager.getQuery(lq, TaskOptionsEntity.class)
-                .maxResults((int) options.getCountLimit())
-                .sort(SORT);
-
-        final List<TaskHandle> handles = new ArrayList<TaskHandle>();
-        for (Object obj : query.list()) {   // must not use query.iterator() because of ISPN-2852
-            TaskOptionsEntity toe = (TaskOptionsEntity) obj;
-            final String name = toe.getName();
-            final Cache<String, Object> cache = getTasks();
-            cache.remove(name);
-            cache.put(TaskLeaseEntity.LEASE + name, new TaskLeaseEntity(getQueueName(), toe.getOptions()), options.getLease(), options.getUnit());
-            handles.add(new TaskHandle(toe.getOptions(), queueName));
+        List<TaskHandle> handles = new ArrayList<TaskHandle>();
+        for (Task task : findTasks(options)) {
+            long now = System.currentTimeMillis();
+            long leaseMillis = options.getUnit().toMillis(options.getLease());
+            task.setLastLeaseTimestamp(now);
+            task.setLeasedUntil(now + leaseMillis);
+            storeTask(task);
+            handles.add(new TaskHandle(task.getOptions(), queueName));
         }
         return handles;
+    }
+
+    private List<Task> findTasks(LeaseOptionsInternal options) {
+        QueryBuilder builder = searchManager.buildQueryBuilderForClass(Task.class).get();
+
+        Query luceneQuery = builder.bool()
+            .must(toTerm(builder, Task.QUEUE, queueName).createQuery())
+            .must(builder.range().onField(Task.LEASED_UNTIL).below(System.currentTimeMillis()).createQuery())
+            .createQuery();
+
+        String tag = options.getTagAsString();
+        if (tag == null && options.isGroupByTag()) {
+            Task firstTask = findFirstTask(luceneQuery);
+            if (firstTask == null) {
+                return Collections.emptyList();
+            } else {
+                tag = firstTask.getTag();
+            }
+        }
+
+        if (tag != null) {
+            Query tagQuery = toTerm(builder, Task.TAG, tag).createQuery();
+            luceneQuery = builder.bool().must(luceneQuery).must(tagQuery).createQuery();
+        }
+
+        CacheQuery query = searchManager.getQuery(luceneQuery, Task.class)
+            .maxResults((int) options.getCountLimit())
+            .sort(SORT);
+
+        return (List<Task>) (List)query.list();
+    }
+
+    private Task findFirstTask(Query queueQuery) {
+        CacheQuery query = searchManager.getQuery(queueQuery, Task.class).maxResults(1).sort(SORT);
+        List<Object> tasks = query.list();
+        return tasks.isEmpty() ? null : (Task) tasks.get(0);
     }
 
     public void purge() {
@@ -291,21 +310,29 @@ class CapedwarfQueue implements Queue {
     }
 
     public TaskHandle modifyTaskLease(TaskHandle taskHandle, long lease, TimeUnit unit) {
-        final String name = taskHandle.getName();
-        final Cache<String, Object> cache = getTasks();
-        TaskLeaseEntity tle = (TaskLeaseEntity) cache.get(TaskLeaseEntity.LEASE + name);
-        if (tle != null) {
-            if (lease == 0) {
-                cache.remove(TaskLeaseEntity.LEASE + name);
-                return add(tle.getOptions());
-            } else {
-                cache.replace(TaskLeaseEntity.LEASE + name, tle, lease, unit);
-                taskHandle = new TaskHandle(tle.getOptions().etaMillis(unit.toMillis(lease)), queueName);
-            }
-        } else {
+        String name = taskHandle.getName();
+        Task task = (Task) getTasks().get(name);
+        if (task == null) {
+            throw new IllegalArgumentException("No such task: " + name);
+        }
+
+        if (!isLeased(task)) {
             throw new IllegalStateException("Cannot modify non leased task: " + taskHandle);
         }
-        return taskHandle;
+
+        long leasedUntil = System.currentTimeMillis() + unit.toMillis(lease);
+        task.setLeasedUntil(leasedUntil);
+        storeTask(task);
+
+        return new TaskHandle(task.getOptions().etaMillis(leasedUntil), queueName);
+    }
+
+    private void storeTask(Task task) {
+        getTasks().put(task.getName(), task);
+    }
+
+    private boolean isLeased(Task task) {
+        return task.getLeasedUntil() >= System.currentTimeMillis();
     }
 
     private void assertPullQueue() {

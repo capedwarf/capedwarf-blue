@@ -85,4 +85,8 @@ public class TaskOptionsHelper {
     public byte[] getTagAsBytes() {
         return taskOptions.getTagAsBytes();
     }
+
+    public TaskOptions getTaskOptions() {
+        return taskOptions;
+    }
 }

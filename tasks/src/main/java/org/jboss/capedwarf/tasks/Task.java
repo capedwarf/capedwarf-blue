@@ -36,11 +36,16 @@ import org.hibernate.search.annotations.TermVector;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @Indexed
 @ProvidedId
-public class TaskOptionsEntity implements Serializable {
+public class Task implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    public static final String QUEUE = "queue";
+    public static final String TAG = "tag";
+    public static final String LEASED_UNTIL = "leasedUntil";
 
     private String name;
     private String queue;
@@ -48,11 +53,13 @@ public class TaskOptionsEntity implements Serializable {
     private Long eta;
     private TaskOptions options;
     private RetryOptions retry;
+    private long lastLeaseTimestamp;
+    private long leasedUntil;
 
-    public TaskOptionsEntity() {
+    public Task() {
     }
 
-    public TaskOptionsEntity(String name, String queue, String tag, Long eta, TaskOptions options, RetryOptions retry) {
+    public Task(String name, String queue, String tag, Long eta, TaskOptions options, RetryOptions retry) {
         this.name = name;
         this.queue = queue;
         this.tag = tag;
@@ -69,7 +76,7 @@ public class TaskOptionsEntity implements Serializable {
         this.name = name;
     }
 
-    @Field(analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
+    @Field(name = QUEUE, analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
     public String getQueue() {
         return queue;
     }
@@ -78,7 +85,7 @@ public class TaskOptionsEntity implements Serializable {
         this.queue = queue;
     }
 
-    @Field(analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
+    @Field(name = TAG, analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
     public String getTag() {
         return tag;
     }
@@ -111,5 +118,23 @@ public class TaskOptionsEntity implements Serializable {
 
     public void setRetry(RetryOptions retry) {
         this.retry = retry;
+    }
+
+    public void setLastLeaseTimestamp(long lastLeaseTimestamp) {
+        this.lastLeaseTimestamp = lastLeaseTimestamp;
+    }
+
+    public long getLastLeaseTimestamp() {
+        return lastLeaseTimestamp;
+    }
+
+    public void setLeasedUntil(long leasedUntil) {
+        this.leasedUntil = leasedUntil;
+    }
+
+    @Field(name = LEASED_UNTIL)
+    @NumericField
+    public long getLeasedUntil() {
+        return leasedUntil;
     }
 }
