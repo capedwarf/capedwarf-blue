@@ -302,6 +302,8 @@ class CapedwarfQueue implements Queue {
                 cache.replace(TaskLeaseEntity.LEASE + name, tle, lease, unit);
                 taskHandle = new TaskHandle(tle.getOptions().etaMillis(unit.toMillis(lease)), queueName);
             }
+        } else {
+            throw new IllegalStateException("Cannot modify non leased task: " + taskHandle);
         }
         return taskHandle;
     }
