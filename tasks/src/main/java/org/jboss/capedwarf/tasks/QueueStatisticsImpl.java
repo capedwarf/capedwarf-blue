@@ -87,9 +87,9 @@ class QueueStatisticsImpl extends JmsAdapter implements QueueStatisticsInternal 
                 browser.close();
             }
 
-            QueryBuilder builder = manager.buildQueryBuilderForClass(TaskOptionsEntity.class).get();
+            QueryBuilder builder = manager.buildQueryBuilderForClass(Task.class).get();
             Query query = CapedwarfQueue.toTerm(builder, "queue", queueName).createQuery();
-            int pullTasksSize = manager.getQuery(query, TaskOptionsEntity.class).getResultSize();
+            int pullTasksSize = manager.getQuery(query, Task.class).getResultSize();
 
             numTasks = requestsInFlight + pullTasksSize;
 
