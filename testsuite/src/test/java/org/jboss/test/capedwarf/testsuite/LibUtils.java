@@ -39,6 +39,14 @@ public class LibUtils {
         addLibrary(war, "com.google.appengine:appengine-api-1.0-sdk");
     }
 
+    public static void addJpaSpecLibrary(WebArchive war) {
+        addLibrary(war, "org.hibernate.javax.persistence:hibernate-jpa-2.0-api");
+    }
+
+    public static void addObjectifyLibrary(WebArchive war) {
+        addLibrary(war, "com.googlecode.objectify:objectify");
+    }
+
     public static void addLibrary(WebArchive war, String groupId, String artifactId) {
         addLibrary(war, groupId + ":" + artifactId);
     }

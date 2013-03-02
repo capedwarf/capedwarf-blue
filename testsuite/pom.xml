@@ -233,6 +233,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.googlecode.objectify</groupId>
+            <artifactId>objectify</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>
