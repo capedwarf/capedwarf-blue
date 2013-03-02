@@ -69,13 +69,14 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
 
     private static final long GLOBAL_TIME_LIMIT = Long.parseLong(System.getProperty("jboss.capedwarf.globalTimeLimit", "60000"));
 
-    private long requestStart;
+    private final long requestStart;
+    private final Map<String, Object> attributes;
+
     private volatile Boolean checkGlobalTimeLimit;
 
     private String email;
     private boolean isAdmin;
     private String authDomain;
-    private Map<String, Object> attributes;
 
     private CapedwarfConfiguration capedwarfConfiguration;
     private AppEngineWebXml appEngineWebXml;
@@ -89,10 +90,6 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
     private int counter;
 
     public CapedwarfEnvironment() {
-        init();
-    }
-
-    private void init() {
         requestStart = System.currentTimeMillis();
         // attributes
         attributes = new ConcurrentHashMap<String, Object>();
