@@ -80,18 +80,14 @@ public abstract class AbstractCacheListener {
      * @param taskable the taskable
      */
     protected <T> void executeCallable(Taskable<T> taskable) {
-        CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
+        final CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
         try {
             final Future<T> future = InfinispanUtils.fire(Application.getAppId(), CacheName.DIST, taskable.toCallable(), taskable.taskKey());
             if (taskable.block()) {
                 Util.quietGet(future);
             }
         } finally {
-            if (previous != null) {
-                CapedwarfEnvironment.setThreadLocalInstance(previous);
-            } else {
-                CapedwarfEnvironment.clearThreadLocalInstance();
-            }
+            CapedwarfEnvironment.setThreadLocalInstance(previous);
         }
     }
 }

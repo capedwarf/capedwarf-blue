@@ -50,15 +50,11 @@ public abstract class AbstractUpdateTask<V> extends BaseTxTask<String, V, Entity
     }
 
     protected Entity callInTx() throws Exception {
-        CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
+        final CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
         try {
             return callInTxInternal();
         } finally {
-            if (previous != null) {
-                CapedwarfEnvironment.setThreadLocalInstance(previous);
-            } else {
-                CapedwarfEnvironment.clearThreadLocalInstance();
-            }
+            CapedwarfEnvironment.setThreadLocalInstance(previous);
         }
     }
 

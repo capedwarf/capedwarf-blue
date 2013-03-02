@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.backends.BackendService;
@@ -276,15 +277,6 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
     }
 
     /**
-     * This one doesn't make any check if env is null.
-     *
-     * @return env or null if not set
-     */
-    protected static CapedwarfEnvironment getThreadLocalInstanceInternal() {
-        return (CapedwarfEnvironment) ApiProxy.getCurrentEnvironment();
-    }
-
-    /**
      * Check if env already exists.
      *
      * @return true if already exists, false otherwise
@@ -298,23 +290,41 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
         if (--env.counter == 0) {
             ApiProxy.clearEnvironmentForCurrentThread();
         }
+        if (env.counter < 0) {
+            Logger.getLogger(CapedwarfEnvironment.class.getName()).warning("Negative counter: " + env.counter + " !!");
+        }
     }
 
     public static CapedwarfEnvironment setThreadLocalInstance(final CapedwarfEnvironment environment) {
         SecurityManager sm = System.getSecurityManager();
         if (sm == null) {
-            CapedwarfEnvironment previous = getThreadLocalInstanceInternal();
-            ApiProxy.setEnvironmentForCurrentThread(environment);
-            return previous;
+            return setCapedwarfEnvironment(environment);
         } else {
             return AccessController.doPrivileged(new PrivilegedAction<CapedwarfEnvironment>() {
                 public CapedwarfEnvironment run() {
-                    CapedwarfEnvironment previous = getThreadLocalInstanceInternal();
-                    ApiProxy.setEnvironmentForCurrentThread(environment);
-                    return previous;
+                    return setCapedwarfEnvironment(environment);
                 }
             });
         }
+    }
+
+    private static CapedwarfEnvironment setCapedwarfEnvironment(CapedwarfEnvironment environment) {
+        CapedwarfEnvironment previous = getThreadLocalInstanceInternal();
+        if (environment != null) {
+            ApiProxy.setEnvironmentForCurrentThread(environment);
+        } else {
+            ApiProxy.clearEnvironmentForCurrentThread();
+        }
+        return previous;
+    }
+
+    /**
+     * This one doesn't make any check if env is null.
+     *
+     * @return env or null if not set
+     */
+    protected static CapedwarfEnvironment getThreadLocalInstanceInternal() {
+        return (CapedwarfEnvironment) ApiProxy.getCurrentEnvironment();
     }
 
     public void setUserId(String userId) {

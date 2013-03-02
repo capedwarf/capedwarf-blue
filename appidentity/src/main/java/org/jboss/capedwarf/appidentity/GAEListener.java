@@ -44,6 +44,8 @@ import org.jboss.capedwarf.shared.config.ConfigurationAware;
 import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
+ * Env setup is done in AS' CapedwarfSetupAction.
+ *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
@@ -57,20 +59,10 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
 
     private volatile ExposedLogService logService;
 
+    // Invoked from CapedwarfSetupAction -- do not change signatures; reflection usage!
+
     public static void setup() {
         setupInternal(appEngineWebXmlTL.get(), capedwarfConfigurationTL.get(), queueXmlTL.get(), backendsTL.get());
-    }
-
-    protected static void setupInternal(AppEngineWebXml appEngineWebXml, CapedwarfConfiguration capedwarfConfiguration, QueueXml queueXml, BackendsXml backends) {
-        CapedwarfEnvironment environment = CapedwarfEnvironment.createThreadLocalInstance();
-        setupInternal(environment, appEngineWebXml, capedwarfConfiguration, queueXml, backends);
-    }
-
-    private static void setupInternal(CapedwarfEnvironment environment, AppEngineWebXml appEngineWebXml, CapedwarfConfiguration capedwarfConfiguration, QueueXml queueXml, BackendsXml backends) {
-        environment.setAppEngineWebXml(appEngineWebXml);
-        environment.setCapedwarfConfiguration(capedwarfConfiguration);
-        environment.setQueueXml(queueXml);
-        environment.setBackends(backends);
     }
 
     public static boolean isSetup() {
@@ -85,6 +77,16 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
             CapedwarfEnvironment.clearThreadLocalInstance();
         }
     }
+
+    protected static void setupInternal(AppEngineWebXml appEngineWebXml, CapedwarfConfiguration capedwarfConfiguration, QueueXml queueXml, BackendsXml backends) {
+        CapedwarfEnvironment environment = CapedwarfEnvironment.createThreadLocalInstance();
+        environment.setAppEngineWebXml(appEngineWebXml);
+        environment.setCapedwarfConfiguration(capedwarfConfiguration);
+        environment.setQueueXml(queueXml);
+        environment.setBackends(backends);
+    }
+
+    // Servlet / Request event handling
 
     public void contextInitialized(ServletContextEvent sce) {
         initialize();
@@ -125,15 +127,7 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         }
     }
 
-    private ExposedLogService getLogService() {
-        if (logService == null) {
-            logService = (ExposedLogService) LogServiceFactory.getLogService();
-        }
-        return logService;
-    }
-
     private void initJBossEnvironment(HttpServletRequest request) {
-        setupInternal(appEngineWebXml, capedwarfConfiguration, queueXml, backendsXml);
         CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
         initRequestData(environment, request);
         initUserData(environment, request);
@@ -155,5 +149,12 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
                 environment.setAdmin(principal.isAdmin());
             }
         }
+    }
+
+    private ExposedLogService getLogService() {
+        if (logService == null) {
+            logService = (ExposedLogService) LogServiceFactory.getLogService();
+        }
+        return logService;
     }
 }

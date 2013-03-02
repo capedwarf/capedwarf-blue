@@ -80,11 +80,11 @@ public final class Wrappers {
         public V call() throws Exception {
             final ClassLoader old = SecurityActions.setThreadContextClassLoader(appCL);
             try {
-                CapedwarfEnvironment.setThreadLocalInstance(env);
+                final CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
                 try {
                     return callable.call();
                 } finally {
-                    CapedwarfEnvironment.clearThreadLocalInstance();
+                    CapedwarfEnvironment.setThreadLocalInstance(previous);
                 }
             } finally {
                 SecurityActions.setThreadContextClassLoader(old);
