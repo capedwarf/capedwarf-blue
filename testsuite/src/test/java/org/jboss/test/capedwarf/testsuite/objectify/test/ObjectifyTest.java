@@ -64,10 +64,14 @@ public class ObjectifyTest extends TestsuiteTestBase {
 
         Map<Key<Car>, Car> keys = objectify.save().entities(c1).now();
         Assert.assertEquals(1, keys.size());
+        final Key<Car> key = keys.keySet().iterator().next();
+        try {
+            Car c2 = objectify.load().key(key).get();
 
-        Car c2 = objectify.load().key(keys.keySet().iterator().next()).get();
-
-        Assert.assertEquals(c1.getMark(), c2.getMark());
-        Assert.assertEquals(c1.getType(), c2.getType());
+            Assert.assertEquals(c1.getMark(), c2.getMark());
+            Assert.assertEquals(c1.getType(), c2.getType());
+        } finally {
+            objectify.delete().key(key).now();
+        }
     }
 }
