@@ -29,16 +29,15 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.backends.BackendService;
-import com.google.appengine.api.backends.BackendServiceFactory;
 import com.google.appengine.api.utils.SystemProperty;
 import com.google.apphosting.api.ApiProxy;
+import com.google.common.base.Function;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.BackendsXml;
@@ -49,7 +48,7 @@ import org.jboss.capedwarf.shared.config.QueueXml;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable, Cloneable {
+public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable {
     private static final long serialVersionUID = 1L;
 
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
@@ -72,6 +71,12 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
 
     private final long requestStart;
     private final Map<String, Object> attributes;
+
+    private final Function<BackendsXml.Backend, String> ADDRESS_FN = new Function<BackendsXml.Backend, String>() {
+        public String apply(BackendsXml.Backend input) {
+            return getDefaultVersionHostname();
+        }
+    };
 
     private volatile Boolean checkGlobalTimeLimit;
 
@@ -110,16 +115,6 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
 
     public boolean isProduction() {
         return SystemProperty.environment.value() == SystemProperty.Environment.Value.Production;
-    }
-
-    public String getBackendAddress(String backend) {
-        for (BackendsXml.Backend bb : backends) {
-            if (bb.matches(backend)) {
-                BackendService bs = BackendServiceFactory.getBackendService();
-                return bs.getBackendAddress(backend);
-            }
-        }
-        return null;
     }
 
     public void checkGlobalTimeLimit() {
@@ -175,18 +170,11 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
     }
 
     public Map<String, Object> getAttributes() {
-        if (backends != null && isProduction() == false && attributes.containsKey(BackendService.DEVAPPSERVER_PORTMAPPING_KEY) == false) {
-            Map<String, String> portMap = new HashMap<String, String>();
-            for (BackendsXml.Backend bb : backends) {
-                portMap.put(bb.getName(), getDefaultVersionHostname());
-            }
-            attributes.put(BackendService.DEVAPPSERVER_PORTMAPPING_KEY, portMap);
-        }
         return attributes;
     }
 
     public long getRemainingMillis() {
-        return 0; // TODO
+        return requestStart + GLOBAL_TIME_LIMIT - System.currentTimeMillis();
     }
 
     public void setEmail(String email) {
@@ -325,6 +313,16 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
      */
     protected static CapedwarfEnvironment getThreadLocalInstanceInternal() {
         return (CapedwarfEnvironment) ApiProxy.getCurrentEnvironment();
+    }
+
+    /**
+     * Mark env as initialized.
+     */
+    public void initialized() {
+        if (backends != null) {
+            // TODO -- move this to CD_JBossAS
+            attributes.put(BackendService.DEVAPPSERVER_PORTMAPPING_KEY, backends.getAddresses(ADDRESS_FN));
+        }
     }
 
     public void setUserId(String userId) {

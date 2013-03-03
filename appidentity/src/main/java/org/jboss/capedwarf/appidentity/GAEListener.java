@@ -131,6 +131,7 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
         initRequestData(environment, request);
         initUserData(environment, request);
+        environment.initialized();
     }
 
     private void initRequestData(CapedwarfEnvironment environment, HttpServletRequest request) {
