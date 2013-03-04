@@ -62,4 +62,13 @@ public class FileUploader {
         return EntityUtils.toString(response.getEntity());
     }
 
+    /**
+     * This method simulates a HTTP multipart form POST, where the user submits the form without actually selecting a file
+     * to upload. Most browsers leave the "filename" part of the content-disposition header empty (they do not omit it
+     * completely).
+     */
+    public String uploadWithoutFile(String uri, String partName) throws URISyntaxException, IOException {
+        return uploadFile(uri, partName, "", "application/octet-stream", new byte[0]);
+    }
+
 }
