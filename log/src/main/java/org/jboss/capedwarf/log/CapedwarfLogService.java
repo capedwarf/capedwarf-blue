@@ -353,8 +353,9 @@ class CapedwarfLogService implements ExposedLogService {
             Long maxLogLevelOrdinal = (Long) requestEntity.getProperty(LOG_REQUEST_MAX_LOG_LEVEL);
             if (maxLogLevelOrdinal == null || logLevel.ordinal() > maxLogLevelOrdinal) {
                 requestEntity.setProperty(LOG_REQUEST_MAX_LOG_LEVEL, (long) logLevel.ordinal());
-                datastoreService.put(requestEntity); // atm, only store on change
             }
+            requestEntity.setProperty(LOG_REQUEST_END_TIME_MILLIS, System.currentTimeMillis());
+            datastoreService.put(requestEntity);
 
         } finally {
             NamespaceManager.set(ns);
@@ -384,6 +385,7 @@ class CapedwarfLogService implements ExposedLogService {
 
         Entity entity = new Entity(LOG_REQUEST_ENTITY_KIND);
         entity.setProperty(LOG_REQUEST_START_TIME_MILLIS, startTimeMillis);
+        entity.setProperty(LOG_REQUEST_END_TIME_MILLIS, startTimeMillis);
 
         if (servletRequest instanceof HttpServletRequest) {
             HttpServletRequest request = (HttpServletRequest) servletRequest;
