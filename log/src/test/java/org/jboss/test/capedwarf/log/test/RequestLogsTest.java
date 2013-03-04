@@ -72,9 +72,16 @@ public class RequestLogsTest extends LoggingTestBase {
     public static final String ENTITY_KIND = "RequestLogs";
     public static final String ENTITY_NAME = "TimeData";
     public static final String REQUEST_ID_PROPERTY = "requestId";
+
     public static final String REQUEST_1_ENTITY_NAME = "1";
+    public static final String REQUEST_1_URI = "index.jsp?entityName=" + REQUEST_1_ENTITY_NAME;
     public static final String REQUEST_2_ENTITY_NAME = "2";
+    public static final String REQUEST_2_URI = "index2.jsp?entityName=" + REQUEST_2_ENTITY_NAME;
     public static final String REQUEST_3_ENTITY_NAME = "3";
+    public static final String REQUEST_3_URI = "index3.jsp?entityName=" + REQUEST_3_ENTITY_NAME;
+
+    public static final String REGEX_IP4 = "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+";
+    public static final String REGEX_TIMESTAMP = "[0-9]{1,2}/[A-Za-z]{3}/[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2} [+\\-][0-9]{4}";
 
     private LogService service;
 
@@ -111,13 +118,13 @@ public class RequestLogsTest extends LoggingTestBase {
     @InSequence(1)
     public void createRequests(@ArquillianResource URL url) throws Exception {
         long time1 = getServerTimeUsec(url);
-        performGetRequest(new URL(url, "index.jsp?entityName=" + REQUEST_1_ENTITY_NAME));
+        performGetRequest(new URL(url, REQUEST_1_URI));
         long time2 = getServerTimeUsec(url);
 
-        performPostRequest(new URL(url, "index2.jsp?entityName=" + REQUEST_2_ENTITY_NAME));
+        performPostRequest(new URL(url, REQUEST_2_URI));
 
         try {
-            performGetRequest(new URL(url, "index3.jsp?entityName=" + REQUEST_3_ENTITY_NAME));
+            performGetRequest(new URL(url, REQUEST_3_URI));
         } catch (IOException ignored) {
         }
 
@@ -224,10 +231,14 @@ public class RequestLogsTest extends LoggingTestBase {
     @Test
     @InSequence(20)
     public void testResource() throws Exception {
-        String contextPath = isRunningInsideCapedwarf() ? "/capedwarf-tests" : "";
-        assertEquals(contextPath + "/index.jsp", getRequestLogs1().getResource());
-        assertEquals(contextPath + "/index2.jsp", getRequestLogs2().getResource());
-        assertEquals(contextPath + "/index3.jsp", getRequestLogs3().getResource());
+        String contextPath = getContextPath();
+        assertEquals(contextPath + REQUEST_1_URI, getRequestLogs1().getResource());
+        assertEquals(contextPath + REQUEST_2_URI, getRequestLogs2().getResource());
+        assertEquals(contextPath + REQUEST_3_URI, getRequestLogs3().getResource());
+    }
+
+    private String getContextPath() {
+        return isRunningInsideCapedwarf() ? "/capedwarf-tests/" : "/";
     }
 
     @Test
@@ -245,10 +256,9 @@ public class RequestLogsTest extends LoggingTestBase {
     @Test
     @InSequence(20)
     public void testCombined() throws Exception {
-        String ip = "[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+";
-        String timestamp = "[0-9]{1,2}/[A-Za-z]{3}/[0-9]{4}:[0-9]{2}:[0-9]{2}:[0-9]{2} [+\\-][0-9]{4}";
-        String resource = (isRunningInsideCapedwarf() ? "/capedwarf-tests" : "") + "/index.jsp";
-        String regexp = ip + " - - \\[" + timestamp + "\\] \"" + Pattern.quote("GET " + resource + " HTTP/1.1") + "\" [0-9]+ [0-9]+ - \"" + USER_AGENT + "\"";
+        String resource = getContextPath() + REQUEST_1_URI;
+        String regexp = REGEX_IP4 + " - - \\[" + REGEX_TIMESTAMP + "\\] " +
+            "\"" + Pattern.quote("GET " + resource + " HTTP/1.1") + "\" [0-9]+ [0-9]+ - \"" + USER_AGENT + "\"";
 
         assertRegexpMatches(regexp, getRequestLogs1().getCombined());
     }
