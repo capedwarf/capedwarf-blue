@@ -40,7 +40,10 @@ public class ServletUtils {
         String contentDisposition = part.getHeader("content-disposition");
         for (String token : contentDisposition.split(";")) {
             if (token.trim().startsWith("filename")) {
-                return token.substring(token.indexOf('=') + 1).trim().replace("\"", "");
+                String filename = token.substring(token.indexOf('=') + 1).trim().replace("\"", "");
+                if (filename.length() > 0) {
+                	return filename;
+                }
             }
         }
         return null;
