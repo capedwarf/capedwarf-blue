@@ -23,7 +23,6 @@
 package org.jboss.test.capedwarf.blobstore.support;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -52,31 +51,18 @@ public class UploadHandlerServlet extends HttpServlet {
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         BlobstoreService blobstore = BlobstoreServiceFactory.getBlobstoreService();
 
-        PrintWriter out = response.getWriter();
+        lastUploadedBlobKey = getFirst(blobstore.getUploads(request));
+        lastUploadedBlobInfo = getFirst(blobstore.getBlobInfos(request));
+        lastUploadedFileInfo = getFirst(blobstore.getFileInfos(request));
+    }
 
-        Map<String, List<BlobKey>> uploadMap = blobstore.getUploads(request);
-        for (Map.Entry<String, List<BlobKey>> entry : uploadMap.entrySet()) {
-            for (BlobKey blobKey : entry.getValue()) {
-                out.println(entry.getKey() + ": " + blobKey);
-                lastUploadedBlobKey = blobKey;
+    private <E> E getFirst(Map<String, List<E>> map) {
+        for (Map.Entry<String, List<E>> entry : map.entrySet()) {
+            if (!entry.getValue().isEmpty()) {
+                return entry.getValue().get(0);
             }
         }
-
-        Map<String, List<BlobInfo>> bInfos = blobstore.getBlobInfos(request);
-        for (Map.Entry<String, List<BlobInfo>> entry : bInfos.entrySet()) {
-            for (BlobInfo blobInfo : entry.getValue()) {
-                out.println(entry.getKey() + ": " + blobInfo);
-                lastUploadedBlobInfo = blobInfo;
-            }
-        }
-
-        Map<String, List<FileInfo>> fInfos = blobstore.getFileInfos(request);
-        for (Map.Entry<String, List<FileInfo>> entry : fInfos.entrySet()) {
-            for (FileInfo fileInfo : entry.getValue()) {
-                out.println(entry.getKey() + ": " + fileInfo);
-                lastUploadedFileInfo = fileInfo;
-            }
-        }
+        return null;
     }
 
     public static BlobKey getLastUploadedBlobKey() {
@@ -89,5 +75,11 @@ public class UploadHandlerServlet extends HttpServlet {
 
     public static FileInfo getLastUploadedFileInfo() {
         return lastUploadedFileInfo;
+    }
+
+    public static void reset() {
+        lastUploadedBlobKey = null;
+        lastUploadedBlobInfo = null;
+        lastUploadedFileInfo = null;
     }
 }

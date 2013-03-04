@@ -46,13 +46,13 @@ import org.jboss.test.capedwarf.blobstore.support.UploadUrlServerServlet;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.jboss.test.capedwarf.common.test.TestContext;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -100,7 +100,7 @@ public class BlobstoreUploadTest extends TestBase {
     @Test
     @RunAsClient
     @InSequence(10)
-    public void uploadFile(@ArquillianResource URL url) throws Exception {
+    public void testUploadedFileHasCorrectContent_upload(@ArquillianResource URL url) throws Exception {
         FileUploader fileUploader = new FileUploader();
         String uploadUrl = fileUploader.getUploadUrl(new URL(url, "getUploadUrl"));
         fileUploader.uploadFile(uploadUrl, "file", FILENAME, CONTENT_TYPE, UPLOADED_CONTENT);
@@ -108,7 +108,7 @@ public class BlobstoreUploadTest extends TestBase {
 
     @Test
     @InSequence(20)
-    public void testUploadedFileHasCorrectContent() throws Exception {
+    public void testUploadedFileHasCorrectContent_assert() throws Exception {
         BlobKey blobKey = UploadHandlerServlet.getLastUploadedBlobKey();
         assertNotNull("blobKey should not be null", blobKey);
 
@@ -117,18 +117,41 @@ public class BlobstoreUploadTest extends TestBase {
 
         BlobInfo blobInfo = UploadHandlerServlet.getLastUploadedBlobInfo();
         assertNotNull("blobInfo should not be null", blobInfo);
-        Assert.assertEquals(blobKey, blobInfo.getBlobKey());
-        Assert.assertEquals(FILENAME, blobInfo.getFilename());
-        Assert.assertEquals(CONTENT_TYPE, blobInfo.getContentType());
-        Assert.assertEquals(UPLOADED_CONTENT.length, blobInfo.getSize());
-        Assert.assertEquals(MD5_HASH, blobInfo.getMd5Hash());
+        assertEquals(blobKey, blobInfo.getBlobKey());
+        assertEquals(FILENAME, blobInfo.getFilename());
+        assertEquals(CONTENT_TYPE, blobInfo.getContentType());
+        assertEquals(UPLOADED_CONTENT.length, blobInfo.getSize());
+        assertEquals(MD5_HASH, blobInfo.getMd5Hash());
 
         FileInfo fileInfo = UploadHandlerServlet.getLastUploadedFileInfo();
         assertNotNull("fileInfo should not be null", fileInfo);
-        Assert.assertEquals(FILENAME, fileInfo.getFilename());
-        Assert.assertEquals(CONTENT_TYPE, fileInfo.getContentType());
-        Assert.assertEquals(UPLOADED_CONTENT.length, fileInfo.getSize());
-        Assert.assertEquals(MD5_HASH, fileInfo.getMd5Hash());
+        assertEquals(FILENAME, fileInfo.getFilename());
+        assertEquals(CONTENT_TYPE, fileInfo.getContentType());
+        assertEquals(UPLOADED_CONTENT.length, fileInfo.getSize());
+        assertEquals(MD5_HASH, fileInfo.getMd5Hash());
+    }
+
+    @Test
+    @InSequence(30)
+    public void resetUploadHandlerServlet() throws Exception {
+        UploadHandlerServlet.reset();
+    }
+
+    @Test
+    @RunAsClient
+    @InSequence(40)
+    public void testSubmitMultipartFormWithoutFile_upload(@ArquillianResource URL url) throws Exception {
+        FileUploader fileUploader = new FileUploader();
+        String uploadUrl = fileUploader.getUploadUrl(new URL(url, "getUploadUrl"));
+        fileUploader.uploadWithoutFile(uploadUrl, "file");
+    }
+
+    @Test
+    @InSequence(50)
+    public void testSubmitMultipartFormWithoutFile_assert() throws Exception {
+        assertNull("blobKey should be null", UploadHandlerServlet.getLastUploadedBlobKey());
+        assertNull("blobInfo should be null", UploadHandlerServlet.getLastUploadedBlobInfo());
+        assertNull("fileInfo should be null", UploadHandlerServlet.getLastUploadedFileInfo());
     }
 
     private String getFileContents(BlobKey blobKey) throws IOException {
