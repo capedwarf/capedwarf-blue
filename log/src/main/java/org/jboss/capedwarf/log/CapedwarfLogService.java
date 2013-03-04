@@ -54,9 +54,9 @@ import org.jboss.capedwarf.common.compatibility.Compatibility;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
+import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN_OR_EQUAL;
 import static com.google.appengine.api.datastore.Query.FilterOperator.LESS_THAN_OR_EQUAL;
-import static com.google.appengine.api.datastore.Query.FilterOperator.NOT_EQUAL;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -192,13 +192,11 @@ class CapedwarfLogService implements ExposedLogService {
             requestLogs.setStartTimeUsec(startTimeMillis * 1000);
         }
         Long endTimeMillis = (Long) entity.getProperty(LOG_REQUEST_END_TIME_MILLIS);
-        if (endTimeMillis == null) {
-            requestLogs.setFinished(false);
-        } else {
-            requestLogs.setFinished(true);
+        if (endTimeMillis != null) {
             requestLogs.setEndTimeUsec(endTimeMillis * 1000);
         }
 
+        requestLogs.setFinished(Boolean.TRUE.equals(entity.getProperty(LOG_REQUEST_FINISHED)));
         requestLogs.setMethod((String) entity.getProperty(LOG_REQUEST_METHOD));
         requestLogs.setHttpVersion((String) entity.getProperty(LOG_REQUEST_HTTP_VERSION));
         requestLogs.setHost((String) entity.getProperty(LOG_REQUEST_HOST));
@@ -253,11 +251,11 @@ class CapedwarfLogService implements ExposedLogService {
 
     private Query createRequestLogsQuery(LogQuery logQuery) {
         List<Query.Filter> filters = new LinkedList<Query.Filter>();
-        if (logQuery.getStartTimeUsec() != null) {
-            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, GREATER_THAN_OR_EQUAL, logQuery.getStartTimeUsec()));
+        if (logQuery.getStartTimeMillis() != null) {
+            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, GREATER_THAN_OR_EQUAL, logQuery.getStartTimeMillis()));
         }
-        if (logQuery.getEndTimeUsec() != null) {
-            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, LESS_THAN_OR_EQUAL, logQuery.getEndTimeUsec()));
+        if (logQuery.getEndTimeMillis() != null) {
+            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, LESS_THAN_OR_EQUAL, logQuery.getEndTimeMillis()));
         }
         if (logQuery.getMinLogLevel() != null) {
             filters.add(new Query.FilterPredicate(LOG_REQUEST_MAX_LOG_LEVEL, GREATER_THAN_OR_EQUAL, logQuery.getMinLogLevel().ordinal()));
@@ -265,7 +263,7 @@ class CapedwarfLogService implements ExposedLogService {
 
         boolean onlyCompleteRequests = !Boolean.TRUE.equals(logQuery.getIncludeIncomplete());
         if (onlyCompleteRequests) {
-            filters.add(new Query.FilterPredicate(LOG_REQUEST_END_TIME_MILLIS, NOT_EQUAL, null));
+            filters.add(new Query.FilterPredicate(LOG_REQUEST_FINISHED, EQUAL, Boolean.TRUE));
         }
 
         Query query = new Query(LOG_REQUEST_ENTITY_KIND);
@@ -305,10 +303,10 @@ class CapedwarfLogService implements ExposedLogService {
 
         Query query = new Query(LOG_LINE_ENTITY_KIND);
         if (logQuery.getStartTimeUsec() != null) {
-            filters.add(new Query.FilterPredicate(LOG_LINE_MILLIS, GREATER_THAN_OR_EQUAL, logQuery.getStartTimeUsec()));
+            filters.add(new Query.FilterPredicate(LOG_LINE_MILLIS, GREATER_THAN_OR_EQUAL, logQuery.getStartTimeMillis()));
         }
         if (logQuery.getEndTimeUsec() != null) {
-            filters.add(new Query.FilterPredicate(LOG_LINE_MILLIS, LESS_THAN_OR_EQUAL, logQuery.getEndTimeUsec()));
+            filters.add(new Query.FilterPredicate(LOG_LINE_MILLIS, LESS_THAN_OR_EQUAL, logQuery.getEndTimeMillis()));
         }
 
         addFilters(query, filters);
@@ -386,6 +384,7 @@ class CapedwarfLogService implements ExposedLogService {
         Entity entity = new Entity(LOG_REQUEST_ENTITY_KIND);
         entity.setProperty(LOG_REQUEST_START_TIME_MILLIS, startTimeMillis);
         entity.setProperty(LOG_REQUEST_END_TIME_MILLIS, startTimeMillis);
+        entity.setProperty(LOG_REQUEST_FINISHED, false);
 
         if (servletRequest instanceof HttpServletRequest) {
             HttpServletRequest request = (HttpServletRequest) servletRequest;
@@ -414,6 +413,7 @@ class CapedwarfLogService implements ExposedLogService {
             entity.setProperty(LOG_REQUEST_END_TIME_MILLIS, System.currentTimeMillis());
             entity.setProperty(LOG_REQUEST_STATUS, status);
             entity.setProperty(LOG_REQUEST_RESPONSE_SIZE, contentLength);
+            entity.setProperty(LOG_REQUEST_FINISHED, true);
             datastoreService.put(entity);
         }
     }
