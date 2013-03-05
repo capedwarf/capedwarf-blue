@@ -61,13 +61,13 @@ public class EntityLoader {
     }
 
     public Iterator<Object> getIterator(Integer chunkSize) {
-        final ResultIterator iterator;
+        final Iterator<Object> iterator;
         if (chunkSize == null) {
-            iterator = cacheQuery.iterator();
+            iterator = toClosingIterator(cacheQuery.iterator());
         } else if (chunkSize == Integer.MAX_VALUE) {
-            iterator = new ListResultIterator(cacheQuery.list());
+            iterator = cacheQuery.list().iterator();
         } else {
-            iterator = cacheQuery.iterator(new FetchOptions().fetchSize(chunkSize));
+            iterator = toClosingIterator(cacheQuery.iterator(new FetchOptions().fetchSize(chunkSize)));
         }
         if (specialLoadingNeeded()) {
             return new WrappingIterator(iterator);
@@ -76,14 +76,18 @@ public class EntityLoader {
         }
     }
 
+    private Iterator<Object> toClosingIterator(ResultIterator iterator) {
+        return new ClosingIterator(iterator);
+    }
+
     private boolean specialLoadingNeeded() {
         return query.isKeysOnly() || !query.getProjections().isEmpty();
     }
 
     private class WrappingIterator implements Iterator<Object> {
-        private final ResultIterator iterator;
+        private final Iterator iterator;
 
-        public WrappingIterator(ResultIterator iterator) {
+        public WrappingIterator(Iterator iterator) {
             this.iterator = iterator;
         }
 
@@ -100,19 +104,25 @@ public class EntityLoader {
         }
     }
 
-    private static class ListResultIterator extends ForwardingIterator<Object> implements ResultIterator {
-        private Iterator<Object> delegate;
+    private static class ClosingIterator extends ForwardingIterator<Object> {
+        private final ResultIterator delegate;
 
-        private ListResultIterator(List<Object> list) {
-            this.delegate = list.iterator();
+        private ClosingIterator(ResultIterator delegate) {
+            this.delegate = delegate;
         }
 
         protected Iterator<Object> delegate() {
             return delegate;
         }
 
-        public void close() {
-            // do nothing
+        protected void finalize() throws Throwable {
+            try {
+                delegate.close(); // any better way to do this?
+            } catch (Throwable t) {
+                System.err.println(t);
+            } finally {
+                super.finalize();
+            }
         }
     }
 }
