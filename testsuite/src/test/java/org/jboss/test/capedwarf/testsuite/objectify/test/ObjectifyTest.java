@@ -22,11 +22,11 @@
 
 package org.jboss.test.capedwarf.testsuite.objectify.test;
 
+import java.util.List;
 import java.util.Map;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
-import com.googlecode.objectify.ObjectifyFactory;
 import com.googlecode.objectify.ObjectifyService;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -34,7 +34,10 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.testsuite.LibUtils;
 import org.jboss.test.capedwarf.testsuite.TestsuiteTestBase;
 import org.jboss.test.capedwarf.testsuite.objectify.support.Car;
+import org.jboss.test.capedwarf.testsuite.objectify.support.Snapshot;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,6 +46,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class ObjectifyTest extends TestsuiteTestBase {
+    private Objectify objectify;
+
     @Deployment
     public static WebArchive getDeployment() {
         WebArchive war = getCapedwarfDeployment();
@@ -52,12 +57,21 @@ public class ObjectifyTest extends TestsuiteTestBase {
         return war;
     }
 
+    @Before
+    public void setUp() {
+        ObjectifyService.register(Car.class);
+        ObjectifyService.register(Snapshot.class);
+
+        objectify = ObjectifyService.ofy();
+    }
+
+    @After
+    public void tearDown() {
+        ObjectifyService.reset();
+    }
+
     @Test
     public void testSmoke() throws Exception {
-        ObjectifyService.register(Car.class);
-        ObjectifyFactory factory = ObjectifyService.factory();
-        Objectify objectify = factory.begin();
-
         Car c1 = new Car();
         c1.setMark("Mazda");
         c1.setType("CX-5");
@@ -73,5 +87,23 @@ public class ObjectifyTest extends TestsuiteTestBase {
         } finally {
             objectify.delete().key(key).now();
         }
+    }
+
+    @Test
+    public void testCD123() throws Exception {
+        long start = 0;
+        long end = 1000;
+
+        Snapshot s1 = new Snapshot();
+        s1.setTimestamp(500);
+        objectify.save().entities(s1).now();
+
+        List<Snapshot> list = objectify.load()
+                .type(Snapshot.class)
+                .filter("timestamp >=", start)
+                .filter("timestamp <", end)
+                .list();
+
+        Assert.assertEquals(1, list.size());
     }
 }

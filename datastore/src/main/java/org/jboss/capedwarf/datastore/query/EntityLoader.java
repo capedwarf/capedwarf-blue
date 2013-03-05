@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.google.appengine.api.datastore.Query;
+import com.google.common.collect.ForwardingIterator;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.FetchOptions;
 import org.infinispan.query.ResultIterator;
@@ -60,7 +61,14 @@ public class EntityLoader {
     }
 
     public Iterator<Object> getIterator(Integer chunkSize) {
-        final ResultIterator iterator = (chunkSize == null) ? cacheQuery.iterator() : cacheQuery.iterator(new FetchOptions().fetchSize(chunkSize));
+        final ResultIterator iterator;
+        if (chunkSize == null) {
+            iterator = cacheQuery.iterator();
+        } else if (chunkSize == Integer.MAX_VALUE) {
+            iterator = new ListResultIterator(cacheQuery.list());
+        } else {
+            iterator = cacheQuery.iterator(new FetchOptions().fetchSize(chunkSize));
+        }
         if (specialLoadingNeeded()) {
             return new WrappingIterator(iterator);
         } else {
@@ -89,6 +97,22 @@ public class EntityLoader {
 
         public void remove() {
             iterator.remove();
+        }
+    }
+
+    private static class ListResultIterator extends ForwardingIterator<Object> implements ResultIterator {
+        private Iterator<Object> delegate;
+
+        private ListResultIterator(List<Object> list) {
+            this.delegate = list.iterator();
+        }
+
+        protected Iterator<Object> delegate() {
+            return delegate;
+        }
+
+        public void close() {
+            // do nothing
         }
     }
 }
