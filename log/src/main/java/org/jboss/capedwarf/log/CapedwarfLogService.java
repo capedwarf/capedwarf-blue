@@ -388,7 +388,8 @@ class CapedwarfLogService implements ExposedLogService {
 
         if (servletRequest instanceof HttpServletRequest) {
             HttpServletRequest request = (HttpServletRequest) servletRequest;
-            entity.setProperty(LOG_REQUEST_URI, request.getRequestURI());
+            String queryString = request.getQueryString();
+            entity.setProperty(LOG_REQUEST_URI, request.getRequestURI() + (queryString == null ? "" : ("?" + queryString)));
             entity.setProperty(LOG_REQUEST_USER_AGENT, request.getHeader("User-Agent"));
             entity.setProperty(LOG_REQUEST_METHOD, request.getMethod());
             entity.setProperty(LOG_REQUEST_REFERRER, request.getHeader("referer"));
