@@ -23,6 +23,7 @@ public class TaskOptionsHelper {
     private static final TargetInvocation<HashMap<String, List<String>>> getHeaders = ReflectionUtils.cacheInvocation(TaskOptions.class, "getHeaders");
 
     private static final TargetInvocation<Integer> getTaskRetryLimit = ReflectionUtils.cacheInvocation(RetryOptions.class, "getTaskRetryLimit");
+    private static final TargetInvocation<Boolean> supportsBody = ReflectionUtils.cacheInvocation(TaskOptions.Method.class, "supportsBody");
 
     private TaskOptions taskOptions;
 
@@ -88,5 +89,9 @@ public class TaskOptionsHelper {
 
     public TaskOptions getTaskOptions() {
         return taskOptions;
+    }
+
+    public boolean isPayloadAllowed() {
+        return invoke(getMethod(), supportsBody);
     }
 }
