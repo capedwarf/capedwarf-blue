@@ -23,6 +23,8 @@
 package org.jboss.capedwarf.tasks;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -157,7 +159,7 @@ class CapedwarfQueue implements Queue {
     }
 
     public List<TaskHandle> add(Transaction transaction, Iterable<TaskOptions> taskOptions) {
-        assertTaskOptionsMatchQueueType(taskOptions);
+        checkTaskOptions(transaction, taskOptions);
         ServletExecutorProducer producer = new ServletExecutorProducer();
         try {
             List<TaskHandle> handles = new ArrayList<TaskHandle>();
@@ -172,16 +174,83 @@ class CapedwarfQueue implements Queue {
         }
     }
 
-    private void assertTaskOptionsMatchQueueType(Iterable<TaskOptions> taskOptions) {
-        for (TaskOptions options : taskOptions) {
-            TaskOptionsHelper helper = new TaskOptionsHelper(options);
-            TaskOptions.Method method = helper.getMethod();
-            if (isPushQueue ? method == TaskOptions.Method.PULL : method != TaskOptions.Method.PULL) {
-                throw new InvalidQueueModeException("Target queue mode does not support this operation");
+    private void checkTaskOptions(Transaction transaction, Iterable<TaskOptions> taskOptions) {
+        for (TaskOptions to : taskOptions) {
+            TaskOptionsHelper options = new TaskOptionsHelper(to);
+
+            if (transaction != null && options.getTaskName() != null && !options.getTaskName().equals("")) {
+                throw new IllegalArgumentException("Transactional tasks must not be named.");
             }
-            if (isPushQueue && helper.getTagAsBytes() != null) {
-                throw new IllegalArgumentException("Only PULL tasks can have a tag.");
+
+            if (isPushQueue) {
+                checkPushTaskOptions(options);
+            } else {
+                checkPullTaskOptions(options);
             }
+        }
+    }
+
+    private URI getUri(TaskOptionsHelper options) {
+        String url = options.getUrl();
+        if (url == null) {
+            return null;
+        }
+        try {
+            return new URI(url);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid url: " + url, e);
+        }
+    }
+
+    private void checkPushTaskOptions(TaskOptionsHelper options) {
+        if (options.getMethod() == TaskOptions.Method.PULL) {
+            throw new InvalidQueueModeException("Target queue mode does not support this operation");
+        }
+        if (options.getTagAsBytes() != null) {
+            throw new IllegalArgumentException("Only PULL tasks can have a tag.");
+        }
+        if (!options.isPayloadAllowed() && options.getPayload() != null) {
+            throw new IllegalArgumentException("Payload not allowed for method " + options.getMethod());
+        }
+        if (options.getMethod() == TaskOptions.Method.POST && options.getPayload() != null && !options.getParams().isEmpty()) {
+            throw new IllegalArgumentException("Tasks with method POST cannot have both a payload and parameters.");
+        }
+
+        URI uri = getUri(options);
+        if (uri != null) {
+            if (uri.isAbsolute()) {
+                throw new IllegalArgumentException("External URLs are not allowed.");
+            }
+            if (uri.getRawFragment() != null) {
+                throw new IllegalArgumentException("The URL must not contain a fragment.");
+            }
+            if (uri.getPath() != null && !uri.getPath().startsWith("/")) {
+                throw new IllegalArgumentException("The URL path must start with a '/'");
+            }
+            if (uri.getRawQuery() != null && !options.getParams().isEmpty()) {
+                throw new IllegalArgumentException("The TaskOptions should not contain both a query string and parameters.");
+            }
+            if (options.getMethod() == TaskOptions.Method.POST && uri.getRawQuery() != null) {
+                throw new IllegalArgumentException("Tasks with method POST must not contain a query string. Use parameters instead.");
+            }
+        }
+    }
+
+    private void checkPullTaskOptions(TaskOptionsHelper options) {
+        if (options.getMethod() != TaskOptions.Method.PULL) {
+            throw new InvalidQueueModeException("Target queue mode does not support this operation");
+        }
+        if (options.getUrl() != null) {
+            throw new IllegalArgumentException("May not specify url for tasks that have method PULL.");
+        }
+        if (!options.getHeaders().isEmpty()) {
+            throw new IllegalArgumentException("May not specify any headers for tasks that have method PULL.");
+        }
+        if (options.getPayload() != null && !options.getParams().isEmpty()) {
+            throw new IllegalArgumentException("May not specify both payload and params for tasks that have method PULL.");
+        }
+        if (options.getRetryOptions() != null) {
+            throw new IllegalArgumentException("May not specify retry options in tasks that have method PULL.");
         }
     }
 
@@ -256,6 +325,12 @@ class CapedwarfQueue implements Queue {
     @SuppressWarnings("unchecked")
     protected List<TaskHandle> leaseTasks(LeaseOptionsInternal options) {
         assertPullQueue();
+        if (options.getLease() == null) {
+            throw new IllegalArgumentException("The lease period must be specified.");
+        }
+        if (options.getCountLimit() == null) {
+            throw new IllegalArgumentException("The count limit must be specified.");
+        }
 
         List<TaskHandle> handles = new ArrayList<TaskHandle>();
         for (Task task : findTasks(options)) {
@@ -293,11 +368,11 @@ class CapedwarfQueue implements Queue {
         }
 
         CacheQuery query = searchManager.getQuery(luceneQuery, Task.class)
-            .maxResults((int) options.getCountLimit())
+            .maxResults((int) (long) options.getCountLimit())
             .sort(SORT);
 
         //noinspection unchecked
-        return (List<Task>) (List)query.list();
+        return (List<Task>) (List) query.list();
     }
 
     private Task findFirstTask(Query queueQuery) {

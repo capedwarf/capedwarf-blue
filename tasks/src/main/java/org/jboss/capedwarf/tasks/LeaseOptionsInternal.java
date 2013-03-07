@@ -41,9 +41,9 @@ class LeaseOptionsInternal {
     private static TargetInvocation<Boolean> getGroupByTag = ReflectionUtils.cacheInvocation(LeaseOptions.class, "getGroupByTag");
     private static TargetInvocation<Double> getDeadlineInSeconds = ReflectionUtils.cacheInvocation(LeaseOptions.class, "getDeadlineInSeconds");
 
-    private long lease;
+    private Long lease;
     private TimeUnit unit;
-    private long countLimit;
+    private Long countLimit;
     private byte[] tag;
     private boolean groupByTag;
     private Double deadlineInSeconds;
@@ -77,9 +77,9 @@ class LeaseOptionsInternal {
     }
 
     LeaseOptionsInternal(LeaseOptions options) {
-        this.lease = invoke(getLease, options, 0L);
+        this.lease = invoke(getLease, options, null);
         this.unit = invoke(getUnit, options, TimeUnit.MILLISECONDS);
-        this.countLimit = invoke(getCountLimit, options, 0L);
+        this.countLimit = invoke(getCountLimit, options, null);
         this.tag = invoke(getTag, options, null);
         this.groupByTag = invoke(getGroupByTag, options, false);
         this.deadlineInSeconds = invoke(getDeadlineInSeconds, options, 0.0);
@@ -94,7 +94,7 @@ class LeaseOptionsInternal {
         }
     }
 
-    public long getLease() {
+    public Long getLease() {
         return lease;
     }
 
@@ -102,7 +102,7 @@ class LeaseOptionsInternal {
         return unit;
     }
 
-    public long getCountLimit() {
+    public Long getCountLimit() {
         return countLimit;
     }
 
