@@ -24,27 +24,35 @@ package org.jboss.capedwarf.bytecode;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
+import java.security.AccessControlException;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
-import java.util.List;
+
+import com.google.apphosting.runtime.security.WhiteList;
+import org.jboss.capedwarf.common.compatibility.Compatibility;
 
 /**
- * Group all CapeDwarf transformers.
+ * Check white list
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfTransformer implements ClassFileTransformer {
-    private List<ClassFileTransformer> transformers = new ArrayList<ClassFileTransformer>();
+class WhiteListTransformer implements ClassFileTransformer {
+    private volatile Boolean disabled;
 
-    public CapedwarfTransformer() {
-        transformers.add(new WhiteListTransformer());
-        transformers.add(new FactoriesTransformer());
-        transformers.add(new MiscTransformer());
+    private boolean isDisabled(ClassLoader cl) {
+        if (disabled == null) {
+            synchronized (this) {
+                if (disabled == null) {
+                    Compatibility instance = Compatibility.getInstance(cl);
+                    disabled = instance.isEnabled(Compatibility.Feature.DISABLE_WHITE_LIST);
+                }
+            }
+        }
+        return disabled;
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        for (ClassFileTransformer cft : transformers) {
-            classfileBuffer = cft.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+        if (isDisabled(loader) == false && WhiteList.getWhiteList().contains(className) == false) {
+            throw new AccessControlException(className + " not supported in WhiteList!");
         }
         return classfileBuffer;
     }

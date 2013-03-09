@@ -52,7 +52,8 @@ public class Compatibility {
         IGNORE_LOGGING("ignore.logging"),
         ASYNC_LOGGING("async.logging"),
         ENABLE_EAGER_DATASTORE_STATS("enable.eager.datastore.stats", new RegexpValue("(sync|async)")),
-        ENABLE_GLOBAL_TIME_LIMIT("enable.globalTimeLimit");
+        ENABLE_GLOBAL_TIME_LIMIT("enable.globalTimeLimit"),
+        DISABLE_WHITE_LIST("disable.whitelist");
 
         private String key;
         private Value value;
