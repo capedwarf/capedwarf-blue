@@ -24,18 +24,17 @@ package org.jboss.capedwarf.bytecode;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
-import java.security.AccessControlException;
 import java.security.ProtectionDomain;
 
 import com.google.apphosting.runtime.security.WhiteList;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
 
 /**
- * Check white list
+ * Check black list
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class WhiteListTransformer implements ClassFileTransformer {
+class BlackListTransformer implements ClassFileTransformer {
     private volatile Boolean disabled;
 
     private boolean isDisabled(ClassLoader cl) {
@@ -43,17 +42,22 @@ class WhiteListTransformer implements ClassFileTransformer {
             synchronized (this) {
                 if (disabled == null) {
                     Compatibility instance = Compatibility.getInstance(cl);
-                    disabled = instance.isEnabled(Compatibility.Feature.DISABLE_WHITE_LIST);
+                    disabled = instance.isEnabled(Compatibility.Feature.DISABLE_BLACK_LIST);
                 }
             }
         }
         return disabled;
     }
 
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        if (isDisabled(loader) == false && WhiteList.getWhiteList().contains(className) == false) {
-            throw new AccessControlException(className + " not supported in WhiteList!");
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain domain, byte[] bytes) throws IllegalClassFormatException {
+        if (isDisabled(loader) == false && isBlackListed(loader, className, domain)) {
+            throw new NoClassDefFoundError(className + " is a restricted class. Please see the Google App Engine developer's guide for more details.");
         }
-        return classfileBuffer;
+        return bytes;
+    }
+
+    @SuppressWarnings("UnusedParameters")
+    protected boolean isBlackListed(ClassLoader loader, String className, ProtectionDomain domain) {
+        return WhiteList.getWhiteList().contains(className) == false; // TODO
     }
 }

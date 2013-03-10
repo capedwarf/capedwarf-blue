@@ -37,7 +37,7 @@ public class CapedwarfTransformer implements ClassFileTransformer {
     private List<ClassFileTransformer> transformers = new ArrayList<ClassFileTransformer>();
 
     public CapedwarfTransformer() {
-        transformers.add(new WhiteListTransformer());
+        transformers.add(new BlackListTransformer());
         transformers.add(new FactoriesTransformer());
         transformers.add(new MiscTransformer());
     }

@@ -38,14 +38,14 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Category(All.class)
-public class WhiteListTest extends TestBase {
+public class BlackListTest extends TestBase {
     @Deployment
     public static WebArchive getDeployment() {
         return getCapedwarfDeployment();
     }
 
     @Test(expected = Exception.class)
-    public void testWhiteList() throws Exception {
+    public void testBlackList() throws Exception {
         new javax.naming.InitialContext();
     }
 }
