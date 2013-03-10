@@ -22,30 +22,14 @@
 
 package org.jboss.capedwarf.bytecode;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
-import java.security.ProtectionDomain;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Group all CapeDwarf transformers.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfTransformer implements ClassFileTransformer {
-    private List<ClassFileTransformer> transformers = new ArrayList<ClassFileTransformer>();
-
+public class CapedwarfTransformer extends ListTransformer {
     public CapedwarfTransformer() {
-        transformers.add(new BlackListTransformer());
-        transformers.add(new FactoriesTransformer());
-        transformers.add(new MiscTransformer());
-    }
-
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-        for (ClassFileTransformer cft : transformers) {
-            classfileBuffer = cft.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
-        }
-        return classfileBuffer;
+        addTransformer(new FactoriesTransformer());
+        addTransformer(new MiscTransformer());
     }
 }

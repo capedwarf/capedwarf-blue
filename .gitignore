@@ -8,6 +8,7 @@ appidentity/target/
 arquillian/target/
 blobstore/target/
 bytecode/target/
+bytecode/dependency-reduced-pom.xml
 capabilities/target/
 channel/target/
 cluster/target/

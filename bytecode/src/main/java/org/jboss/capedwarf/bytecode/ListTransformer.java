@@ -25,33 +25,25 @@ package org.jboss.capedwarf.bytecode;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
-
-import org.jboss.capedwarf.common.compatibility.Compatibility;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Check black list
+ * Keep transformers in a list.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class BlackListTransformer implements ClassFileTransformer {
-    private volatile Boolean disabled;
+public abstract class ListTransformer implements ClassFileTransformer {
+    private List<ClassFileTransformer> transformers = new ArrayList<ClassFileTransformer>();
 
-    private boolean isDisabled(ClassLoader cl) {
-        if (disabled == null) {
-            synchronized (this) {
-                if (disabled == null) {
-                    Compatibility instance = Compatibility.readCompatibility(cl);
-                    disabled = instance.isEnabled(Compatibility.Feature.DISABLE_BLACK_LIST);
-                }
-            }
-        }
-        return disabled;
+    protected void addTransformer(ClassFileTransformer transformer) {
+        transformers.add(transformer);
     }
 
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain domain, byte[] bytes) throws IllegalClassFormatException {
-        if (isDisabled(loader) == false && BlackList.getBlackList().contains(className)) {
-            throw new NoClassDefFoundError(className + " is a restricted class. Please see the Google App Engine developer's guide for more details.");
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+        for (ClassFileTransformer cft : transformers) {
+            classfileBuffer = cft.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
         }
-        return bytes;
+        return classfileBuffer;
     }
 }

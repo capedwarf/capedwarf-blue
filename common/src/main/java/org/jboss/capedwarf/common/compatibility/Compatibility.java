@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.common.compatibility;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Map;
@@ -99,30 +100,45 @@ public class Compatibility {
     }
 
     public synchronized static Compatibility getInstance(ClassLoader cl) {
-        try {
-            ComponentRegistry registry = ComponentRegistry.getInstance();
-            Compatibility compatibility = registry.getComponent(KEY);
-            if (compatibility == null) {
-                final Properties properties = new Properties();
-                properties.putAll(System.getProperties());
-
-                if (cl == null)
-                    cl = Application.getAppClassloader();
-
-                final InputStream is = cl.getResourceAsStream("capedwarf-compatibility.properties");
-                if (is != null) {
-                    try {
-                        properties.load(is);
-                    } finally {
-                        is.close();
-                    }
-                }
-                compatibility = new Compatibility(properties);
-                registry.setComponent(KEY, compatibility);
+        ComponentRegistry registry = ComponentRegistry.getInstance();
+        Compatibility compatibility = registry.getComponent(KEY);
+        if (compatibility == null) {
+            if (cl == null) {
+                cl = Application.getAppClassloader();
             }
-            return compatibility;
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
+
+            compatibility = readCompatibility(cl);
+            registry.setComponent(KEY, compatibility);
+        }
+        return compatibility;
+    }
+
+    /**
+     * Read Compatibility, not cached!
+     *
+     * @param cl the classloader
+     * @return compatibility
+     */
+    public static Compatibility readCompatibility(ClassLoader cl) {
+        if (cl == null) {
+            throw new IllegalArgumentException("Null classloader!");
+        }
+
+        final Properties properties = new Properties();
+        properties.putAll(System.getProperties());
+
+        try {
+            final InputStream is = cl.getResourceAsStream("capedwarf-compatibility.properties");
+            if (is != null) {
+                try {
+                    properties.load(is);
+                } finally {
+                    is.close();
+                }
+            }
+            return new Compatibility(properties);
+        } catch (IOException e) {
+            throw new IllegalStateException("Error reading Compatibility.", e);
         }
     }
 

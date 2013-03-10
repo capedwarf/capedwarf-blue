@@ -22,6 +22,7 @@
 
 package org.jboss.test.capedwarf.testsuite.common.test;
 
+import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -32,7 +33,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
- * Test WhiteList.
+ * Test BlackList.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
@@ -44,8 +45,16 @@ public class BlackListTest extends TestBase {
         return getCapedwarfDeployment();
     }
 
-    @Test(expected = Exception.class)
+    @Test
     public void testBlackList() throws Exception {
-        new javax.naming.InitialContext();
+        ClassLoader cl = getClass().getClassLoader();
+        try {
+            // TODO -- find the right class!?
+            Class<?> clazz = cl.loadClass("javax.crypto.Cipher");
+            Assert.fail("Should not be here: " + clazz);
+        } catch (Exception expected) {
+            log.info("expected = " + expected);
+            log.info("expected.cause = " + expected.getCause());
+        }
     }
 }
