@@ -17,6 +17,7 @@ public class TaskOptionsHelper {
     private static final TargetInvocation<TaskOptions.Method> getMethod = ReflectionUtils.cacheInvocation(TaskOptions.class, "getMethod");
     private static final TargetInvocation<String> getTaskName = ReflectionUtils.cacheInvocation(TaskOptions.class, "getTaskName");
     private static final TargetInvocation<Long> getEtaMillis = ReflectionUtils.cacheInvocation(TaskOptions.class, "getEtaMillis");
+    private static final TargetInvocation<Long> getCountdownMillis = ReflectionUtils.cacheInvocation(TaskOptions.class, "getCountdownMillis");
     private static final TargetInvocation<RetryOptions> getRetryOptions = ReflectionUtils.cacheInvocation(TaskOptions.class, "getRetryOptions");
     private static final TargetInvocation<byte[]> getPayload = ReflectionUtils.cacheInvocation(TaskOptions.class, "getPayload");
     private static final TargetInvocation<List<Object>> getParams = ReflectionUtils.cacheInvocation(TaskOptions.class, "getParams");
@@ -45,6 +46,10 @@ public class TaskOptionsHelper {
 
     public Long getEtaMillis() {
         return invoke(taskOptions, getEtaMillis);
+    }
+
+    public Long getCountdownMillis() {
+        return invoke(taskOptions, getCountdownMillis);
     }
 
     public String getTaskName() {
