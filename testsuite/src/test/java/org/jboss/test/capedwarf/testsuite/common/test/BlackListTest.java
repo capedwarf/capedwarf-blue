@@ -46,8 +46,8 @@ import org.junit.runner.RunWith;
 public class BlackListTest extends TestBase {
     @Deployment
     public static WebArchive getDeployment() {
-        TestContext context = TestContext.asDefault();
-        return getCapedwarfDeployment();
+        TestContext context = TestContext.withBlackList();
+        return getCapedwarfDeployment(context);
     }
 
     @Test
