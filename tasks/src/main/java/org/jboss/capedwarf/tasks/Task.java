@@ -46,11 +46,12 @@ public class Task implements Serializable {
     public static final String QUEUE = "queue";
     public static final String TAG = "tag";
     public static final String LEASED_UNTIL = "leasedUntil";
+    public static final String ETA_MILLIS = "etaMillis";
 
     private String name;
     private String queue;
     private String tag;
-    private Long eta;
+    private long etaMillis;
     private TaskOptions options;
     private RetryOptions retry;
     private long lastLeaseTimestamp;
@@ -59,11 +60,11 @@ public class Task implements Serializable {
     public Task() {
     }
 
-    public Task(String name, String queue, String tag, Long eta, TaskOptions options, RetryOptions retry) {
+    public Task(String name, String queue, String tag, long etaMillis, TaskOptions options, RetryOptions retry) {
         this.name = name;
         this.queue = queue;
         this.tag = tag;
-        this.eta = eta;
+        this.etaMillis = etaMillis;
         this.options = options;
         this.retry = retry;
     }
@@ -95,13 +96,13 @@ public class Task implements Serializable {
     }
 
     @NumericField
-    @Field
-    public Long getEta() {
-        return eta;
+    @Field(name = ETA_MILLIS)
+    public long getEtaMillis() {
+        return etaMillis;
     }
 
-    public void setEta(Long eta) {
-        this.eta = eta;
+    public void setEtaMillis(long etaMillis) {
+        this.etaMillis = etaMillis;
     }
 
     public TaskOptions getOptions() {

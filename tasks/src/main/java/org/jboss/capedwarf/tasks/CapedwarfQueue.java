@@ -273,11 +273,23 @@ class CapedwarfQueue implements Queue {
             taskName = UUID.randomUUID().toString(); // TODO -- unique enough?
             copy.taskName(taskName);
         }
-        Long lifespan = options.getEtaMillis();
+        long etaMillis = getActualEtaMillis(options);
         RetryOptions retryOptions = options.getRetryOptions();
-        Task task = new Task(taskName, queueName, copy.getTag(), lifespan, copy, retryOptions);
+        Task task = new Task(taskName, queueName, copy.getTag(), etaMillis, copy, retryOptions);
         storeTask(task);
         return new TaskHandle(copy, getQueueName());
+    }
+
+    private long getActualEtaMillis(TaskOptionsHelper options) {
+        if (options.getEtaMillis() == null) {
+            if (options.getCountdownMillis() == null) {
+                return 0;
+            } else {
+                return System.currentTimeMillis() + options.getCountdownMillis();
+            }
+        } else {
+            return options.getEtaMillis();
+        }
     }
 
     private TaskHandle addPushTask(ServletExecutorProducer producer, TaskOptionsHelper options) throws Exception {
@@ -347,9 +359,11 @@ class CapedwarfQueue implements Queue {
     private List<Task> findTasks(LeaseOptionsInternal options) {
         QueryBuilder builder = searchManager.buildQueryBuilderForClass(Task.class).get();
 
+        long now = System.currentTimeMillis();
         Query luceneQuery = builder.bool()
             .must(toTerm(builder, Task.QUEUE, queueName).createQuery())
-            .must(builder.range().onField(Task.LEASED_UNTIL).below(System.currentTimeMillis()).createQuery())
+            .must(builder.range().onField(Task.ETA_MILLIS).below(now).createQuery())
+            .must(builder.range().onField(Task.LEASED_UNTIL).below(now).createQuery())
             .createQuery();
 
         String tag = options.getTagAsString();
