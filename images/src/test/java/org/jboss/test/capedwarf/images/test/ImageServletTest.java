@@ -59,7 +59,7 @@ public class ImageServletTest extends TestBase {
 
     @Deployment
     public static Archive getDeployment() {
-        WebArchive war = getCapedwarfDeployment(new TestContext().setWebXmlFile("serve_image_web.xml"));
+        WebArchive war = getCapedwarfDeployment(TestContext.asDefault().setWebXmlFile("serve_image_web.xml"));
         war.addClass(ImagesServiceTestBase.class);
         war.addClass(IOUtils.class);
         war.addClass(UrlServingServlet.class);

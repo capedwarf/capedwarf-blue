@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.bytecode.blacklist;
 
+import javassist.ClassPool;
+import javassist.LoaderClassPath;
+import javassist.bytecode.Bytecode;
 import javassist.bytecode.CodeIterator;
 import javassist.bytecode.ConstPool;
 
@@ -31,23 +34,42 @@ import javassist.bytecode.ConstPool;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class LineContext {
-    private ConstPool pool;
+    static final ThreadLocal<ClassLoader> CL = new ThreadLocal<ClassLoader>();
+
+    private ClassPool classPool;
+    private ConstPool constPool;
     private CodeIterator cit;
     private int index;
     private String className;
     private String name;
+    private String desc;
 
-    LineContext(ConstPool pool, CodeIterator cit) {
-        this.pool = pool;
+    LineContext(ConstPool constPool, CodeIterator cit) {
+        this.constPool = constPool;
         this.cit = cit;
     }
 
-    public void insertAtIndex(byte[] bytes) throws Exception {
-        cit.insertAt(index, bytes);
+    public void insertAtIndex(Bytecode bytecode) throws Exception {
+        cit.insertAt(index, bytecode.get());
     }
 
-    public ConstPool getPool() {
-        return pool;
+    public void write(Bytecode bytecode) throws Exception {
+        cit.write(bytecode.get(), index);
+    }
+
+    /**
+     * Use carefully, as it's costly.
+     */
+    public ClassPool getClassPool() {
+        if (classPool == null) {
+            classPool = new ClassPool();
+            classPool.appendClassPath(new LoaderClassPath(CL.get()));
+        }
+        return classPool;
+    }
+
+    public ConstPool getConstPool() {
+        return constPool;
     }
 
     public CodeIterator getCit() {
@@ -88,5 +110,13 @@ class LineContext {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
     }
 }

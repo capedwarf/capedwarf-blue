@@ -59,7 +59,7 @@ public abstract class LoggingTestBase extends TestBase {
     }
 
     protected static TestContext newTestContext() {
-        return new TestContext();
+        return TestContext.withLogging();
     }
 
     protected static WebArchive getDefaultDeployment(TestContext context) {

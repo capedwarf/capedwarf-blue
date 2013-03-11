@@ -52,7 +52,20 @@ abstract class AbstractLineRewriter implements LineRewriter {
         } else if (tag == ConstPool.CONST_Fieldref) {
             return pool.getFieldrefName(i);
         } else {
-            return null; // cannot read class
+            return null; // cannot read name
+        }
+    }
+
+    protected String getDesc(ConstPool pool, int i) {
+        int tag = pool.getTag(i);
+        if (tag == ConstPool.CONST_Methodref) {
+            return pool.getMethodrefType(i);
+        } else if (tag == ConstPool.CONST_InterfaceMethodref) {
+            return pool.getInterfaceMethodrefType(i);
+        } else if (tag == ConstPool.CONST_Fieldref) {
+            return pool.getFieldrefType(i);
+        } else {
+            return null; // cannot read desc
         }
     }
 }

@@ -30,7 +30,9 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javassist.bytecode.ClassFile;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
@@ -41,6 +43,16 @@ import org.jboss.capedwarf.common.compatibility.Compatibility;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class BlackListTransformer implements ClassFileTransformer {
+    private static final Set<String> ALLOWED_PACKAGES = new HashSet<String>();
+
+    static {
+        // we should be able to tests things
+        ALLOWED_PACKAGES.add("org/junit/");
+        ALLOWED_PACKAGES.add("org.junit.");
+        ALLOWED_PACKAGES.add("org/jboss/arquillian/");
+        ALLOWED_PACKAGES.add("org.jboss.arquillian.");
+    }
+
     private volatile Boolean disabled;
 
     private List<Rewriter> rewriters = new ArrayList<Rewriter>();
@@ -49,7 +61,7 @@ public class BlackListTransformer implements ClassFileTransformer {
         rewriters.add(new MethodsRewriter());
     }
 
-    private boolean isDisabled(ClassLoader cl) {
+    protected boolean isDisabled(ClassLoader cl) {
         if (disabled == null) {
             synchronized (this) {
                 if (disabled == null) {
@@ -61,11 +73,21 @@ public class BlackListTransformer implements ClassFileTransformer {
         return disabled;
     }
 
+    protected boolean isAllowedPackage(String className) {
+        for (String pckg : ALLOWED_PACKAGES) {
+            if (className.startsWith(pckg)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain domain, byte[] bytes) throws IllegalClassFormatException {
-        if (isDisabled(loader)) {
+        if (isDisabled(loader) || isAllowedPackage(className)) {
             return bytes;
         }
 
+        LineContext.CL.set(loader);
         try {
             ClassFile file = new ClassFile(new DataInputStream(new ByteArrayInputStream(bytes)));
             for (Rewriter rewriter : rewriters) {
@@ -78,6 +100,8 @@ public class BlackListTransformer implements ClassFileTransformer {
             IllegalClassFormatException icfe = new IllegalClassFormatException("Cannot rewrite class: " + className);
             icfe.initCause(e);
             throw icfe;
+        } finally {
+            LineContext.CL.remove();
         }
     }
 }

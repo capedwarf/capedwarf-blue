@@ -33,10 +33,9 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.capedwarf.common.io.IOUtils;
-import org.jboss.test.capedwarf.blobstore.support.ServeBlobServlet;
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.test.capedwarf.blobstore.support.ServeBlobServlet;
 import org.jboss.test.capedwarf.common.support.All;
-import org.jboss.test.capedwarf.common.test.TestBase;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -54,7 +53,7 @@ import static junit.framework.Assert.assertNull;
 public class BlobstoreTest extends BlobstoreTestBase {
     @Deployment
     public static Archive getDeployment() {
-        TestContext testContext = new TestContext().setWebXmlFile("serve_blob_web.xml");
+        TestContext testContext = TestContext.asDefault().setWebXmlFile("serve_blob_web.xml");
         return getCapedwarfDeployment(testContext)
             .addClass(BlobstoreTestBase.class)
             .addClass(IOUtils.class)

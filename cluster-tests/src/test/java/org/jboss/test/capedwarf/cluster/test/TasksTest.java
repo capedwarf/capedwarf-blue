@@ -82,7 +82,7 @@ public class TasksTest extends TestBase {
     }
 
     protected static WebArchive getDeployment() {
-        final TestContext context = new TestContext().setWebXmlContent(WEB_XML);
+        final TestContext context = TestContext.asDefault().setWebXmlContent(WEB_XML);
         final WebArchive war = getCapedwarfDeployment(context);
         war.addClasses(PrintServlet.class, PrintListener.class);
         return war;

@@ -41,7 +41,7 @@ import org.jboss.test.capedwarf.tasks.support.TestQueueServlet;
 public abstract class TasksTestBase extends TestBase {
     @Deployment
     public static Archive getDeployment() {
-        final TestContext context = new TestContext();
+        final TestContext context = TestContext.asDefault();
         context.setWebXmlFile("web-q.xml");
         final WebArchive war = getCapedwarfDeployment(context);
         war.addClass(TasksTestBase.class);

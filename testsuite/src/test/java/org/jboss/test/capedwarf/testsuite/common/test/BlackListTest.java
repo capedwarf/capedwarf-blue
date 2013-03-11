@@ -25,11 +25,13 @@ package org.jboss.test.capedwarf.testsuite.common.test;
 import javax.naming.InitialContext;
 
 import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.TestBase;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -44,15 +46,32 @@ import org.junit.runner.RunWith;
 public class BlackListTest extends TestBase {
     @Deployment
     public static WebArchive getDeployment() {
+        TestContext context = TestContext.asDefault();
         return getCapedwarfDeployment();
     }
 
     @Test
-    public void testBlackList() throws Exception {
+    public void testDirectInitialization() throws Exception {
         try {
             new InitialContext();
             Assert.fail("Should not be here!");
-        } catch (Exception expected) {
+        } catch (AssertionFailedError ae) {
+            throw ae;
+        } catch (Throwable expected) {
+            log.info("expected = " + expected);
+            log.info("expected.cause = " + expected.getCause());
+        }
+    }
+
+    @Test
+    public void testReflectionInitialization() throws Exception {
+        try {
+            Class<?> clazz = Class.forName(InitialContext.class.getName());
+            clazz.newInstance();
+            Assert.fail("Should not be here!");
+        } catch (AssertionFailedError ae) {
+            throw ae;
+        } catch (Throwable expected) {
             log.info("expected = " + expected);
             log.info("expected.cause = " + expected.getCause());
         }

@@ -46,7 +46,7 @@ import org.junit.runner.RunWith;
 public class ModuleCallbackTest extends TestBase {
     @Deployment
     public static WebArchive getDeployment() {
-        TestContext context = new TestContext().setIgnoreLogging(true).setCallbacks(true);
+        TestContext context = TestContext.asDefault().setIgnoreLogging(true).setCallbacks(true);
         WebArchive war = getCapedwarfDeployment(context);
         war.addClass(SimpleCallback.class);
         return war;

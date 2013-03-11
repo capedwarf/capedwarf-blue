@@ -419,7 +419,7 @@ public class ProspectiveSearchTest extends TestBase {
     }
 
     public static WebArchive getDeployment() {
-        final TestContext context = new TestContext().setWebXmlFile("web.xml");
+        final TestContext context = TestContext.asDefault().setWebXmlFile("web.xml");
         final WebArchive war = getCapedwarfDeployment(context);
         war.addClass(ProspectiveSearchMatchResponseServlet.class);
         return war;

@@ -38,7 +38,7 @@ import org.jboss.test.capedwarf.common.test.TestContext;
  */
 public abstract class MultipleAppsTestBase extends TestBase {
     protected static WebArchive getDeployment(String suffix) {
-        final TestContext context = new TestContext("test-" + suffix + ".war");
+        final TestContext context = TestContext.withName("test-" + suffix + ".war");
         context.setAppEngineWebXmlFile("appengine-web-" + suffix + ".xml");
         final WebArchive war = getCapedwarfDeployment(context);
         war.addClass(MultipleAppsTestBase.class);

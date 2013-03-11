@@ -34,11 +34,11 @@ class ObjectAccessLineRewriter extends ClassLineRewriter {
         String className = context.getClassName();
         if (BlackList.getBlackList().contains(className)) {
             // reject
-            Bytecode bytecode = new Bytecode(context.getPool());
+            Bytecode bytecode = new Bytecode(context.getConstPool());
             bytecode.addLdc(className);
             bytecode.addInvokestatic(Restrictions.class.getName(), "reject", "(Ljava/lang/String;)V");
             // insert before invocation
-            context.insertAtIndex(bytecode.get());
+            context.insertAtIndex(bytecode);
         }
     }
 }

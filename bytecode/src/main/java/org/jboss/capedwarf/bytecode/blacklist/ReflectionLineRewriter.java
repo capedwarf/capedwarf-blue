@@ -28,7 +28,9 @@ import java.util.Set;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import javassist.bytecode.Bytecode;
 import javassist.bytecode.CodeIterator;
+import javassist.bytecode.Descriptor;
 
 /**
  * Reflection access.
@@ -37,6 +39,7 @@ import javassist.bytecode.CodeIterator;
  */
 class ReflectionLineRewriter extends ClassLineRewriter {
     private static final SetMultimap<String, String> interceptedMethods;
+
     static {
         List<String> fieldMethods = Arrays.asList(
                 "get",
@@ -66,14 +69,18 @@ class ReflectionLineRewriter extends ClassLineRewriter {
     }
 
     protected void doVisit(LineContext context) throws Exception {
-        Set<String> methods = interceptedMethods.get(context.getClassName());
-        if (methods != null) {
-            String name = getName(context.getPool(), context.getVal());
+        String className = context.getClassName();
+        Set<String> methods = interceptedMethods.get(className);
+        if (methods != null && methods.isEmpty() == false) {
+            String name = getName(context.getConstPool(), context.getVal());
             if (name != null && methods.contains(name)) {
-                context.setName(name);
+                Bytecode bytecode = new Bytecode(context.getConstPool());
+                String desc = getDesc(context.getConstPool(), context.getVal());
                 if (context.getOp() == CodeIterator.INVOKEVIRTUAL) {
-                    // TODO
+                    desc = Descriptor.insertParameter(className, desc);
                 }
+                bytecode.addInvokestatic(Restrictions.class.getName(), name, desc);
+                context.write(bytecode);
             }
         }
     }

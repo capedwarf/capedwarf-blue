@@ -39,6 +39,7 @@ class CodeLineRewriter implements MethodRewriter {
 
     CodeLineRewriter() {
         rewriters.add(new ObjectAccessLineRewriter());
+        rewriters.add(new ReflectionLineRewriter());
     }
 
     public void visit(MethodInfo mi) throws Exception {

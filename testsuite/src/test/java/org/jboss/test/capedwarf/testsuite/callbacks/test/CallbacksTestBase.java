@@ -25,8 +25,8 @@ package org.jboss.test.capedwarf.testsuite.callbacks.test;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.TestContext;
-import org.jboss.test.capedwarf.testsuite.TestsuiteTestBase;
 import org.jboss.test.capedwarf.testsuite.LibUtils;
+import org.jboss.test.capedwarf.testsuite.TestsuiteTestBase;
 import org.jboss.test.capedwarf.testsuite.callbacks.support.BarKindCallbackHandler;
 import org.jboss.test.capedwarf.testsuite.callbacks.support.FooBarKindCallbackHandler;
 import org.jboss.test.capedwarf.testsuite.callbacks.support.FooKindCallbackHandler;
@@ -50,7 +50,7 @@ public abstract class CallbacksTestBase extends TestsuiteTestBase {
     public static final String KIND2 = "Bar";
 
     protected static WebArchive getDefaultDeployment() {
-        TestContext context = new TestContext().setCallbacks(true).setIgnoreLogging(true);
+        TestContext context = TestContext.asDefault().setCallbacks(true).setIgnoreLogging(true);
         WebArchive war = getCapedwarfDeployment(context);
         war.addClass(TestsuiteTestBase.class);
         war.addClass(CallbacksTestBase.class);

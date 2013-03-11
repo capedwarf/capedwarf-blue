@@ -43,7 +43,7 @@ public class LoggingTest extends TestBase {
     }
 
     public static WebArchive getDeployment() {
-        return getCapedwarfDeployment(new TestContext());
+        return getCapedwarfDeployment(TestContext.withLogging());
     }
 
     @InSequence(10)

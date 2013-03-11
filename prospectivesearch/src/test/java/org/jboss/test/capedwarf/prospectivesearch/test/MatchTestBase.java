@@ -49,7 +49,7 @@ public abstract class MatchTestBase extends ProspectiveTestBase {
 
     @Deployment
     public static WebArchive getDeployment() {
-        final TestContext context = new TestContext();
+        final TestContext context = TestContext.asDefault();
         context.setWebXmlFile("match-web.xml");
         final WebArchive war = getCapedwarfDeployment(context);
         war.addClasses(ProspectiveTestBase.class, MatchTestBase.class, MatchResponseServlet.class, SpecialMatchResponseServlet.class);

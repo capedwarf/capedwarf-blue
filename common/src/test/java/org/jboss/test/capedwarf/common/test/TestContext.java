@@ -32,7 +32,7 @@ import java.util.Properties;
 public class TestContext implements Cloneable {
     private static final String ROOT = "ROOT.war";
 
-    protected static final TestContext DEFAULT = new TestContext().setIgnoreLogging(true);
+    protected static final TestContext DEFAULT = asDefault();
 
     private String archiveName = "capedwarf-tests.war";
 
@@ -48,23 +48,35 @@ public class TestContext implements Cloneable {
 
     private boolean callbacks;
 
-    public TestContext() {
+    private TestContext() {
     }
 
-    public TestContext(String archiveName) {
+    private TestContext(String archiveName) {
         this.archiveName = archiveName;
     }
 
-    public static TestContext withLogging() {
-        return new TestContext();
+    private static TestContext asDefault(TestContext context) {
+        return context.setIgnoreLogging(true).setDisableBlackList(true);
     }
 
-    public static TestContext asDefault() {
+    public static TestContext withName(String name) {
+        return asDefault(new TestContext(name));
+    }
+
+    public static TestContext withLogging() {
+        return new TestContext().setDisableBlackList(true);
+    }
+
+    public static TestContext withBlackList() {
         return new TestContext().setIgnoreLogging(true);
     }
 
+    public static TestContext asDefault() {
+        return asDefault(new TestContext());
+    }
+
     public static TestContext asRoot() {
-        return new TestContext(ROOT).setContextRoot(true);
+        return asDefault(new TestContext(ROOT)).setContextRoot(true);
     }
 
     public String getArchiveName() {
@@ -136,6 +148,11 @@ public class TestContext implements Cloneable {
 
     public TestContext setIgnoreLogging(boolean ignoreLogging) {
         properties.put("ignore.logging", String.valueOf(ignoreLogging));
+        return this;
+    }
+
+    public TestContext setDisableBlackList(boolean disableBlackList) {
+        properties.put("disable.blacklist", String.valueOf(disableBlackList));
         return this;
     }
 }

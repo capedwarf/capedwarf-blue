@@ -25,9 +25,7 @@ package org.jboss.capedwarf.bytecode.blacklist;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javassist.bytecode.Bytecode;
 import javassist.bytecode.CodeIterator;
-import javassist.bytecode.ConstPool;
 
 /**
  * Class check.
@@ -52,7 +50,7 @@ abstract class ClassLineRewriter extends AbstractLineRewriter {
         int op = context.getOp();
         if (isRef(op) && context.hasNext()) {
             int val = context.getVal();
-            String className = getClassName(context.getPool(), val);
+            String className = getClassName(context.getConstPool(), val);
             if (className != null) {
                 context.setClassName(className);
                 doVisit(context);

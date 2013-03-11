@@ -72,7 +72,7 @@ public class BulkLoaderTest extends TestBase {
 
     @Deployment (name = "deployment", managed = false)
     public static WebArchive getDeployment() {
-        TestContext context = new TestContext().setWebXmlFile("web.xml");
+        TestContext context = TestContext.asDefault().setWebXmlFile("web.xml");
         return getCapedwarfDeployment(context);
     }
 
