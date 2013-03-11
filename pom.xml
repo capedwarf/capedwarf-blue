@@ -468,13 +468,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.google.appengine</groupId>
-                <artifactId>appengine-tools-sdk</artifactId>
-                <version>${version.com.google.gae.api}</version>
-                <optional>true</optional>
-            </dependency>
-
-            <dependency>
                 <groupId>org.json</groupId>
                 <artifactId>json</artifactId>
                 <version>${version.org.json}</version>

@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.bytecode.blacklist;
 
 import javassist.bytecode.Bytecode;
+import org.jboss.capedwarf.shared.blacklist.BlackList;
 
 /**
  * Object access.

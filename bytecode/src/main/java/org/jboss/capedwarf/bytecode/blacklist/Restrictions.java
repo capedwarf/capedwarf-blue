@@ -34,6 +34,7 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
+import org.jboss.capedwarf.shared.blacklist.BlackList;
 import sun.reflect.Reflection;
 
 /**
