@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.bytecode.blacklist;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -114,6 +114,14 @@ class BlackList {
 
         getFilesRecursive(matchingFiles, new File(jreHome + File.separator + "lib"), filter);
 
+        if (isOSX()) {
+            File classes = new File(jreHome + File.separator + ".." + File.separator + "Classes");
+            if (classes.exists()) {
+                // Classes might not exists; e.g. fixed in JDK7
+                getFilesRecursive(matchingFiles, classes, filter);
+            }
+        }
+
         return matchingFiles;
     }
 
@@ -126,5 +134,10 @@ class BlackList {
                 matchingFiles.add(f);
             }
         }
+    }
+
+    private static boolean isOSX() {
+        String osName = System.getProperty("os.name");
+        return osName.contains("OS X");
     }
 }

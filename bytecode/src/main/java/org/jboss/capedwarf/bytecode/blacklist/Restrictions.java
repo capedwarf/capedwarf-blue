@@ -20,41 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.testsuite.common.test;
-
-import javax.naming.InitialContext;
-
-import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.test.capedwarf.common.support.All;
-import org.jboss.test.capedwarf.common.test.TestBase;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+package org.jboss.capedwarf.bytecode.blacklist;
 
 /**
- * Test BlackList.
+ * Restrictions
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@RunWith(Arquillian.class)
-@Category(All.class)
-public class BlackListTest extends TestBase {
-    @Deployment
-    public static WebArchive getDeployment() {
-        return getCapedwarfDeployment();
-    }
-
-    @Test
-    public void testBlackList() throws Exception {
-        try {
-            new InitialContext();
-            Assert.fail("Should not be here!");
-        } catch (Exception expected) {
-            log.info("expected = " + expected);
-            log.info("expected.cause = " + expected.getCause());
-        }
+public class Restrictions {
+    public static void reject(String className) {
+        throw new NoClassDefFoundError(className + " is a restricted class. Please see the Google App Engine developer's guide for more details.");
     }
 }

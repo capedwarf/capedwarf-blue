@@ -20,12 +20,19 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.bytecode;
+package org.jboss.capedwarf.bytecode.blacklist;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.List;
 
+import javassist.bytecode.ClassFile;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
 
 /**
@@ -35,6 +42,12 @@ import org.jboss.capedwarf.common.compatibility.Compatibility;
  */
 public class BlackListTransformer implements ClassFileTransformer {
     private volatile Boolean disabled;
+
+    private List<Rewriter> rewriters = new ArrayList<Rewriter>();
+
+    public BlackListTransformer() {
+        rewriters.add(new MethodsRewriter());
+    }
 
     private boolean isDisabled(ClassLoader cl) {
         if (disabled == null) {
@@ -49,9 +62,22 @@ public class BlackListTransformer implements ClassFileTransformer {
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain domain, byte[] bytes) throws IllegalClassFormatException {
-        if (isDisabled(loader) == false && BlackList.getBlackList().contains(className)) {
-            throw new NoClassDefFoundError(className + " is a restricted class. Please see the Google App Engine developer's guide for more details.");
+        if (isDisabled(loader)) {
+            return bytes;
         }
-        return bytes;
+
+        try {
+            ClassFile file = new ClassFile(new DataInputStream(new ByteArrayInputStream(bytes)));
+            for (Rewriter rewriter : rewriters) {
+                rewriter.visit(file);
+            }
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            file.write(new DataOutputStream(baos));
+            return baos.toByteArray();
+        } catch (Exception e) {
+            IllegalClassFormatException icfe = new IllegalClassFormatException("Cannot rewrite class: " + className);
+            icfe.initCause(e);
+            throw icfe;
+        }
     }
 }

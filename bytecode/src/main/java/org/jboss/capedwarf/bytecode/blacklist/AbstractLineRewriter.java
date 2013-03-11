@@ -20,41 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.test.capedwarf.testsuite.common.test;
+package org.jboss.capedwarf.bytecode.blacklist;
 
-import javax.naming.InitialContext;
-
-import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.test.capedwarf.common.support.All;
-import org.jboss.test.capedwarf.common.test.TestBase;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import javassist.bytecode.ConstPool;
 
 /**
- * Test BlackList.
+ * Abstract line rewriter.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@RunWith(Arquillian.class)
-@Category(All.class)
-public class BlackListTest extends TestBase {
-    @Deployment
-    public static WebArchive getDeployment() {
-        return getCapedwarfDeployment();
+abstract class AbstractLineRewriter implements LineRewriter {
+    protected String getClassName(ConstPool pool, int i) {
+        int tag = pool.getTag(i);
+        if (tag == ConstPool.CONST_Methodref) {
+            return pool.getMethodrefClassName(i);
+        } else if (tag == ConstPool.CONST_InterfaceMethodref) {
+            return pool.getInterfaceMethodrefClassName(i);
+        } else if (tag == ConstPool.CONST_Fieldref) {
+            return pool.getFieldrefClassName(i);
+        } else {
+            return null; // cannot read class
+        }
     }
 
-    @Test
-    public void testBlackList() throws Exception {
-        try {
-            new InitialContext();
-            Assert.fail("Should not be here!");
-        } catch (Exception expected) {
-            log.info("expected = " + expected);
-            log.info("expected.cause = " + expected.getCause());
+    protected String getName(ConstPool pool, int i) {
+        int tag = pool.getTag(i);
+        if (tag == ConstPool.CONST_Methodref) {
+            return pool.getMethodrefName(i);
+        } else if (tag == ConstPool.CONST_InterfaceMethodref) {
+            return pool.getInterfaceMethodrefName(i);
+        } else if (tag == ConstPool.CONST_Fieldref) {
+            return pool.getFieldrefName(i);
+        } else {
+            return null; // cannot read class
         }
     }
 }
