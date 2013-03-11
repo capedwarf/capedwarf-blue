@@ -46,6 +46,14 @@ public class BlackListTransformer implements ClassFileTransformer {
     private static final Set<String> ALLOWED_PACKAGES = new HashSet<String>();
 
     static {
+        // do not transform CapeDwarf
+        ALLOWED_PACKAGES.add("org/jboss/capedwarf/");
+        ALLOWED_PACKAGES.add("org.jboss.capedwarf.");
+        // do not tranform GAE
+        ALLOWED_PACKAGES.add("com/google/appengine/");
+        ALLOWED_PACKAGES.add("com.google.appengine.");
+        ALLOWED_PACKAGES.add("com/google/apphosting/");
+        ALLOWED_PACKAGES.add("com.google.apphosting.");
         // we should be able to tests things
         ALLOWED_PACKAGES.add("org/junit/");
         ALLOWED_PACKAGES.add("org.junit.");
@@ -83,7 +91,7 @@ public class BlackListTransformer implements ClassFileTransformer {
     }
 
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain domain, byte[] bytes) throws IllegalClassFormatException {
-        if (isDisabled(loader) || isAllowedPackage(className)) {
+        if (isAllowedPackage(className) || isDisabled(loader)) {
             return bytes;
         }
 
