@@ -177,15 +177,39 @@ class CapedwarfQueue implements Queue {
     private void checkTaskOptions(Transaction transaction, Iterable<TaskOptions> taskOptions) {
         for (TaskOptions to : taskOptions) {
             TaskOptionsHelper options = new TaskOptionsHelper(to);
-
-            if (transaction != null && options.getTaskName() != null && !options.getTaskName().equals("")) {
-                throw new IllegalArgumentException("Transactional tasks must not be named.");
-            }
-
+            checkCommonTaskOptions(transaction, options);
             if (isPushQueue) {
                 checkPushTaskOptions(options);
             } else {
                 checkPullTaskOptions(options);
+            }
+        }
+    }
+
+    private void checkCommonTaskOptions(Transaction transaction, TaskOptionsHelper options) {
+        if (transaction != null && options.getTaskName() != null && !options.getTaskName().equals("")) {
+            throw new IllegalArgumentException("Transactional tasks must not be named.");
+        }
+
+        Long etaMillis = options.getEtaMillis();
+        Long countdownMillis = options.getCountdownMillis();
+        if (etaMillis != null) {
+            if (countdownMillis != null) {
+                throw new IllegalArgumentException("EtaMillis and CountdownMillis are exclusive - only one may be specified");
+            }
+            if (etaMillis < 0) {
+                throw new IllegalArgumentException("etaMillis should not be negative.");
+            }
+            if (etaMillis > System.currentTimeMillis() + QueueConstants.getMaxEtaDeltaMillis()) {
+                throw new IllegalArgumentException("etaMillis is too far into the future.");
+            }
+        }
+        if (countdownMillis != null) {
+            if (countdownMillis < 0) {
+                throw new IllegalArgumentException("countdownMillis should not be negative.");
+            }
+            if (countdownMillis > QueueConstants.getMaxEtaDeltaMillis()) {
+                throw new IllegalArgumentException("countdownMillis is too large (ETA would be too far into the future).");
             }
         }
     }
