@@ -304,7 +304,7 @@ class CapedwarfQueue implements Queue {
             taskName = UUID.randomUUID().toString(); // TODO -- unique enough?
             copy.taskName(taskName);
         }
-        long etaMillis = getActualEtaMillis(options);
+        Long etaMillis = options.getCalculatedEtaMillis();
         RetryOptions retryOptions = options.getRetryOptions();
         Task task = new Task(taskName, queueName, getTag(copy), etaMillis, copy, retryOptions);
         Object previous = getTasks().putIfAbsent(task.getName(), task);
@@ -319,18 +319,6 @@ class CapedwarfQueue implements Queue {
             return copy.getTag();
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private long getActualEtaMillis(TaskOptionsHelper options) {
-        if (options.getEtaMillis() == null) {
-            if (options.getCountdownMillis() == null) {
-                return 0;
-            } else {
-                return System.currentTimeMillis() + options.getCountdownMillis();
-            }
-        } else {
-            return options.getEtaMillis();
         }
     }
 

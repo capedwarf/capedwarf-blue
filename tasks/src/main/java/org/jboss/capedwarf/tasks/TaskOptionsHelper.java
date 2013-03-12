@@ -99,4 +99,16 @@ public class TaskOptionsHelper {
     public boolean isPayloadAllowed() {
         return invoke(getMethod(), supportsBody);
     }
+
+    public Long getCalculatedEtaMillis() {
+        if (getEtaMillis() == null) {
+            if (getCountdownMillis() == null) {
+                return null;
+            } else {
+                return System.currentTimeMillis() + getCountdownMillis();
+            }
+        } else {
+            return getEtaMillis();
+        }
+    }
 }
