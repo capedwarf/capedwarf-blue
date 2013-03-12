@@ -22,10 +22,10 @@
 
 package org.jboss.test.capedwarf.testsuite.common.test;
 
+import javax.naming.Context;
 import javax.naming.InitialContext;
 
 import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -44,22 +44,20 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @Category(All.class)
 public class BlackListTest extends TestBase {
+    protected Context context;
+
     @Deployment
     public static WebArchive getDeployment() {
-        TestContext context = TestContext.withBlackList();
-        return getCapedwarfDeployment(context);
+        return getCapedwarfDeployment(TestContext.withBlackList());
     }
 
     @Test
     public void testDirectInitialization() throws Exception {
         try {
-            new InitialContext();
+            context = new InitialContext();
             Assert.fail("Should not be here!");
-        } catch (AssertionFailedError ae) {
-            throw ae;
-        } catch (Throwable expected) {
+        } catch (NoClassDefFoundError expected) {
             log.info("expected = " + expected);
-            log.info("expected.cause = " + expected.getCause());
         }
     }
 
@@ -69,11 +67,8 @@ public class BlackListTest extends TestBase {
             Class<?> clazz = Class.forName(InitialContext.class.getName());
             clazz.newInstance();
             Assert.fail("Should not be here!");
-        } catch (AssertionFailedError ae) {
-            throw ae;
-        } catch (Throwable expected) {
+        } catch (IllegalAccessException expected) {
             log.info("expected = " + expected);
-            log.info("expected.cause = " + expected.getCause());
         }
     }
 }
