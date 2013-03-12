@@ -27,7 +27,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -42,6 +44,7 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueConstants;
 import com.google.appengine.api.taskqueue.QueueStatistics;
 import com.google.appengine.api.taskqueue.RetryOptions;
+import com.google.appengine.api.taskqueue.TaskAlreadyExistsException;
 import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.apache.lucene.search.Query;
@@ -175,8 +178,16 @@ class CapedwarfQueue implements Queue {
     }
 
     private void checkTaskOptions(Transaction transaction, Iterable<TaskOptions> taskOptions) {
+        Set<String> taskNames = new HashSet<String>();
         for (TaskOptions to : taskOptions) {
             TaskOptionsHelper options = new TaskOptionsHelper(to);
+            String taskName = options.getTaskName();
+            if (taskName != null) {
+                boolean added = taskNames.add(taskName);
+                if (!added) {
+                    throw new IllegalArgumentException("Duplicate task name: " + taskName);
+                }
+            }
             checkCommonTaskOptions(transaction, options);
             if (isPushQueue) {
                 checkPushTaskOptions(options);
@@ -279,18 +290,14 @@ class CapedwarfQueue implements Queue {
     }
 
     private TaskHandle addTask(ServletExecutorProducer producer, TaskOptionsHelper options) {
-        try {
-            if (options.getMethod() == TaskOptions.Method.PULL) {
-                return addPullTask(options);
-            } else {
-                return addPushTask(producer, options);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (options.getMethod() == TaskOptions.Method.PULL) {
+            return addPullTask(options);
+        } else {
+            return addPushTask(producer, options);
         }
     }
 
-    private TaskHandle addPullTask(TaskOptionsHelper options) throws UnsupportedEncodingException {
+    private TaskHandle addPullTask(TaskOptionsHelper options) {
         TaskOptions copy = new TaskOptions(options.getTaskOptions());
         String taskName = options.getTaskName();
         if (taskName == null) {
@@ -299,9 +306,20 @@ class CapedwarfQueue implements Queue {
         }
         long etaMillis = getActualEtaMillis(options);
         RetryOptions retryOptions = options.getRetryOptions();
-        Task task = new Task(taskName, queueName, copy.getTag(), etaMillis, copy, retryOptions);
-        storeTask(task);
+        Task task = new Task(taskName, queueName, getTag(copy), etaMillis, copy, retryOptions);
+        Object previous = getTasks().putIfAbsent(task.getName(), task);
+        if (previous != null) {
+            throw new TaskAlreadyExistsException("Task name already exists: " + task.getName());
+        }
         return new TaskHandle(copy, getQueueName());
+    }
+
+    private String getTag(TaskOptions copy) {
+        try {
+            return copy.getTag();
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private long getActualEtaMillis(TaskOptionsHelper options) {
@@ -316,14 +334,18 @@ class CapedwarfQueue implements Queue {
         }
     }
 
-    private TaskHandle addPushTask(ServletExecutorProducer producer, TaskOptionsHelper options) throws Exception {
-        TaskOptions copy = new TaskOptions(options.getTaskOptions());
-        MessageCreator mc = createMessageCreator(options.getTaskOptions());
-        String id = producer.sendMessage(mc);
-        if (options.getTaskName() == null) {
-            copy.taskName(toTaskName(id));
+    private TaskHandle addPushTask(ServletExecutorProducer producer, TaskOptionsHelper options) {
+        try {
+            TaskOptions copy = new TaskOptions(options.getTaskOptions());
+            MessageCreator mc = createMessageCreator(options.getTaskOptions());
+            String id = producer.sendMessage(mc);
+            if (options.getTaskName() == null) {
+                copy.taskName(toTaskName(id));
+            }
+            return new TaskHandle(copy, getQueueName());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return new TaskHandle(copy, getQueueName());
     }
 
     public boolean deleteTask(String taskName) {
@@ -374,7 +396,7 @@ class CapedwarfQueue implements Queue {
             long leaseMillis = options.getUnit().toMillis(options.getLease());
             task.setLastLeaseTimestamp(now);
             task.setLeasedUntil(now + leaseMillis);
-            storeTask(task);
+            getTasks().put(task.getName(), task);
             handles.add(new TaskHandle(task.getOptions(), queueName));
         }
         return handles;
@@ -436,13 +458,9 @@ class CapedwarfQueue implements Queue {
 
         long leasedUntil = System.currentTimeMillis() + unit.toMillis(lease);
         task.setLeasedUntil(leasedUntil);
-        storeTask(task);
+        getTasks().put(task.getName(), task);
 
         return new TaskHandle(task.getOptions().etaMillis(leasedUntil), queueName);
-    }
-
-    private void storeTask(Task task) {
-        getTasks().put(task.getName(), task);
     }
 
     private boolean isLeased(Task task) {
