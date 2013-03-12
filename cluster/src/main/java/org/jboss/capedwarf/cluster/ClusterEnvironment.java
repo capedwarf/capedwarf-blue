@@ -40,6 +40,10 @@ import org.kohsuke.MetaInfServices;
  */
 @MetaInfServices(Environment.class)
 public class ClusterEnvironment extends AbstractEnvironment {
+    public String getPartition() {
+        return MASTER_SERVER_PARTITION;
+    }
+
     public String getDomain() {
         return "cluster-mode"; // TODO - per node?
     }

@@ -69,6 +69,10 @@ public final class EnvironmentFactory {
         private AtomicLong nextId = new AtomicLong(1);
         private AtomicLong txId = new AtomicLong(Long.MIN_VALUE);
 
+        public String getPartition() {
+            return MASTER_SERVER_PARTITION;
+        }
+
         public String getDomain() {
             return "dummy";
         }

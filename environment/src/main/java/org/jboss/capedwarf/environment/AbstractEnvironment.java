@@ -34,6 +34,7 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractEnvironment implements Environment {
+    protected static final String MASTER_SERVER_PARTITION = "";
     private static final QuotaService NOOP = new NoopQuotaService();
 
     public CapabilityState getState(Capability capability) {

@@ -38,6 +38,13 @@ import com.google.appengine.api.quota.QuotaService;
  */
 public interface Environment {
     /**
+     * Get partition.
+     *
+     * @return partition
+     */
+    String getPartition();
+
+    /**
      * Get domain name.
      *
      * @return domain name

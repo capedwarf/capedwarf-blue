@@ -48,6 +48,7 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.environment.Environment;
 import org.jboss.capedwarf.environment.EnvironmentFactory;
 
 /**
@@ -163,8 +164,9 @@ class CapedwarfAppIdentityService implements AppIdentityService {
     }
 
     public ParsedAppId parseFullAppId(String fullAppId) {
-        final String partition = null; // TODO
-        final String domain = EnvironmentFactory.getEnvironment().getDomain();
+        Environment env = EnvironmentFactory.getEnvironment();
+        final String partition = env.getPartition();
+        final String domain = env.getDomain();
         final String appId = Application.getAppId();
         return ReflectionUtils.newInstance(
                 ParsedAppId.class,

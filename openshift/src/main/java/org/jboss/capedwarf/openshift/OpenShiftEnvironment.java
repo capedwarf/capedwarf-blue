@@ -38,6 +38,10 @@ import org.kohsuke.MetaInfServices;
  */
 @MetaInfServices
 public class OpenShiftEnvironment implements Environment {
+    public String getPartition() {
+        return null; // TODO
+    }
+
     public String getDomain() {
         return null; // TODO
     }
