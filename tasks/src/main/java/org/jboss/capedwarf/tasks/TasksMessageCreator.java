@@ -54,6 +54,8 @@ public class TasksMessageCreator implements MessageCreator {
     private static final String FAIL_FAST = "X-AppEngine-FailFast";
     static final String CURRENT_NAMESPACE = "X-AppEngine-Current-Namespace";
 
+    public static final String HDR_SCHEDULED_DELIVERY_TIME = "_HQ_SCHED_DELIVERY";
+
     private final String queueName;
     private final TaskOptionsHelper taskOptions;
 
@@ -87,6 +89,11 @@ public class TasksMessageCreator implements MessageCreator {
         addParameters(message);
 
         message.setIntProperty(MessageConstants.MAX_ATTEMPTS, taskOptions.getTaskRetryLimit() == null ? -1 : taskOptions.getTaskRetryLimit());
+
+        Long etaMillis = taskOptions.getCalculatedEtaMillis();
+        if (etaMillis != null) {
+            message.setLongProperty(HDR_SCHEDULED_DELIVERY_TIME, etaMillis);
+        }
     }
 
     private void addMethod(Message message) throws JMSException {

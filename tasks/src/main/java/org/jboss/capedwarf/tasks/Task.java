@@ -60,11 +60,11 @@ public class Task implements Serializable {
     public Task() {
     }
 
-    public Task(String name, String queue, String tag, long etaMillis, TaskOptions options, RetryOptions retry) {
+    public Task(String name, String queue, String tag, Long etaMillis, TaskOptions options, RetryOptions retry) {
         this.name = name;
         this.queue = queue;
         this.tag = tag;
-        this.etaMillis = etaMillis;
+        this.etaMillis = etaMillis == null ? 0 : etaMillis;
         this.options = options;
         this.retry = retry;
     }
