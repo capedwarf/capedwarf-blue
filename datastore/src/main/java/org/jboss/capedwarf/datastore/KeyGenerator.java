@@ -40,4 +40,8 @@ class KeyGenerator {
     static DatastoreService.KeyRangeState checkRange(String appId, KeyRange keyRange, String seqName) {
         return EnvironmentFactory.getEnvironment().checkRange(appId, keyRange, seqName);
     }
+
+    static void updateRange(String appId, long id, String sequenceName, long allocationSize) {
+        EnvironmentFactory.getEnvironment().updateRange(appId, id, sequenceName, allocationSize);
+    }
 }

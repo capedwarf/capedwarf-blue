@@ -20,46 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.reflection;
+package org.jboss.capedwarf.cluster;
 
-import java.lang.reflect.Method;
-
-import org.jboss.capedwarf.common.util.Util;
+import org.infinispan.AdvancedCache;
+import org.jboss.capedwarf.common.infinispan.BaseTxTask;
 
 /**
- * Cache target invocation.
+ * Key range update task.
  *
- * @param <T> exact return type
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class TargetInvocation<T> {
-    private final Method method;
-    private Object[] args;
+public class KeyRangeUpdateTask extends BaseTxTask<String, Long, Void> {
+    private final long id;
+    private final String sequenceName;
+    private final long allocationSize;
 
-    TargetInvocation(Method method, Object[] args) {
-        this.method = method;
-        this.args = args;
+    public KeyRangeUpdateTask(long id, String sequenceName, long allocationSize) {
+        this.id = id;
+        this.sequenceName = sequenceName;
+        this.allocationSize = allocationSize;
     }
 
-    public TargetInvocation resetArgs(Object[] args) {
-        this.args = args;
-        return this;
-    }
+    protected Void callInTx() throws Exception {
+        final AdvancedCache<String, Long> ac = getCache().getAdvancedCache();
+        final String cacheKey = sequenceName;
+        
+        if (ac.lock(cacheKey) == false)
+            throw new IllegalArgumentException("Cannot get a lock on id generator for " + cacheKey);
 
-    @SuppressWarnings("unchecked")
-    public T invoke(final Object target) throws Exception {
-        final Class<?> clazz = method.getDeclaringClass();
-        if (clazz.isInstance(target) == false)
-            throw new IllegalArgumentException("Target " + target + " is not assignable to " + clazz);
-
-        return (T)method.invoke(target, args);
-    }
-
-    public T invokeUnchecked(final Object target) {
-        try {
-            return invoke(target);
-        } catch (Exception e) {
-            throw Util.toRuntimeException(e);
+        Long currentId = ac.get(cacheKey);
+        if (currentId == null || currentId <= id) {
+            ac.put(cacheKey, id + allocationSize);
         }
+
+        return null;
     }
 }

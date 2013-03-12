@@ -31,27 +31,23 @@ import org.jboss.capedwarf.common.infinispan.BaseTxTask;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class KeyGeneratorTask extends BaseTxTask<String, Long, Long> {
-    private final String kind;
+    private final String sequenceName;
     private final long allocationSize;
     private final long initialValue;
 
-    public KeyGeneratorTask(String kind) {
-        this(kind, 1);
+    public KeyGeneratorTask(String sequenceName, long allocationSize) {
+        this(sequenceName, allocationSize, 1L);
     }
 
-    public KeyGeneratorTask(String kind, long allocationSize) {
-        this(kind, allocationSize, 1L);
-    }
-
-    public KeyGeneratorTask(String kind, long allocationSize, long initialValue) {
-        this.kind = kind;
+    public KeyGeneratorTask(String sequenceName, long allocationSize, long initialValue) {
+        this.sequenceName = sequenceName;
         this.allocationSize = allocationSize;
         this.initialValue = initialValue;
     }
 
     protected Long callInTx() throws Exception {
         final AdvancedCache<String, Long> ac = getCache().getAdvancedCache();
-        final String cacheKey = kind;
+        final String cacheKey = sequenceName;
         
         if (ac.lock(cacheKey) == false)
             throw new IllegalArgumentException("Cannot get a lock on id generator for " + cacheKey);

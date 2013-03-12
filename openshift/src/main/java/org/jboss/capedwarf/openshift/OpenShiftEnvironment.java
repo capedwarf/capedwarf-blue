@@ -62,6 +62,10 @@ public class OpenShiftEnvironment implements Environment {
         return null;  // TODO
     }
 
+    public void updateRange(String appId, long id, String sequenceName, long allocationSize) {
+        // TODO
+    }
+
     public String getTransactionId() {
         return null; // TODO
     }

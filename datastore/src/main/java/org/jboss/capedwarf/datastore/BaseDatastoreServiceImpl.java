@@ -65,6 +65,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
     protected final Logger log = Logger.getLogger(getClass().getName());
     protected final String appId;
     protected final AdvancedCache<Key, Entity> store;
+    protected final AdvancedCache<Key, Entity> ignoreReturnStore;
     protected final SearchManager searchManager;
     private final QueryConverter queryConverter;
     private DatastoreServiceConfig config;
@@ -102,6 +103,9 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         } else {
             store = ac;
         }
+
+        // we don't expect "put", "remove" to return anything
+        ignoreReturnStore = store.withFlags(Flag.IGNORE_RETURN_VALUES);
 
         this.searchManager = Search.getSearchManager(store);
         this.searchManager.setTimeoutExceptionFactory(new TimeoutExceptionFactory() {

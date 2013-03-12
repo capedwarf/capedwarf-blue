@@ -22,10 +22,14 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.Map;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class SequenceTuple {
+    private static final String SEQUENCE_POSTFIX = "_SEQUENCE__"; // GAE's SequenceGenerator impl detail
+
     private String sequenceName;
     private int allocationSize;
 
@@ -40,5 +44,31 @@ class SequenceTuple {
 
     int getAllocationSize() {
         return allocationSize;
+    }
+
+    static SequenceTuple getSequenceTuple(Map<String, Integer> allocationsMap, String kind) {
+        final String key;
+        final int p = kind.lastIndexOf(SEQUENCE_POSTFIX);
+        if (p > 0) {
+            key = kind.substring(0 , p);
+        } else {
+            key = kind;
+        }
+        // search w/o _SEQUENCE__, to find explicit ones
+        Integer allocationSize = allocationsMap.get(key);
+        final String sequenceName;
+        if (allocationSize != null) {
+            // impl detail, on how to diff default vs. explicit seq names
+            if (allocationSize > 0) {
+                sequenceName = key + SEQUENCE_POSTFIX; // by default add _SEQUENCE__
+            } else {
+                allocationSize = (-1) * allocationSize;
+                sequenceName = key; // use explicit sequence name
+            }
+        } else {
+            allocationSize = 1;
+            sequenceName = key + SEQUENCE_POSTFIX; // by default add _SEQUENCE__
+        }
+        return new SequenceTuple(sequenceName, allocationSize);
     }
 }

@@ -25,6 +25,10 @@
 package org.jboss.capedwarf.bytecode;
 
 import javassist.CtClass;
+import javassist.CtField;
+import javassist.CtMethod;
+import javassist.CtNewMethod;
+import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
@@ -33,11 +37,11 @@ import javassist.bytecode.annotation.ClassMemberValue;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class KeyTransformer extends JavassistTransformer {
+public class KeyTransformer extends RewriteTransformer {
 
-    @Override
-    protected void transform(CtClass clazz) throws Exception {
+    protected void transformInternal(CtClass clazz) throws Exception {
         ClassFile ccFile = clazz.getClassFile();
         ConstPool constPool = ccFile.getConstPool();
         AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
@@ -53,6 +57,21 @@ public class KeyTransformer extends JavassistTransformer {
         attr.addAnnotation(annotation);
 
         ccFile.addAttribute(attr);
+
+        // boolean checked;
+        // TODO - are we sure this survives Infinispan serialization
+
+        CtField checked = new CtField(CtClass.booleanType, "checked", clazz);
+        clazz.addField(checked);
+
+        CtMethod isChecked = CtNewMethod.make(CtClass.booleanType, "isChecked", new CtClass[0], new CtClass[0], "{return checked;}", clazz);
+        clazz.addMethod(isChecked);
+
+        CtMethod setChecked = CtNewMethod.make(CtClass.voidType, "setChecked", new CtClass[]{CtClass.booleanType}, new CtClass[0], "{checked = $1;}", clazz);
+        clazz.addMethod(setChecked);
     }
 
+    protected boolean doCheck(CtClass clazz) throws NotFoundException {
+        return clazz.getDeclaredField("checked") != null;
+    }
 }

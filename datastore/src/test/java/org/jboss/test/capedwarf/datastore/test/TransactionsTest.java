@@ -143,7 +143,7 @@ public class TransactionsTest extends SimpleTestBase {
 
         Transaction t1 = service.beginTransaction();
         try {
-            e1 = createTestEntity("DUMMY", 1);
+            e1 = createTestEntity("DUMMY_a", 1);
             service.put(t1, e1);
             assertStoreDoesNotContain(e1);
 
@@ -151,7 +151,7 @@ public class TransactionsTest extends SimpleTestBase {
 
             Transaction t2 = service.beginTransaction();
             try {
-                e2 = createTestEntity("DUMMY", 2);
+                e2 = createTestEntity("DUMMY_b", 2);
                 service.put(e2);
 
                 assertActiveTransactions(t1, t2);
