@@ -141,7 +141,23 @@ public class PreparedQueryImpl extends QueryHolder implements PreparedQuery {
         private int count() {
             check();
             apply();
-            return holder.getCacheQuery().getResultSize();
+
+            int totalResults = holder.getCacheQuery().getResultSize();
+            Integer offset = fetchOptions.getOffset();
+            Integer limit = fetchOptions.getLimit();
+            if (offset == null) {
+                offset = 0;
+            }
+
+            if (offset > totalResults) {
+                return 0;
+            } else {
+                if (limit == null || offset + limit > totalResults) {
+                    return totalResults - offset;
+                } else {
+                    return limit;
+                }
+            }
         }
     }
 }
