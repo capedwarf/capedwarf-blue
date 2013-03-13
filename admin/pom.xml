@@ -36,6 +36,41 @@
     <url>http://www.jboss.org/capedwarf</url>
     <description>CapeDwarf Admin Console</description>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>jarjar-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jarjar</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>commons-collections:commons-collections</include>
+                                <include>commons-lang:commons-lang</include>
+                                <include>org.apache.velocity:velocity</include>
+                                <include>org.apache.velocity:velocity-tools</include>
+                            </includes>
+                            <rules>
+                                <rule>
+                                    <pattern>org.apache.commons.**</pattern>
+                                    <result>org.jboss.capedwarf.apache.commons.@1</result>
+                                </rule>
+                                <rule>
+                                    <pattern>org.apache.velocity.**</pattern>
+                                    <result>org.jboss.capedwarf.apache.velocity.@1</result>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
 
         <dependency>

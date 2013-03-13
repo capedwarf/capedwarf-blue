@@ -22,11 +22,9 @@
 
 package org.jboss.capedwarf.admin;
 
-import org.apache.velocity.Template;
-import org.apache.velocity.app.VelocityEngine;
-import org.apache.velocity.context.Context;
-import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.jboss.capedwarf.common.io.IOUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -35,16 +33,17 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.util.Properties;
+
+import org.apache.velocity.Template;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.context.Context;
+import org.jboss.capedwarf.common.io.IOUtils;
 
 /**
- *
+ * @author Marko Luksa
+ * @author Ales Justin
  */
 public class AdminServlet extends HttpServlet {
-
     private VelocityEngine velocity;
 
     @Inject BeanManager manager;
@@ -55,14 +54,10 @@ public class AdminServlet extends HttpServlet {
         createVelocityEngine();
     }
 
+    @SuppressWarnings("unchecked")
     private void createVelocityEngine() throws ServletException {
         try {
-            Properties props = new Properties();
-            props.put("resource.loader", "class");
-            props.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
-            props.put("tools.toolbox", "application");
-            props.put("tools.application.esc", "org.apache.velocity.tools.generic.EscapeTool");
-            velocity = new VelocityEngine(props);
+            velocity = VelocityUtils.create();
         } catch (Exception e) {
             throw new ServletException(e);
         }

@@ -56,6 +56,8 @@
         <version.com.google.gae.api>1.7.5</version.com.google.gae.api>
         <version.com.google.guava>13.0.1</version.com.google.guava>
         <version.json>20090211</version.json>
+        <version.org.apache.commons-collections>3.2.1</version.org.apache.commons-collections>
+        <version.org.apache.commons-lang>2.6</version.org.apache.commons-lang>
         <version.org.apache.lucene>3.6.2</version.org.apache.lucene>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
         <version.org.apache.velocity-tool>2.0</version.org.apache.velocity-tool>
@@ -516,6 +518,18 @@
                 <groupId>org.apache.lucene</groupId>
                 <artifactId>lucene-memory</artifactId>
                 <version>${version.org.apache.lucene}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>${version.org.apache.commons-collections}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>${version.org.apache.commons-lang}</version>
             </dependency>
 
             <dependency>
