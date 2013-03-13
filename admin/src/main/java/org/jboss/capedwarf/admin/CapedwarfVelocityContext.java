@@ -22,21 +22,16 @@
 
 package org.jboss.capedwarf.admin;
 
-import org.apache.velocity.context.AbstractContext;
-import org.apache.velocity.context.Context;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.velocity.context.AbstractContext;
 import org.apache.velocity.tools.generic.EscapeTool;
 
 /**
@@ -112,7 +107,7 @@ public class CapedwarfVelocityContext extends AbstractContext {
     }
 
     public static void clearThreadLocalInstance() {
-        threadLocal.set(null);
+        threadLocal.remove();
     }
 
     public HttpServletRequest getRequest() {

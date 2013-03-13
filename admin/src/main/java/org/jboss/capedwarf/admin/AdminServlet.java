@@ -92,13 +92,14 @@ public class AdminServlet extends HttpServlet {
 
     private void serveVelocityPage(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         Context context = CapedwarfVelocityContext.createThreadLocalInstance(manager, req);
-
-        Template template = velocity.getTemplate(getTemplatePath(req));
-        OutputStreamWriter writer = new OutputStreamWriter(resp.getOutputStream());
-        template.merge(context, writer);
-        writer.flush();
-
-        CapedwarfVelocityContext.clearThreadLocalInstance();
+        try {
+            Template template = velocity.getTemplate(getTemplatePath(req));
+            OutputStreamWriter writer = new OutputStreamWriter(resp.getOutputStream());
+            template.merge(context, writer);
+            writer.flush();
+        } finally {
+            CapedwarfVelocityContext.clearThreadLocalInstance();
+        }
     }
 
     private String getTemplatePath(HttpServletRequest req) {
