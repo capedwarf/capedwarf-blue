@@ -26,6 +26,7 @@ package org.jboss.test.capedwarf.datastore.test;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -36,12 +37,15 @@ import com.google.appengine.api.datastore.QueryResultList;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -53,6 +57,9 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Arquillian.class)
 @Category(All.class)
 public class PreparedQueryTest extends QueryTestBase {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     private Entity john;
     private PreparedQuery preparedQuery;
@@ -81,7 +88,7 @@ public class PreparedQueryTest extends QueryTestBase {
     }
 
     @Test
-    public void testAsIteratorWithOptionstestCountEntities() throws Exception {
+    public void testAsIterator() throws Exception {
         Iterator<Entity> iterator = preparedQuery.asIterator();
         assertNotNull(iterator);
         assertTrue(iterator.hasNext());
@@ -94,6 +101,16 @@ public class PreparedQueryTest extends QueryTestBase {
         assertNotNull(iterator);
         assertTrue(iterator.hasNext());
         assertEquals(john, iterator.next());
+    }
+
+    @Test
+    public void testIteratorThrowsNoSuchElementException() throws Exception {
+        Iterator<Entity> iterator = preparedQuery.asIterator();
+        iterator.next();
+        assertFalse(iterator.hasNext());
+
+        thrown.expect(NoSuchElementException.class);
+        iterator.next();
     }
 
     @Test

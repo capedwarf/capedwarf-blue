@@ -26,9 +26,11 @@ package org.jboss.capedwarf.datastore.query;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 class PostLoadIterator<E> implements Iterator<E> {
     private Iterator<E> delegate;
@@ -60,7 +62,9 @@ class PostLoadIterator<E> implements Iterator<E> {
     }
 
     public synchronized E next() {
-        check();
+        if (!hasNext()) {
+            throw new NoSuchElementException("current: " + current + "; buffer.size: " + buffer.size());
+        }
         return buffer.get(current++);
     }
 
