@@ -190,8 +190,16 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
     }
 
     static javax.transaction.Transaction beforeTx(Transaction tx) {
-        // if tx is null, explicitly suspend current tx
-        return (tx == null) ? CapedwarfTransaction.suspendTx() : null;
+        if (tx == null) {
+            // if tx is null, explicitly suspend current tx
+            return CapedwarfTransaction.suspendTx();
+        } else {
+            if (!tx.isActive()) {
+                throw new IllegalStateException("Transaction is not active: " + tx);
+            }
+
+            return null;
+        }
     }
 
     static void afterTx(javax.transaction.Transaction transaction) {

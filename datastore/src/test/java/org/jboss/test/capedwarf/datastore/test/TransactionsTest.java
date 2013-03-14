@@ -318,6 +318,32 @@ public class TransactionsTest extends SimpleTestBase {
         }
     }
 
+    @Test
+    public void testOperatingOnClosedTransaction() throws Exception {
+        Transaction tx = service.beginTransaction();
+        Entity entity = createTestEntity();
+        service.put(tx, entity);
+        tx.commit();
+
+        try {
+            service.get(tx, entity.getKey());
+            fail("Expected IllegalStateException");
+        } catch (IllegalStateException ok) {
+        }
+
+        try {
+            service.delete(tx, entity.getKey());
+            fail("Expected IllegalStateException");
+        } catch (IllegalStateException ok) {
+        }
+
+        try {
+            service.put(tx, entity);
+            fail("Expected IllegalStateException");
+        } catch (IllegalStateException ok) {
+        }
+    }
+
     private PreparedQuery prepareQueryWithAncestor(Transaction tx, Key someAncestor) {
         return service.prepare(tx, new Query("foo").setAncestor(someAncestor));
     }
