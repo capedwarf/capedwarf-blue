@@ -32,6 +32,7 @@ import com.google.common.collect.ForwardingIterator;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.FetchOptions;
 import org.infinispan.query.ResultIterator;
+import org.jboss.capedwarf.datastore.EntityUtils;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -55,14 +56,10 @@ public class EntityLoader {
             if (conversionNeeded) {
                 list.add(Projections.convertToEntity(query, result));
             } else {
-                list.add(makeDefensiveCopy((Entity) result));
+                list.add(EntityUtils.cloneEntity((Entity) result));
             }
         }
         return list;
-    }
-
-    private Entity makeDefensiveCopy(Entity entity) {
-        return entity == null ? null : entity.clone();
     }
 
     public Iterator<Object> getIterator(Integer chunkSize) {
@@ -123,7 +120,7 @@ public class EntityLoader {
 
         public Object next() {
             Entity entity = (Entity) iterator.next();
-            return entity.clone();
+            return EntityUtils.cloneEntity(entity);
         }
     }
 
