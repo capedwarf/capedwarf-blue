@@ -10,7 +10,6 @@ import com.google.appengine.api.datastore.Query;
 import org.apache.lucene.search.Sort;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.SearchManager;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
  * Converts a GAE query to Infinispan's CacheQuery
@@ -67,7 +66,7 @@ public class QueryConverter {
     private List<org.apache.lucene.search.Query> getQueryList(Query gaeQuery) {
         List<org.apache.lucene.search.Query> list = new ArrayList<org.apache.lucene.search.Query>();
         addFilterQuery(list, gaeQuery);
-        addNamespaceQuery(list, getNamespace(gaeQuery));
+        addNamespaceQuery(list, QueryUtils.getNamespace(gaeQuery));
         addEntityKindQuery(list, gaeQuery.getKind());
         addAncestorQuery(list, gaeQuery.getAncestor());
         addProjectionsFilterQuery(list, gaeQuery);
@@ -104,11 +103,6 @@ public class QueryConverter {
         }
         list.addAll(gaeQuery.getFilterPredicates());
         return list;
-    }
-
-    private String getNamespace(Query gaeQuery) {
-        Object appIdNamespace = ReflectionUtils.invokeInstanceMethod(gaeQuery, "getAppIdNamespace");
-        return (String) ReflectionUtils.invokeInstanceMethod(appIdNamespace, "getNamespace");
     }
 
     private void addAncestorQuery(List<org.apache.lucene.search.Query> list, Key ancestor) {
