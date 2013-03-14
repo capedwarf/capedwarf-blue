@@ -130,6 +130,26 @@ public class DatastoreMultitenancyTest extends SimpleTestBase {
     }
 
     @Test
+    public void testQueryConsidersCurrentNamespaceWhenCreatedNotWhenPreparedOrExecuted() {
+        NamespaceManager.set("one");
+        Entity fooOne = new Entity("foo");
+        service.put(fooOne);
+
+        NamespaceManager.set("two");
+        Entity fooTwo = new Entity("foo");
+        service.put(fooTwo);
+
+        Query query = new Query("foo"); // query created in namespace "two"
+
+        NamespaceManager.set("one");
+        PreparedQuery preparedQuery = service.prepare(query);
+        assertEquals(fooTwo, preparedQuery.asSingleEntity());
+
+        service.delete(fooOne.getKey());
+        service.delete(fooTwo.getKey());
+    }
+
+    @Test
     public void testQueryOnKeyReservedPropertyInDifferentNamespace() {
         NamespaceManager.set("one");
         Key keyInNamespaceOne = KeyFactory.createKey("kind", 1);
