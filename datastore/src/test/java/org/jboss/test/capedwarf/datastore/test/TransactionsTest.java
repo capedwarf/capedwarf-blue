@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
@@ -121,10 +122,69 @@ public class TransactionsTest extends SimpleTestBase {
         Transaction tx = service.beginTransaction();
         Entity entity2 = service.get(key);
         entity2.setProperty("name", "modified");
+        service.put(tx, entity2);
         tx.rollback();
 
         Entity entity3 = service.get(key);
         assertEquals("original", entity3.getProperty("name"));
+    }
+
+    @Test
+    public void testRollbackWhenModifyingEntityObtainedThroughQuery() throws Exception {
+        assertRollbackSucceedsWhenResultFetchedWith(new ResultFetcher() {
+            public Entity fetchResult(PreparedQuery preparedQuery) {
+                return preparedQuery.asSingleEntity();
+            }
+        });
+        assertRollbackSucceedsWhenResultFetchedWith(new ResultFetcher() {
+            public Entity fetchResult(PreparedQuery preparedQuery) {
+                return preparedQuery.asIterator().next();
+            }
+        });
+        assertRollbackSucceedsWhenResultFetchedWith(new ResultFetcher() {
+            public Entity fetchResult(PreparedQuery preparedQuery) {
+                return preparedQuery.asIterable().iterator().next();
+            }
+        });
+        assertRollbackSucceedsWhenResultFetchedWith(new ResultFetcher() {
+            public Entity fetchResult(PreparedQuery preparedQuery) {
+                return preparedQuery.asList(withDefaults()).get(0);
+            }
+        });
+        assertRollbackSucceedsWhenResultFetchedWith(new ResultFetcher() {
+            public Entity fetchResult(PreparedQuery preparedQuery) {
+                return preparedQuery.asQueryResultIterator().next();
+            }
+        });
+        assertRollbackSucceedsWhenResultFetchedWith(new ResultFetcher() {
+            public Entity fetchResult(PreparedQuery preparedQuery) {
+                return preparedQuery.asQueryResultIterable().iterator().next();
+            }
+        });
+        assertRollbackSucceedsWhenResultFetchedWith(new ResultFetcher() {
+            public Entity fetchResult(PreparedQuery preparedQuery) {
+                return preparedQuery.asQueryResultList(withDefaults()).get(0);
+            }
+        });
+    }
+
+    private void assertRollbackSucceedsWhenResultFetchedWith(ResultFetcher resultFetcher) throws EntityNotFoundException {
+        Entity entity = new Entity("test");
+        entity.setProperty("name", "original");
+        Key key = service.put(entity);
+        try {
+            Transaction tx = service.beginTransaction();
+            PreparedQuery preparedQuery = service.prepare(new Query("test"));
+            Entity entity2 = resultFetcher.fetchResult(preparedQuery);
+            entity2.setProperty("name", "modified");
+            service.put(tx, entity2);
+            tx.rollback();
+
+            Entity entity3 = service.get(key);
+            assertEquals("original", entity3.getProperty("name"));
+        } finally {
+            service.delete(entity.getKey());
+        }
     }
 
     @Test
@@ -362,5 +422,9 @@ public class TransactionsTest extends SimpleTestBase {
         for (Transaction tx : txs) {
             assertTrue(tx.isActive());
         }
+    }
+
+    private interface ResultFetcher {
+        Entity fetchResult(PreparedQuery preparedQuery);
     }
 }

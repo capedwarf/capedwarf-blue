@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
 import com.google.common.collect.ForwardingIterator;
 import org.infinispan.query.CacheQuery;
@@ -47,17 +48,21 @@ public class EntityLoader {
     }
 
     public List<Object> getList() {
+        boolean conversionNeeded = mustConvertResultsToEntities();
         List<Object> results = cacheQuery.list();
-        if (specialLoadingNeeded()) {
-            List<Object> list = new ArrayList<Object>(results.size());
-            for (Object result : results) {
+        List<Object> list = new ArrayList<Object>(results.size());
+        for (Object result : results) {
+            if (conversionNeeded) {
                 list.add(Projections.convertToEntity(query, result));
+            } else {
+                list.add(makeDefensiveCopy((Entity) result));
             }
-            return list;
-        } else {
-            //noinspection unchecked
-            return (List)results;
         }
+        return list;
+    }
+
+    private Entity makeDefensiveCopy(Entity entity) {
+        return entity == null ? null : entity.clone();
     }
 
     public Iterator<Object> getIterator(Integer chunkSize) {
@@ -69,10 +74,10 @@ public class EntityLoader {
         } else {
             iterator = toClosingIterator(cacheQuery.iterator(new FetchOptions().fetchSize(chunkSize)));
         }
-        if (specialLoadingNeeded()) {
+        if (mustConvertResultsToEntities()) {
             return new WrappingIterator(iterator);
         } else {
-            return iterator;
+            return new CloningIterator(iterator);
         }
     }
 
@@ -80,7 +85,7 @@ public class EntityLoader {
         return new ClosingIterator(iterator);
     }
 
-    private boolean specialLoadingNeeded() {
+    private boolean mustConvertResultsToEntities() {
         return query.isKeysOnly() || !query.getProjections().isEmpty();
     }
 
@@ -101,6 +106,24 @@ public class EntityLoader {
 
         public void remove() {
             iterator.remove();
+        }
+    }
+
+    private class CloningIterator extends ForwardingIterator<Object> {
+        private final Iterator<Object> iterator;
+
+        public CloningIterator(Iterator<Object> iterator) {
+            this.iterator = iterator;
+        }
+
+        @Override
+        protected Iterator<Object> delegate() {
+            return iterator;
+        }
+
+        public Object next() {
+            Entity entity = (Entity) iterator.next();
+            return entity.clone();
         }
     }
 

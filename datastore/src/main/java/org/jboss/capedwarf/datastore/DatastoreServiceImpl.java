@@ -120,13 +120,14 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         try {
             EntityGroupTracker.trackKey(key);
             Entity entity = store.get(key);
-            if (entity == null)
-                return null;
-            else
-                return entity.clone();
+            return makeDefensiveCopy(entity);
         } finally {
             afterTx(transaction);
         }
+    }
+
+    private Entity makeDefensiveCopy(Entity entity) {
+        return entity == null ? null : entity.clone();
     }
 
     public Key put(Transaction tx, Entity entity, Runnable post) {
