@@ -69,7 +69,7 @@ public class LazyChecker extends LazyKeyChecker {
         if (endCursor != null) {
             int last = CapedwarfCursorHelper.readIndex(endCursor)-1;
             int first = (offset == null) ? 0 : offset;
-            cursorLimit = last - first + 1;
+            cursorLimit = Math.max(0, last - first + 1);
         }
         if (limit != null || cursorLimit != null) {
             cacheQuery.maxResults(
