@@ -44,6 +44,7 @@ import static com.google.appengine.api.datastore.FetchOptions.Builder.withLimit;
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withOffset;
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withStartCursor;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -163,6 +164,15 @@ public class QueryFetchOptionsTest extends QueryTestBase {
 
         results = executeQuery(withEndCursor(cursor).offset(1));
         assertEquals(asList(foo2, foo3), results);
+    }
+
+    @Test
+    public void testEndCursorLessThanOffset() {
+        QueryResultList<Entity> results = executeQuery(withLimit(1));
+        Cursor cursor = results.getCursor();    // points to foo2
+
+        results = executeQuery(withEndCursor(cursor).offset(3));
+        assertEquals(emptyList(), results);
     }
 
     @Test
