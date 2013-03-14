@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,15 @@
 
 package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.Entity;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class EntityUtils {
-
-    public static Entity cloneEntity(Entity entity) {
-        if (entity == null) {
-            return null;
-        }
-        Entity clone = entity.clone();
-        DatastoreServiceImpl.applyKeyChecked(entity, clone);
-        return clone;
-    }
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@interface TxTask {
 }

@@ -115,14 +115,44 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         return new AllocationTuple(start, asNum);
     }
 
+    protected Entity getEntity(Key key) {
+        EntityGroupTracker.trackKey(key);
+        Entity entity = store.get(key);
+        return EntityUtils.cloneEntity(entity);
+    }
+
     public Entity get(Transaction tx, Key key) {
-        final javax.transaction.Transaction transaction = beforeTx(tx);
         try {
-            EntityGroupTracker.trackKey(key);
-            Entity entity = store.get(key);
-            return EntityUtils.cloneEntity(entity);
+            final javax.transaction.Transaction transaction = beforeTx(tx);
+            try {
+                return getEntity(key);
+            } finally {
+                afterTx(transaction);
+            }
         } finally {
-            afterTx(transaction);
+            if (async) {
+                TxTasks.end();
+            }
+        }
+    }
+
+    public void get(Transaction tx, List<Key> keys, Map<Key, Entity> map) {
+        try {
+            final javax.transaction.Transaction transaction = beforeTx(tx);
+            try {
+                for (Key key : keys) {
+                    Entity entity = getEntity(key);
+                    if (entity != null) {
+                        map.put(key, entity);
+                    }
+                }
+            } finally {
+                afterTx(transaction);
+            }
+        } finally {
+            if (async) {
+                TxTasks.end();
+            }
         }
     }
 
@@ -131,11 +161,6 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     }
 
     public List<Key> put(Transaction tx, Iterable<Entity> entities, Runnable post) {
-        javax.transaction.Transaction current = null;
-        if (async) {
-            current = CapedwarfTransaction.getTx();
-            TxTasks.begin(current);
-        }
         try {
             javax.transaction.Transaction transaction = beforeTx(tx);
             try {
@@ -153,7 +178,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
             }
         } finally {
             if (async) {
-                TxTasks.end(current);
+                TxTasks.end();
             }
         }
     }
@@ -174,11 +199,6 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
 
     @Override
     public void delete(Transaction tx, Iterable<Key> keys, Runnable post) {
-        javax.transaction.Transaction current = null;
-        if (async) {
-            current = CapedwarfTransaction.getTx();
-            TxTasks.begin(current);
-        }
         try {
             final javax.transaction.Transaction transaction = beforeTx(tx);
             try {
@@ -191,7 +211,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
             }
         } finally {
             if (async) {
-                TxTasks.end(current);
+                TxTasks.end();
             }
         }
     }

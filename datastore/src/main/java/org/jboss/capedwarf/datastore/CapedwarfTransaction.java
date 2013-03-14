@@ -51,8 +51,7 @@ import org.jboss.capedwarf.environment.EnvironmentFactory;
 final class CapedwarfTransaction implements Transaction {
     private static final Logger log = Logger.getLogger(CapedwarfTransaction.class.getName());
 
-    private static final int asyncRetryCount = Integer.parseInt(System.getProperty("jboss.capedwarf.tx.asyncRetryCount", "10"));
-    private static final long asyncRetrySleep = Long.parseLong(System.getProperty("jboss.capedwarf.tx.asyncRetrySleep", "1000"));
+    private static final int asyncRetryCount = Integer.parseInt(System.getProperty("jboss.capedwarf.tx.asyncRetryCount", "3"));
 
     private final static TransactionManager tm = TxUtils.getTransactionManager();
     private final static ThreadLocal<Stack<CapedwarfTransaction>> current = new ThreadLocal<Stack<CapedwarfTransaction>>();
@@ -252,7 +251,12 @@ final class CapedwarfTransaction implements Transaction {
     public void commit() {
         checkIfCurrent();
         try {
-            tm.commit();
+            finish(getTx(), new Callable<Void>() {
+                public Void call() throws Exception {
+                    tm.commit();
+                    return null;
+                }
+            });
         } catch (Exception e) {
             throw new DatastoreFailureException("Cannot commit tx.", e);
         } finally {
@@ -273,7 +277,7 @@ final class CapedwarfTransaction implements Transaction {
             public Void call() throws Exception {
                 resumeTx(tx);
                 try {
-                    return finishAsync(tx, new Callable<Void>() {
+                    return finish(tx, new Callable<Void>() {
                         public Void call() throws Exception {
                             tx.commit();
                             return null;
@@ -289,7 +293,12 @@ final class CapedwarfTransaction implements Transaction {
     public void rollback() {
         checkIfCurrent();
         try {
-            tm.rollback();
+            finish(getTx(), new Callable<Void>() {
+                public Void call() throws Exception {
+                    tm.rollback();
+                    return null;
+                }
+            });
         } catch (Exception e) {
             throw new DatastoreFailureException("Cannot rollback tx.", e);
         } finally {
@@ -310,7 +319,7 @@ final class CapedwarfTransaction implements Transaction {
             public Void call() throws Exception {
                 resumeTx(tx);
                 try {
-                    return finishAsync(tx, new Callable<Void>() {
+                    return finish(tx, new Callable<Void>() {
                         public Void call() throws Exception {
                             tx.rollback();
                             return null;
@@ -343,19 +352,14 @@ final class CapedwarfTransaction implements Transaction {
         return isTxActive();
     }
 
-    private static Void finishAsync(final javax.transaction.Transaction tx, final Callable<Void> callable) throws Exception {
+    private static Void finish(final javax.transaction.Transaction tx, final Callable<Void> callable) throws Exception {
         try {
             int counter = asyncRetryCount;
-            while(counter > 0 && TxTasks.finished(tx) == false) {
+            while(counter > 0 && TxTasks.isDone(tx) == false) {
                 counter--;
-                try {
-                    Thread.sleep(asyncRetrySleep);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(e);
-                }
+                TxTasks.finish(tx);
             }
-            if (TxTasks.finished(tx)) {
+            if (TxTasks.isDone(tx)) {
                 return callable.call();
             } else {
                 throw new IllegalStateException("Cannot execute tx operation, unfinished tasks for tx: " + tx);

@@ -61,6 +61,14 @@ interface DatastoreServiceInternal extends BaseDatastoreService {
     Entity get(Transaction tx, Key key);
 
     /**
+     * Get.
+     *
+     * @param tx current tx
+     * @param key key
+     */
+    void get(Transaction tx, List<Key> keys, Map<Key, Entity> map);
+
+    /**
      * Put.
      *
      * @param tx current tx

@@ -33,11 +33,13 @@ import java.util.concurrent.Future;
 import com.google.appengine.api.datastore.DatastoreAttributes;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+import com.google.appengine.api.utils.FutureWrapper;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.async.Wrappers;
@@ -115,18 +117,33 @@ class CapedwarfAsyncDatastoreService extends AbstractDatastoreService implements
         });
     }
 
+    @TxTask
     public Future<Entity> get(final Key key) {
         return get(getCurrentTransaction(null), key);
     }
 
-    public Future<Entity> get(Transaction transaction, Key key) {
-        return doGet(transaction, key);
+    @TxTask
+    public Future<Entity> get(Transaction transaction, final Key key) {
+        Future<Entity> future = doGet(transaction, key);
+        return new FutureWrapper<Entity, Entity>(future) {
+            protected Entity wrap(Entity entity) throws Exception {
+                if (entity == null)
+                    throw new EntityNotFoundException(key);
+                return entity;
+            }
+
+            protected Throwable convertException(Throwable throwable) {
+                return throwable;
+            }
+        };
     }
 
+    @TxTask
     public Future<Map<Key, Entity>> get(final Iterable<Key> keyIterable) {
         return get(getCurrentTransaction(null), keyIterable);
     }
 
+    @TxTask
     public Future<Map<Key, Entity>> get(final Transaction transaction, final Iterable<Key> keyIterable) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
 
@@ -142,12 +159,7 @@ class CapedwarfAsyncDatastoreService extends AbstractDatastoreService implements
             public Map<Key, Entity> call() throws Exception {
                 CapedwarfTransaction.attach(tw);
                 try {
-                    for (Key key : requiredKeys) {
-                        final Entity entity = getDelegate().get(transaction, key);
-                        if (entity != null) {
-                            map.put(key, entity);
-                        }
-                    }
+                    getDelegate().get(transaction, requiredKeys, map);
                     return map;
                 } finally {
                     CapedwarfTransaction.detach(tw);
@@ -161,18 +173,22 @@ class CapedwarfAsyncDatastoreService extends AbstractDatastoreService implements
         };
     }
 
+    @TxTask
     public Future<Key> put(final Entity entity) {
         return put(getCurrentTransaction(null), entity);
     }
 
+    @TxTask
     public Future<List<Key>> put(final Iterable<Entity> entityIterable) {
         return put(getCurrentTransaction(null), entityIterable);
     }
 
+    @TxTask
     public Future<Key> put(Transaction transaction, Entity entity) {
         return doPut(transaction, entity, false);
     }
 
+    @TxTask
     public Future<List<Key>> put(final Transaction transaction, final Iterable<Entity> entityIterable) {
         getDatastoreCallbacks().executePrePutCallbacks(this, Lists.newArrayList(entityIterable));
 
@@ -198,18 +214,22 @@ class CapedwarfAsyncDatastoreService extends AbstractDatastoreService implements
         return handleGetWithPost(wrap, CapedwarfTransaction.getTx(), post);
     }
 
+    @TxTask
     public Future<Void> delete(final Key... keys) {
         return delete(getCurrentTransaction(null), keys);
     }
 
+    @TxTask
     public Future<Void> delete(final Transaction transaction, final Key... keys) {
         return delete(transaction, Arrays.asList(keys));
     }
 
+    @TxTask
     public Future<Void> delete(final Iterable<Key> keyIterable) {
         return delete(getCurrentTransaction(null), keyIterable);
     }
 
+    @TxTask
     public Future<Void> delete(final Transaction transaction, final Iterable<Key> keyIterable) {
         getDatastoreCallbacks().executePreDeleteCallbacks(this, Lists.newArrayList(keyIterable));
 

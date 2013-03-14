@@ -29,6 +29,7 @@ import com.google.appengine.api.datastore.IDatastoreServiceFactory;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
 import org.jboss.capedwarf.aspects.proxy.AspectFactory;
+import org.jboss.capedwarf.aspects.proxy.AspectRegistry;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 import org.kohsuke.MetaInfServices;
 
@@ -40,6 +41,10 @@ import org.kohsuke.MetaInfServices;
 @MetaInfServices(FactoryProvider.class)
 @ServiceProvider(value = IDatastoreServiceFactory.class, precedence = CapedwarfFactoryProvider.PRECEDENCE)
 public class CapedwarfDatastoreServiceFactoryProvider extends CapedwarfFactoryProvider<IDatastoreServiceFactory> {
+    static {
+        AspectRegistry.addAspect(new TxTasksAspect());
+    }
+
     private IDatastoreServiceFactory factory = new IDatastoreServiceFactory() {
         public DatastoreService getDatastoreService(DatastoreServiceConfig config) {
             return AspectFactory.createProxy(ExposedDatastoreService.class, new CapedwarfDatastoreService(config));

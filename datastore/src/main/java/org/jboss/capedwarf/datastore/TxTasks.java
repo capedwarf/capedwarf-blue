@@ -34,8 +34,13 @@ import javax.transaction.Transaction;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
+@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
 final class TxTasks {
     private static Map<Transaction, AtomicInteger> counters = new ConcurrentHashMap<Transaction, AtomicInteger>();
+
+    static void begin() {
+        begin(CapedwarfTransaction.getTx());
+    }
 
     static void begin(Transaction tx) {
         if (tx == null) return;
@@ -48,23 +53,46 @@ final class TxTasks {
         ai.incrementAndGet();
     }
 
+    static void end() {
+        end(CapedwarfTransaction.getTx());
+    }
+
     static void end(Transaction tx) {
         if (tx == null) return;
 
-        AtomicInteger ai = counters.get(tx);
+        final AtomicInteger ai = counters.get(tx);
         if (ai == null) {
             throw new IllegalStateException("No counter?!");
         }
         if (ai.decrementAndGet() == 0) {
             counters.remove(tx);
+            synchronized (ai) {
+                ai.notifyAll();
+            }
         }
     }
 
-    static boolean finished(Transaction tx) {
+    static boolean isDone(Transaction tx) {
         if (tx == null) return true;
 
-        AtomicInteger ai = counters.get(tx);
-        return (ai == null || ai.get() == 0);
+        final AtomicInteger ai = counters.get(tx);
+        return (ai == null || ai.get() <= 0);
+    }
+
+    static void finish(Transaction tx) {
+        if (tx == null) return;
+
+        final AtomicInteger ai = counters.get(tx);
+        if (ai != null && ai.get() > 0) {
+            synchronized (ai) {
+                try {
+                    ai.wait(60 * 1000L); // global limit
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
     static void clear(Transaction tx) {

@@ -40,6 +40,7 @@ import org.jboss.capedwarf.aspects.Aspect;
 import org.jboss.capedwarf.aspects.AspectAdapter;
 import org.jboss.capedwarf.aspects.GlobalTimeLimitAspect;
 import org.jboss.capedwarf.aspects.InvocationTimeLimitAspect;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -80,11 +81,13 @@ public final class AspectRegistry {
         final Set<AspectWrapper> aspects = new HashSet<AspectWrapper>();
         aspects.addAll(defaultAspects);
 
-        Method method = info.getMethod();
+        Method interfaceMethod = info.getMethod();
+        Class<?> clazz = info.getApiImpl().getClass();
+        Method method = ReflectionUtils.getMethod(clazz, interfaceMethod);
         Annotation[] annotations = method.getAnnotations();
         aspects.addAll(buildAspects(annotations));
 
-        annotations = info.getApiImpl().getClass().getAnnotations();
+        annotations = clazz.getAnnotations();
         aspects.addAll(buildAspects(annotations));
 
         List<AspectWrapper> list = new ArrayList<AspectWrapper>(aspects);

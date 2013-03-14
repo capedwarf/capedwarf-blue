@@ -109,6 +109,17 @@ public final class ReflectionUtils {
     }
 
     /**
+     * Get real method.
+     *
+     * @param clazz the class
+     * @param original the original method
+     * @return real method
+     */
+    public static Method getMethod(Class<?> clazz, Method original) {
+        return findMethod(clazz, original.getName(), original.getParameterTypes());
+    }
+
+    /**
      * Invoke no-param method.
      *
      * @param target     the object on which to invoke method

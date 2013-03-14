@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,24 @@
 
 package org.jboss.capedwarf.datastore;
 
-import com.google.appengine.api.datastore.Entity;
+import org.jboss.capedwarf.aspects.AbstractAspect;
+import org.jboss.capedwarf.aspects.proxy.AspectContext;
 
 /**
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class EntityUtils {
+final class TxTasksAspect extends AbstractAspect<TxTask> {
+    TxTasksAspect() {
+        super(TxTask.class);
+    }
 
-    public static Entity cloneEntity(Entity entity) {
-        if (entity == null) {
-            return null;
+    public Object invoke(AspectContext context) throws Throwable {
+        TxTasks.begin();
+        try {
+            return context.proceed();
+        } catch (Throwable t) {
+            TxTasks.end();
+            throw t;
         }
-        Entity clone = entity.clone();
-        DatastoreServiceImpl.applyKeyChecked(entity, clone);
-        return clone;
     }
 }
