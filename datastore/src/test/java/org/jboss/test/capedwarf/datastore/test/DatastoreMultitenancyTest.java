@@ -157,6 +157,8 @@ public class DatastoreMultitenancyTest extends SimpleTestBase {
         NamespaceManager.set("two");
         Query query = new Query().setFilter(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, EQUAL, keyInNamespaceOne));
 
+        NamespaceManager.set("one"); // to make sure that the query's namespace is used when checking, not the current namespace
+
         try {
             service.prepare(query).asSingleEntity();
             fail("Expected IllegalArgumentException");
