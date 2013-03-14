@@ -46,6 +46,7 @@ class LazyQueryResultIterator<E> extends LazyChecker implements QueryResultItera
         if (delegate == null) {
             synchronized (this) {
                 if (delegate == null) {
+                    new FilterNamespaceChecker().checkNamespace(holder.getQuery());
                     apply();
                     EntityLoader entityLoader = new EntityLoader(holder.getQuery(), holder.getCacheQuery());
                     Integer chunkSize = fetchOptions.getChunkSize();
