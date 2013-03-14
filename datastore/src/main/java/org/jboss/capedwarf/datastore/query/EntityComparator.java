@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,25 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.ns;
+package org.jboss.capedwarf.datastore.query;
 
-import com.google.appengine.api.datastore.Entities;
+import java.util.Comparator;
+import java.util.Map;
+
 import com.google.appengine.api.datastore.Entity;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class NamespaceKindRemoveTask extends AbstractNamespaceRemoveTask {
-    public NamespaceKindRemoveTask(Entity trigger) {
-        super(trigger);
-    }
+class EntityComparator implements Comparator<Entity> {
+    static final Comparator<Entity> INSTANCE = new EntityComparator();
 
-    protected String lockKey() {
-        return Entities.KIND_METADATA_KIND + trigger.getNamespace();
-    }
-
-    protected String getElement() {
-        return trigger.getKind();
+    public int compare(Entity e1, Entity e2) {
+        Map<String, Object> p1 = e1.getProperties();
+        Map<String, Object> p2 = e2.getProperties();
+        return p1.equals(p2) ? 0 : -1;
     }
 }

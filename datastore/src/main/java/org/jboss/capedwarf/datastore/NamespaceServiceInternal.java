@@ -33,9 +33,6 @@ import com.google.common.collect.SetMultimap;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public interface NamespaceServiceInternal {
-    public static final String NAMESPACES = "__Namespaces__";
-    public static final String KINDS = "__Kinds__";
-
     /**
      * Get namespaces.
      *

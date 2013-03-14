@@ -25,6 +25,8 @@ package org.jboss.capedwarf.datastore.query;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
@@ -40,6 +42,12 @@ import org.jboss.capedwarf.datastore.EntityUtils;
  */
 public class EntityLoader {
 
+    private static enum Type {
+        NONE,
+        KEYS_ONLY,
+        PROJECTIONS
+    }
+
     private final Query query;
     private final CacheQuery cacheQuery;
 
@@ -50,11 +58,15 @@ public class EntityLoader {
 
     public List<Object> getList() {
         boolean conversionNeeded = mustConvertResultsToEntities();
+        Set<Entity> distinct = (getType() == Type.PROJECTIONS && query.getDistinct() ? new TreeSet<Entity>(EntityComparator.INSTANCE) : null);
         List<Object> results = cacheQuery.list();
         List<Object> list = new ArrayList<Object>(results.size());
         for (Object result : results) {
             if (conversionNeeded) {
-                list.add(Projections.convertToEntity(query, result));
+                Entity entity = Projections.convertToEntity(query, result);
+                if (distinct == null || distinct.add(entity)) {
+                    list.add(entity);
+                }
             } else {
                 list.add(EntityUtils.cloneEntity((Entity) result));
             }
@@ -63,6 +75,11 @@ public class EntityLoader {
     }
 
     public Iterator<Object> getIterator(Integer chunkSize) {
+        // TODO -- in-memory distinct
+        if (query.getDistinct()) {
+            return getList().iterator();
+        }
+
         final Iterator<Object> iterator;
         if (chunkSize == null) {
             iterator = toClosingIterator(cacheQuery.iterator());
@@ -82,8 +99,18 @@ public class EntityLoader {
         return new ClosingIterator(iterator);
     }
 
+    private Type getType() {
+        if (query.isKeysOnly()) {
+            return Type.KEYS_ONLY;
+        } else if (query.getProjections().size() > 0) {
+            return Type.PROJECTIONS;
+        } else {
+            return Type.NONE;
+        }
+    }
+
     private boolean mustConvertResultsToEntities() {
-        return query.isKeysOnly() || !query.getProjections().isEmpty();
+        return (getType() != Type.NONE);
     }
 
     private class WrappingIterator implements Iterator<Object> {

@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.datastore.ns;
 
+import com.google.appengine.api.datastore.Entities;
 import com.google.appengine.api.datastore.Entity;
 
 /**
@@ -33,7 +34,7 @@ public class NamespaceAddTask extends AbstractNamespaceAddTask {
     }
 
     protected String lockKey() {
-        return NAMESPACES;
+        return Entities.NAMESPACE_METADATA_KIND;
     }
 
     protected String getElement() {

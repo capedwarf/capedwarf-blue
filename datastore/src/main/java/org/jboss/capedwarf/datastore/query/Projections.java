@@ -62,7 +62,7 @@ class Projections {
      */
     static void applyProjections(Query gaeQuery, CacheQuery cacheQuery) {
         List<String> projections = getProjections(gaeQuery);
-        if (!projections.isEmpty()) {
+        if (projections.isEmpty() == false) {
             cacheQuery.projection(projections.toArray(new String[projections.size()]));
         }
     }
@@ -192,11 +192,12 @@ class Projections {
         return propertyProjection.getType() == null;
     }
 
+    @SuppressWarnings("SimplifiableIfStatement")
     private static boolean isOnlyNeededForSorting(String propertyName, Query query) {
         if (query.isKeysOnly()) {
             return true;
         } else if (query.getProjections().size() > 0) {
-            return !isProjectedProperty(propertyName, query);
+            return isProjectedProperty(propertyName, query) == false;
         } else {
             return false;
         }

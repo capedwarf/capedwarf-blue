@@ -167,7 +167,7 @@ public enum Bridge implements TwoWayStringBridge {
 
     private static class CollectionBridge implements TwoWayStringBridge {
         public Object stringToObject(String stringValue) {
-            return null;  // TODO
+            return null; // TODO
         }
 
         public String objectToString(Object object) {
@@ -354,7 +354,7 @@ public enum Bridge implements TwoWayStringBridge {
         private GAEKeyTransformer keyTransformer = new GAEKeyTransformer();
 
         public String objectToString(Object object) {
-            return keyTransformer.toString((Key) object);
+            return keyTransformer.toString(object);
         }
 
         public Object stringToObject(String stringValue) {

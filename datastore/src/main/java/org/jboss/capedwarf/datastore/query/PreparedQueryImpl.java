@@ -68,6 +68,10 @@ public class PreparedQueryImpl extends QueryHolder implements PreparedQuery {
         return inTx;
     }
 
+    boolean isDistinct() {
+        return getQuery().getDistinct();
+    }
+
     void executePostLoad(Object result) {
         if (result instanceof Entity) {
             callback.execute((Entity) result);
@@ -130,7 +134,11 @@ public class PreparedQueryImpl extends QueryHolder implements PreparedQuery {
     }
 
     public int countEntities(FetchOptions fetchOptions) {
-        return new CountEntities(this, fetchOptions).count();
+        if (isDistinct()) {
+            return asQueryResultList(fetchOptions).size();
+        } else {
+            return new CountEntities(this, fetchOptions).count();
+        }
     }
 
     private static class CountEntities extends LazyChecker {

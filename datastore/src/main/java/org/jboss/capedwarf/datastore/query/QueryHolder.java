@@ -32,5 +32,6 @@ public abstract class QueryHolder {
     abstract Query getQuery();
     abstract CacheQuery getCacheQuery();
     abstract boolean isInTx();
+    abstract boolean isDistinct();
     abstract void executePostLoad(Object result);
 }

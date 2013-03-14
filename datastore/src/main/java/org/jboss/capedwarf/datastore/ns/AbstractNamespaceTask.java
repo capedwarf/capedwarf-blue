@@ -25,15 +25,11 @@ package org.jboss.capedwarf.datastore.ns;
 import com.google.appengine.api.datastore.Entity;
 import org.infinispan.AdvancedCache;
 import org.jboss.capedwarf.common.infinispan.BaseTxTask;
-import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractNamespaceTask<V> extends BaseTxTask<String, V, Void> {
-    static final String NAMESPACES = NamespaceServiceInternal.NAMESPACES;
-    static final String KINDS = NamespaceServiceInternal.KINDS;
-
     protected final Entity trigger;
 
     protected AbstractNamespaceTask(Entity trigger) {

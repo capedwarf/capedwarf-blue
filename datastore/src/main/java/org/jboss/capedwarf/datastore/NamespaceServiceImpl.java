@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.datastore.Entities;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import org.infinispan.Cache;
@@ -50,7 +51,7 @@ public class NamespaceServiceImpl implements NamespaceServiceInternal {
     }
 
     public Set<String> getNamespaces() {
-        return getCachedSet(NAMESPACES);
+        return getCachedSet(Entities.NAMESPACE_METADATA_KIND);
     }
 
     public Set<String> getKindsPerNamespace() {
@@ -58,7 +59,7 @@ public class NamespaceServiceImpl implements NamespaceServiceInternal {
     }
 
     public Set<String> getKindsPerNamespace(String namespace) {
-        return getCachedSet(KINDS + namespace);
+        return getCachedSet(Entities.KIND_METADATA_KIND + namespace);
     }
 
     public SetMultimap<String, String> getKindsPerNamespaces() {
