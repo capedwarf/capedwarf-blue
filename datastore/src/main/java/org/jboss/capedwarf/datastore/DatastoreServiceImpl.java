@@ -120,10 +120,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         try {
             EntityGroupTracker.trackKey(key);
             Entity entity = store.get(key);
-            if (entity == null)
-                return null;
-            else
-                return entity.clone();
+            return EntityUtils.cloneEntity(entity);
         } finally {
             afterTx(transaction);
         }

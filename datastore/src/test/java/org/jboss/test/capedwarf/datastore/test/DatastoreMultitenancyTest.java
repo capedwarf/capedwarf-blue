@@ -32,6 +32,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.test.capedwarf.common.support.All;
@@ -41,6 +42,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
@@ -127,4 +129,65 @@ public class DatastoreMultitenancyTest extends SimpleTestBase {
         service.delete(fooTwo.getKey());
     }
 
+    @Test
+    public void testQueryConsidersCurrentNamespaceWhenCreatedNotWhenPreparedOrExecuted() {
+        NamespaceManager.set("one");
+        Entity fooOne = new Entity("foo");
+        service.put(fooOne);
+
+        NamespaceManager.set("two");
+        Entity fooTwo = new Entity("foo");
+        service.put(fooTwo);
+
+        Query query = new Query("foo"); // query created in namespace "two"
+
+        NamespaceManager.set("one");
+        PreparedQuery preparedQuery = service.prepare(query);
+        assertEquals(fooTwo, preparedQuery.asSingleEntity());
+
+        service.delete(fooOne.getKey());
+        service.delete(fooTwo.getKey());
+    }
+
+    @Test
+    public void testQueryOnKeyReservedPropertyInDifferentNamespace() {
+        NamespaceManager.set("one");
+        Key keyInNamespaceOne = KeyFactory.createKey("kind", 1);
+
+        NamespaceManager.set("two");
+        Query query = new Query().setFilter(new Query.FilterPredicate(Entity.KEY_RESERVED_PROPERTY, EQUAL, keyInNamespaceOne));
+
+        NamespaceManager.set("one"); // to make sure that the query's namespace is used when checking, not the current namespace
+
+        try {
+            service.prepare(query).asSingleEntity();
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException ok) {
+        }
+
+        try {
+            service.prepare(query).asIterator().next();
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException ok) {
+        }
+
+        try {
+            service.prepare(query).asList(withDefaults()).size();
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException ok) {
+        }
+    }
+
+    @Test
+    public void testQueryOnSomePropertyWithKeyInDifferentNamespace() {
+        NamespaceManager.set("one");
+        Key keyInNamespaceOne = KeyFactory.createKey("kind", 1);
+
+        NamespaceManager.set("two");
+        Query query = new Query("kind").setFilter(new Query.FilterPredicate("someProperty", EQUAL, keyInNamespaceOne));
+        PreparedQuery preparedQuery = service.prepare(query);
+        preparedQuery.asSingleEntity();    // should not throw IllegalArgumentException as in previous test
+        preparedQuery.asIterator().hasNext();    // should not throw IllegalArgumentException as in previous test
+        preparedQuery.asList(withDefaults()).size();    // should not throw IllegalArgumentException as in previous test
+    }
 }

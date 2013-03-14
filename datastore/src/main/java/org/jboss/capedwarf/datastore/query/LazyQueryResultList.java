@@ -46,6 +46,7 @@ class LazyQueryResultList<E> extends LazyList<E> implements QueryResultList<E> {
         if (delegate == null) {
             synchronized (this) {
                 if (delegate == null) {
+                    new FilterNamespaceChecker().checkNamespace(holder.getQuery());
                     apply();
                     EntityLoader entityLoader = new EntityLoader(holder.getQuery(), holder.getCacheQuery());
                     List objects = entityLoader.getList();

@@ -37,8 +37,6 @@ class CloningEntityModifier implements EntityModifier {
     }
 
     public Entity modify(Entity original) {
-        Entity clone = original.clone();
-        DatastoreServiceImpl.applyKeyChecked(original, clone);
-        return clone;
+        return EntityUtils.cloneEntity(original);
     }
 }

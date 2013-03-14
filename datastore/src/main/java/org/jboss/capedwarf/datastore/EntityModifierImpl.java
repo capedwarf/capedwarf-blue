@@ -41,8 +41,7 @@ class EntityModifierImpl implements EntityModifier {
     }
 
     public Entity modify(Entity original) {
-        final Entity clone = original.clone();
-        DatastoreServiceImpl.applyKeyChecked(original, clone);
+        final Entity clone = EntityUtils.cloneEntity(original);
         final Map<String, Object> properties = original.getProperties();
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             final String property = entry.getKey();
