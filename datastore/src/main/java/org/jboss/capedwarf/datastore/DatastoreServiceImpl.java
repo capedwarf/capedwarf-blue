@@ -24,6 +24,7 @@ package org.jboss.capedwarf.datastore;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,11 +39,13 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
+import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.reflection.TargetInvocation;
@@ -50,6 +53,7 @@ import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.MapKey;
 import org.jboss.capedwarf.shared.components.Slot;
+import org.jboss.capedwarf.shared.config.IndexesXml;
 
 /**
  * JBoss DatastoreService impl.
@@ -64,6 +68,8 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
 
     private DatastoreAttributes datastoreAttributes;
     private volatile Map<String, Integer> allocationsMap;
+
+    private Map<Index, Index.IndexState> indexes;
 
     private final boolean async; // do we use async frontend
     private final EntityModifier entityModifier;
@@ -228,8 +234,40 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         return CapedwarfTransaction.newTransaction(options);
     }
 
-    public Map<Index, Index.IndexState> getIndexes() {
-        return null;  // TODO
+    public synchronized Map<Index, Index.IndexState> getIndexes() {
+        if (indexes == null) {
+            indexes = new HashMap<Index, Index.IndexState>();
+            long id = 0;
+            IndexesXml indexesXml = CapedwarfEnvironment.getThreadLocalInstance().getIndexes();
+            for (IndexesXml.Index i : indexesXml.getIndexes().values()) {
+                List<Index.Property> properties = new ArrayList<Index.Property>();
+                for (IndexesXml.Property p : i.getProperties()) {
+                    Index.Property property = ReflectionUtils.newInstance(
+                            Index.Property.class,
+                            new Class[]{String.class, Query.SortDirection.class},
+                            new Object[]{p.getName(), toDirection(p.getDirection())}
+                    );
+                    properties.add(property);
+                }
+                Index index = ReflectionUtils.newInstance(
+                        Index.class,
+                        new Class[]{Long.TYPE, String.class, Boolean.TYPE, List.class},
+                        new Object[]{++id, i.getKind(), i.isAncestor(), properties}
+                );
+                indexes.put(index, Index.IndexState.SERVING);
+            }
+        }
+        return indexes;
+    }
+
+    private static Query.SortDirection toDirection(String direction) {
+        if ("ASC".equalsIgnoreCase(direction)) {
+            return Query.SortDirection.ASCENDING;
+        } else if ("DESC".equalsIgnoreCase(direction)) {
+            return Query.SortDirection.DESCENDING;
+        } else {
+            throw new IllegalArgumentException("No such direction: " + direction);
+        }
     }
 
     public KeyRange allocateIds(Key parent, String kind, long num) {

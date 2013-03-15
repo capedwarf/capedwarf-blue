@@ -42,6 +42,7 @@ import org.jboss.capedwarf.common.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.BackendsXml;
 import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
+import org.jboss.capedwarf.shared.config.IndexesXml;
 import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
@@ -88,6 +89,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private AppEngineWebXml appEngineWebXml;
     private QueueXml queueXml;
     private BackendsXml backends;
+    private IndexesXml indexes;
 
     private String baseApplicationUrl;
     private String secureBaseApplicationUrl;
@@ -211,6 +213,14 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public void setBackends(BackendsXml backends) {
         this.backends = backends;
+    }
+
+    public IndexesXml getIndexes() {
+        return indexes;
+    }
+
+    public void setIndexes(IndexesXml indexes) {
+        this.indexes = indexes;
     }
 
     public Collection<String> getAdmins() {

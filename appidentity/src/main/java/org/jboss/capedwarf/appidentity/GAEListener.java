@@ -41,6 +41,7 @@ import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.BackendsXml;
 import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
 import org.jboss.capedwarf.shared.config.ConfigurationAware;
+import org.jboss.capedwarf.shared.config.IndexesXml;
 import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
@@ -62,7 +63,7 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
     // Invoked from CapedwarfSetupAction -- do not change signatures; reflection usage!
 
     public static void setup() {
-        setupInternal(appEngineWebXmlTL.get(), capedwarfConfigurationTL.get(), queueXmlTL.get(), backendsTL.get());
+        setupInternal(appEngineWebXmlTL.get(), capedwarfConfigurationTL.get(), queueXmlTL.get(), backendsTL.get(), indexesTL.get());
     }
 
     public static boolean isSetup() {
@@ -78,12 +79,13 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         }
     }
 
-    protected static void setupInternal(AppEngineWebXml appEngineWebXml, CapedwarfConfiguration capedwarfConfiguration, QueueXml queueXml, BackendsXml backends) {
+    protected static void setupInternal(AppEngineWebXml appEngineWebXml, CapedwarfConfiguration capedwarfConfiguration, QueueXml queueXml, BackendsXml backends, IndexesXml indexes) {
         CapedwarfEnvironment environment = CapedwarfEnvironment.createThreadLocalInstance();
         environment.setAppEngineWebXml(appEngineWebXml);
         environment.setCapedwarfConfiguration(capedwarfConfiguration);
         environment.setQueueXml(queueXml);
         environment.setBackends(backends);
+        environment.setIndexes(indexes);
     }
 
     // Servlet / Request event handling
