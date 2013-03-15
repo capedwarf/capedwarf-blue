@@ -27,8 +27,6 @@ import javax.transaction.TransactionManager;
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
 import org.jboss.capedwarf.common.tx.AbstractTxCallable;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Keys;
@@ -37,11 +35,9 @@ import org.jboss.capedwarf.shared.components.Keys;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class MetadataTask extends AbstractTxCallable<Void> {
-    protected final String value;
-    private final boolean add;
+    protected final boolean add;
 
-    public MetadataTask(String value, boolean add) {
-        this.value = value;
+    public MetadataTask(boolean add) {
         this.add = add;
     }
 
@@ -50,19 +46,12 @@ public abstract class MetadataTask extends AbstractTxCallable<Void> {
     }
 
     protected Void callInTx() throws Exception {
-
         DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
 
         final String previousNS = NamespaceManager.get();
         NamespaceManager.set(getNamespace());
         try {
-            Key key = createKey();
-
-            if (add) {
-                ds.put(new Entity(key));
-            } else {
-                ds.delete(key);
-            }
+            execute(ds);
         } finally {
             NamespaceManager.set(previousNS);
         }
@@ -72,5 +61,5 @@ public abstract class MetadataTask extends AbstractTxCallable<Void> {
 
     protected abstract String getNamespace();
 
-    protected abstract Key createKey();
+    protected abstract void execute(DatastoreService ds);
 }

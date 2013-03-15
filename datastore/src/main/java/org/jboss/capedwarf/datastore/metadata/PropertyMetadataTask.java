@@ -22,22 +22,44 @@
 
 package org.jboss.capedwarf.datastore.metadata;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entities;
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class NamespaceMetadataTask extends SimpleMetadataTask {
-    public NamespaceMetadataTask(String value, boolean add) {
-        super(value, add);
+public class PropertyMetadataTask extends MetadataTask {
+    private final Entity trigger;
+
+    public PropertyMetadataTask(Entity trigger, boolean add) {
+        super(add);
+        this.trigger = trigger;
+    }
+
+    protected void execute(DatastoreService ds) {
+        if (add) {
+            List<Entity> entities = new ArrayList<Entity>();
+            for (String propertyName : trigger.getProperties().keySet()) {
+                Key key = Entities.createPropertyKey(trigger.getKind(), propertyName);
+                entities.add(new Entity(key));
+            }
+            ds.put(entities);
+        } else {
+            List<Key> keys = new ArrayList<Key>();
+            for (String propertyName : trigger.getProperties().keySet()) {
+                Key key = Entities.createPropertyKey(trigger.getKind(), propertyName);
+                keys.add(key);
+            }
+            ds.delete(keys);
+        }
     }
 
     protected String getNamespace() {
-        return "";
-    }
-
-    protected Key createKey() {
-        return Entities.createNamespaceKey(value != null ? value : "");
+        return trigger.getNamespace();
     }
 }

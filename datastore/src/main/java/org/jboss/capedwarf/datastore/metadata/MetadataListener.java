@@ -58,6 +58,7 @@ public class MetadataListener extends AbstractPutRemoveCacheListener implements 
         try {
             executeCallable(new NamespaceMetadataTask(trigger.getNamespace(), true));
             executeCallable(new KindMetadataTask(trigger.getKind(), true, trigger.getNamespace()));
+            executeCallable(new PropertyMetadataTask(trigger, true));
         } finally {
             MetadataQueryTypeFactory.setFlag(false);
         }
@@ -68,6 +69,7 @@ public class MetadataListener extends AbstractPutRemoveCacheListener implements 
         try {
             executeCallable(new NamespaceMetadataTask(trigger.getNamespace(), false));
             executeCallable(new KindMetadataTask(trigger.getKind(), false, trigger.getNamespace()));
+            executeCallable(new PropertyMetadataTask(trigger, false));
         } finally {
             MetadataQueryTypeFactory.setFlag(false);
         }

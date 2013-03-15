@@ -138,11 +138,17 @@ class CapedwarfDatastoreService extends AbstractDatastoreService implements Expo
     }
 
     public List<Key> put(Transaction transaction, final Iterable<Entity> entities) {
-        getDatastoreCallbacks().executePrePutCallbacks(this, Lists.newArrayList(entities));
+        final boolean isSpecialKind = KindUtils.inProgress(KindUtils.Type.METADATA);
+
+        if (isSpecialKind == false) {
+            getDatastoreCallbacks().executePrePutCallbacks(this, Lists.newArrayList(entities));
+        }
 
         final Runnable post = new Runnable() {
             public void run() {
-                getDatastoreCallbacks().executePostPutCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(entities));
+                if (isSpecialKind == false) {
+                    getDatastoreCallbacks().executePostPutCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(entities));
+                }
             }
         };
 

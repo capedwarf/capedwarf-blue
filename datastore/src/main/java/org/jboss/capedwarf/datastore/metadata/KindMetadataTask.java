@@ -28,7 +28,7 @@ import com.google.appengine.api.datastore.Key;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class KindMetadataTask extends MetadataTask {
+public class KindMetadataTask extends SimpleMetadataTask {
     private final String namespace;
 
     public KindMetadataTask(String value, boolean add, String namespace) {

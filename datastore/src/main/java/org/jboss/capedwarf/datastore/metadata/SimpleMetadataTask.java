@@ -22,22 +22,30 @@
 
 package org.jboss.capedwarf.datastore.metadata;
 
-import com.google.appengine.api.datastore.Entities;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class NamespaceMetadataTask extends SimpleMetadataTask {
-    public NamespaceMetadataTask(String value, boolean add) {
-        super(value, add);
+public abstract class SimpleMetadataTask extends MetadataTask {
+    protected final String value;
+
+    public SimpleMetadataTask(String value, boolean add) {
+        super(add);
+        this.value = value;
     }
 
-    protected String getNamespace() {
-        return "";
+    protected void execute(DatastoreService ds) {
+        Key key = createKey();
+
+        if (add) {
+            ds.put(new Entity(key));
+        } else {
+            ds.delete(key);
+        }
     }
 
-    protected Key createKey() {
-        return Entities.createNamespaceKey(value != null ? value : "");
-    }
+    protected abstract Key createKey();
 }
