@@ -167,10 +167,15 @@ class Projections {
             int i = OFFSET;
             for (Projection projection : query.getProjections()) {
                 if (projection instanceof PropertyProjection) {
-                    PropertyProjection propertyProjection = (PropertyProjection) projection;
-                    String propertyName = propertyProjection.getName();
-                    Object value = convert(propertyName, row[i], bridges);
-                    if (mustBeWrappedInRawValue(propertyProjection)) {
+                    PropertyProjection pp = (PropertyProjection) projection;
+                    String propertyName = pp.getName();
+                    Bridge bridge = getBridge(propertyName, bridges);
+                    Class<?> type = pp.getType();
+                    if (type != null && bridge.isAssignableTo(type) == false) {
+                        throw new IllegalArgumentException("Wrong projection type: " + pp);
+                    }
+                    Object value = convert(bridge, row[i]);
+                    if (mustBeWrappedInRawValue(pp)) {
                         value = newRawValue(value);
                     }
                     entity.setProperty(propertyName, value);
@@ -213,6 +218,13 @@ class Projections {
             }
         }
         return false;
+    }
+
+    private static Object convert(Bridge bridge, Object o) {
+        if (o instanceof String) {
+            return bridge.stringToObject(o.toString());
+        }
+        return o;
     }
 
     private static Object convert(String propertyName, Object o, Properties bridges) {

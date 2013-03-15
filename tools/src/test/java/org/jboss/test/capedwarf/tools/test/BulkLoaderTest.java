@@ -106,6 +106,7 @@ public class BulkLoaderTest extends TestBase {
                 }
             }
         }
+        sync();
     }
 
     @Test
@@ -121,6 +122,7 @@ public class BulkLoaderTest extends TestBase {
     @InSequence(30)
     public void deleteAllEntities() {
         cleanup();
+        sync();
     }
 
     @Test
@@ -143,6 +145,8 @@ public class BulkLoaderTest extends TestBase {
     @Test
     @InSequence(60)
     public void checkAllEntitiesExist() {
+        sync();
+
         DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
         for (int i = 0; i < 10; i++) {
             String namespace = "namespace" + i;

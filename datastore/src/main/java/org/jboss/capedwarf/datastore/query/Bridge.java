@@ -23,7 +23,9 @@
 package org.jboss.capedwarf.datastore.query;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Set;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.Blob;
@@ -40,10 +42,8 @@ import com.google.appengine.api.datastore.Rating;
 import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.users.User;
+import com.google.common.collect.Sets;
 import org.hibernate.search.bridge.TwoWayStringBridge;
-import org.hibernate.search.bridge.builtin.BooleanBridge;
-import org.hibernate.search.bridge.builtin.FloatBridge;
-import org.hibernate.search.bridge.builtin.StringBridge;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -64,7 +64,7 @@ public enum Bridge implements TwoWayStringBridge {
     //    SHORT_BLOB("030", new ShortBlobBridge()),
     SHORT_BLOB("040", new ShortBlobBridge()),
 
-    STRING("040", StringBridge.INSTANCE),
+    STRING("040", new StringBridge()),
     PHONE_NUMBER("040", new PhoneNumberBridge()),
     POSTAL_ADDRESS("040", new PostalAddressBridge()),
     EMAIL("040", new EmailBridge()),
@@ -87,10 +87,9 @@ public enum Bridge implements TwoWayStringBridge {
     BLOB("999", new BlobBridge()),
     EMBEDDED_ENTITY("999", new EmbeddedEntityBridge());
 
+    private BridgeSpi bridge;
 
-    private TwoWayStringBridge bridge;
-
-    private Bridge(String orderPrefix, TwoWayStringBridge bridge) {
+    private Bridge(String orderPrefix, BridgeSpi bridge) {
         this.bridge = new OrderingWrapper(orderPrefix, bridge);
     }
 
@@ -100,6 +99,19 @@ public enum Bridge implements TwoWayStringBridge {
 
     public Object stringToObject(String stringValue) {
         return bridge.stringToObject(stringValue);
+    }
+
+    public boolean isAssignableTo(Class<?> type) {
+        Set<Class<?>> types = bridge.types();
+        if (types == null) {
+            return true;
+        }
+        for (Class<?> bt : types) {
+            if (type.isAssignableFrom(bt)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static Bridge matchBridge(Object value) {
@@ -153,8 +165,12 @@ public enum Bridge implements TwoWayStringBridge {
         throw new IllegalArgumentException("No matching bridge. Value was " + value);
     }
 
-    public static class NullBridge implements TwoWayStringBridge {
+    public static class NullBridge implements BridgeSpi {
         public static final String NULL_TOKEN = "__capedwarf___NULL___";
+
+        public Set<Class<?>> types() {
+            return null;
+        }
 
         public Object stringToObject(String stringValue) {
             return null;
@@ -165,7 +181,57 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class CollectionBridge implements TwoWayStringBridge {
+    protected abstract static class BuiltInBridge implements BridgeSpi {
+        private TwoWayStringBridge bridge;
+
+        protected BuiltInBridge(TwoWayStringBridge bridge) {
+            this.bridge = bridge;
+        }
+
+        public Object stringToObject(String stringValue) {
+            return bridge.stringToObject(stringValue);
+        }
+
+        public String objectToString(Object object) {
+            return bridge.objectToString(object);
+        }
+    }
+
+    public static class BooleanBridge extends BuiltInBridge {
+        public BooleanBridge() {
+            super(new org.hibernate.search.bridge.builtin.BooleanBridge());
+        }
+
+        public Set<Class<?>> types() {
+            return Collections.<Class<?>>singleton(Boolean.class);
+        }
+    }
+
+    public static class FloatBridge extends BuiltInBridge {
+        public FloatBridge() {
+            super(new org.hibernate.search.bridge.builtin.FloatBridge());
+        }
+
+        public Set<Class<?>> types() {
+            return Sets.<Class<?>>newHashSet(Float.class, Double.class);
+        }
+    }
+
+    public static class StringBridge extends BuiltInBridge {
+        public StringBridge() {
+            super(org.hibernate.search.bridge.builtin.StringBridge.INSTANCE);
+        }
+
+        public Set<Class<?>> types() {
+            return Collections.<Class<?>>singleton(String.class);
+        }
+    }
+
+    private static class CollectionBridge implements BridgeSpi {
+        public Set<Class<?>> types() {
+            return null; // return null, as this is checked against elements
+        }
+
         public Object stringToObject(String stringValue) {
             return null; // TODO
         }
@@ -175,7 +241,11 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class DoubleBridge implements TwoWayStringBridge {
+    private static class DoubleBridge implements BridgeSpi {
+        public Set<Class<?>> types() {
+            return Sets.<Class<?>>newHashSet(Float.class, Double.class);
+        }
+
         public String objectToString(Object object) {
             return double2sortableStr(((Number) object).doubleValue());
         }
@@ -221,7 +291,7 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class LongBridge implements TwoWayStringBridge {
+    private static class LongBridge implements BridgeSpi {
 
         private static final int RADIX = 36;
 
@@ -245,6 +315,9 @@ public enum Bridge implements TwoWayStringBridge {
          */
         public static final int STR_SIZE = MIN_STRING_VALUE.length();
 
+        public Set<Class<?>> types() {
+            return Sets.<Class<?>>newHashSet(Long.class, Integer.class, Short.class, Byte.class);
+        }
         public String objectToString(Object object) {
             long num = ((Number) object).longValue();
             return longToString(num);
@@ -290,7 +363,11 @@ public enum Bridge implements TwoWayStringBridge {
 
     }
 
-    private static class TextBridge implements TwoWayStringBridge {
+    private static class TextBridge extends AbstractBridgeSpi {
+        public Class<?> type() {
+            return Text.class;
+        }
+
         public String objectToString(Object object) {
             return ((Text) object).getValue();
         }
@@ -300,7 +377,11 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class PhoneNumberBridge implements TwoWayStringBridge {
+    private static class PhoneNumberBridge extends AbstractBridgeSpi {
+        public Class<?> type() {
+            return PhoneNumber.class;
+        }
+
         public String objectToString(Object object) {
             return ((PhoneNumber) object).getNumber();
         }
@@ -310,7 +391,11 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class PostalAddressBridge implements TwoWayStringBridge {
+    private static class PostalAddressBridge extends AbstractBridgeSpi {
+        public Class<?> type() {
+            return PostalAddress.class;
+        }
+
         public String objectToString(Object object) {
             return ((PostalAddress) object).getAddress();
         }
@@ -320,7 +405,11 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class EmailBridge implements TwoWayStringBridge {
+    private static class EmailBridge extends AbstractBridgeSpi {
+        public Class<?> type() {
+            return Email.class;
+        }
+
         public String objectToString(Object object) {
             return ((Email) object).getEmail();
         }
@@ -330,7 +419,11 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class UserBridge implements TwoWayStringBridge {
+    private static class UserBridge extends AbstractBridgeSpi {
+        public Class<?> type() {
+            return User.class;
+        }
+
         public String objectToString(Object object) {
             return ((User) object).getEmail();    // TODO: add other properties
         }
@@ -340,7 +433,11 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class LinkBridge implements TwoWayStringBridge {
+    private static class LinkBridge extends AbstractBridgeSpi {
+        public Class<?> type() {
+            return Link.class;
+        }
+
         public String objectToString(Object object) {
             return ((Link) object).getValue();
         }
@@ -350,8 +447,12 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class KeyBridge implements TwoWayStringBridge {
+    private static class KeyBridge extends AbstractBridgeSpi {
         private GAEKeyTransformer keyTransformer = new GAEKeyTransformer();
+
+        public Class<?> type() {
+            return Key.class;
+        }
 
         public String objectToString(Object object) {
             return keyTransformer.toString(object);
@@ -362,8 +463,12 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class RatingBridge implements TwoWayStringBridge {
+    private static class RatingBridge extends AbstractBridgeSpi {
         private LongBridge longBridge = new LongBridge();
+
+        public Class<?> type() {
+            return Rating.class;
+        }
 
         public String objectToString(Object object) {
             int rating = Rating.class.cast(object).getRating();
@@ -375,11 +480,14 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class GeoPtBridge implements TwoWayStringBridge {
-        private FloatBridge floatBridge;
+    private static class GeoPtBridge extends AbstractBridgeSpi {
+        private FloatBridge floatBridge = new FloatBridge();
+
+        public Class<?> type() {
+            return GeoPt.class;
+        }
 
         public String objectToString(Object object) {
-            floatBridge = new FloatBridge();
             return floatBridge.objectToString(((GeoPt) object).getLatitude()) + ";" + floatBridge.objectToString(((GeoPt) object).getLongitude());
         }
 
@@ -391,7 +499,11 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class CategoryBridge implements TwoWayStringBridge {
+    private static class CategoryBridge extends AbstractBridgeSpi {
+        public Class<?> type() {
+            return Category.class;
+        }
+
         public String objectToString(Object object) {
             return ((Category) object).getCategory();
         }
@@ -401,7 +513,11 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class IMHandleBridge implements TwoWayStringBridge {
+    private static class IMHandleBridge extends AbstractBridgeSpi {
+        public Class<?> type() {
+            return IMHandle.class;
+        }
+
         public String objectToString(Object object) {
             return ((IMHandle) object).getProtocol() + " " + ((IMHandle) object).getAddress();
         }
@@ -412,7 +528,11 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class BlobKeyBridge implements TwoWayStringBridge {
+    private static class BlobKeyBridge extends AbstractBridgeSpi {
+        public Class<?> type() {
+            return BlobKey.class;
+        }
+
         public String objectToString(Object object) {
             return ((BlobKey) object).getKeyString();
         }
@@ -422,7 +542,11 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class BlobBridge implements TwoWayStringBridge {
+    private static class BlobBridge extends AbstractBridgeSpi {
+        public Class<?> type() {
+            return Blob.class;
+        }
+
         public String objectToString(Object object) {
             byte[] bytes = ((Blob) object).getBytes();
             return bytesToString(bytes);
@@ -433,7 +557,11 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class ShortBlobBridge implements TwoWayStringBridge {
+    private static class ShortBlobBridge extends AbstractBridgeSpi {
+        public Class<?> type() {
+            return ShortBlob.class;
+        }
+
         public String objectToString(Object object) {
             byte[] bytes = ((ShortBlob) object).getBytes();
             return new String(bytes);
@@ -445,8 +573,12 @@ public enum Bridge implements TwoWayStringBridge {
     }
 
     // TODO -- check this
-    private static class EmbeddedEntityBridge implements TwoWayStringBridge {
+    private static class EmbeddedEntityBridge extends AbstractBridgeSpi {
         public static final String EMBEDDED_TOKEN = "__capedwarf___EMBEDDED___";
+
+        public Class<?> type() {
+            return Object.class;
+        }
 
         public Object stringToObject(String stringValue) {
             return null;
@@ -478,9 +610,12 @@ public enum Bridge implements TwoWayStringBridge {
         return bytes;
     }
 
-    private static class DateBridge implements TwoWayStringBridge {
-
+    private static class DateBridge extends AbstractBridgeSpi {
         private LongBridge longBridge = new LongBridge();
+
+        public Class<?> type() {
+            return Date.class;
+        }
 
         @Override
         public Object stringToObject(String stringValue) {
@@ -494,14 +629,14 @@ public enum Bridge implements TwoWayStringBridge {
         }
     }
 
-    private static class OrderingWrapper implements TwoWayStringBridge {
+    private static class OrderingWrapper implements BridgeSpi {
 
         public static final int ORDER_PREFIX_LENGTH = 3;
 
         private final String orderPrefix;
-        private final TwoWayStringBridge bridge;
+        private final BridgeSpi bridge;
 
-        public OrderingWrapper(String orderPrefix, TwoWayStringBridge bridge) {
+        public OrderingWrapper(String orderPrefix, BridgeSpi bridge) {
             if (orderPrefix.length() != ORDER_PREFIX_LENGTH) {
                 throw new IllegalArgumentException("invalid length, orderPrefix=" + orderPrefix);
             }
@@ -509,12 +644,14 @@ public enum Bridge implements TwoWayStringBridge {
             this.bridge = bridge;
         }
 
-        @Override
+        public Set<Class<?>> types() {
+            return bridge.types();
+        }
+
         public Object stringToObject(String stringValue) {
             return bridge.stringToObject(removeOrderingPrefix(stringValue));
         }
 
-        @Override
         public String objectToString(Object object) {
             return addOrderingPrefix(bridge.objectToString(object));
         }
