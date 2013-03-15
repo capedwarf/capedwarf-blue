@@ -22,6 +22,10 @@
 
 package org.jboss.capedwarf.datastore.metadata;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import com.google.appengine.api.datastore.Entities;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.jboss.capedwarf.datastore.query.QueryHandle;
@@ -34,19 +38,44 @@ import org.jboss.capedwarf.datastore.query.QueryTypeFactory;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class MetadataQueryTypeFactory implements QueryTypeFactory {
+    private static final ThreadLocal<Boolean> FLAG = new ThreadLocal<Boolean>();
+
     public static QueryTypeFactory INSTANCE = new MetadataQueryTypeFactory();
 
+    private static final Set<String> KINDS;
+
+    static {
+        KINDS = new HashSet<String>();
+        KINDS.add(Entities.NAMESPACE_METADATA_KIND);
+        KINDS.add(Entities.KIND_METADATA_KIND);
+        KINDS.add(Entities.PROPERTY_METADATA_KIND);
+        KINDS.add(Entities.ENTITY_GROUP_METADATA_KIND);
+    }
+
     private MetadataQueryTypeFactory() {
+    }
+
+    public static boolean isMetadataKind(String kind) {
+        return KINDS.contains(kind);
+    }
+
+    public static boolean inProgress() {
+        return (FLAG.get() != null);
     }
 
     public void initialize(QueryHandleService service) {
     }
 
     public boolean handleQuery(Transaction tx, Query query) {
-        return false; // TODO
+        return isMetadataKind(query.getKind());
     }
 
     public QueryHandle createQueryHandle(QueryHandleService service) {
-        throw new UnsupportedOperationException("Not yet implemented!");
+        return service;
+    }
+
+    static void setFlag(boolean flag) {
+        if (flag) FLAG.set(true);
+        else FLAG.remove();
     }
 }

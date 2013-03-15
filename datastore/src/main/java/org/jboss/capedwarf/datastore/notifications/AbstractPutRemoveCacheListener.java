@@ -37,7 +37,6 @@ import org.jboss.capedwarf.datastore.KindUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractPutRemoveCacheListener extends AbstractCacheListener {
-
     @CacheEntryModified
     public void onPut(CacheEntryModifiedEvent<Key, Entity> event) {
         if (isIgnoreEvent(event))

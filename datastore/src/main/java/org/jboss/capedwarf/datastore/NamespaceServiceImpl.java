@@ -22,17 +22,22 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entities;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.common.base.Function;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
-import org.infinispan.Cache;
-import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.infinispan.CacheName;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import com.google.common.collect.Sets;
 
 /**
  * Namespaces service.
@@ -41,17 +46,24 @@ import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class NamespaceServiceImpl implements NamespaceServiceInternal {
+    private static final Function<Entity, String> FN = new Function<Entity, String>() {
+        public String apply(Entity input) {
+            return input.getKey().getName();
+        }
+    };
+
     NamespaceServiceImpl() {
     }
 
-    protected Set<String> getCachedSet(String key) {
-        Cache<String, Set<String>> cache = InfinispanUtils.getCache(Application.getAppId(), CacheName.DIST);
-        Set<String> result = cache.get(key);
-        return (result != null) ? Collections.unmodifiableSet(result) : Collections.<String>emptySet();
+    protected Set<String> getSet(String kind) {
+        DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
+        PreparedQuery pq = ds.prepare(new Query(kind));
+        List<Entity> list = pq.asList(FetchOptions.Builder.withDefaults());
+        return Sets.newHashSet(Lists.transform(list, FN));
     }
 
     public Set<String> getNamespaces() {
-        return getCachedSet(Entities.NAMESPACE_METADATA_KIND);
+        return getSet(Entities.NAMESPACE_METADATA_KIND);
     }
 
     public Set<String> getKindsPerNamespace() {
@@ -59,7 +71,7 @@ public class NamespaceServiceImpl implements NamespaceServiceInternal {
     }
 
     public Set<String> getKindsPerNamespace(String namespace) {
-        return getCachedSet(Entities.KIND_METADATA_KIND + namespace);
+        return getSet(Entities.KIND_METADATA_KIND);
     }
 
     public SetMultimap<String, String> getKindsPerNamespaces() {

@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.datastore;
 
+import org.jboss.capedwarf.datastore.metadata.MetadataQueryTypeFactory;
 import org.jboss.capedwarf.datastore.stats.StatsQueryTypeFactory;
 
 /**
@@ -47,10 +48,15 @@ public final class KindUtils {
         boolean match(String kind) {
             return matcher.match(kind);
         }
+
+        public boolean inProgress() {
+            return matcher.inProgress();
+        }
     }
 
     private static interface Matcher {
         boolean match(String kind);
+        boolean inProgress();
     }
 
     /**
@@ -63,6 +69,20 @@ public final class KindUtils {
     public static boolean match(String kind, Type... types) {
         for (Type type : types) {
             if (type.match(kind))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * In progress
+     *
+     * @param types the types
+     * @return true if matches any type, false otherwise
+     */
+    public static boolean inProgress(Type... types) {
+        for (Type type : types) {
+            if (type.inProgress())
                 return true;
         }
         return false;
@@ -86,17 +106,29 @@ public final class KindUtils {
         public boolean match(String kind) {
             return LOG_REQUEST_ENTITY_KIND.equals(kind) || LOG_LINE_ENTITY_KIND.equals(kind);
         }
+
+        public boolean inProgress() {
+            return false;
+        }
     }
 
     private static class StatsMatcher implements Matcher {
         public boolean match(String kind) {
             return StatsQueryTypeFactory.isStatsKind(kind);
         }
+
+        public boolean inProgress() {
+            return false;
+        }
     }
 
     private static class MetadataMatcher implements Matcher {
         public boolean match(String kind) {
-            return false;
+            return MetadataQueryTypeFactory.isMetadataKind(kind);
+        }
+
+        public boolean inProgress() {
+            return MetadataQueryTypeFactory.inProgress();
         }
     }
 }

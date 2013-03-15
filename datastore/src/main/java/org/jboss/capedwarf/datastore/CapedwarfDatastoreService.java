@@ -162,11 +162,17 @@ class CapedwarfDatastoreService extends AbstractDatastoreService implements Expo
     }
 
     public void delete(final Transaction transaction, final Iterable<Key> keys) {
-        getDatastoreCallbacks().executePreDeleteCallbacks(this, Lists.newArrayList(keys));
+        final boolean isSpecialKind = KindUtils.inProgress(KindUtils.Type.METADATA);
+
+        if (isSpecialKind == false) {
+            getDatastoreCallbacks().executePreDeleteCallbacks(this, Lists.newArrayList(keys));
+        }
 
         final Runnable post = new Runnable() {
             public void run() {
-                getDatastoreCallbacks().executePostDeleteCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(keys));
+                if (isSpecialKind == false) {
+                    getDatastoreCallbacks().executePostDeleteCallbacks(CapedwarfDatastoreService.this, Lists.newArrayList(keys));
+                }
             }
         };
         getDelegate().delete(transaction, keys, post);

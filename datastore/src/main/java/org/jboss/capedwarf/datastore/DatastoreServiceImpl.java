@@ -166,6 +166,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
             try {
                 List<Tuple> keyToEntityMap = new ArrayList<Tuple>();
                 for (Entity entity : entities) {
+                    checkEntity(entity);
                     assignIdIfNeeded(entity);
                     Key key = entity.getKey();
                     EntityGroupTracker.trackKey(key);
@@ -180,6 +181,13 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
             if (async) {
                 TxTasks.end();
             }
+        }
+    }
+
+    private void checkEntity(Entity entity) {
+        final String kind = entity.getKind();
+        if (KindUtils.inProgress(KindUtils.Type.METADATA) == false && KindUtils.match(kind, KindUtils.Type.METADATA)) {
+            throw new IllegalArgumentException("Cannot store metadata kind: " + kind);
         }
     }
 

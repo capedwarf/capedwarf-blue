@@ -117,7 +117,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         this.queryConverter = new QueryConverter(searchManager);
         this.factories = new QueryTypeFactories(this);
         // register namespaces listener
-        CacheListenerRegistry.registerListener(store, CacheListenerRegistry.NAMESPACES);
+        CacheListenerRegistry.registerListener(store, CacheListenerRegistry.METADATA);
     }
 
     protected Cache<Key, Entity> createStore() {

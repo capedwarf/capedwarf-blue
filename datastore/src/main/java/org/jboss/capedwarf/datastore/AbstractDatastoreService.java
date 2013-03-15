@@ -138,14 +138,20 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
     }
 
     protected Future<Key> doPut(final Transaction transaction, final Entity entity, final boolean applyPost) {
+        final boolean isSpecialKind = KindUtils.inProgress(KindUtils.Type.METADATA);
+
         final Runnable pre = new Runnable() {
             public void run() {
-                getDatastoreCallbacks().executePrePutCallbacks(AbstractDatastoreService.this, Lists.newArrayList(entity));
+                if (isSpecialKind == false) {
+                    getDatastoreCallbacks().executePrePutCallbacks(AbstractDatastoreService.this, Lists.newArrayList(entity));
+                }
             }
         };
         final Runnable post = new Runnable() {
             public void run() {
-                getDatastoreCallbacks().executePostPutCallbacks(postTxProvider(transaction), Lists.newArrayList(entity));
+                if (isSpecialKind == false) {
+                    getDatastoreCallbacks().executePostPutCallbacks(postTxProvider(transaction), Lists.newArrayList(entity));
+                }
             }
         };
         final Future<Key> wrap = wrap(transaction, new Callable<Key>() {

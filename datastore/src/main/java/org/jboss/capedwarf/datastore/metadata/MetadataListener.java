@@ -20,7 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.ns;
+package org.jboss.capedwarf.datastore.metadata;
+
+import java.util.logging.Logger;
 
 import com.google.appengine.api.datastore.Entity;
 import org.infinispan.notifications.Listener;
@@ -32,13 +34,19 @@ import org.jboss.capedwarf.datastore.notifications.CacheListenerHandle;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 @Listener
-public class NamespaceListener extends AbstractPutRemoveCacheListener implements CacheListenerHandle {
+public class MetadataListener extends AbstractPutRemoveCacheListener implements CacheListenerHandle {
+    private static final Logger log = Logger.getLogger(MetadataListener.class.getName());
+
     public Object createListener(ClassLoader cl) {
-        return new NamespaceListener();
+        return new MetadataListener();
     }
 
-    protected void executeCallable(AbstractNamespaceTask<?> task) {
-        executeCallable(task, task.lockKey());
+    protected void executeCallable(MetadataTask task) {
+        try {
+            task.call();
+        } catch (Throwable t) {
+            log.warning("Cannot update metadata: " + t.getMessage());
+        }
     }
 
     protected void onPrePut(Entity trigger) {
@@ -46,12 +54,22 @@ public class NamespaceListener extends AbstractPutRemoveCacheListener implements
     }
 
     protected void onPostPut(Entity trigger) {
-        executeCallable(new NamespaceAddTask(trigger));
-        executeCallable(new NamespaceKindAddTask(trigger));
+        MetadataQueryTypeFactory.setFlag(true);
+        try {
+            executeCallable(new NamespaceMetadataTask(trigger.getNamespace(), true));
+            executeCallable(new KindMetadataTask(trigger.getKind(), true, trigger.getNamespace()));
+        } finally {
+            MetadataQueryTypeFactory.setFlag(false);
+        }
     }
 
     protected void onPreRemove(Entity trigger) {
-        executeCallable(new NamespaceRemoveTask(trigger));
-        executeCallable(new NamespaceKindRemoveTask(trigger));
+        MetadataQueryTypeFactory.setFlag(true);
+        try {
+            executeCallable(new NamespaceMetadataTask(trigger.getNamespace(), false));
+            executeCallable(new KindMetadataTask(trigger.getKind(), false, trigger.getNamespace()));
+        } finally {
+            MetadataQueryTypeFactory.setFlag(false);
+        }
     }
 }
