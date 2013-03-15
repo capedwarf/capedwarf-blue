@@ -45,6 +45,7 @@ import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.compatibility.Compatibility;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
@@ -116,8 +117,10 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
 
         this.queryConverter = new QueryConverter(searchManager);
         this.factories = new QueryTypeFactories(this);
-        // register namespaces listener
-        CacheListenerRegistry.registerListener(store, CacheListenerRegistry.METADATA);
+        if (Compatibility.getInstance(classLoader).isEnabled(Compatibility.Feature.DISABLE_METADATA) == false) {
+            // register namespaces listener
+            CacheListenerRegistry.registerListener(store, CacheListenerRegistry.METADATA);
+        }
     }
 
     protected Cache<Key, Entity> createStore() {

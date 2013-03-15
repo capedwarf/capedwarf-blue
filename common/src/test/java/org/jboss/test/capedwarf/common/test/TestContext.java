@@ -56,7 +56,10 @@ public class TestContext implements Cloneable {
     }
 
     private static TestContext asDefault(TestContext context) {
-        return context.setIgnoreLogging(true).setDisableBlackList(true);
+        return context
+                .setIgnoreLogging(true)
+                .setDisableBlackList(true)
+                .setDisableMetadata(true);
     }
 
     public static TestContext withName(String name) {
@@ -64,11 +67,15 @@ public class TestContext implements Cloneable {
     }
 
     public static TestContext withLogging() {
-        return new TestContext().setDisableBlackList(true);
+        return asDefault().setIgnoreLogging(false);
     }
 
     public static TestContext withBlackList() {
-        return new TestContext().setIgnoreLogging(true);
+        return asDefault().setDisableBlackList(false);
+    }
+
+    public static TestContext withMetadata() {
+        return asDefault().setDisableMetadata(false);
     }
 
     public static TestContext asDefault() {
@@ -153,6 +160,11 @@ public class TestContext implements Cloneable {
 
     public TestContext setDisableBlackList(boolean disableBlackList) {
         properties.put("disable.blacklist", String.valueOf(disableBlackList));
+        return this;
+    }
+
+    public TestContext setDisableMetadata(boolean disableMetadata) {
+        properties.put("disable.metadata", String.valueOf(disableMetadata));
         return this;
     }
 }

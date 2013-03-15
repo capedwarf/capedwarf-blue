@@ -448,18 +448,16 @@ public enum Bridge implements TwoWayStringBridge {
     }
 
     private static class KeyBridge extends AbstractBridgeSpi {
-        private GAEKeyTransformer keyTransformer = new GAEKeyTransformer();
-
         public Class<?> type() {
             return Key.class;
         }
 
         public String objectToString(Object object) {
-            return keyTransformer.toString(object);
+            return GAEKeyTransformer.to(object);
         }
 
         public Object stringToObject(String stringValue) {
-            return keyTransformer.fromString(stringValue);
+            return GAEKeyTransformer.from(stringValue);
         }
     }
 
