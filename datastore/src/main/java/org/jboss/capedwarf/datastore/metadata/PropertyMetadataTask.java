@@ -29,6 +29,8 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entities;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import org.datanucleus.store.types.sco.backed.Map;
+import org.jboss.capedwarf.datastore.PropertyUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -44,16 +46,20 @@ public class PropertyMetadataTask extends MetadataTask {
     protected void execute(DatastoreService ds) {
         if (add) {
             List<Entity> entities = new ArrayList<Entity>();
-            for (String propertyName : trigger.getProperties().keySet()) {
-                Key key = Entities.createPropertyKey(trigger.getKind(), propertyName);
-                entities.add(new Entity(key));
+            for (Map.Entry<String, Object> entry : trigger.getProperties().entrySet()) {
+                if (PropertyUtils.isIndexedProperty(entry.getValue())) {
+                    Key key = Entities.createPropertyKey(trigger.getKind(), entry.getKey());
+                    entities.add(new Entity(key));
+                }
             }
             ds.put(entities);
         } else {
             List<Key> keys = new ArrayList<Key>();
-            for (String propertyName : trigger.getProperties().keySet()) {
-                Key key = Entities.createPropertyKey(trigger.getKind(), propertyName);
-                keys.add(key);
+            for (Map.Entry<String, Object> entry : trigger.getProperties().entrySet()) {
+                if (PropertyUtils.isIndexedProperty(entry.getValue())) {
+                    Key key = Entities.createPropertyKey(trigger.getKind(), entry.getKey());
+                    keys.add(key);
+                }
             }
             ds.delete(keys);
         }

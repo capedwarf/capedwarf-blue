@@ -27,22 +27,16 @@ package org.jboss.capedwarf.datastore.query;
 import java.util.Collection;
 import java.util.Map;
 
-import com.google.appengine.api.datastore.Blob;
-import com.google.appengine.api.datastore.EmbeddedEntity;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Text;
 import org.apache.lucene.document.Document;
 import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.LuceneOptions;
+import org.jboss.capedwarf.datastore.PropertyUtils;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class PropertyMapBridge implements FieldBridge {
-
-    public static final String UNINDEXED_VALUE_CLASS_NAME = Entity.class.getName() + "$UnindexedValue";
-
     @SuppressWarnings("unchecked")
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
         final Projections projections = new Projections();
@@ -50,12 +44,12 @@ public class PropertyMapBridge implements FieldBridge {
         for (Map.Entry<String, ?> entry : entityProperties.entrySet()) {
             final String propertyName = entry.getKey();
             final Object propertyValue = entry.getValue();
-            if (isIndexedProperty(propertyValue)) {
+            if (PropertyUtils.isIndexedProperty(propertyValue)) {
                 final Bridge bridge = Bridge.matchBridge(propertyValue);
                 if (propertyValue instanceof Collection) {
                     Collection collection = (Collection) propertyValue;
                     for (Object element : collection) {
-                        if (isIndexedProperty(element)) {
+                        if (PropertyUtils.isIndexedProperty(element)) {
                             final Bridge inner = Bridge.matchBridge(element);
                             luceneOptions.addFieldToDocument(propertyName, inner.objectToString(element), document);
                         }
@@ -67,22 +61,6 @@ public class PropertyMapBridge implements FieldBridge {
             }
         }
         projections.finish(document);
-    }
-
-    @SuppressWarnings("SimplifiableIfStatement")
-    protected boolean isIndexedProperty(Object value) {
-        if (value == null)
-            return true;
-
-        if (value instanceof Text) {
-            return false;
-        } else if (value instanceof Blob) {
-            return false;
-        } else if (value instanceof EmbeddedEntity) {
-            return false;
-        } else {
-            return UNINDEXED_VALUE_CLASS_NAME.equals(value.getClass().getName()) == false;
-        }
     }
 }
 

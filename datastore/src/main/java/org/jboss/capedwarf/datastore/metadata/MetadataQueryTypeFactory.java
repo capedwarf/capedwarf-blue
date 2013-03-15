@@ -26,8 +26,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.appengine.api.datastore.Entities;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
+import org.infinispan.Cache;
+import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.datastore.notifications.CacheListenerRegistry;
 import org.jboss.capedwarf.datastore.query.QueryHandle;
 import org.jboss.capedwarf.datastore.query.QueryHandleService;
 import org.jboss.capedwarf.datastore.query.QueryTypeFactory;
@@ -64,6 +69,11 @@ public class MetadataQueryTypeFactory implements QueryTypeFactory {
     }
 
     public void initialize(QueryHandleService service) {
+        if (Compatibility.getInstance().isEnabled(Compatibility.Feature.DISABLE_METADATA) == false) {
+            Cache<Key, Entity> cache = service.getCache();
+            // register namespaces listener
+            CacheListenerRegistry.registerListener(cache, CacheListenerRegistry.METADATA);
+        }
     }
 
     public boolean handleQuery(Transaction tx, Query query) {
