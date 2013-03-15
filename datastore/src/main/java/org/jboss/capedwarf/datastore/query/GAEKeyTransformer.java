@@ -71,7 +71,7 @@ public class GAEKeyTransformer implements Transformer {
         }
         KeyFactory.Builder builder;
         try {
-            Object[] args = parseKindAndNameOrId(namespace != null, split[0]);
+            Object[] args = parseKindAndNameOrId(namespace, split[0]);
             if (args[1] instanceof Long) {
                 builder = new KeyFactory.Builder(args[0].toString(), (Long) args[1]);
             } else {
@@ -107,7 +107,7 @@ public class GAEKeyTransformer implements Transformer {
                 NamespaceManager.set(namespace);
             }
             try {
-                Object[] args = parseKindAndNameOrId(namespace != null, tokens[i]);
+                Object[] args = parseKindAndNameOrId(namespace, tokens[i]);
                 if (args[1] instanceof Long) {
                     builder.addChild(args[0].toString(), (Long) args[1]);
                 } else {
@@ -122,9 +122,9 @@ public class GAEKeyTransformer implements Transformer {
         return builder.getKey();
     }
 
-    private static Object[] parseKindAndNameOrId(boolean hasNamespace, String token) {
-        if (hasNamespace) {
-            token = token.substring(token.indexOf(':') + 1);
+    private static Object[] parseKindAndNameOrId(String namespace, String token) {
+        if (namespace != null) {
+            token = token.substring(namespace.length() + 2); // !namespace:kind(id|name)
         }
         int p = token.indexOf('(');
         String kind = token.substring(0, p);
