@@ -35,6 +35,7 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
+import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.components.SimpleKey;
 
 /**
@@ -127,6 +128,7 @@ public class Compatibility {
 
         final Properties properties = new Properties();
         properties.putAll(System.getProperties());
+        properties.putAll(ComponentRegistry.getInstance().getComponent(Keys.CONFIGURATION));
 
         try {
             final InputStream is = cl.getResourceAsStream("capedwarf-compatibility.properties");
