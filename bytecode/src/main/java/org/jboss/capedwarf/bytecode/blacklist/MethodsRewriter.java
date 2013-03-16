@@ -53,13 +53,13 @@ class MethodsRewriter implements Rewriter {
                 }
 
                 final int maxStack = codeAttribute.getMaxStack();
-
                 int modified = 0;
+
                 for (MethodRewriter mr : rewriters) {
                     modified += mr.visit(mi);
                 }
 
-                if (modified > 0) {
+                if (modified != 0) {
                     codeAttribute.setMaxStack(maxStack + modified);
                 }
             } catch (Exception e) {
