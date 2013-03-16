@@ -29,8 +29,9 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
 import org.infinispan.query.CacheQuery;
-import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.datastore.LazyKeyChecker;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -88,7 +89,7 @@ public class LazyChecker extends LazyKeyChecker {
     }
 
     private void checkInequalityConstraints() {
-        if (Compatibility.getInstance().isEnabled(Compatibility.Feature.DISABLE_QUERY_INEQUALITY_FILTER_CHECK)) {
+        if (CompatibilityUtils.getInstance().isEnabled(Compatibility.Feature.DISABLE_QUERY_INEQUALITY_FILTER_CHECK)) {
             return;
         }
 

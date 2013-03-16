@@ -349,12 +349,23 @@ public final class ReflectionUtils {
     /**
      * Cache field invocation.
      *
-     * @param clazz the clas
+     * @param clazz the class
      * @param fieldName the field name
      * @return field invocation
      */
     public static <T> FieldInvocation<T> cacheField(Class<?> clazz, String fieldName) {
         return new FieldInvocation<T>(findField(clazz, fieldName));
+    }
+
+    /**
+     * Cache field invocation.
+     *
+     * @param classname the classname
+     * @param fieldName the field name
+     * @return field invocation
+     */
+    public static <T> FieldInvocation<T> cacheField(String classname, String fieldName) {
+        return new FieldInvocation<T>(findField(loadClass(classname), fieldName));
     }
 
     /**

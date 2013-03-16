@@ -50,8 +50,9 @@ import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.RequestLogs;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
-import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
@@ -119,7 +120,7 @@ class CapedwarfLogService implements ExposedLogService {
 
     public CapedwarfLogService() {
         datastoreService = DatastoreServiceFactory.getDatastoreService();
-        Compatibility instance = Compatibility.getInstance();
+        Compatibility instance = CompatibilityUtils.getInstance();
         ignoreLogging = instance.isEnabled(Compatibility.Feature.IGNORE_LOGGING);
         // do we use async ds
         if (instance.isEnabled(Compatibility.Feature.ASYNC_LOGGING)) {

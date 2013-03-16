@@ -38,8 +38,8 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityTranslator;
 import com.google.storage.onestore.v3.OnestoreEntity;
-import org.jboss.capedwarf.common.compatibility.Compatibility;
 import org.jboss.capedwarf.datastore.ExposedDatastoreService;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

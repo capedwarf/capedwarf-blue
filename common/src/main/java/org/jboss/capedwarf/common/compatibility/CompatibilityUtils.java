@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,26 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.datastore.stats;
+package org.jboss.capedwarf.common.compatibility;
 
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.datastore.Transaction;
-import org.jboss.capedwarf.datastore.query.AbstractQueryHandle;
-import org.jboss.capedwarf.datastore.query.QueryHandleService;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.components.Key;
+import org.jboss.capedwarf.shared.components.SimpleKey;
 
 /**
- * Query type factory.
+ * Handle Compatibility.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class OnDemandStatsQueryHandle extends AbstractQueryHandle {
-    OnDemandStatsQueryHandle(QueryHandleService service) {
-        super(service);
+@SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+public class CompatibilityUtils {
+    private static final Key<Compatibility> KEY = new SimpleKey<Compatibility>(EnvAppIdFactory.INSTANCE, Compatibility.class);
+
+    public static Compatibility getInstance() {
+        return getInstance(null);
     }
 
-    public PreparedQuery createQuery(Transaction tx, Query query) {
-        throw new UnsupportedOperationException("Not yet implemented - use eager stats: -D" + Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
+    public synchronized static Compatibility getInstance(ClassLoader cl) {
+        if (cl == null) {
+            cl = Application.getAppClassloader();
+        }
+        return Compatibility.getInstance(cl, KEY);
     }
 }

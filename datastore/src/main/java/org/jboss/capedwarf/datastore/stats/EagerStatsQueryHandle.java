@@ -25,11 +25,12 @@ package org.jboss.capedwarf.datastore.stats;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
-import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.datastore.notifications.CacheListenerHandle;
 import org.jboss.capedwarf.datastore.notifications.CacheListenerRegistry;
 import org.jboss.capedwarf.datastore.query.AbstractQueryHandle;
 import org.jboss.capedwarf.datastore.query.QueryHandleService;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * Eager query handle.
@@ -50,7 +51,7 @@ class EagerStatsQueryHandle extends AbstractQueryHandle {
 
     private static class EagerListenerHandle implements CacheListenerHandle {
         public Object createListener(ClassLoader cl) {
-            Compatibility c = Compatibility.getInstance(cl);
+            Compatibility c = CompatibilityUtils.getInstance(cl);
             String value = c.getValue(Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
             return "async".equals(value) ? new AsyncEagerListener() : new EagerListener();
         }

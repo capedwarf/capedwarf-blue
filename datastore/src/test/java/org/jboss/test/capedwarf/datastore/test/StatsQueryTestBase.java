@@ -69,6 +69,12 @@ public abstract class StatsQueryTestBase extends TestBase {
         return getCapedwarfDeployment(context).addClass(StatsQueryTestBase.class);
     }
 
+    protected static Entity createEntity(String kind) {
+        Entity entity = new Entity(kind);
+        entity.setProperty(Entity.VERSION_RESERVED_PROPERTY, 0L);
+        return entity;
+    }
+
     protected static long countBytes(Entity entity) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -100,7 +106,7 @@ public abstract class StatsQueryTestBase extends TestBase {
     protected Entity getStatsEntity(String statsKind, Query.Filter filter) {
         List<Entity> list = getStatsList(statsKind, filter);
         if (list.isEmpty()) {
-            Entity stats = new Entity(statsKind);
+            Entity stats = createEntity(statsKind);
             stats.setProperty("count", 0L);
             stats.setProperty("bytes", 0L);
             return stats;
@@ -124,7 +130,7 @@ public abstract class StatsQueryTestBase extends TestBase {
             NamespaceManager.set("namespace2");
             Entity initialNs2Stats = currentNsTotalStats();
 
-            Entity e2 = new Entity("SC");
+            Entity e2 = createEntity("SC");
             k2 = datastore.put(e2);
             doSync();
             assertStatsLargerBy(e2, initialNs2Stats, currentNsTotalStats());
@@ -133,7 +139,7 @@ public abstract class StatsQueryTestBase extends TestBase {
             NamespaceManager.set("namespace1");
             assertStatsEqual(initialNs1Stats, currentNsTotalStats());
 
-            Entity e1 = new Entity("SC");
+            Entity e1 = createEntity("SC");
             k1 = datastore.put(e1);
             doSync();
             assertStatsLargerBy(e1, initialNs1Stats, currentNsTotalStats());
@@ -160,13 +166,13 @@ public abstract class StatsQueryTestBase extends TestBase {
 
     @Test
     public void testKindStats() throws Exception {
-        Entity e1 = new Entity("SCK");
+        Entity e1 = createEntity("SCK");
         e1.setProperty("x", "original");
         Key k1 = datastore.put(e1);
 
         doSync();
 
-        Entity e3 = new Entity("QWE");
+        Entity e3 = createEntity("QWE");
         e3.setProperty("foo", "bar");
         Key k3 = datastore.put(e3);
 
@@ -178,7 +184,7 @@ public abstract class StatsQueryTestBase extends TestBase {
         long count = getCount(kindStats);
         assertEquals(1L, count);
 
-        Entity e2 = new Entity("SCK");
+        Entity e2 = createEntity("SCK");
         e2.setProperty("y", "replacement");
         Key k2 = datastore.put(e2);
 

@@ -31,11 +31,13 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.infinispan.Cache;
-import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
+import org.jboss.capedwarf.datastore.notifications.CacheListenerHandle;
 import org.jboss.capedwarf.datastore.notifications.CacheListenerRegistry;
 import org.jboss.capedwarf.datastore.query.QueryHandle;
 import org.jboss.capedwarf.datastore.query.QueryHandleService;
 import org.jboss.capedwarf.datastore.query.QueryTypeFactory;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * Metadata Query type factory.
@@ -43,6 +45,8 @@ import org.jboss.capedwarf.datastore.query.QueryTypeFactory;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class MetadataQueryTypeFactory implements QueryTypeFactory {
+    private static final CacheListenerHandle METADATA = new MetadataListener();
+
     private static final ThreadLocal<Boolean> FLAG = new ThreadLocal<Boolean>();
 
     public static QueryTypeFactory INSTANCE = new MetadataQueryTypeFactory();
@@ -69,10 +73,10 @@ public class MetadataQueryTypeFactory implements QueryTypeFactory {
     }
 
     public void initialize(QueryHandleService service) {
-        if (Compatibility.getInstance().isEnabled(Compatibility.Feature.DISABLE_METADATA) == false) {
+        if (CompatibilityUtils.getInstance().isEnabled(Compatibility.Feature.DISABLE_METADATA) == false) {
             Cache<Key, Entity> cache = service.getCache();
             // register namespaces listener
-            CacheListenerRegistry.registerListener(cache, CacheListenerRegistry.METADATA);
+            CacheListenerRegistry.registerListener(cache, METADATA);
         }
     }
 

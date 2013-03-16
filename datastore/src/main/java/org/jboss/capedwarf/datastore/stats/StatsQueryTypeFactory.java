@@ -24,10 +24,11 @@ package org.jboss.capedwarf.datastore.stats;
 
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
-import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.datastore.query.QueryHandle;
 import org.jboss.capedwarf.datastore.query.QueryHandleService;
 import org.jboss.capedwarf.datastore.query.QueryTypeFactory;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * Query type factory.
@@ -42,7 +43,7 @@ public class StatsQueryTypeFactory implements QueryTypeFactory {
     }
 
     protected boolean isEager() {
-        Compatibility compatibility = Compatibility.getInstance();
+        Compatibility compatibility = CompatibilityUtils.getInstance();
         return compatibility.isEnabled(Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
     }
 

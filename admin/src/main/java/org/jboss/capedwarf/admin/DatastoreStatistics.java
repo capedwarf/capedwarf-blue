@@ -35,9 +35,10 @@ import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Query;
-import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.datastore.NamespaceServiceFactory;
 import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.EQUAL;
 import static org.jboss.capedwarf.admin.NumberFormatter.formatBytes;
@@ -167,7 +168,7 @@ public class DatastoreStatistics extends DatastoreHolder {
     }
 
     public boolean isEnabled() {
-        String stats = Compatibility.getInstance().getValue(Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
+        String stats = CompatibilityUtils.getInstance().getValue(Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
         return "sync".equals(stats) || "async".equals(stats);
     }
 

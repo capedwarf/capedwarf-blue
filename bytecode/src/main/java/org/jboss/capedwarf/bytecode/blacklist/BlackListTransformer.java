@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 import javassist.bytecode.ClassFile;
-import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * Check black list

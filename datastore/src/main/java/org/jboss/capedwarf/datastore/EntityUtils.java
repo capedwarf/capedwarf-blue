@@ -26,15 +26,28 @@ import com.google.appengine.api.datastore.Entity;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class EntityUtils {
-
+    /**
+     * Clone entity.
+     *
+     * @param entity the original entity
+     * @return cloned entity
+     */
     public static Entity cloneEntity(Entity entity) {
         if (entity == null) {
             return null;
         }
+
         Entity clone = entity.clone();
+        // apply checked key hack
         DatastoreServiceImpl.applyKeyChecked(entity, clone);
+        // we always need version
+        if (clone.hasProperty(Entity.VERSION_RESERVED_PROPERTY) == false) {
+            // set to zero, it should be fixed in VersioningListener
+            clone.setProperty(Entity.VERSION_RESERVED_PROPERTY, 0L);
+        }
         return clone;
     }
 }

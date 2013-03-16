@@ -44,12 +44,13 @@ import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.jboss.capedwarf.common.compatibility.Compatibility;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.reflection.TargetInvocation;
 import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.MapKey;
 import org.jboss.capedwarf.shared.components.Slot;
@@ -84,7 +85,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
 
     private DatastoreServiceImpl(DatastoreServiceConfig config, boolean async) {
         super(config);
-        Compatibility instance = Compatibility.getInstance();
+        Compatibility instance = CompatibilityUtils.getInstance();
         boolean enabled = instance.isEnabled(Compatibility.Feature.IGNORE_ENTITY_PROPERTY_CONVERSION);
         entityModifier = enabled ? CloningEntityModifier.INSTANCE : EntityModifierImpl.INSTANCE;
         this.async = async;

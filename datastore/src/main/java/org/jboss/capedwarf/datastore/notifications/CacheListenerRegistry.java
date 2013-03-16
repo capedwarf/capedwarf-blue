@@ -28,7 +28,6 @@ import java.util.Set;
 import org.infinispan.notifications.Listenable;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
-import org.jboss.capedwarf.datastore.metadata.MetadataListener;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.SetKey;
@@ -39,11 +38,6 @@ import org.jboss.capedwarf.shared.components.Slot;
  */
 public class CacheListenerRegistry {
     private static final Key<Set<CacheListenerHandle>> KEY = new SetKey<CacheListenerHandle>(EnvAppIdFactory.INSTANCE, Slot.CACHE_LISTENERS);
-
-    /**
-     * Cache listener handles
-     */
-    public static final CacheListenerHandle METADATA = new MetadataListener();
 
     /**
      * Register listener at runtime.
