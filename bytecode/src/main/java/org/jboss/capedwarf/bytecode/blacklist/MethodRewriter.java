@@ -34,8 +34,8 @@ interface MethodRewriter {
      * Visit method.
      *
      * @param mi the method
-     * @return true if modified, false otherwise
+     * @return number of modifications
      * @throws Exception for any error
      */
-    boolean visit(MethodInfo mi) throws Exception;
+    int visit(MethodInfo mi) throws Exception;
 }

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javassist.bytecode.ClassFile;
+import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.MethodInfo;
 
 /**
@@ -45,18 +46,21 @@ class MethodsRewriter implements Rewriter {
         List<MethodInfo> methods = file.getMethods();
         for (MethodInfo mi : methods) {
             try {
+                CodeAttribute codeAttribute = mi.getCodeAttribute();
                 // ignore abstract methods
-                if (mi.getCodeAttribute() == null) {
+                if (codeAttribute == null) {
                     continue;
                 }
 
-                boolean modified = false;
+                final int maxStack = codeAttribute.getMaxStack();
+
+                int modified = 0;
                 for (MethodRewriter mr : rewriters) {
-                    modified |= mr.visit(mi);
+                    modified += mr.visit(mi);
                 }
 
-                if (modified) {
-                    mi.getCodeAttribute().computeMaxStack();
+                if (modified > 0) {
+                    codeAttribute.setMaxStack(maxStack + modified);
                 }
             } catch (Exception e) {
                 throw new IllegalStateException("Cannot rewrite method: " + mi, e);

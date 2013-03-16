@@ -32,8 +32,8 @@ interface LineRewriter {
      * Visit method.
      *
      * @param context the line context
-     * @return true if modified, false otherwise
+     * @return number of modifications
      * @throws Exception for any error
      */
-    boolean visit(LineContext context) throws Exception;
+    int visit(LineContext context) throws Exception;
 }

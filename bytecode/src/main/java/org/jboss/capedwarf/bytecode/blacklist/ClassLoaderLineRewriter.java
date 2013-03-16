@@ -33,7 +33,7 @@ import javassist.bytecode.Descriptor;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class ClassLoaderLineRewriter extends InvokeRewriter {
+class ClassLoaderLineRewriter extends AbstractLineRewriter {
     private static final String URL_CLASSLOADER_CLASS = "java.net.URLClassLoader";
     private static final String SECURE_CLASSLOADER_CLASS = "java.security.SecureClassLoader";
     private static final String CLASSLOADER_CLASS = "java.lang.ClassLoader";
@@ -47,13 +47,13 @@ class ClassLoaderLineRewriter extends InvokeRewriter {
             CLASSLOADER_CLASS
     );
 
-    protected boolean doVisit(LineContext context) throws Exception {
+    public int visit(LineContext context) throws Exception {
         String className = context.getClassName();
         String name = getName(context.getConstPool(), context.getVal());
 
         InitType type = initsNewClassLoader(className, name);
         if (type == InitType.None) {
-            return false;
+            return 0;
         }
 
         String desc = getDesc(context.getConstPool(), context.getVal());
@@ -62,7 +62,7 @@ class ClassLoaderLineRewriter extends InvokeRewriter {
 
         // TODO
 
-        return true;
+        return 0;
     }
 
     private InitType initsNewClassLoader(String className, String name) {

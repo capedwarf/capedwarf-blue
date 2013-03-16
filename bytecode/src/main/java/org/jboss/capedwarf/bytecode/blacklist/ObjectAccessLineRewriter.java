@@ -31,7 +31,7 @@ import org.jboss.capedwarf.shared.blacklist.BlackList;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class ObjectAccessLineRewriter implements LineRewriter {
-    public boolean visit(LineContext context) throws Exception {
+    public int visit(LineContext context) throws Exception {
         String className = context.getClassName();
         if (BlackList.getBlackList().contains(className)) {
             // reject
@@ -40,8 +40,8 @@ class ObjectAccessLineRewriter implements LineRewriter {
             bytecode.addInvokestatic(Restrictions.class.getName(), "reject", "(Ljava/lang/String;)V");
             // insert before invocation
             context.insertAtIndex(bytecode);
-            return true;
+            return 1;
         }
-        return false;
+        return 0;
     }
 }

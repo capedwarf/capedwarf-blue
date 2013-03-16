@@ -55,21 +55,21 @@ class InvokeRewriter extends AbstractLineRewriter {
         rewriters.add(new ReflectionLineRewriter());
     }
 
-    public boolean visit(LineContext context) throws Exception {
+    public int visit(LineContext context) throws Exception {
+        int modified = 0;
         int op = context.getOp();
         if (isRef(op) && context.hasNext()) {
             int val = context.getVal();
             String className = getClassName(context.getConstPool(), val);
             if (className != null) {
                 context.setClassName(className);
-                boolean modified = false;
                 for (LineRewriter rewriter : rewriters) {
-                    modified |= rewriter.visit(context);
+                    modified += rewriter.visit(context);
                 }
                 return modified;
             }
         }
-        return false;
+        return modified;
     }
 
     protected boolean isRef(int op) {

@@ -41,16 +41,16 @@ class CodeLinesRewriter implements MethodRewriter {
         rewriters.add(new InvokeRewriter());
     }
 
-    public boolean visit(MethodInfo mi) throws Exception {
+    public int visit(MethodInfo mi) throws Exception {
         ConstPool pool = mi.getConstPool();
         CodeIterator cit = mi.getCodeAttribute().iterator();
         LineContext context = new LineContext(pool, cit);
-        boolean modified = false;
+        int modified = 0;
         while (cit.hasNext()) {
             // loop through the bytecode
             context.setIndex(cit.next());
             for (LineRewriter rewriter : rewriters) {
-                modified |= rewriter.visit(context);
+                modified += rewriter.visit(context);
             }
         }
         return modified;

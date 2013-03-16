@@ -68,7 +68,7 @@ class ReflectionLineRewriter extends AbstractLineRewriter {
         interceptedMethods.put("java.lang.Class", "newInstance");
     }
 
-    public boolean visit(LineContext context) throws Exception {
+    public int visit(LineContext context) throws Exception {
         String className = context.getClassName();
         Set<String> methods = interceptedMethods.get(className);
         if (methods != null && methods.isEmpty() == false) {
@@ -81,9 +81,8 @@ class ReflectionLineRewriter extends AbstractLineRewriter {
                 }
                 bytecode.addInvokestatic(Restrictions.class.getName(), name, desc);
                 context.write(bytecode);
-                return true;
             }
         }
-        return false;
+        return 0;
     }
 }
