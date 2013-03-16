@@ -46,19 +46,20 @@ abstract class ClassLineRewriter extends AbstractLineRewriter {
         OPS.add(CodeIterator.NEW);
     }
 
-    public void visit(LineContext context) throws Exception {
+    public boolean visit(LineContext context) throws Exception {
         int op = context.getOp();
         if (isRef(op) && context.hasNext()) {
             int val = context.getVal();
             String className = getClassName(context.getConstPool(), val);
             if (className != null) {
                 context.setClassName(className);
-                doVisit(context);
+                return doVisit(context);
             }
         }
+        return false;
     }
 
-    protected abstract void doVisit(LineContext context) throws Exception;
+    protected abstract boolean doVisit(LineContext context) throws Exception;
 
     protected boolean isRef(int op) {
         return OPS.contains(op);

@@ -28,5 +28,12 @@ package org.jboss.capedwarf.bytecode.blacklist;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 interface LineRewriter {
-    void visit(LineContext context) throws Exception;
+    /**
+     * Visit method.
+     *
+     * @param context the line context
+     * @return true if modified, false otherwise
+     * @throws Exception for any error
+     */
+    boolean visit(LineContext context) throws Exception;
 }

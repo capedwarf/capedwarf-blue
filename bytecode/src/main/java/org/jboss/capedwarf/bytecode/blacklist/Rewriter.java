@@ -30,5 +30,11 @@ import javassist.bytecode.ClassFile;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 interface Rewriter  {
+    /**
+     * Visit class.
+     *
+     * @param file the class file
+     * @throws Exception for any error
+     */
     void visit(ClassFile file) throws Exception;
 }

@@ -44,16 +44,23 @@ class MethodsRewriter implements Rewriter {
     public void visit(ClassFile file) throws Exception {
         List<MethodInfo> methods = file.getMethods();
         for (MethodInfo mi : methods) {
-            // ignore abstract methods
-            if (mi.getCodeAttribute() == null) {
-                continue;
-            }
+            try {
+                // ignore abstract methods
+                if (mi.getCodeAttribute() == null) {
+                    continue;
+                }
 
-            for (MethodRewriter mr : rewriters) {
-                mr.visit(mi);
-            }
+                boolean modified = false;
+                for (MethodRewriter mr : rewriters) {
+                    modified |= mr.visit(mi);
+                }
 
-            mi.getCodeAttribute().computeMaxStack();
+                if (modified) {
+                    mi.getCodeAttribute().computeMaxStack();
+                }
+            } catch (Exception e) {
+                throw new IllegalStateException("Cannot rewrite method: " + mi, e);
+            }
         }
     }
 }

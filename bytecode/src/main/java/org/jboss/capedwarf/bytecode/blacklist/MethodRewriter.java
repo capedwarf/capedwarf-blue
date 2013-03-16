@@ -30,5 +30,12 @@ import javassist.bytecode.MethodInfo;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 interface MethodRewriter {
-    void visit(MethodInfo mi) throws Exception;
+    /**
+     * Visit method.
+     *
+     * @param mi the method
+     * @return true if modified, false otherwise
+     * @throws Exception for any error
+     */
+    boolean visit(MethodInfo mi) throws Exception;
 }

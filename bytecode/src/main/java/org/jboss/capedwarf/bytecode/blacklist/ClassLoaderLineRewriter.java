@@ -47,13 +47,13 @@ class ClassLoaderLineRewriter extends ClassLineRewriter {
             CLASSLOADER_CLASS
     );
 
-    protected void doVisit(LineContext context) throws Exception {
+    protected boolean doVisit(LineContext context) throws Exception {
         String className = context.getClassName();
         String name = getName(context.getConstPool(), context.getVal());
 
         InitType type = initsNewClassLoader(className, name);
         if (type == InitType.None) {
-            return;
+            return false;
         }
 
         String desc = getDesc(context.getConstPool(), context.getVal());
@@ -61,6 +61,8 @@ class ClassLoaderLineRewriter extends ClassLineRewriter {
         CtClass[] parameterTypes = Descriptor.getParameterTypes(desc, context.getClassPool());
 
         // TODO
+
+        return true;
     }
 
     private InitType initsNewClassLoader(String className, String name) {

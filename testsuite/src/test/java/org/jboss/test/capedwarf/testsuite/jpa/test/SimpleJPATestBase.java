@@ -7,6 +7,7 @@ import javax.persistence.Query;
 
 import org.jboss.capedwarf.testsuite.jpa.Client;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.jboss.test.capedwarf.testsuite.TestsuiteTestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,7 +18,7 @@ import org.junit.Test;
 public abstract class SimpleJPATestBase extends JPATestBase {
 
     protected static WebArchive getBaseDeployment() {
-        final WebArchive war = getCapedwarfDeployment();
+        final WebArchive war = getCapedwarfDeployment(TestContext.withBlackList());
         war.addPackage(Client.class.getPackage());
         war.addClass(TestsuiteTestBase.class);
         war.addClass(JPATestBase.class);
