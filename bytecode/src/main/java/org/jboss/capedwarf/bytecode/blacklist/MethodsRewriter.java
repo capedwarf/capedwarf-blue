@@ -37,7 +37,7 @@ class MethodsRewriter implements Rewriter {
     private List<MethodRewriter> rewriters = new ArrayList<MethodRewriter>();
 
     MethodsRewriter() {
-        rewriters.add(new CodeLineRewriter());
+        rewriters.add(new CodeLinesRewriter());
     }
 
     @SuppressWarnings("unchecked")

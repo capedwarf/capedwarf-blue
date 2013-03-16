@@ -30,8 +30,8 @@ import org.jboss.capedwarf.shared.blacklist.BlackList;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class ObjectAccessLineRewriter extends ClassLineRewriter {
-    protected boolean doVisit(LineContext context) throws Exception {
+class ObjectAccessLineRewriter implements LineRewriter {
+    public boolean visit(LineContext context) throws Exception {
         String className = context.getClassName();
         if (BlackList.getBlackList().contains(className)) {
             // reject

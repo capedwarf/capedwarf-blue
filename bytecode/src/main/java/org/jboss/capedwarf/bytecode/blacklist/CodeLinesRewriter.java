@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,46 +22,37 @@
 
 package org.jboss.capedwarf.bytecode.blacklist;
 
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import javassist.bytecode.CodeIterator;
+import javassist.bytecode.ConstPool;
+import javassist.bytecode.MethodInfo;
 
 /**
- * Class check.
+ * Rewrite code lines.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-abstract class ClassLineRewriter extends AbstractLineRewriter {
-    private static final Set<Integer> OPS;
+class CodeLinesRewriter implements MethodRewriter {
+    private List<LineRewriter> rewriters = new ArrayList<LineRewriter>();
 
-    static {
-        OPS = new TreeSet<Integer>();
-        // invocations
-        OPS.add(CodeIterator.INVOKEINTERFACE);
-        OPS.add(CodeIterator.INVOKESPECIAL);
-        OPS.add(CodeIterator.INVOKESTATIC);
-        OPS.add(CodeIterator.INVOKEVIRTUAL);
-        // fields
-        OPS.add(CodeIterator.NEW);
+    CodeLinesRewriter() {
+        rewriters.add(new InvokeRewriter());
     }
 
-    public boolean visit(LineContext context) throws Exception {
-        int op = context.getOp();
-        if (isRef(op) && context.hasNext()) {
-            int val = context.getVal();
-            String className = getClassName(context.getConstPool(), val);
-            if (className != null) {
-                context.setClassName(className);
-                return doVisit(context);
+    public boolean visit(MethodInfo mi) throws Exception {
+        ConstPool pool = mi.getConstPool();
+        CodeIterator cit = mi.getCodeAttribute().iterator();
+        LineContext context = new LineContext(pool, cit);
+        boolean modified = false;
+        while (cit.hasNext()) {
+            // loop through the bytecode
+            context.setIndex(cit.next());
+            for (LineRewriter rewriter : rewriters) {
+                modified |= rewriter.visit(context);
             }
         }
-        return false;
-    }
-
-    protected abstract boolean doVisit(LineContext context) throws Exception;
-
-    protected boolean isRef(int op) {
-        return OPS.contains(op);
+        return modified;
     }
 }

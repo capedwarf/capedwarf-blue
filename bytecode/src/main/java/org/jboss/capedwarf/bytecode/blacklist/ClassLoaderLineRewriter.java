@@ -33,7 +33,7 @@ import javassist.bytecode.Descriptor;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class ClassLoaderLineRewriter extends ClassLineRewriter {
+class ClassLoaderLineRewriter extends InvokeRewriter {
     private static final String URL_CLASSLOADER_CLASS = "java.net.URLClassLoader";
     private static final String SECURE_CLASSLOADER_CLASS = "java.security.SecureClassLoader";
     private static final String CLASSLOADER_CLASS = "java.lang.ClassLoader";

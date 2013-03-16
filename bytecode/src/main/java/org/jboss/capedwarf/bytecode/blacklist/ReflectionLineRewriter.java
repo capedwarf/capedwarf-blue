@@ -37,7 +37,7 @@ import javassist.bytecode.Descriptor;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class ReflectionLineRewriter extends ClassLineRewriter {
+class ReflectionLineRewriter extends AbstractLineRewriter {
     private static final SetMultimap<String, String> interceptedMethods;
 
     static {
@@ -68,7 +68,7 @@ class ReflectionLineRewriter extends ClassLineRewriter {
         interceptedMethods.put("java.lang.Class", "newInstance");
     }
 
-    protected boolean doVisit(LineContext context) throws Exception {
+    public boolean visit(LineContext context) throws Exception {
         String className = context.getClassName();
         Set<String> methods = interceptedMethods.get(className);
         if (methods != null && methods.isEmpty() == false) {
