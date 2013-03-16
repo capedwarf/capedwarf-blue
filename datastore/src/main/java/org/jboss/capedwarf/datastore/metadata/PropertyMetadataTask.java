@@ -38,31 +38,19 @@ import org.jboss.capedwarf.datastore.PropertyUtils;
 public class PropertyMetadataTask extends MetadataTask {
     private final Entity trigger;
 
-    public PropertyMetadataTask(Entity trigger, boolean add) {
-        super(add);
+    public PropertyMetadataTask(Entity trigger) {
         this.trigger = trigger;
     }
 
     protected void execute(DatastoreService ds) {
-        if (add) {
-            List<Entity> entities = new ArrayList<Entity>();
-            for (Map.Entry<String, Object> entry : trigger.getProperties().entrySet()) {
-                if (PropertyUtils.isIndexedProperty(entry.getValue())) {
-                    Key key = Entities.createPropertyKey(trigger.getKind(), entry.getKey());
-                    entities.add(new Entity(key));
-                }
+        List<Entity> entities = new ArrayList<Entity>();
+        for (Map.Entry<String, Object> entry : trigger.getProperties().entrySet()) {
+            if (PropertyUtils.isIndexedProperty(entry.getValue())) {
+                Key key = Entities.createPropertyKey(trigger.getKind(), entry.getKey());
+                entities.add(new Entity(key));
             }
-            ds.put(entities);
-        } else {
-            List<Key> keys = new ArrayList<Key>();
-            for (Map.Entry<String, Object> entry : trigger.getProperties().entrySet()) {
-                if (PropertyUtils.isIndexedProperty(entry.getValue())) {
-                    Key key = Entities.createPropertyKey(trigger.getKind(), entry.getKey());
-                    keys.add(key);
-                }
-            }
-            ds.delete(keys);
         }
+        ds.put(entities);
     }
 
     protected String getNamespace() {

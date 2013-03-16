@@ -31,8 +31,8 @@ import com.google.appengine.api.datastore.Key;
 public class KindMetadataTask extends SimpleMetadataTask {
     private final String namespace;
 
-    public KindMetadataTask(String value, boolean add, String namespace) {
-        super(value, add);
+    public KindMetadataTask(String value, String namespace) {
+        super(value);
         this.namespace = namespace;
     }
 

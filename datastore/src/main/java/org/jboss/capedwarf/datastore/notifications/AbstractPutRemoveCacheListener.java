@@ -39,7 +39,7 @@ import org.jboss.capedwarf.datastore.KindUtils;
 public abstract class AbstractPutRemoveCacheListener extends AbstractCacheListener {
     @CacheEntryModified
     public void onPut(CacheEntryModifiedEvent<Key, Entity> event) {
-        if (isIgnoreEvent(event))
+        if (isIgnorePutEvent(event))
             return;
 
         Entity trigger = event.getValue();
@@ -53,7 +53,7 @@ public abstract class AbstractPutRemoveCacheListener extends AbstractCacheListen
 
     @CacheEntryRemoved
     public void onRemove(CacheEntryRemovedEvent<Key, Entity> event) {
-        if (isIgnoreEvent(event))
+        if (isIgnoreRemoveEvent(event))
             return;
 
         if (event.isPre()) {
@@ -62,6 +62,26 @@ public abstract class AbstractPutRemoveCacheListener extends AbstractCacheListen
         } else {
             onPostRemove(event.getKey());
         }
+    }
+
+    /**
+     * Do we ignore put event.
+     *
+     * @param event the event
+     * @return true if we ignore event, false otherwise
+     */
+    protected boolean isIgnorePutEvent(CacheEntryModifiedEvent<Key, Entity> event) {
+        return isIgnoreEvent(event);
+    }
+
+    /**
+     * Do we ignore remove event.
+     *
+     * @param event the event
+     * @return true if we ignore event, false otherwise
+     */
+    protected boolean isIgnoreRemoveEvent(CacheEntryRemovedEvent<Key, Entity> event) {
+        return isIgnoreEvent(event);
     }
 
     /**

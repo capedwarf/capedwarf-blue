@@ -25,7 +25,9 @@ package org.jboss.capedwarf.datastore.metadata;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
 import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.jboss.capedwarf.datastore.notifications.AbstractPutRemoveCacheListener;
 import org.jboss.capedwarf.datastore.notifications.CacheListenerHandle;
 
@@ -56,22 +58,19 @@ public class MetadataListener extends AbstractPutRemoveCacheListener implements 
     protected void onPostPut(Entity trigger) {
         MetadataQueryTypeFactory.setFlag(true);
         try {
-            executeCallable(new NamespaceMetadataTask(trigger.getNamespace(), true));
-            executeCallable(new KindMetadataTask(trigger.getKind(), true, trigger.getNamespace()));
-            executeCallable(new PropertyMetadataTask(trigger, true));
+            executeCallable(new NamespaceMetadataTask(trigger.getNamespace()));
+            executeCallable(new KindMetadataTask(trigger.getKind(), trigger.getNamespace()));
+            executeCallable(new PropertyMetadataTask(trigger));
+            executeCallable(new EntityGroupMetadataTask(trigger));
         } finally {
             MetadataQueryTypeFactory.setFlag(false);
         }
     }
 
+    protected boolean isIgnoreRemoveEvent(CacheEntryRemovedEvent<Key, Entity> event) {
+        return true;
+    }
+
     protected void onPreRemove(Entity trigger) {
-        MetadataQueryTypeFactory.setFlag(true);
-        try {
-            executeCallable(new NamespaceMetadataTask(trigger.getNamespace(), false));
-            executeCallable(new KindMetadataTask(trigger.getKind(), false, trigger.getNamespace()));
-            executeCallable(new PropertyMetadataTask(trigger, false));
-        } finally {
-            MetadataQueryTypeFactory.setFlag(false);
-        }
     }
 }

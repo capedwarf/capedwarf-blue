@@ -35,12 +35,6 @@ import org.jboss.capedwarf.shared.components.Keys;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class MetadataTask extends AbstractTxCallable<Void> {
-    protected final boolean add;
-
-    public MetadataTask(boolean add) {
-        this.add = add;
-    }
-
     protected TransactionManager getTransactionManager() {
         return ComponentRegistry.getInstance().getComponent(Keys.TM);
     }

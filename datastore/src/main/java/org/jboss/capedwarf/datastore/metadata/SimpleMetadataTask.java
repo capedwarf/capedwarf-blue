@@ -32,19 +32,13 @@ import com.google.appengine.api.datastore.Key;
 public abstract class SimpleMetadataTask extends MetadataTask {
     protected final String value;
 
-    public SimpleMetadataTask(String value, boolean add) {
-        super(add);
+    public SimpleMetadataTask(String value) {
         this.value = value;
     }
 
     protected void execute(DatastoreService ds) {
         Key key = createKey();
-
-        if (add) {
-            ds.put(new Entity(key));
-        } else {
-            ds.delete(key);
-        }
+        ds.put(new Entity(key));
     }
 
     protected abstract Key createKey();
