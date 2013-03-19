@@ -23,7 +23,20 @@
 package org.jboss.test.capedwarf.cluster.test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.common.reflection.TargetInvocation;
+import org.jboss.capedwarf.datastore.ExposedDatastoreService;
+import org.jboss.test.capedwarf.common.support.JBoss;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -33,15 +46,6 @@ import com.google.appengine.api.datastore.FetchOptions.Builder;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
-import org.jboss.capedwarf.datastore.ExposedDatastoreService;
-import org.jboss.test.capedwarf.common.support.JBoss;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
@@ -186,6 +190,30 @@ public class DatastoreTest extends ClusteredTestBase {
         Assert.assertTrue(cached.contains("A"));
         Assert.assertTrue(cached.contains("A1"));
         Assert.assertTrue(cached.contains("B"));
+    }
+
+    @Category(JBoss.class)
+    @InSequence(100)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void testKeySerializationOndepA() throws Exception {
+        Key key = KeyFactory.createKey("KIND", 1);
+        Entity entity = new Entity(key);
+        entity.setProperty("name", "exist" + new Date());
+        getService().put(entity);
+    }
+
+    @Category(JBoss.class)
+    @InSequence(110)
+    @Test
+    @OperateOnDeployment("dep2")
+    public void testKeySerializationOndepB() throws Exception {
+        TargetInvocation<Object> isChecked = ReflectionUtils.cacheInvocation(Key.class, "isChecked");
+
+        waitForSync();
+        Key key = KeyFactory.createKey("KIND", 1);
+        Entity entity = getService().get(key);
+        Assert.assertTrue((Boolean)isChecked.invoke(entity.getKey()));
     }
 
     @InSequence(1000)
