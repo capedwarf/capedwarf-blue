@@ -101,7 +101,7 @@ public abstract class AbstractPutRemoveCacheListener extends AbstractCacheListen
      * @return true if we ignore entry, false otherwise
      */
     protected boolean isIgnoreEntry(Key key) {
-        return KindUtils.match(key.getKind(), KindUtils.Type.STATS, KindUtils.Type.METADATA);
+        return KindUtils.match(key.getKind(), KindUtils.Type.STATS, KindUtils.Type.METADATA, KindUtils.Type.LOG);
     }
 
     /**

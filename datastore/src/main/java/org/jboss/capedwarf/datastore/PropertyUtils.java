@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.EmbeddedEntity;
 import com.google.appengine.api.datastore.Entity;
@@ -31,7 +34,15 @@ import com.google.appengine.api.datastore.Text;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public final class PropertyUtils {
-    public static final String UNINDEXED_VALUE_CLASS_NAME = Entity.class.getName() + "$UnindexedValue";
+    private static final String UNINDEXED_VALUE_CLASS_NAME = Entity.class.getName() + "$UnindexedValue";
+    private static final Set<String> SPECIAL_PROPERTIES;
+
+    static {
+        SPECIAL_PROPERTIES = new HashSet<String>();
+        SPECIAL_PROPERTIES.add(Entity.KEY_RESERVED_PROPERTY);
+        SPECIAL_PROPERTIES.add(Entity.VERSION_RESERVED_PROPERTY);
+        SPECIAL_PROPERTIES.add(Entity.SCATTER_RESERVED_PROPERTY);
+    }
 
     private PropertyUtils() {
     }
@@ -50,5 +61,9 @@ public final class PropertyUtils {
         } else {
             return UNINDEXED_VALUE_CLASS_NAME.equals(value.getClass().getName()) == false;
         }
+    }
+
+    public static boolean isSpecialProperty(String propertyName) {
+        return SPECIAL_PROPERTIES.contains(propertyName);
     }
 }

@@ -45,7 +45,7 @@ public class PropertyMetadataTask extends MetadataTask {
     protected void execute(DatastoreService ds) {
         List<Entity> entities = new ArrayList<Entity>();
         for (Map.Entry<String, Object> entry : trigger.getProperties().entrySet()) {
-            if (PropertyUtils.isIndexedProperty(entry.getValue())) {
+            if (PropertyUtils.isIndexedProperty(entry.getValue()) && PropertyUtils.isSpecialProperty(entry.getKey()) == false) {
                 Key key = Entities.createPropertyKey(trigger.getKind(), entry.getKey());
                 entities.add(new Entity(key));
             }
