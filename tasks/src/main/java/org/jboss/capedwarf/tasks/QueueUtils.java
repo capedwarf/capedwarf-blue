@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
@@ -39,9 +38,10 @@ import org.jboss.capedwarf.common.util.Util;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class QueueUtils {
-    private static final Logger log = Logger.getLogger(QueueUtils.class.getName());
     private static final ObjectName QUEUE_NAME;
 
+    private static final String COUNT_MESSAGES = "countMessages";
+    private static final String[] COUNT_MESSAGES_SIGNATURE = new String[]{String.class.getName()};
     private static final String LIST_MESSAGES = "listMessages";
     private static final String[] LIST_MESSAGES_SIGNATURE = new String[]{String.class.getName()};
     private static final String LIST_SCHEDULED_MESSAGES = "listScheduledMessages";
@@ -77,6 +77,15 @@ class QueueUtils {
 
     private static String toFilter(String key, String value) {
         return key + "='" + value + "'";
+    }
+
+    private static long count(MBeanServer server, String queueName, String taskName) {
+        String filter = (taskName != null) ?
+                toFilter(TasksMessageCreator.QUEUE_NAME_KEY, queueName) + " AND " + toFilter(TasksMessageCreator.TASK_NAME_KEY, taskName) :
+                toFilter(TasksMessageCreator.QUEUE_NAME_KEY, queueName);
+
+        Object[] args = {filter};
+        return invoke(server, Long.class, COUNT_MESSAGES, args, COUNT_MESSAGES_SIGNATURE);
     }
 
     private static Map<String, Object>[] current(MBeanServer server, String queueName, String taskName) {
@@ -135,6 +144,14 @@ class QueueUtils {
         results.addAll(scheduled(server, queueName, taskName));
 
         return results;
+    }
+
+    static long count(String queueName) {
+        return count(queueName, null);
+    }
+
+    static long count(String queueName, String taskName) {
+        return count(getMBeanServer(), queueName, taskName);
     }
 
     static Map<String, Object>[] current(String queueName) {

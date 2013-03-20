@@ -34,7 +34,7 @@ import org.jboss.capedwarf.common.util.Util;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractQueueTask implements Callable<Integer>, Serializable {
+public abstract class AbstractQueueTask implements Callable<Long>, Serializable {
     private static final long serialVersionUID = 1L;
 
     private final String queueName;
@@ -49,17 +49,17 @@ public abstract class AbstractQueueTask implements Callable<Integer>, Serializab
         this.taskName = taskName;
     }
 
-    public Integer call() throws Exception {
-        int count = 0;
-        count += QueueUtils.current(queueName, taskName).length;
+    public Long call() throws Exception {
+        long count = 0;
+        count += QueueUtils.count(queueName, taskName);
         count += QueueUtils.scheduled(queueName, taskName).size();
         return count;
     }
 
-    static int count(Callable<Integer> task) {
-        List<Future<Integer>> results = InfinispanUtils.everywhere(Application.getAppId(), task);
-        int count = 0;
-        for (Future<Integer> f : results) {
+    static long count(Callable<Long> task) {
+        List<Future<Long>> results = InfinispanUtils.everywhere(Application.getAppId(), task);
+        long count = 0;
+        for (Future<Long> f : results) {
             count += Util.quietGet(f);
         }
         return count;

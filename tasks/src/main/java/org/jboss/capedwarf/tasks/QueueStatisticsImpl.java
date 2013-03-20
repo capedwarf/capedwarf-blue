@@ -60,7 +60,7 @@ class QueueStatisticsImpl implements QueueStatisticsInternal {
 
             int numTasks;
             long oldestEtaUsec = -1L;
-            int requestsInFlight = AbstractQueueTask.count(new QueueStatisticsTask(queueName));
+            int requestsInFlight = (int) AbstractQueueTask.count(new QueueStatisticsTask(queueName));
             double enforcedRate = 0;
 
             QueryBuilder builder = manager.buildQueryBuilderForClass(Task.class).get();

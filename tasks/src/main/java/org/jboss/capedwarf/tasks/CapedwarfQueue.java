@@ -338,7 +338,7 @@ class CapedwarfQueue implements Queue {
     }
 
     protected void checkDuplicate(TaskOptionsHelper options) {
-        int count = AbstractQueueTask.count(new DuplicateCheckerTask(queueName, options.getTaskName()));
+        long count = AbstractQueueTask.count(new DuplicateCheckerTask(queueName, options.getTaskName()));
         if (count > 0) {
             throw new TaskAlreadyExistsException(options.getTaskName());
         }
