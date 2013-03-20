@@ -1,8 +1,5 @@
 package org.jboss.test.capedwarf.cluster.test;
 
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -17,6 +14,11 @@ import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskAlreadyExistsException;
+import com.google.appengine.api.taskqueue.TaskOptions;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
@@ -62,7 +64,7 @@ public class TasksTest extends TestBase {
     }
 
 
-    @InSequence(10)
+    @InSequence(30)
     @Test
     @OperateOnDeployment("dep1")
     public void testOnDepA() throws Exception {
@@ -70,6 +72,32 @@ public class TasksTest extends TestBase {
         queue.add(TaskOptions.Builder.withUrl(URL));
         sync();
     }
+
+    @InSequence(100)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void testDuplicateNameDepA() throws Exception {
+        final Queue queue = QueueFactory.getDefaultQueue();
+        queue.add(TaskOptions.Builder.withTaskName("foo").countdownMillis(10 * 1000L));
+
+        sync();
+    }
+
+    @InSequence(110)
+    @Test (expected = TaskAlreadyExistsException.class)
+    @OperateOnDeployment("dep2")
+    public void testDuplicateNameDepB() throws Exception {
+        final Queue queue = QueueFactory.getDefaultQueue();
+        queue.add(TaskOptions.Builder.withTaskName("foo"));
+        sync();
+    }
+
+    @InSequence(1000)
+    @Test
+    @OperateOnDeployment("dep2")
+    public void shuttingDown() throws Exception {
+    }
+
 
     @Deployment (name = "dep1") @TargetsContainer("container-1")
     public static WebArchive getDeploymentA() {
