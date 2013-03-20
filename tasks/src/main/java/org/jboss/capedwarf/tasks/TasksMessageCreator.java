@@ -90,7 +90,7 @@ public class TasksMessageCreator implements MessageCreator {
         addHeaders(message);
         addParameters(message);
 
-        message.setStringProperty(QUEUE_NAME_HEADER, queueName);
+        message.setStringProperty(QUEUE_NAME_KEY, queueName);
         message.setStringProperty(TASK_NAME_KEY, taskOptions.getTaskName());
         message.setIntProperty(MessageConstants.MAX_ATTEMPTS, taskOptions.getTaskRetryLimit() == null ? -1 : taskOptions.getTaskRetryLimit());
 
