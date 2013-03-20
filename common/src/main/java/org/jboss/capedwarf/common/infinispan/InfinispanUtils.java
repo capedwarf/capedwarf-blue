@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.common.infinispan;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -29,6 +30,8 @@ import java.util.concurrent.Future;
 import org.infinispan.Cache;
 import org.infinispan.distexec.DefaultExecutorService;
 import org.infinispan.distexec.DistributedExecutorService;
+import org.infinispan.distexec.DistributedTask;
+import org.infinispan.distexec.DistributedTaskBuilder;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -63,6 +66,13 @@ public class InfinispanUtils {
         return template.getName() + "_" + appId;
     }
 
+    private static <R> Future<R> distribute(final String appId, final CacheName template, final Callable<R> task, final boolean direct, final Object... keys) {
+        final Cache cache = getCache(appId, template);
+        final ExecutorService executor = (direct ? ExecutorFactory.getDirectExecutor() : ExecutorFactory.getInstance());
+        final DistributedExecutorService des = new DefaultExecutorService(cache, executor);
+        return des.submit(task, keys);
+    }
+
     public static <K, V> Cache<K, V> getCache(String appId, CacheName template) {
         if (template == null)
             throw new IllegalArgumentException("Null template!");
@@ -85,11 +95,16 @@ public class InfinispanUtils {
         return distribute(appId, template, task, false, keys);
     }
 
-    private static <R> Future<R> distribute(final String appId, final CacheName template, final Callable<R> task, final boolean direct, final Object... keys) {
-        final Cache cache = getCache(appId, template);
-        final ExecutorService executor = (direct ? ExecutorFactory.getDirectExecutor() : ExecutorFactory.getInstance());
+    /**
+     * Submit to all nodes.
+     */
+    public static <T> List<Future<T>> everywhere(final String appId, Callable<T> callable) {
+        final Cache cache = getCache(appId, CacheName.DIST);
+        final ExecutorService executor = ExecutorFactory.getInstance();
         final DistributedExecutorService des = new DefaultExecutorService(cache, executor);
-        return des.submit(task, keys);
+        final DistributedTaskBuilder<T> builder = des.createDistributedTaskBuilder(callable);
+        final DistributedTask<T> task = builder.build();
+        return des.submitEverywhere(task);
     }
 
     public static GridFilesystem getGridFilesystem(String appId) {

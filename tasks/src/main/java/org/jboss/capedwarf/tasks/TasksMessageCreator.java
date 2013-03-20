@@ -55,6 +55,7 @@ public class TasksMessageCreator implements MessageCreator {
     static final String CURRENT_NAMESPACE = "X-AppEngine-Current-Namespace";
 
     public static final String HDR_SCHEDULED_DELIVERY_TIME = "_HQ_SCHED_DELIVERY";
+    public static final String QUEUE_NAME_KEY = "__CD__QueueName__";
     public static final String TASK_NAME_KEY = "__CD__TaskName__";
 
     private final String queueName;
@@ -89,6 +90,7 @@ public class TasksMessageCreator implements MessageCreator {
         addHeaders(message);
         addParameters(message);
 
+        message.setStringProperty(QUEUE_NAME_HEADER, queueName);
         message.setStringProperty(TASK_NAME_KEY, taskOptions.getTaskName());
         message.setIntProperty(MessageConstants.MAX_ATTEMPTS, taskOptions.getTaskRetryLimit() == null ? -1 : taskOptions.getTaskRetryLimit());
 

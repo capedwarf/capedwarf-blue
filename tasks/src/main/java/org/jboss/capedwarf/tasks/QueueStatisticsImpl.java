@@ -22,16 +22,11 @@
 
 package org.jboss.capedwarf.tasks;
 
-import java.util.Enumeration;
-
-import javax.jms.QueueBrowser;
-
 import com.google.appengine.api.taskqueue.QueueStatistics;
 import com.google.appengine.api.taskqueue.TaskQueuePb;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.query.SearchManager;
-import org.jboss.capedwarf.common.jms.JmsAdapter;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 
 /**
@@ -39,7 +34,7 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class QueueStatisticsImpl extends JmsAdapter implements QueueStatisticsInternal {
+class QueueStatisticsImpl implements QueueStatisticsInternal {
     static final Class[] types = new Class[]{String.class, TaskQueuePb.TaskQueueFetchQueueStatsResponse.QueueStats.class};
 
     private final String queueName;
@@ -51,20 +46,12 @@ class QueueStatisticsImpl extends JmsAdapter implements QueueStatisticsInternal 
     }
 
     public QueueStatistics fetchStatistics() {
-        try {
-            return fetchStatisticsInternal();
-        } finally {
-            dispose();
-        }
+        return fetchStatisticsInternal();
     }
 
     // TODO - v?
     public QueueStatistics fetchStatistics(double v) {
-        try {
-            return fetchStatisticsInternal();
-        } finally {
-            dispose();
-        }
+        return fetchStatisticsInternal();
     }
 
     protected QueueStatistics fetchStatisticsInternal() {
@@ -73,19 +60,8 @@ class QueueStatisticsImpl extends JmsAdapter implements QueueStatisticsInternal 
 
             int numTasks;
             long oldestEtaUsec = -1L;
-            int requestsInFlight = 0;
+            int requestsInFlight = AbstractQueueTask.count(new QueueStatisticsTask(queueName));
             double enforcedRate = 0;
-
-            final QueueBrowser browser = getBrowser();
-            try {
-                Enumeration enumeration = browser.getEnumeration();
-                while (enumeration.hasMoreElements()) {
-                    requestsInFlight++;
-                    enumeration.nextElement();
-                }
-            } finally {
-                browser.close();
-            }
 
             QueryBuilder builder = manager.buildQueryBuilderForClass(Task.class).get();
             Query query = CapedwarfQueue.toTerm(builder, "queue", queueName).createQuery();

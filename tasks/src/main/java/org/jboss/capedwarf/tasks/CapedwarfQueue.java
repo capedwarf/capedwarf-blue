@@ -323,7 +323,7 @@ class CapedwarfQueue implements Queue {
     }
 
     private TaskHandle addPushTask(ServletExecutorProducer producer, TaskOptionsHelper options) {
-        DuplicateChecker.hasDuplicate(options.getTaskName());
+        checkDuplicate(options);
         try {
             TaskOptions copy = new TaskOptions(options.getTaskOptions());
             MessageCreator mc = createMessageCreator(options.getTaskOptions());
@@ -334,6 +334,13 @@ class CapedwarfQueue implements Queue {
             return new TaskHandle(copy, getQueueName());
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    protected void checkDuplicate(TaskOptionsHelper options) {
+        int count = AbstractQueueTask.count(new DuplicateCheckerTask(queueName, options.getTaskName()));
+        if (count > 0) {
+            throw new TaskAlreadyExistsException(options.getTaskName());
         }
     }
 
