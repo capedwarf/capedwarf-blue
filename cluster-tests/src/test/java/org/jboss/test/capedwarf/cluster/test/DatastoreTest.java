@@ -25,6 +25,7 @@ package org.jboss.test.capedwarf.cluster.test;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -40,8 +41,10 @@ import org.junit.runner.RunWith;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entities;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.FetchOptions.Builder;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
@@ -116,9 +119,12 @@ public class DatastoreTest extends ClusteredTestBase {
 
         int count = getService().prepare(new Query("KIND")).countEntities(Builder.withDefaults());
         Assert.assertTrue("Number of entities: " + count, count == 2);
+
+        getService().delete(KeyFactory.createKey("KIND", 1));
+        getService().delete(KeyFactory.createKey("KIND", 2));
     }
 
-    @InSequence(55)
+    @InSequence(100)
     @Test
     @OperateOnDeployment("dep1")
     public void indexGenAndQueryInsertOnA() throws Exception {
@@ -138,7 +144,7 @@ public class DatastoreTest extends ClusteredTestBase {
         Assert.assertEquals(2, count);
     }
 
-    @InSequence(60)
+    @InSequence(110)
     @Test
     @OperateOnDeployment("dep2")
     public void indexGenAndQueryInsertOnB() throws Exception {
@@ -152,7 +158,7 @@ public class DatastoreTest extends ClusteredTestBase {
         Assert.assertEquals(3, count);
     }
 
-    @InSequence(70)
+    @InSequence(120)
     @Test
     @OperateOnDeployment("dep1")
     public void testContentOnA() throws Exception {
@@ -173,7 +179,7 @@ public class DatastoreTest extends ClusteredTestBase {
         Assert.assertTrue(cached.contains("B"));
     }
 
-    @InSequence(80)
+    @InSequence(130)
     @Test
     @OperateOnDeployment("dep2")
     public void testContentOnB() throws Exception {
@@ -190,10 +196,16 @@ public class DatastoreTest extends ClusteredTestBase {
         Assert.assertTrue(cached.contains("A"));
         Assert.assertTrue(cached.contains("A1"));
         Assert.assertTrue(cached.contains("B"));
+
+        //cleanup "indexGen" entities
+        for (Entity entity : list) {
+            getService().delete(entity.getKey());
+        }
+
     }
 
     @Category(JBoss.class)
-    @InSequence(100)
+    @InSequence(200)
     @Test
     @OperateOnDeployment("dep1")
     public void testKeySerializationOndepA() throws Exception {
@@ -204,7 +216,7 @@ public class DatastoreTest extends ClusteredTestBase {
     }
 
     @Category(JBoss.class)
-    @InSequence(110)
+    @InSequence(210)
     @Test
     @OperateOnDeployment("dep2")
     public void testKeySerializationOndepB() throws Exception {
@@ -214,7 +226,116 @@ public class DatastoreTest extends ClusteredTestBase {
         Key key = KeyFactory.createKey("KIND", 1);
         Entity entity = getService().get(key);
         Assert.assertTrue((Boolean)isChecked.invoke(entity.getKey()));
+
+        getService().delete(entity.getKey());
     }
+
+    @InSequence(300)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void testVersionOndepA() throws Exception {
+        Entity entity = new Entity("VersionTest", "name");
+        // 3 puts
+        AtomicLong counter = new AtomicLong(1);
+        assertVersion(entity, counter);
+        assertVersion(entity, counter);
+        assertVersion(entity, counter);
+    }
+
+
+    @InSequence(310)
+    @Test
+    @OperateOnDeployment("dep2")
+    public void testVersionOndepB() throws Exception {
+        waitForSync();
+        Entity entity = getService().get(KeyFactory.createKey("VersionTest", "name"));
+        try {
+            // 3 puts
+            AtomicLong counter = new AtomicLong(4);
+            assertVersion(entity, counter);
+            assertVersion(entity, counter);
+            assertVersion(entity, counter);
+        } finally {
+            // cleanup
+            getService().delete(entity.getKey());
+        }
+    }
+
+    @InSequence(320)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void testVersionWithIdOndepA() throws Exception {
+        Entity entity = new Entity(KeyFactory.createKey("versioned", 1));
+        // 3 puts
+        AtomicLong counter = new AtomicLong(1);
+        assertVersion(entity, counter);
+        assertVersion(entity, counter);
+        assertVersion(entity, counter);
+
+        getService().delete(entity.getKey());
+        waitForSync();
+
+        entity = new Entity(KeyFactory.createKey("versioned", 1));
+        // 3 puts
+        counter = new AtomicLong(1);
+        assertVersion(entity, counter);
+        assertVersion(entity, counter);
+        assertVersion(entity, counter);
+    }
+
+
+    @InSequence(330)
+    @Test
+    @OperateOnDeployment("dep2")
+    public void testVersionWithIdOndepB() throws Exception {
+        waitForSync();
+        Entity entity = getService().get(KeyFactory.createKey("versioned", 1));
+        // 3 puts
+        AtomicLong counter = new AtomicLong(4);
+        assertVersion(entity, counter);
+        assertVersion(entity, counter);
+        assertVersion(entity, counter);
+
+        getService().delete(entity.getKey());
+    }
+
+
+    @InSequence(340)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void testQueryOnDepA() throws Exception {
+        Entity e1 = new Entity("VT1");
+        AtomicLong counter = new AtomicLong(1);
+        assertVersion(e1, counter);
+        assertVersion(e1, counter);
+
+        Query query = new Query("VT1");
+        query.setFilter(new Query.FilterPredicate(Entity.VERSION_RESERVED_PROPERTY, Query.FilterOperator.GREATER_THAN, 0L));
+        List<Entity> all = getService().prepare(query).asList(FetchOptions.Builder.withDefaults());
+        Assert.assertEquals(1, all.size());
+        Assert.assertEquals(e1, all.get(0));
+    }
+
+
+    @InSequence(350)
+    @Test
+    @OperateOnDeployment("dep2")
+    public void testQueryOnDepB() throws Exception {
+        waitForSync();
+        Entity e2 = new Entity("VT1");
+        AtomicLong counter = new AtomicLong(1);
+        assertVersion(e2, counter);
+
+        Query query = new Query("VT1");
+        query.setFilter(new Query.FilterPredicate(Entity.VERSION_RESERVED_PROPERTY, Query.FilterOperator.GREATER_THAN, 1L));
+        List<Entity> all = getService().prepare(query).asList(FetchOptions.Builder.withDefaults());
+        Assert.assertEquals(1, all.size());
+        Entity e1 = all.get(0);
+        Assert.assertNotSame(e2, e1);
+        // cleanup
+        getService().delete(e1.getKey(), e2.getKey());
+    }
+
 
     @InSequence(1000)
     @Test
@@ -253,6 +374,17 @@ public class DatastoreTest extends ClusteredTestBase {
 
     private void waitForSync() throws InterruptedException {
         sync(5000L);
+    }
+
+    protected void assertVersion(Entity entity, AtomicLong counter) throws Exception {
+        entity.setProperty("counter", counter.get());
+        Key key = getService().put(entity);
+        entity = getService().get(key);
+
+        Assert.assertEquals(counter.get(), entity.getProperty("counter"));
+
+        long actualVersion = Entities.getVersionProperty(entity);
+        Assert.assertEquals(counter.getAndIncrement(), actualVersion);
     }
 
 }
