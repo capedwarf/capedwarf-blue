@@ -336,6 +336,28 @@ public class DatastoreTest extends ClusteredTestBase {
         getService().delete(e1.getKey(), e2.getKey());
     }
 
+    @InSequence(350)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void testKeyToStringOnDepA() throws Exception {
+        Entity entity = createTestEntity("withKeyProp", 1);
+        entity.setProperty("serializedKey", KeyFactory.keyToString(entity.getKey()));
+        getService().put(entity);
+    }
+
+
+    @InSequence(360)
+    @Test
+    @OperateOnDeployment("dep2")
+    public void testKeyToStringOnDepB() throws Exception {
+        waitForSync();
+        Entity entity = getService().get(KeyFactory.createKey("withKeyProp", 1));
+        String serializedKey = (String)entity.getProperty("serializedKey");
+        Assert.assertEquals(KeyFactory.keyToString(entity.getKey()), serializedKey);
+        Assert.assertEquals(entity.getKey(), KeyFactory.stringToKey(serializedKey));
+        getService().delete(entity.getKey());
+    }
+
 
     @InSequence(1000)
     @Test
