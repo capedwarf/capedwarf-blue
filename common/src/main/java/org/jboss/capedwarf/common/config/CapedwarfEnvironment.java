@@ -33,11 +33,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import com.google.appengine.api.NamespaceManager;
-import com.google.appengine.api.backends.BackendService;
-import com.google.appengine.api.utils.SystemProperty;
-import com.google.apphosting.api.ApiProxy;
-import com.google.common.base.Function;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
@@ -45,6 +40,12 @@ import org.jboss.capedwarf.shared.config.BackendsXml;
 import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
 import org.jboss.capedwarf.shared.config.IndexesXml;
 import org.jboss.capedwarf.shared.config.QueueXml;
+
+import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.backends.BackendService;
+import com.google.appengine.api.utils.SystemProperty;
+import com.google.apphosting.api.ApiProxy;
+import com.google.common.base.Function;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -74,7 +75,8 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private final long requestStart;
     private final Map<String, Object> attributes;
 
-    private final Function<BackendsXml.Backend, String> ADDRESS_FN = new Function<BackendsXml.Backend, String>() {
+    private final transient Function<BackendsXml.Backend, String> ADDRESS_FN = new Function<BackendsXml.Backend, String>() {
+        @Override
         public String apply(BackendsXml.Backend input) {
             return getDefaultVersionHostname();
         }
@@ -133,11 +135,13 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
             throw new IllegalStateException("Execution taking too long: " + diff);
     }
 
+    @Override
     public String getAppId() {
         assertInitialized();
         return appEngineWebXml.getApplication();
     }
 
+    @Override
     public String getVersionId() {
         assertInitialized();
         return appEngineWebXml.getVersion();
@@ -148,14 +152,17 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
             throw new IllegalStateException("Application data has not been initialized. Was this method called AFTER GAEFilter did its job?");
     }
 
+    @Override
     public String getEmail() {
         return email;
     }
 
+    @Override
     public boolean isLoggedIn() {
         return email != null;
     }
 
+    @Override
     public boolean isAdmin() {
         return isLoggedIn() && isAdmin;
     }
@@ -164,18 +171,22 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
         isAdmin = admin;
     }
 
+    @Override
     public String getAuthDomain() {
         return authDomain;
     }
 
+    @Override
     public String getRequestNamespace() {
         return NamespaceManager.getGoogleAppsNamespace();
     }
 
+    @Override
     public Map<String, Object> getAttributes() {
         return attributes;
     }
 
+    @Override
     public long getRemainingMillis() {
         return requestStart + GLOBAL_TIME_LIMIT - System.currentTimeMillis();
     }
@@ -300,6 +311,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
             return setCapedwarfEnvironment(environment);
         } else {
             return AccessController.doPrivileged(new PrivilegedAction<CapedwarfEnvironment>() {
+                @Override
                 public CapedwarfEnvironment run() {
                     return setCapedwarfEnvironment(environment);
                 }
