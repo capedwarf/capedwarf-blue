@@ -25,7 +25,6 @@ package org.jboss.test.capedwarf.testsuite.common.test;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
-import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -51,24 +50,14 @@ public class BlackListTest extends TestBase {
         return getCapedwarfDeployment(TestContext.withBlackList());
     }
 
-    @Test
+    @Test(expected = NoClassDefFoundError.class)
     public void testDirectInitialization() throws Exception {
-        try {
-            context = new InitialContext();
-            Assert.fail("Should not be here!");
-        } catch (NoClassDefFoundError expected) {
-            log.info("expected = " + expected);
-        }
+        context = new InitialContext();
     }
 
-    @Test
+    @Test(expected = IllegalAccessException.class)
     public void testReflectionInitialization() throws Exception {
-        try {
-            Class<?> clazz = Class.forName(InitialContext.class.getName());
-            clazz.newInstance();
-            Assert.fail("Should not be here!");
-        } catch (IllegalAccessException expected) {
-            log.info("expected = " + expected);
-        }
+        Class<?> clazz = Class.forName(InitialContext.class.getName());
+        clazz.newInstance();
     }
 }
