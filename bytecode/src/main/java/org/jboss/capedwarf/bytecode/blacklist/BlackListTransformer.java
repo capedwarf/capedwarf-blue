@@ -50,10 +50,16 @@ public class BlackListTransformer implements ClassFileTransformer {
         ALLOWED_PACKAGES.add("org/jboss/capedwarf/");
         ALLOWED_PACKAGES.add("org.jboss.capedwarf.");
         // do not tranform GAE
-        ALLOWED_PACKAGES.add("com/google/appengine/");
-        ALLOWED_PACKAGES.add("com.google.appengine.");
-        ALLOWED_PACKAGES.add("com/google/apphosting/");
-        ALLOWED_PACKAGES.add("com.google.apphosting.");
+        ALLOWED_PACKAGES.add("com/google/appengine/spi/");
+        ALLOWED_PACKAGES.add("com.google.appengine.spi.");
+        ALLOWED_PACKAGES.add("com/google/appengine/api/");
+        ALLOWED_PACKAGES.add("com.google.appengine.api.");
+        ALLOWED_PACKAGES.add("com/google/appengine/tools/");
+        ALLOWED_PACKAGES.add("com.google.appengine.tools.");
+        ALLOWED_PACKAGES.add("com/google/apphosting/api/");
+        ALLOWED_PACKAGES.add("com.google.apphosting.api.");
+        ALLOWED_PACKAGES.add("com/google/apphosting/base/");
+        ALLOWED_PACKAGES.add("com.google.apphosting.base.");
         // we should be able to tests things
         ALLOWED_PACKAGES.add("org/junit/");
         ALLOWED_PACKAGES.add("org.junit.");
