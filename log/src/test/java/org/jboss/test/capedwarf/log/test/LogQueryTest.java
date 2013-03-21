@@ -138,6 +138,16 @@ public class LogQueryTest extends LoggingTestBase {
 
     @Test
     @InSequence(20)
+    public void testAllLogLinesReturnedForRequestRegardlessOfMinLogLevel() throws Exception {
+        LogQuery warnLogQuery = new LogQuery().includeAppLogs(true).minLogLevel(WARN);
+        // even though the log line "info_createCompleteRequest1" has a log level of INFO, it must be returned
+        // by a query with minLogLevel(WARN), because minLogLevel only determines what _RequestLogs_
+        // will be returned. Every RequestLogs returned should always contain all its log lines
+        assertLogQueryReturns("info_createCompleteRequest1", warnLogQuery);
+    }
+
+    @Test
+    @InSequence(20)
     public void testIncomplete() throws Exception {
         // GAE dev server doesn't handle this
         if (isRunningInsideGaeDevServer()) {
