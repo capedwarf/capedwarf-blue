@@ -30,6 +30,7 @@ package org.jboss.capedwarf.common.infinispan;
 public enum CacheName {
     DEFAULT("default"),
     DATA("data"),
+    LOGS("logs"),
     METADATA("metadata"),
     MEMCACHE("memcache"),
     DIST("dist"),
