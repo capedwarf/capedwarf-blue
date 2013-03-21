@@ -193,7 +193,7 @@ class CapedwarfLogService implements ExposedLogService {
 
         Query query = getQuery(queryBuilder, queries);
         CacheQuery cacheQuery = searchManager.getQuery(query, CapedwarfAppLogLine.class);
-        cacheQuery.sort(new Sort(new SortField(CapedwarfAppLogLine.TIME_USEC, SortField.LONG)));
+        cacheQuery.sort(new Sort(new SortField(CapedwarfAppLogLine.SEQUENCE_NUMBER, SortField.LONG)));
         return cacheQuery;
     }
 
@@ -211,7 +211,7 @@ class CapedwarfLogService implements ExposedLogService {
         if (ignoreLogging)
             return;
 
-        CapedwarfAppLogLine capedwarfAppLogLine = new CapedwarfAppLogLine(getCurrentRequestId());
+        CapedwarfAppLogLine capedwarfAppLogLine = new CapedwarfAppLogLine(getCurrentRequestId(), record.getSequenceNumber());
         AppLogLine appLogLine = capedwarfAppLogLine.getAppLogLine();
         appLogLine.setLogLevel(getLogLevel(record));
         appLogLine.setLogMessage(getFormattedMessage(record));

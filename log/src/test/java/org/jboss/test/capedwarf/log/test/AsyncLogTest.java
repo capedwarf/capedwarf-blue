@@ -22,18 +22,28 @@
 
 package org.jboss.test.capedwarf.log.test;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.appengine.api.log.AppLogLine;
+import com.google.appengine.api.log.LogQuery;
+import com.google.appengine.api.log.LogService;
+import com.google.appengine.api.log.LogServiceFactory;
+import com.google.appengine.api.log.RequestLogs;
+import com.google.apphosting.api.ApiProxy;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.JBoss;
-import org.jboss.test.capedwarf.common.test.TestBase;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test async logging.
@@ -42,12 +52,13 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Category(JBoss.class)
-public class AsyncLogTest extends TestBase {
+public class AsyncLogTest extends LoggingTestBase {
     @Deployment
     public static WebArchive getDeployment() throws Exception {
         TestContext context = TestContext.withLogging();
         context.getProperties().put("async.logging", "true");
         WebArchive war = getCapedwarfDeployment(context);
+        war.addClass(LoggingTestBase.class);
         war.addAsWebInfResource(new StringAsset("queueLength=512"), "logging-async.properties");
         return war;
     }
@@ -57,4 +68,28 @@ public class AsyncLogTest extends TestBase {
         Logger.getLogger(AsyncLogTest.class.getName()).warning("Async!");
         sync();
     }
+
+    @Test
+    public void testLogLinesAreReturnedInSameOrderAsTheyWereLogged() throws Exception {
+        int NUMBER_OF_LINES = 20;
+        for (int i=0; i< NUMBER_OF_LINES; i++) {
+            log.log(Level.INFO, "line " + i);
+        }
+        flush(log);
+        Thread.sleep(2000);
+
+        LogQuery logQuery = new LogQuery().requestIds(Collections.singletonList(getCurrentRequestId())).minLogLevel(LogService.LogLevel.INFO).includeAppLogs(true);
+        RequestLogs requestLogs = LogServiceFactory.getLogService().fetch(logQuery).iterator().next();
+
+        List<AppLogLine> appLogLines = requestLogs.getAppLogLines();
+        assertEquals("number of logged lines", NUMBER_OF_LINES, appLogLines.size());
+        for (int i=0; i< NUMBER_OF_LINES; i++) {
+            assertEquals("line " + i, appLogLines.get(i).getLogMessage());
+        }
+    }
+
+    private String getCurrentRequestId() {
+        return (String) ApiProxy.getCurrentEnvironment().getAttributes().get("com.google.appengine.runtime.request_log_id");
+    }
+
 }

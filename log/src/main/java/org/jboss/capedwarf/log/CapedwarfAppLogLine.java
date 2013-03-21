@@ -20,15 +20,18 @@ import org.hibernate.search.annotations.ProvidedId;
 public class CapedwarfAppLogLine extends CapedwarfLogElement implements Externalizable {
 
     public static final String TIME_USEC = "timeUsec";
+    public static final String SEQUENCE_NUMBER = "sequenceNumber";
 
     private String requestId;
+    private long sequenceNumber;
     private AppLogLine appLogLine = new AppLogLine();
 
     public CapedwarfAppLogLine() {
     }
 
-    public CapedwarfAppLogLine(String requestId) {
+    public CapedwarfAppLogLine(String requestId, long sequenceNumber) {
         this.requestId = requestId;
+        this.sequenceNumber = sequenceNumber;
     }
 
     public String getRequestId() {
@@ -45,10 +48,17 @@ public class CapedwarfAppLogLine extends CapedwarfLogElement implements External
         return appLogLine.getTimeUsec();
     }
 
+    @NumericField
+    @Field(name = SEQUENCE_NUMBER)
+    public long getSequenceNumber() {
+        return sequenceNumber;
+    }
+
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeInt(1);    // version
         out.writeUTF(requestId);
+        out.writeLong(sequenceNumber);
         out.writeInt(appLogLine.getLogLevel().ordinal());
         out.writeUTF(appLogLine.getLogMessage());
         out.writeLong(appLogLine.getTimeUsec());
@@ -59,6 +69,7 @@ public class CapedwarfAppLogLine extends CapedwarfLogElement implements External
         int version = in.readInt();
         if (version == 1) {
             requestId = in.readUTF();
+            sequenceNumber = in.readLong();
             appLogLine.setLogLevel(LogService.LogLevel.values()[in.readInt()]);
             appLogLine.setLogMessage(in.readUTF());
             appLogLine.setTimeUsec(in.readLong());
