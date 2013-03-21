@@ -26,9 +26,7 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -98,22 +96,14 @@ class CapedwarfLogService implements ExposedLogService {
 
     public Iterable<RequestLogs> fetch(LogQuery logQuery) {
         List<RequestLogs> list = new ArrayList<RequestLogs>();
-
-        Map<String, RequestLogs> map = fetchRequestLogs(logQuery, list);
-        if (logQuery.getIncludeAppLogs()) {
-            fetchAppLogLines(logQuery, map);
-        }
-        return list;
-    }
-
-    private Map<String, RequestLogs> fetchRequestLogs(LogQuery logQuery, List<RequestLogs> list) {
-        Map<String, RequestLogs> map = new HashMap<String, RequestLogs>();
         for (CapedwarfRequestLogs capedwarfRequestLogs : fetchCapedwarfRequestLogs(logQuery)) {
             RequestLogs requestLogs = capedwarfRequestLogs.getRequestLogs();
-            map.put(requestLogs.getRequestId(), requestLogs);
+            if (logQuery.getIncludeAppLogs()) {
+                fetchAppLogLines(requestLogs, logQuery);
+            }
             list.add(requestLogs);
         }
-        return map;
+        return list;
     }
 
     private List<CapedwarfRequestLogs> fetchCapedwarfRequestLogs(LogQuery logQuery) {
@@ -168,30 +158,19 @@ class CapedwarfLogService implements ExposedLogService {
         }
     }
 
-    private void fetchAppLogLines(LogQuery logQuery, Map<String, RequestLogs> map) {
-        CacheQuery query = createAppLogLinesQuery(logQuery);
+    private void fetchAppLogLines(RequestLogs requestLogs, LogQuery logQuery) {
+        CacheQuery query = createAppLogLinesQuery(requestLogs);
 //        FetchOptions fetchOptions = createAppLogFetchOptions(logQuery);
 
         List<CapedwarfAppLogLine> capedwarfAppLogLines = (List<CapedwarfAppLogLine>) (List) query.list();
         for (CapedwarfAppLogLine capedwarfAppLogLine : capedwarfAppLogLines) {
-            RequestLogs requestLogs = map.get(capedwarfAppLogLine.getRequestId());
-            if (requestLogs != null) {
-                requestLogs.getAppLogLines().add(capedwarfAppLogLine.getAppLogLine());
-            }
+            requestLogs.getAppLogLines().add(capedwarfAppLogLine.getAppLogLine());
         }
     }
 
-    private CacheQuery createAppLogLinesQuery(LogQuery logQuery) {
+    private CacheQuery createAppLogLinesQuery(RequestLogs requestLogs) {
         QueryBuilder queryBuilder = searchManager.buildQueryBuilderForClass(CapedwarfAppLogLine.class).get();
-        List<Query> queries = new ArrayList<Query>();
-        if (logQuery.getStartTimeUsec() != null) {
-            queries.add(queryBuilder.range().onField(CapedwarfAppLogLine.TIME_USEC).above(logQuery.getStartTimeUsec()).createQuery());
-        }
-        if (logQuery.getEndTimeUsec() != null) {
-            queries.add(queryBuilder.range().onField(CapedwarfAppLogLine.TIME_USEC).below(logQuery.getEndTimeUsec()).createQuery());
-        }
-
-        Query query = getQuery(queryBuilder, queries);
+        Query query = queryBuilder.keyword().onField(CapedwarfAppLogLine.REQUEST_ID).matching(requestLogs.getRequestId()).createQuery();
         CacheQuery cacheQuery = searchManager.getQuery(query, CapedwarfAppLogLine.class);
         cacheQuery.sort(new Sort(new SortField(CapedwarfAppLogLine.SEQUENCE_NUMBER, SortField.LONG)));
         return cacheQuery;

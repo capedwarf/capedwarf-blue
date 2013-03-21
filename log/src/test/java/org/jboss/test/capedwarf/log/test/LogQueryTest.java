@@ -90,8 +90,11 @@ public class LogQueryTest extends LoggingTestBase {
     @Test
     @InSequence(2)
     public void createCompleteRequest2() throws Exception {
+        log.info("info_createCompleteRequest2");
+        Thread.sleep(1000); // increase separation between previous log message and request2Timestamp
         request2Timestamp = System.currentTimeMillis();
         request2Id = getCurrentRequestId();
+        Thread.sleep(1000); // increase separation between request2Timestamp and following log message
         log.severe("severe_createCompleteRequest2");
         flush(log);
     }
@@ -113,6 +116,7 @@ public class LogQueryTest extends LoggingTestBase {
         LogQuery debugLogQuery = new LogQuery().includeAppLogs(true).includeIncomplete(true).minLogLevel(DEBUG);
         assertLogQueryReturns("info_createCompleteRequest1", debugLogQuery);
         assertLogQueryReturns("warning_createCompleteRequest1", debugLogQuery);
+        assertLogQueryReturns("info_createCompleteRequest2", debugLogQuery);
         assertLogQueryReturns("severe_createCompleteRequest2", debugLogQuery);
         assertLogQueryReturns("info_createCompleteRequest3", debugLogQuery);
         assertLogQueryReturns("info_incompleteRequest", debugLogQuery);
@@ -184,6 +188,16 @@ public class LogQueryTest extends LoggingTestBase {
         assertTrue(requestIds.contains(request1Id));
         assertFalse(requestIds.contains(request2Id));  // request2 ended after request2Timestamp, so it should not be included in the result list
         assertFalse(requestIds.contains(request3Id));
+    }
+
+    @Test
+    @InSequence(20)
+    public void testAllLogLinesReturnedForRequestRegardlessOfStartAndEndTimeMillis() throws Exception {
+        LogQuery logQuery = new LogQuery().includeAppLogs(true).startTimeMillis(request2Timestamp);
+        // even though the log line "info_createCompleteRequest2" was logged before request2Timestamp,
+        // it should still be returned by the query, because startTimeMillis only determines what _RequestLogs_
+        // will be returned. Every RequestLogs returned should always contain all its log lines
+        assertLogQueryReturns("info_createCompleteRequest2", logQuery);
     }
 
     private Set<String> getRequestIds(LogQuery logQuery) {

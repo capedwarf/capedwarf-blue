@@ -7,10 +7,13 @@ import java.io.ObjectOutput;
 
 import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogService;
+import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Norms;
 import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.ProvidedId;
+import org.hibernate.search.annotations.TermVector;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -19,7 +22,7 @@ import org.hibernate.search.annotations.ProvidedId;
 @ProvidedId
 public class CapedwarfAppLogLine extends CapedwarfLogElement implements Externalizable {
 
-    public static final String TIME_USEC = "timeUsec";
+    public static final String REQUEST_ID = "requestId";
     public static final String SEQUENCE_NUMBER = "sequenceNumber";
 
     private String requestId;
@@ -34,18 +37,13 @@ public class CapedwarfAppLogLine extends CapedwarfLogElement implements External
         this.sequenceNumber = sequenceNumber;
     }
 
+    @Field(name = REQUEST_ID, analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)
     public String getRequestId() {
         return requestId;
     }
 
     public AppLogLine getAppLogLine() {
         return appLogLine;
-    }
-
-    @NumericField
-    @Field(name = TIME_USEC)
-    public long getTimeUsec() {
-        return appLogLine.getTimeUsec();
     }
 
     @NumericField
