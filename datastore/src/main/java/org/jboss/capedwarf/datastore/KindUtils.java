@@ -35,7 +35,6 @@ public final class KindUtils {
     }
 
     public static enum Type {
-        LOG(new LogMatcher()),
         STATS(new StatsMatcher()),
         METADATA(new MetadataMatcher());
 
@@ -96,20 +95,6 @@ public final class KindUtils {
      */
     public static boolean isSpecial(String kind) {
         return match(kind, Type.values());
-    }
-
-    private static class LogMatcher implements Matcher {
-        // TODO -- dup from log service
-        private static final String LOG_REQUEST_ENTITY_KIND = "__org.jboss.capedwarf.LogRequest__";
-        private static final String LOG_LINE_ENTITY_KIND = "__org.jboss.capedwarf.LogLine__";
-
-        public boolean match(String kind) {
-            return LOG_REQUEST_ENTITY_KIND.equals(kind) || LOG_LINE_ENTITY_KIND.equals(kind);
-        }
-
-        public boolean inProgress() {
-            return false;
-        }
     }
 
     private static class StatsMatcher implements Matcher {
