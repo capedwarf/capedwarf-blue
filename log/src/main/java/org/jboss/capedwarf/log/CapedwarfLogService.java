@@ -49,6 +49,7 @@ import org.infinispan.query.FetchOptions;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
+import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.CacheName;
@@ -60,7 +61,6 @@ import org.jboss.capedwarf.shared.compatibility.Compatibility;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class CapedwarfLogService implements ExposedLogService {
-
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z");
 
     private static final String REQUEST_LOGS_REQUEST_ATTRIBUTE = "__org.jboss.capedwarf.LogRequest__";
@@ -74,8 +74,7 @@ class CapedwarfLogService implements ExposedLogService {
     private final LogWriter logWriter;
 
     public CapedwarfLogService() {
-
-        String appId = CapedwarfEnvironment.getThreadLocalInstance().getAppId();
+        String appId = Application.getAppId();
         store = InfinispanUtils.<String, CapedwarfLogElement>getCache(appId, CacheName.LOGS)
             .getAdvancedCache()
             .withFlags(Flag.IGNORE_RETURN_VALUES);
@@ -90,6 +89,7 @@ class CapedwarfLogService implements ExposedLogService {
         }
     }
 
+    @SuppressWarnings("UnusedParameters")
     private String getLogLineKey(CapedwarfAppLogLine logLine) {
         return generateId();
     }
@@ -106,6 +106,7 @@ class CapedwarfLogService implements ExposedLogService {
         return list;
     }
 
+    @SuppressWarnings("unchecked")
     private List<CapedwarfRequestLogs> fetchCapedwarfRequestLogs(LogQuery logQuery) {
         if (logQuery.getRequestIds().isEmpty()) {
             CacheQuery cacheQuery = createRequestLogsQuery(logQuery);
@@ -158,6 +159,7 @@ class CapedwarfLogService implements ExposedLogService {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void fetchAppLogLines(RequestLogs requestLogs, LogQuery logQuery) {
         CacheQuery query = createAppLogLinesQuery(requestLogs);
 //        FetchOptions fetchOptions = createAppLogFetchOptions(logQuery);
