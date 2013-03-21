@@ -23,7 +23,9 @@
 package org.jboss.test.capedwarf.log.test;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.log.LogQuery;
@@ -46,6 +48,7 @@ import static com.google.appengine.api.log.LogService.LogLevel.ERROR;
 import static com.google.appengine.api.log.LogService.LogLevel.WARN;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -59,6 +62,7 @@ public class LogQueryTest extends LoggingTestBase {
     private static String request1Id;
     private static String request2Id;
     private static String request3Id;
+    private static long request2Timestamp;
 
     @Deployment
     public static WebArchive getDeployment() {
@@ -86,6 +90,7 @@ public class LogQueryTest extends LoggingTestBase {
     @Test
     @InSequence(2)
     public void createCompleteRequest2() throws Exception {
+        request2Timestamp = System.currentTimeMillis();
         request2Id = getCurrentRequestId();
         log.severe("severe_createCompleteRequest2");
         flush(log);
@@ -159,6 +164,34 @@ public class LogQueryTest extends LoggingTestBase {
         iterator = service.fetch(logQuery).iterator();
         assertEquals(request2Id, iterator.next().getRequestId());
         assertFalse(iterator.hasNext());
+    }
+
+    @Test
+    @InSequence(20)
+    public void testStartTimeMillis() throws Exception {
+        LogQuery logQuery = new LogQuery().startTimeMillis(request2Timestamp);
+        Set<String> requestIds = getRequestIds(logQuery);
+        assertFalse(requestIds.contains(request1Id));
+        assertTrue(requestIds.contains(request2Id));  // request2 ended after request2Timestamp, so it should be included in the result list
+        assertTrue(requestIds.contains(request3Id));
+    }
+
+    @Test
+    @InSequence(20)
+    public void testEndTimeMillis() throws Exception {
+        LogQuery logQuery = new LogQuery().endTimeMillis(request2Timestamp);
+        Set<String> requestIds = getRequestIds(logQuery);
+        assertTrue(requestIds.contains(request1Id));
+        assertFalse(requestIds.contains(request2Id));  // request2 ended after request2Timestamp, so it should not be included in the result list
+        assertFalse(requestIds.contains(request3Id));
+    }
+
+    private Set<String> getRequestIds(LogQuery logQuery) {
+        Set<String> requestIds = new HashSet<String>();
+        for (RequestLogs requestLogs : LogServiceFactory.getLogService().fetch(logQuery)) {
+            requestIds.add(requestLogs.getRequestId());
+        }
+        return requestIds;
     }
 
     private String getCurrentRequestId() {
