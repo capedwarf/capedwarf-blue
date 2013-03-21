@@ -169,14 +169,17 @@ class Projections {
                 if (projection instanceof PropertyProjection) {
                     PropertyProjection pp = (PropertyProjection) projection;
                     String propertyName = pp.getName();
+                    Object value;
                     Bridge bridge = getBridge(propertyName, bridges);
-                    Class<?> type = pp.getType();
-                    if (type != null && bridge.isAssignableTo(type) == false) {
-                        throw new IllegalArgumentException("Wrong projection type: " + pp);
-                    }
-                    Object value = convert(bridge, row[i]);
                     if (mustBeWrappedInRawValue(pp)) {
+                        value = bridge.getValue((String) row[i]);
                         value = newRawValue(value);
+                    } else {
+                        Class<?> type = pp.getType();
+                        if (type != null && bridge.isAssignableTo(type) == false) {
+                            throw new IllegalArgumentException("Wrong projection type: " + pp);
+                        }
+                        value = convert(bridge, row[i]);
                     }
                     entity.setProperty(propertyName, value);
                 } else {
@@ -235,8 +238,8 @@ class Projections {
         return o;
     }
 
-    private static RawValue newRawValue(Object o) {
-        return ReflectionUtils.newInstance(RawValue.class, new Class[]{Object.class}, new Object[]{o});
+    private static RawValue newRawValue(Object value) {
+        return ReflectionUtils.newInstance(RawValue.class, new Class[]{Object.class}, new Object[]{value});
     }
 
     private static Bridge getBridge(String propertyName, Properties bridges) {

@@ -24,24 +24,44 @@ package org.jboss.test.capedwarf.datastore.test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.datastore.Blob;
+import com.google.appengine.api.datastore.Category;
+import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.GeoPt;
+import com.google.appengine.api.datastore.IMHandle;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Link;
+import com.google.appengine.api.datastore.PhoneNumber;
+import com.google.appengine.api.datastore.PostalAddress;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.PropertyProjection;
 import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Rating;
 import com.google.appengine.api.datastore.RawValue;
+import com.google.appengine.api.datastore.ShortBlob;
+import com.google.appengine.api.datastore.Text;
+import com.google.appengine.api.users.User;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.IN;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * Datastore querying optimizations tests.
@@ -50,8 +70,11 @@ import static org.junit.Assert.assertNull;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @RunWith(Arquillian.class)
-@Category(All.class)
+@org.junit.experimental.categories.Category(All.class)
 public class QueryOptimizationsTest extends QueryTestBase {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void testKeysOnly() throws Exception {
@@ -140,22 +163,271 @@ public class QueryOptimizationsTest extends QueryTestBase {
         assertEquals(Collections.singletonList(e1), results);
     }
 
+    @SuppressWarnings("UnnecessaryBoxing")
     @Test
-    public void testProjectionsWithoutType() throws Exception {
-        Entity e = createEntity("Product", 1)
-                .withProperty("long", 123L)
-                .store();
+    public void testLongRawValue() throws Exception {
+        RawValue raw = getRawValue(1000L);
+        assertEquals(Long.valueOf(1000L), raw.getValue());
+        assertEquals(Long.valueOf(1000L), raw.asStrictType(Long.class));
+        assertEquals(Long.valueOf(1000L), raw.asType(Long.class));
+        assertEquals(Long.valueOf(1000L), raw.asType(Integer.class));
+        assertEquals(Long.valueOf(1000L), raw.asType(Short.class));
+        assertEquals(Long.valueOf(1000L), raw.asType(Byte.class));
+        assertEquals(new Date(1), raw.asType(Date.class));
+        assertEquals(new Date(1), raw.asStrictType(Date.class));
+        assertIAEThrownByAsStrictType(raw, Byte.class, Short.class, Integer.class);
+        assertIAEThrownByBothAsTypeMethodsForAllTypesExceptFor(raw, Byte.class, Short.class, Integer.class, Long.class, Date.class);
+    }
 
-        Query query = new Query("Product")
-                .addProjection(new PropertyProjection("long", null));
+    @Test
+    public void testRatingRawValue() throws Exception {
+        RawValue raw = getRawValue(new Rating(10));
+        assertEquals(10L, raw.getValue());
+        assertEquals(new Rating(10), raw.asStrictType(Rating.class));
+        assertEquals(new Rating(10), raw.asType(Rating.class));
+        assertEquals(Long.valueOf(10L), raw.asStrictType(Long.class));
+        assertEquals(10L, raw.asType(Long.class));
+        assertEquals(10L, raw.asType(Integer.class));
+        assertEquals(10L, raw.asType(Short.class));
+        assertEquals(10L, raw.asType(Byte.class));
+        assertEquals(new Date(0), raw.asType(Date.class));
+//        assertEquals(new Date(0), raw.asStrictType(Date.class));  TODO: check against appspot
+        assertIAEThrownByAsStrictType(raw, Byte.class, Short.class, Integer.class);
+        assertIAEThrownByBothAsTypeMethodsForAllTypesExceptFor(raw, Byte.class, Short.class, Integer.class, Long.class, Date.class, Rating.class);
+    }
+
+    @Test
+    public void testDateRawValue() throws Exception {
+        Date now = new Date();
+        long microSeconds = now.getTime() * 1000;
+        RawValue raw = getRawValue(now);
+        assertEquals(microSeconds, raw.getValue());
+        assertEquals(now, raw.asStrictType(Date.class));
+        assertEquals(now, raw.asType(Date.class));
+        assertEquals(Long.valueOf(microSeconds), raw.asStrictType(Long.class));
+        assertEquals(microSeconds, raw.asType(Long.class));
+        assertEquals(microSeconds, raw.asType(Integer.class));
+        assertEquals(microSeconds, raw.asType(Short.class));
+        assertEquals(microSeconds, raw.asType(Byte.class));
+        assertIAEThrownByAsStrictType(raw, Byte.class, Short.class, Integer.class);
+        assertIAEThrownByBothAsTypeMethodsForAllTypesExceptFor(raw, Byte.class, Short.class, Integer.class, Long.class, Date.class);
+    }
+
+    @Test
+    public void testDoubleRawValue() throws Exception {
+        RawValue raw = getRawValue(2.0);
+        assertEquals(2.0, raw.getValue());
+        assertEquals(Double.valueOf(2.0), raw.asStrictType(Double.class));
+        assertEquals(2.0, raw.asType(Double.class));
+        assertIAEThrownByAsStrictType(raw, Float.class);
+        assertEquals(2.0, raw.asType(Float.class));
+        assertIAEThrownByBothAsTypeMethodsForAllTypesExceptFor(raw, Double.class, Float.class);
+    }
+
+    @Test
+    public void testStringRawValue() throws Exception {
+        String string = "sip string";
+        RawValue raw = getRawValue(string);
+        assertEquals(byte[].class, raw.getValue().getClass());
+        assertArrayEquals(string.getBytes(), (byte[]) raw.getValue());
+        assertEquals(string, raw.asType(String.class));
+        assertEquals(string, raw.asStrictType(String.class));
+        assertEquals(new Text(string), raw.asType(Text.class));
+        assertEquals(new Text(string), raw.asStrictType(Text.class));
+        assertEquals(new Link(string), raw.asType(Link.class));
+        assertEquals(new Link(string), raw.asStrictType(Link.class));
+        assertEquals(new ShortBlob(string.getBytes()), raw.asType(ShortBlob.class));
+//        assertEquals(new Blob(string.getBytes()), raw.asType(Blob.class));  // TODO: check against appspot
+        assertEquals(new Category(string), raw.asType(Category.class));
+        assertEquals(new PhoneNumber(string), raw.asType(PhoneNumber.class));
+        assertEquals(new PostalAddress(string), raw.asType(PostalAddress.class));
+        assertEquals(new Email(string), raw.asType(Email.class));
+        assertEquals(new IMHandle(IMHandle.Scheme.sip, "string"), raw.asType(IMHandle.class));
+        assertEquals(new Link(string), raw.asType(Link.class));
+        assertEquals(new BlobKey(string), raw.asType(BlobKey.class));
+        assertIAEThrownByBothAsTypeMethods(raw, Byte.class, Short.class, Integer.class, Long.class,
+            Float.class, Double.class, Boolean.class, Date.class,
+            GeoPt.class, User.class, Rating.class, Key.class);
+    }
+
+    @Test
+    public void testNumericStringRawValue() throws Exception {
+        RawValue raw = getRawValue("123");
+        assertEquals(byte[].class, raw.getValue().getClass());
+        assertArrayEquals("123".getBytes(), (byte[]) raw.getValue());
+        assertIAEThrownByBothAsTypeMethods(raw, Integer.class, Long.class, Float.class, Double.class, Date.class);
+    }
+
+    @Test
+    public void testPhoneNumberRawValue() throws Exception {
+        String string = "123";
+        RawValue raw = getRawValue(new PhoneNumber(string));
+        assertEquals(byte[].class, raw.getValue().getClass());
+        assertArrayEquals(string.getBytes(), (byte[]) raw.getValue());
+        assertEquals(new PhoneNumber(string), raw.asStrictType(PhoneNumber.class));
+        assertEquals(new PhoneNumber(string), raw.asType(PhoneNumber.class));
+        assertEquals(new Text(string), raw.asType(Text.class));
+        assertEquals(new Text(string), raw.asStrictType(Text.class));
+        assertEquals(new Link(string), raw.asType(Link.class));
+        assertEquals(new Link(string), raw.asStrictType(Link.class));
+        assertEquals(new ShortBlob(string.getBytes()), raw.asType(ShortBlob.class));
+//        assertEquals(new Blob(string.getBytes()), raw.asType(Blob.class)); // TODO: check against appspot
+        assertEquals(new Category(string), raw.asType(Category.class));
+        assertEquals(new PhoneNumber(string), raw.asType(PhoneNumber.class));
+        assertEquals(new PostalAddress(string), raw.asType(PostalAddress.class));
+        assertEquals(new Email(string), raw.asType(Email.class));
+        assertEquals(new Link(string), raw.asType(Link.class));
+        assertEquals(new BlobKey(string), raw.asType(BlobKey.class));
+        assertIAEThrownByBothAsTypeMethods(raw, Byte.class, Short.class, Integer.class, Long.class,
+            Float.class, Double.class, Boolean.class, Date.class,
+            GeoPt.class, User.class, Rating.class, Key.class);
+    }
+
+    @Test
+    public void testBooleanRawValue() throws Exception {
+        RawValue raw = getRawValue(true);
+        assertEquals(true, raw.getValue());
+        assertEquals(true, raw.asStrictType(Boolean.class));
+        assertEquals(true, raw.asType(Boolean.class));
+        assertIAEThrownByBothAsTypeMethodsForAllTypesExceptFor(raw, Boolean.class);
+    }
+
+    @Test
+    public void testUserRawValue() throws Exception {
+        User user = new User("someone@gmail.com", "gmail.com");
+        RawValue raw = getRawValue(user);
+        assertEquals(user, raw.getValue());
+        assertEquals(user, raw.asStrictType(User.class));
+        assertEquals(user, raw.asType(User.class));
+        assertIAEThrownByBothAsTypeMethodsForAllTypesExceptFor(raw, User.class);
+    }
+
+    @Test
+    public void testKeyRawValue() throws Exception {
+        Key key = KeyFactory.createKey("kind", 1);
+        RawValue raw = getRawValue(key);
+        assertEquals(key, raw.getValue());
+        assertEquals(key, raw.asStrictType(Key.class));
+        assertEquals(key, raw.asType(Key.class));
+        assertIAEThrownByBothAsTypeMethodsForAllTypesExceptFor(raw, Key.class);
+    }
+
+    @Test
+    public void testGeoPtRawValue() throws Exception {
+        GeoPt geoPt = new GeoPt(1f, 2f);
+        RawValue raw = getRawValue(geoPt);
+        assertEquals(geoPt, raw.getValue());
+        assertEquals(geoPt, raw.asStrictType(GeoPt.class));
+        assertEquals(geoPt, raw.asType(GeoPt.class));
+        assertIAEThrownByBothAsTypeMethodsForAllTypesExceptFor(raw, GeoPt.class);
+    }
+
+    @Ignore("verify test against appspot")
+    @Test
+    public void testBlobKeyRawValue() throws Exception {
+        BlobKey blobKey = new BlobKey("123");
+        RawValue raw = getRawValue(blobKey);
+        assertEquals(byte[].class, raw.getValue().getClass());
+        assertArrayEquals("123".getBytes(), (byte[]) raw.getValue());
+        assertEquals(blobKey, raw.asStrictType(BlobKey.class));
+        assertEquals(blobKey, raw.asType(BlobKey.class));
+        assertIAEThrownByBothAsTypeMethods(raw, Byte.class, Short.class, Integer.class, Long.class,
+            Float.class, Double.class, Boolean.class, Date.class,
+            GeoPt.class, User.class, Rating.class, Key.class);
+    }
+
+    @Test
+    public void testRawValueReturnsByteArrayValueForAllStringTypes() throws Exception {
+        // NOTE: Text and Blob types are not indexed
+        assertEquals(byte[].class, getRawValue("string").getValue().getClass());
+        assertEquals(byte[].class, getRawValue(new ShortBlob("string".getBytes())).getValue().getClass());
+        assertEquals(byte[].class, getRawValue(new PostalAddress("string")).getValue().getClass());
+        assertEquals(byte[].class, getRawValue(new PhoneNumber("string")).getValue().getClass());
+        assertEquals(byte[].class, getRawValue(new Email("string")).getValue().getClass());
+        assertEquals(byte[].class, getRawValue(new IMHandle(IMHandle.Scheme.sip, "string")).getValue().getClass());
+        assertEquals(byte[].class, getRawValue(new Link("string")).getValue().getClass());
+        assertEquals(byte[].class, getRawValue(new Category("string")).getValue().getClass());
+    }
+
+    @Test
+    public void testByteArrayReturnedByStringRawValueHasUTF8Encoding() throws Exception {
+        assertArrayEquals("čćž".getBytes("UTF-8"), (byte[]) getRawValue("čćž").getValue());
+    }
+
+    private RawValue getRawValue(Object value) {
+        Entity e = createEntity("RawValueTest", 1)
+            .withProperty("prop", value)
+            .store();
+
+        Query query = new Query("RawValueTest")
+            .addProjection(new PropertyProjection("prop", null));
 
         PreparedQuery preparedQuery = service.prepare(query);
         Entity result = preparedQuery.asSingleEntity();
         assertEquals(e.getKey(), result.getKey());
 
-        RawValue rawValue = (RawValue) result.getProperty("long");
-        assertEquals(Long.valueOf(123L), rawValue.asType(Long.class));
-        assertEquals(Long.valueOf(123L), rawValue.asStrictType(Long.class));
+        return (RawValue) result.getProperty("prop");
+    }
+
+    private void assertIAEThrownByBothAsTypeMethodsForAllTypesExceptFor(RawValue raw, Class<?>... types) {
+        HashSet<Class<?>> allTypes = new HashSet<Class<?>>(Arrays.asList((Class<?>)
+            Byte.class, Short.class, Integer.class, Long.class,
+            Float.class, Double.class,
+            Boolean.class, Date.class,
+            String.class, Text.class, ShortBlob.class, Blob.class, GeoPt.class, PostalAddress.class, PhoneNumber.class,
+            Email.class, User.class, IMHandle.class, Link.class, Category.class, Rating.class, Key.class, BlobKey.class));
+
+        allTypes.removeAll(Arrays.asList(types));
+
+        assertIAEThrownByBothAsTypeMethods(raw, allTypes.toArray(new Class[allTypes.size()]));
+    }
+
+    private void assertIAEThrownByBothAsTypeMethods(RawValue rawValue, Class<?>... types) {
+        assertIAEThrownByAsStrictType(rawValue, types);
+        assertIAEThrownByAsType(rawValue, types);
+    }
+
+    private void assertIAEThrownByAsType(RawValue rawValue, Class<?>... types) {
+        for (Class<?> type : types) {
+            assertIAEThrownByAsType(rawValue, type);
+        }
+    }
+
+    private void assertIAEThrownByAsType(RawValue rawValue, Class<?> type) {
+        try {
+            rawValue.asType(type);
+            fail("Expected RawValue.asType(" + type.getSimpleName() + ") to throw IllegalArgumentException");
+        } catch (IllegalArgumentException ok) {
+        }
+    }
+
+    private void assertIAEThrownByAsStrictType(RawValue rawValue, Class<?>... types) {
+        for (Class<?> type : types) {
+            assertIAEThrownByAsStrictType(rawValue, type);
+        }
+    }
+
+    private void assertIAEThrownByAsStrictType(RawValue rawValue, Class<?> type) {
+        try {
+            rawValue.asStrictType(type);
+            fail("Expected RawValue.asStrictType(" + type.getSimpleName() + ") to throw IllegalArgumentException");
+        } catch (IllegalArgumentException ok) {
+        }
+    }
+
+    @Test
+    public void testProjectionTypeMismatch() throws Exception {
+        Entity e = createEntity("foo", 1)
+            .withProperty("stringProperty", "foo")
+            .store();
+
+        Query query = new Query("foo")
+            .addProjection(new PropertyProjection("stringProperty", Integer.class));
+
+        PreparedQuery preparedQuery = service.prepare(query);
+
+        thrown.expect(IllegalArgumentException.class);
+        preparedQuery.asSingleEntity();
     }
 
     @Ignore("CAPEDWARF-67")
