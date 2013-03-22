@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import com.google.appengine.api.log.LogServiceFactory;
-import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.security.PrincipalInfo;
@@ -51,13 +50,6 @@ import org.jboss.capedwarf.shared.config.QueueXml;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class GAEListener extends ConfigurationAware implements ServletContextListener, ServletRequestListener {
-
-    static {
-        synchronized (ApiProxy.class) {
-            ApiProxy.setDelegate(CapedwarfDelegate.INSTANCE);
-        }
-    }
-
     private volatile ExposedLogService logService;
 
     // Invoked from CapedwarfSetupAction -- do not change signatures; reflection usage!
