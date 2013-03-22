@@ -27,6 +27,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.jboss.test.capedwarf.common.test.TestContext;
+import org.jboss.test.capedwarf.testsuite.LibUtils;
 import org.jboss.test.capedwarf.testsuite.init.support.InitTestFilter;
 import org.jboss.test.capedwarf.testsuite.init.support.InitTestListener;
 import org.junit.Test;
@@ -44,6 +45,8 @@ public class InitTest extends TestBase {
         WebArchive war = getCapedwarfDeployment(context);
         war.addClass(InitTestFilter.class);
         war.addClass(InitTestListener.class);
+        LibUtils.addGaeAsLibrary(war);
+        LibUtils.addLibrary(war, "com.google.appengine:appengine-api-labs");
         return war;
     }
 
