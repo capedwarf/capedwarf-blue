@@ -1,6 +1,6 @@
 package org.jboss.capedwarf.mail;
 
-import com.google.appengine.api.mail.MailService;
+import java.util.Collection;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -8,9 +8,14 @@ import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
-import javax.mail.internet.*;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import java.util.Collection;
+
+import com.google.appengine.api.mail.MailService;
 
 /**
  * Converts GAE Message to JavaMail Message
@@ -54,8 +59,16 @@ public class MessageConverter {
 
     private MimeMultipart createMimeMultiPart() throws MessagingException {
         MimeMultipart mimeMultipart = new MimeMultipart();
-        mimeMultipart.addBodyPart(createHtmlBodyPart());
-        mimeMultipart.addBodyPart(createTextBodyPart());
+
+        String htmlBody = message.getHtmlBody();
+        if (htmlBody != null) {
+            mimeMultipart.addBodyPart(createHtmlBodyPart(htmlBody));
+        }
+
+        String textBody = message.getTextBody();
+        if (textBody != null) {
+            mimeMultipart.addBodyPart(createTextBodyPart(textBody));
+        }
 
         if (message.getAttachments() != null) {
             for (MailService.Attachment attachment : message.getAttachments()) {
@@ -75,15 +88,15 @@ public class MessageConverter {
         return bodyPart;
     }
 
-    private MimeBodyPart createTextBodyPart() throws MessagingException {
+    private MimeBodyPart createTextBodyPart(String body) throws MessagingException {
         MimeBodyPart textBodyPart = new MimeBodyPart();
-        textBodyPart.setText(message.getTextBody());
+        textBodyPart.setText(body);
         return textBodyPart;
     }
 
-    private MimeBodyPart createHtmlBodyPart() throws MessagingException {
+    private MimeBodyPart createHtmlBodyPart(String body) throws MessagingException {
         MimeBodyPart htmlBodyPart = new MimeBodyPart();
-        htmlBodyPart.setContent(message.getHtmlBody(), "text/html");
+        htmlBodyPart.setContent(body, "text/html");
         return htmlBodyPart;
     }
 
