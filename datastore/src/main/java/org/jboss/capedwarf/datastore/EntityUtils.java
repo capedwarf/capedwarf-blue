@@ -43,11 +43,6 @@ public class EntityUtils {
         Entity clone = entity.clone();
         // apply checked key hack
         DatastoreServiceImpl.applyKeyChecked(entity, clone);
-        // we always need version
-        if (clone.hasProperty(Entity.VERSION_RESERVED_PROPERTY) == false) {
-            // set to zero, it should be fixed in VersioningListener
-            clone.setProperty(Entity.VERSION_RESERVED_PROPERTY, 0L);
-        }
         return clone;
     }
 }
