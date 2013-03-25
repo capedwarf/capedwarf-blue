@@ -61,7 +61,6 @@ public class MetadataListener extends AbstractPutRemoveCacheListener implements 
             executeCallable(new NamespaceMetadataTask(trigger.getNamespace()));
             executeCallable(new KindMetadataTask(trigger.getKind(), trigger.getNamespace()));
             executeCallable(new PropertyMetadataTask(trigger));
-            executeCallable(new EntityGroupMetadataTask(trigger));
         } finally {
             MetadataQueryTypeFactory.setFlag(false);
         }

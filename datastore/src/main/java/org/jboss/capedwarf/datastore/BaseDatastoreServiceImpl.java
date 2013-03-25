@@ -65,6 +65,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
     protected final String appId;
     protected final AdvancedCache<Key, Entity> store;
     protected final AdvancedCache<Key, Entity> ignoreReturnStore;
+    protected final AdvancedCache<Key, EntityGroupMetadata> entityGroupMetadataStore;
     protected final SearchManager searchManager;
     private final QueryConverter queryConverter;
     private DatastoreServiceConfig config;
@@ -93,7 +94,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
 
     public BaseDatastoreServiceImpl(DatastoreServiceConfig config) {
         this.appId = Application.getAppId();
-        final ClassLoader classLoader = Application.getAppClassloader();
+        final ClassLoader classLoader = getAppClassLoader();
         this.config = (config == null ? withDefaults(classLoader) : config);
 
         AdvancedCache<Key, Entity> ac = createStore().getAdvancedCache().with(classLoader);
@@ -106,6 +107,11 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         // we don't expect "put", "remove" to return anything
         ignoreReturnStore = store.withFlags(Flag.IGNORE_RETURN_VALUES);
 
+        entityGroupMetadataStore = InfinispanUtils.<Key, EntityGroupMetadata>getCache(appId, CacheName.DATASTORE_VERSIONS)
+            .getAdvancedCache()
+            .with(classLoader)
+            .withFlags(Flag.IGNORE_RETURN_VALUES);
+
         this.searchManager = Search.getSearchManager(store);
         this.searchManager.setTimeoutExceptionFactory(new TimeoutExceptionFactory() {
             public RuntimeException createTimeoutException(String message, org.apache.lucene.search.Query query) {
@@ -115,6 +121,10 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
 
         this.queryConverter = new QueryConverter(searchManager);
         this.factories = new QueryTypeFactories(this);
+    }
+
+    protected ClassLoader getAppClassLoader() {
+        return Application.getAppClassloader();
     }
 
     protected Cache<Key, Entity> createStore() {

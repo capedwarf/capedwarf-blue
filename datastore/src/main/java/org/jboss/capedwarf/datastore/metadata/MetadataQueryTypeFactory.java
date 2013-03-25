@@ -43,6 +43,7 @@ import org.jboss.capedwarf.shared.compatibility.Compatibility;
  * Metadata Query type factory.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class MetadataQueryTypeFactory implements QueryTypeFactory {
     private static final CacheListenerHandle METADATA = new MetadataListener();
@@ -58,7 +59,6 @@ public class MetadataQueryTypeFactory implements QueryTypeFactory {
         KINDS.add(Entities.NAMESPACE_METADATA_KIND);
         KINDS.add(Entities.KIND_METADATA_KIND);
         KINDS.add(Entities.PROPERTY_METADATA_KIND);
-        KINDS.add(Entities.ENTITY_GROUP_METADATA_KIND);
     }
 
     private MetadataQueryTypeFactory() {

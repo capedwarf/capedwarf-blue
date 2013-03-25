@@ -22,14 +22,11 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.appengine.api.datastore.Entities;
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -66,29 +63,6 @@ public class VersionTest extends DatastoreTestBase {
         }
     }
 
-    @Test
-    public void testQuery() throws Exception {
-        Entity e1 = new Entity("VT1");
-        AtomicLong counter = new AtomicLong(1);
-        assertVersion(e1, counter);
-        assertVersion(e1, counter);
-
-        Entity e2 = new Entity("VT1");
-        counter = new AtomicLong(1);
-        assertVersion(e2, counter);
-
-        try {
-            Query query = new Query("VT1");
-            query.setFilter(new Query.FilterPredicate(Entity.VERSION_RESERVED_PROPERTY, Query.FilterOperator.GREATER_THAN, 1L));
-            List<Entity> all = service.prepare(query).asList(FetchOptions.Builder.withDefaults());
-            Assert.assertEquals(1, all.size());
-            Assert.assertEquals(e1, all.get(0));
-        } finally {
-            // cleanup
-            service.delete(e1.getKey(), e2.getKey());
-        }
-    }
-
     protected void assertVersion(Entity entity, AtomicLong counter) throws Exception {
         entity.setProperty("counter", counter.get());
 
@@ -97,7 +71,7 @@ public class VersionTest extends DatastoreTestBase {
 
         Assert.assertEquals(counter.get(), entity.getProperty("counter"));
 
-        long actualVersion = Entities.getVersionProperty(entity);
+        long actualVersion = Entities.getVersionProperty(service.get(Entities.createEntityGroupKey(key)));
         Assert.assertEquals(counter.getAndIncrement(), actualVersion);
     }
 }
