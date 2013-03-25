@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.datastore;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
@@ -31,6 +32,7 @@ import java.util.logging.Logger;
 
 import com.google.appengine.api.datastore.BaseDatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
+import com.google.appengine.api.datastore.Entities;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -40,17 +42,21 @@ import com.google.apphosting.api.ApiProxy;
 import org.hibernate.search.query.engine.spi.TimeoutExceptionFactory;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.reflection.FieldInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
 import org.jboss.capedwarf.datastore.query.QueryHandleService;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * Base Datastore service.
@@ -59,18 +65,19 @@ import org.jboss.capedwarf.datastore.query.QueryHandleService;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTransactionProvider, PostLoadHandle, QueryHandleService {
+    private static final FieldInvocation<Long> VERSION = ReflectionUtils.cacheField("org.infinispan.container.versioning.SimpleClusteredVersion", "version");
     private static final Map<ClassLoader, DatastoreServiceConfig> configs = new WeakHashMap<ClassLoader, DatastoreServiceConfig>();
 
     protected final Logger log = Logger.getLogger(getClass().getName());
     protected final String appId;
     protected final AdvancedCache<Key, Entity> store;
     protected final AdvancedCache<Key, Entity> ignoreReturnStore;
-    protected final AdvancedCache<Key, EntityGroupMetadata> entityGroupMetadataStore;
     protected final SearchManager searchManager;
     private final QueryConverter queryConverter;
     private DatastoreServiceConfig config;
     private volatile DatastoreCallbacks datastoreCallbacks;
     private final QueryTypeFactories factories;
+    private final AdvancedCache<Key, EntityGroupMetadata> entityGroupMetadataStore;
 
     /**
      * Cache default config.
@@ -107,10 +114,16 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         // we don't expect "put", "remove" to return anything
         ignoreReturnStore = store.withFlags(Flag.IGNORE_RETURN_VALUES);
 
-        entityGroupMetadataStore = InfinispanUtils.<Key, EntityGroupMetadata>getCache(appId, CacheName.DATASTORE_VERSIONS)
-            .getAdvancedCache()
-            .with(classLoader)
-            .withFlags(Flag.IGNORE_RETURN_VALUES);
+        Compatibility c = CompatibilityUtils.getInstance(classLoader);
+        boolean useMetadata = (c.isEnabled(Compatibility.Feature.DISABLE_METADATA) == false);
+        if (useMetadata) {
+            entityGroupMetadataStore = InfinispanUtils.<Key, EntityGroupMetadata>getCache(appId, CacheName.DATASTORE_VERSIONS)
+                    .getAdvancedCache()
+                    .with(classLoader)
+                    .withFlags(Flag.IGNORE_RETURN_VALUES);
+        } else {
+            entityGroupMetadataStore = null;
+        }
 
         this.searchManager = Search.getSearchManager(store);
         this.searchManager.setTimeoutExceptionFactory(new TimeoutExceptionFactory() {
@@ -137,6 +150,27 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
             datastoreCallbacks = new DatastoreCallbacks(callbacks);
         }
         return datastoreCallbacks;
+    }
+
+    protected final void putEntityGroupKey(Key key) {
+        if (entityGroupMetadataStore != null) {
+            entityGroupMetadataStore.put(Entities.createEntityGroupKey(key), EntityGroupMetadata.SINGLETON);
+        }
+    }
+
+    protected final Entity getEntityGroupMetadataEntity(Key key) {
+        if (entityGroupMetadataStore != null) {
+            Entity entity = new Entity(key);
+            entity.setProperty(Entity.VERSION_RESERVED_PROPERTY, readEntityGroupVersion(key));
+            return entity;
+        } else {
+            throw new IllegalStateException("Metadata is disabled, enable it via compatibility property: " + Compatibility.Feature.DISABLE_METADATA);
+        }
+    }
+
+    private Long readEntityGroupVersion(Key key) {
+        CacheEntry cacheEntry = entityGroupMetadataStore.getCacheEntry(key, EnumSet.noneOf(Flag.class), getAppClassLoader());
+        return VERSION.invoke(cacheEntry.getVersion());
     }
 
     public void execute(Entity result) {

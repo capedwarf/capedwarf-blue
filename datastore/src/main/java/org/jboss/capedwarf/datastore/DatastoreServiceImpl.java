@@ -24,7 +24,6 @@ package org.jboss.capedwarf.datastore;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,11 +45,8 @@ import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.context.Flag;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.common.reflection.FieldInvocation;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.reflection.TargetInvocation;
@@ -68,9 +64,6 @@ import org.jboss.capedwarf.shared.config.IndexesXml;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements DatastoreServiceInternal {
-
-    private static final FieldInvocation<Long> VERSION = ReflectionUtils.cacheField("org.infinispan.container.versioning.SimpleClusteredVersion", "version");
-
     private static final MethodInvocation<Void> setId = ReflectionUtils.cacheMethod(Key.class, "setId", Long.TYPE);
     private static final MethodInvocation<Void> setChecked = ReflectionUtils.cacheMethod(Key.class, "setChecked", Boolean.TYPE);
     private final static TargetInvocation<Boolean> isChecked = ReflectionUtils.cacheInvocation(Key.class, "isChecked");
@@ -138,17 +131,6 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         EntityGroupTracker.trackKey(key);
         Entity entity = store.get(key);
         return EntityUtils.cloneEntity(entity);
-    }
-
-    private Entity getEntityGroupMetadataEntity(Key key) {
-        Entity entity = new Entity(key);
-        entity.setProperty(Entity.VERSION_RESERVED_PROPERTY, readEntityGroupVersion(key));
-        return entity;
-    }
-
-    private Long readEntityGroupVersion(Key key) {
-        CacheEntry cacheEntry = entityGroupMetadataStore.getCacheEntry(key, EnumSet.noneOf(Flag.class), getAppClassLoader());
-        return VERSION.invoke(cacheEntry.getVersion());
     }
 
     public Entity get(Transaction tx, Key key) {
@@ -371,7 +353,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
 
     private void doPut(List<Tuple> keyToEntityMap, Runnable post) {
         for (Tuple tuple : keyToEntityMap) {
-            entityGroupMetadataStore.put(Entities.createEntityGroupKey(tuple.key), new EntityGroupMetadata());
+            putEntityGroupKey(tuple.key);
             ignoreReturnStore.put(tuple.key, tuple.entity);
         }
         if (post != null) {
