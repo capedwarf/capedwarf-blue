@@ -24,7 +24,6 @@
         #foreach ($row in $search.rows)
             <tr>
                 <td><a href="searchIndex.vm?namespace=${search.namespace}&amp;indexName=$row.indexName">$row.indexName</a></td>
-                <td>$row.consistency</td>
             </tr>
         #end
     </table>

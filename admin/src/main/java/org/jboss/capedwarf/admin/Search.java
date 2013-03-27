@@ -31,7 +31,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.google.appengine.api.NamespaceManager;
-import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.GetIndexesRequest;
 import com.google.appengine.api.search.GetResponse;
 import com.google.appengine.api.search.Index;
@@ -84,30 +83,23 @@ public class Search {
             SearchService search = SearchServiceFactory.getSearchService(namespace);
             GetResponse<Index> response = search.getIndexes(GetIndexesRequest.newBuilder().setIndexNamePrefix(indexNamePrefix).build());
             for (Index index : response.getResults()) {
-                rows.add(new Row(index.getName(), index.getConsistency()));
+                rows.add(new Row(index.getName()));
             }
         } finally {
             NamespaceManager.set("");
         }
     }
 
-    public class Row {
+    public static class Row {
         private String indexName;
-        private Consistency consistency;
 
-        public Row(String name, Consistency consistency) {
+        public Row(String name) {
             this.indexName = name;
-            this.consistency = consistency;
         }
 
         public String getIndexName() {
             return indexName;
         }
-
-        public String getConsistency() {
-            return consistency.name();
-        }
-
     }
 
 }

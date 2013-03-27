@@ -40,8 +40,8 @@ interface QueueStatisticsInternal {
     /**
      * Fetch stats.
      *
-     * @param v value
+     * @param deadlineInSeconds the deadline
      * @return queue stats
      */
-    QueueStatistics fetchStatistics(double v);
+    QueueStatistics fetchStatistics(Double deadlineInSeconds);
 }

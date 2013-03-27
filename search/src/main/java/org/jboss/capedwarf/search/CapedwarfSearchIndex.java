@@ -31,7 +31,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
-import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Cursor;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
@@ -88,10 +87,6 @@ public class CapedwarfSearchIndex implements Index {
 
     public String getNamespace() {
         return namespace;
-    }
-
-    public Consistency getConsistency() {
-        return Consistency.PER_DOCUMENT;
     }
 
     public Future<Void> removeAsync(String... documentIds) {

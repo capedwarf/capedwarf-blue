@@ -477,9 +477,8 @@ class CapedwarfQueue implements Queue {
         return createQueueStatistics().fetchStatistics();
     }
 
-    public QueueStatistics fetchStatistics(double v) {
-        // TODO -- check what is v?
-        return createQueueStatistics().fetchStatistics(v);
+    protected QueueStatistics fetchStatistics(Double deadlineInSeconds) {
+        return createQueueStatistics().fetchStatistics(deadlineInSeconds);
     }
 
     public Future<TaskHandle> addAsync() {
@@ -578,18 +577,10 @@ class CapedwarfQueue implements Queue {
         });
     }
 
-    public Future<QueueStatistics> fetchStatisticsAsync() {
+    public Future<QueueStatistics> fetchStatisticsAsync(final Double deadlineInSeconds) {
         return ExecutorFactory.wrap(new Callable<QueueStatistics>() {
             public QueueStatistics call() throws Exception {
-                return fetchStatistics();
-            }
-        });
-    }
-
-    public Future<QueueStatistics> fetchStatisticsAsync(final double v) {
-        return ExecutorFactory.wrap(new Callable<QueueStatistics>() {
-            public QueueStatistics call() throws Exception {
-                return fetchStatistics(v);
+                return fetchStatistics(deadlineInSeconds);
             }
         });
     }

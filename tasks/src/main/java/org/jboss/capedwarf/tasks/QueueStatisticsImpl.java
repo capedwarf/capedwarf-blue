@@ -49,8 +49,8 @@ class QueueStatisticsImpl implements QueueStatisticsInternal {
         return fetchStatisticsInternal();
     }
 
-    // TODO - v?
-    public QueueStatistics fetchStatistics(double v) {
+    public QueueStatistics fetchStatistics(Double deadlineInSeconds) {
+        // TODO -- handle deadline
         return fetchStatisticsInternal();
     }
 
