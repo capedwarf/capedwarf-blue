@@ -39,6 +39,7 @@ import com.google.appengine.api.search.SearchServiceFactory;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @Named("search")
 @RequestScoped
@@ -83,7 +84,7 @@ public class Search {
             SearchService search = SearchServiceFactory.getSearchService(namespace);
             GetResponse<Index> response = search.getIndexes(GetIndexesRequest.newBuilder().setIndexNamePrefix(indexNamePrefix).build());
             for (Index index : response.getResults()) {
-                rows.add(new Row(index.getName()));
+                rows.add(new Row(index));
             }
         } finally {
             NamespaceManager.set("");
@@ -91,14 +92,18 @@ public class Search {
     }
 
     public static class Row {
-        private String indexName;
+        private Index index;
 
-        public Row(String name) {
-            this.indexName = name;
+        public Row(Index index) {
+            this.index = index;
         }
 
         public String getIndexName() {
-            return indexName;
+            return index.getName();
+        }
+
+        public String getNamespace() {
+            return index.getNamespace();
         }
     }
 

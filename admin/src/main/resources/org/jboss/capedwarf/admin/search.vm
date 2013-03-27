@@ -18,12 +18,13 @@
     <table width="100%">
         <tr>
             <th>Index name</th>
-            <th>Consistency</th>
+            <th>Namaspace</th>
         </tr>
 
         #foreach ($row in $search.rows)
             <tr>
                 <td><a href="searchIndex.vm?namespace=${search.namespace}&amp;indexName=$row.indexName">$row.indexName</a></td>
+                <td>$row.namespace</td>
             </tr>
         #end
     </table>
