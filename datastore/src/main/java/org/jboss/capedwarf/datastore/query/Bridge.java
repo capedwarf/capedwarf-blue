@@ -73,7 +73,6 @@ public enum Bridge implements TwoWayStringBridge {
     BLOB_KEY("040", new BlobKeyBridge()),
 
     DOUBLE("050", new DoubleBridge()),
-    FLOAT("050", new FloatBridge()),
 
     GEO_PT("060", new GeoPtBridge()),
 
@@ -192,26 +191,6 @@ public enum Bridge implements TwoWayStringBridge {
         public Object convertValue(Object value) {
             checkType(value, Boolean.class);
             return value;
-        }
-    }
-
-    public static class FloatBridge extends BuiltInBridge {
-        public FloatBridge() {
-            super(new org.hibernate.search.bridge.builtin.FloatBridge());
-        }
-
-        public Set<Class<?>> types() {
-            return Sets.<Class<?>>newHashSet(Float.class, Double.class);
-        }
-
-        @Override
-        public Object getValue(String value) {
-            return null;
-        }
-
-        @Override
-        public Object convertValue(Object value) {
-            return null;
         }
     }
 
@@ -545,20 +524,20 @@ public enum Bridge implements TwoWayStringBridge {
     }
 
     private static class GeoPtBridge extends AbstractBridgeSpi {
-        private FloatBridge floatBridge = new FloatBridge();
+        private DoubleBridge doubleBridge = new DoubleBridge();
 
         public Class<?> type() {
             return GeoPt.class;
         }
 
         public String objectToString(Object object) {
-            return floatBridge.objectToString(((GeoPt) object).getLatitude()) + ";" + floatBridge.objectToString(((GeoPt) object).getLongitude());
+            return doubleBridge.objectToString(((GeoPt) object).getLatitude()) + ";" + doubleBridge.objectToString(((GeoPt) object).getLongitude());
         }
 
         public Object stringToObject(String stringValue) {
             String[] pair = stringValue.split(";");
-            float latitude = (Float)floatBridge.stringToObject(pair[0]);
-            float longitude = (Float)floatBridge.stringToObject(pair[1]);
+            float latitude = ((Double) doubleBridge.stringToObject(pair[0])).floatValue();
+            float longitude = ((Double) doubleBridge.stringToObject(pair[1])).floatValue();
             return new GeoPt(latitude, longitude);
         }
     }
