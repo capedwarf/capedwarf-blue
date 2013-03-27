@@ -28,8 +28,14 @@ import org.hibernate.search.bridge.TwoWayStringBridge;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-interface BridgeSpi extends TwoWayStringBridge {
+abstract interface BridgeSpi extends TwoWayStringBridge {
     Set<Class<?>> types();
+
+    Object getValue(String value);
+
+    Object convertValue(Object value);
+
 }
 

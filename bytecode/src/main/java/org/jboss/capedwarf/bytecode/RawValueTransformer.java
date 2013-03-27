@@ -44,40 +44,40 @@ public class RawValueTransformer extends RewriteTransformer {
 
         // add index field, ctor, getter
 
-        CtField indexField = CtField.make("private java.lang.Object value;", clazz);
+        CtField indexField = CtField.make("private org.jboss.capedwarf.datastore.RawValue delegate;", clazz);
         clazz.addField(indexField);
 
         CtConstructor ctor = new CtConstructor(new CtClass[]{objectClass}, clazz);
-        ctor.setBody("{this.value = $1;}");
+        ctor.setBody("{this.delegate = new org.jboss.capedwarf.datastore.RawValue($1);}");
         clazz.addConstructor(ctor);
 
         // override other methods
         CtMethod getValue = clazz.getDeclaredMethod("getValue", new CtClass[]{});
-        getValue.setBody("return this.value;");
+        getValue.setBody("return delegate.getValue();");
 
         CtMethod asType = clazz.getDeclaredMethod("asType", new CtClass[]{pool.get(Class.class.getName())});
-        asType.setBody("return getValue();");
+        asType.setBody("return delegate.asType($1);");
 
         CtMethod asStrictType = clazz.getDeclaredMethod("asStrictType", new CtClass[]{pool.get(Class.class.getName())});
-        asStrictType.setBody("return getValue();");
+        asStrictType.setBody("return delegate.asStrictType($1);");
 
         CtMethod writeObject = clazz.getDeclaredMethod("writeObject", new CtClass[]{pool.get(ObjectOutputStream.class.getName())});
-        writeObject.setBody("$1.writeObject(getValue());");
+        writeObject.setBody("$1.writeObject(delegate);");
 
         CtMethod readObject = clazz.getDeclaredMethod("readObject", new CtClass[]{pool.get(ObjectInputStream.class.getName())});
-        readObject.setBody("value = $1.readObject();");
+        readObject.setBody("delegate = (org.jboss.capedwarf.datastore.RawValue)$1.readObject();");
 
         CtMethod equals = clazz.getDeclaredMethod("equals", new CtClass[]{pool.get(Object.class.getName())});
-        equals.setBody("return ($1 instanceof com.google.appengine.api.datastore.RawValue) && ((com.google.appengine.api.datastore.RawValue) $1).getValue().equals(getValue());");
+        equals.setBody("return ($1 instanceof com.google.appengine.api.datastore.RawValue) && ((com.google.appengine.api.datastore.RawValue) $1).delegate.equals(delegate);");
 
         CtMethod hashCode = clazz.getDeclaredMethod("hashCode");
-        hashCode.setBody("return getValue().hashCode();");
+        hashCode.setBody("return delegate.hashCode();");
 
         CtMethod toString = clazz.getDeclaredMethod("toString");
         toString.setBody("return \"RawValue:\" + getValue();");
     }
 
     protected boolean doCheck(CtClass clazz) throws NotFoundException {
-        return clazz.getDeclaredField("value") != null;
+        return clazz.getDeclaredField("delegate") != null;
     }
 }

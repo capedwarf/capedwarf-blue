@@ -27,6 +27,7 @@ import java.util.Set;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 abstract class AbstractBridgeSpi implements BridgeSpi {
     public Set<Class<?>> types() {
@@ -34,5 +35,16 @@ abstract class AbstractBridgeSpi implements BridgeSpi {
     }
 
     protected abstract Class<?> type();
+
+    @Override
+    public Object getValue(String value) {
+        return stringToObject(value);
+    }
+
+    @Override
+    public Object convertValue(Object value) {
+        Bridge.checkType(value, type());
+        return value;
+    }
 }
 
