@@ -32,7 +32,6 @@ import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Category;
 import com.google.appengine.api.datastore.Email;
-import com.google.appengine.api.datastore.EmbeddedEntity;
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.IMHandle;
 import com.google.appengine.api.datastore.Key;
@@ -134,51 +133,11 @@ public enum Bridge implements TwoWayStringBridge {
             return NULL;
         }
 
-        // TODO: use bridge.types()
-        if (value instanceof String) {
-            return STRING;
-        } else if (value instanceof Collection) {
+        if (value instanceof Collection) {
             return COLLECTION;
-        } else if (value instanceof Boolean) {
-            return BOOLEAN;
-        } else if (value instanceof Float || value instanceof Double) {
-            return DOUBLE;
-        } else if (value instanceof Number) {
-            return LONG;
-        } else if (value instanceof Date) {
-            return DATE;
-        } else if (value instanceof Text) {
-            return TEXT;
-        } else if (value instanceof PhoneNumber) {
-            return PHONE_NUMBER;
-        } else if (value instanceof PostalAddress) {
-            return POSTAL_ADDRESS;
-        } else if (value instanceof Email) {
-            return EMAIL;
-        } else if (value instanceof User) {
-            return USER;
-        } else if (value instanceof Link) {
-            return LINK;
-        } else if (value instanceof Key) {
-            return KEY;
-        } else if (value instanceof Rating) {
-            return RATING;
-        } else if (value instanceof GeoPt) {
-            return GEO_PT;
-        } else if (value instanceof Category) {
-            return CATEGORY;
-        } else if (value instanceof IMHandle) {
-            return IM_HANDLE;
-        } else if (value instanceof BlobKey) {
-            return BLOB_KEY;
-        } else if (value instanceof Blob) {
-            return BLOB;
-        } else if (value instanceof ShortBlob) {
-            return SHORT_BLOB;
-        } else if (value instanceof EmbeddedEntity) {
-            return EMBEDDED_ENTITY;
+        } else {
+            return getBridge(value.getClass());
         }
-        throw new IllegalArgumentException("No matching bridge. Value was " + value);
     }
 
     public Object convertValue(Object value) {
