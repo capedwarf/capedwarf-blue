@@ -45,12 +45,12 @@ public class PropertyMapBridge implements FieldBridge {
             final String propertyName = entry.getKey();
             final Object propertyValue = entry.getValue();
             if (PropertyUtils.isIndexedProperty(propertyValue)) {
-                final Bridge bridge = Bridge.matchBridge(propertyValue);
+                final Bridge bridge = BridgeUtils.matchBridge(propertyValue);
                 if (propertyValue instanceof Collection) {
                     Collection collection = (Collection) propertyValue;
                     for (Object element : collection) {
                         if (PropertyUtils.isIndexedProperty(element)) {
-                            final Bridge inner = Bridge.matchBridge(element);
+                            final Bridge inner = BridgeUtils.matchBridge(element);
                             luceneOptions.addFieldToDocument(propertyName, inner.objectToString(element), document);
                         }
                     }

@@ -111,6 +111,6 @@ public class LuceneQueryBuilder {
     }
 
     private String convertToString(Object value) {
-        return Bridge.matchBridge(value).objectToString(value);
+        return BridgeUtils.matchBridge(value).objectToString(value);
     }
 }

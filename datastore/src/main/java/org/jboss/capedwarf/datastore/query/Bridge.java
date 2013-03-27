@@ -23,7 +23,6 @@
 package org.jboss.capedwarf.datastore.query;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
@@ -88,7 +87,7 @@ public enum Bridge implements TwoWayStringBridge {
     EMBEDDED_ENTITY("999", new EmbeddedEntityBridge());
 
     private OrderingPrefixer orderingPrefixer;
-    private BridgeSpi bridge;
+    BridgeSpi bridge;
 
     private Bridge(String orderPrefix, BridgeSpi bridge) {
         this.orderingPrefixer = new OrderingPrefixer(orderPrefix);
@@ -105,16 +104,6 @@ public enum Bridge implements TwoWayStringBridge {
         return bridge.stringToObject(stringValue);
     }
 
-    public static Bridge getBridge(Class<?> type) {
-        for (Bridge bridge : values()) {
-            Set<Class<?>> types = bridge.bridge.types();
-            if (types != null && types.contains(type)) {
-                return bridge;
-            }
-        }
-        throw new IllegalArgumentException("No bridge found for type " + type);
-    }
-
     public boolean isAssignableTo(Class<?> type) {
         Set<Class<?>> types = bridge.types();
         if (types == null) {
@@ -128,18 +117,6 @@ public enum Bridge implements TwoWayStringBridge {
         return false;
     }
 
-    public static Bridge matchBridge(Object value) {
-        if (value == null) {
-            return NULL;
-        }
-
-        if (value instanceof Collection) {
-            return COLLECTION;
-        } else {
-            return getBridge(value.getClass());
-        }
-    }
-
     public Object convertValue(Object value) {
         return bridge.convertValue(value);
     }
@@ -149,8 +126,8 @@ public enum Bridge implements TwoWayStringBridge {
         return bridge.getValue(value);
     }
 
-    public static void checkType(Object value, Class<?> clazz) {
-        if (!clazz.isInstance(value)) {
+    static void checkType(Object value, Class<?> clazz) {
+        if (clazz.isInstance(value) == false) {
             throw new IllegalArgumentException("Type mismatch");
         }
     }
