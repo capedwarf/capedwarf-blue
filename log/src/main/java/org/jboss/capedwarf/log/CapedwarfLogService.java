@@ -60,7 +60,7 @@ import org.jboss.capedwarf.shared.compatibility.Compatibility;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class CapedwarfLogService implements ExposedLogService {
+public class CapedwarfLogService implements ExposedLogService {
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z");
 
     private static final String REQUEST_LOGS_REQUEST_ATTRIBUTE = "__org.jboss.capedwarf.LogRequest__";

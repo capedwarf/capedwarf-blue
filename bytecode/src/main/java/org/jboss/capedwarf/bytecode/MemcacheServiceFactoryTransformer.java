@@ -24,6 +24,8 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.memcache.AsyncMemcacheService;
+import com.google.appengine.api.memcache.MemcacheService;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -43,21 +45,21 @@ public class MemcacheServiceFactoryTransformer extends JavassistTransformer {
 
     private void transformGetMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
         CtMethod method = clazz.getDeclaredMethod("getMemcacheService");
-        method.setBody("return new org.jboss.capedwarf.memcache.CapedwarfMemcacheService();");
+        method.setBody(toProxy(MemcacheService.class, "return new org.jboss.capedwarf.memcache.CapedwarfMemcacheService()"));
     }
 
     private void transformParameterizedGetMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
         CtMethod method = clazz.getDeclaredMethod("getMemcacheService", new CtClass[]{clazz.getClassPool().get("java.lang.String")});
-        method.setBody("return new org.jboss.capedwarf.memcache.CapedwarfMemcacheService($1);");
+        method.setBody(toProxy(MemcacheService.class, "return new org.jboss.capedwarf.memcache.CapedwarfMemcacheService($1)"));
     }
 
     private void transformGetAsyncMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
         CtMethod method = clazz.getDeclaredMethod("getAsyncMemcacheService");
-        method.setBody("return new org.jboss.capedwarf.memcache.CapedwarfAsyncMemcacheService();");
+        method.setBody(toProxy(AsyncMemcacheService.class, "return new org.jboss.capedwarf.memcache.CapedwarfAsyncMemcacheService()"));
     }
 
     private void transformParameterizedGetAsyncMemcacheServiceMethod(CtClass clazz) throws NotFoundException, CannotCompileException {
         CtMethod method = clazz.getDeclaredMethod("getAsyncMemcacheService", new CtClass[]{clazz.getClassPool().get("java.lang.String")});
-        method.setBody("return new org.jboss.capedwarf.memcache.CapedwarfAsyncMemcacheService($1);");
+        method.setBody(toProxy(AsyncMemcacheService.class, "return new org.jboss.capedwarf.memcache.CapedwarfAsyncMemcacheService($1)"));
     }
 }

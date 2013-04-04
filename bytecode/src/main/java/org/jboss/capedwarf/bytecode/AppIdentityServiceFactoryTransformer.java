@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.appidentity.AppIdentityService;
 import javassist.CtClass;
 import javassist.CtMethod;
 
@@ -31,6 +32,6 @@ import javassist.CtMethod;
 public class AppIdentityServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getAppIdentityService");
-        method.setBody("return new org.jboss.capedwarf.appidentity.CapedwarfAppIdentityService();");
+        method.setBody(toProxy(AppIdentityService.class, "return new org.jboss.capedwarf.appidentity.CapedwarfAppIdentityService()"));
     }
 }

@@ -63,7 +63,7 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-class CapedwarfFileService implements ExposedFileService {
+public class CapedwarfFileService implements ExposedFileService {
 
     private static final String DEFAULT_MIME_TYPE = "application/octet-stream";
     private static final String KIND_TEMP_BLOB_INFO = "__BlobInfo_temp__";

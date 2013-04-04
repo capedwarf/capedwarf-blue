@@ -51,7 +51,7 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class CapedwarfAsyncDatastoreService extends AbstractDatastoreService implements ExposedAsyncDatastoreService {
+public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService implements ExposedAsyncDatastoreService {
 
     public CapedwarfAsyncDatastoreService() {
         this(null);

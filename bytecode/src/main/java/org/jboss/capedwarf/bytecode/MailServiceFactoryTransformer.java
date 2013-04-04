@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.mail.MailService;
 import javassist.CtClass;
 import javassist.CtMethod;
 
@@ -31,6 +32,6 @@ import javassist.CtMethod;
 public class MailServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getMailService");
-        method.setBody("return new org.jboss.capedwarf.mail.CapedwarfMailService();");
+        method.setBody(toProxy(MailService.class, "return new org.jboss.capedwarf.mail.CapedwarfMailService()"));
     }
 }

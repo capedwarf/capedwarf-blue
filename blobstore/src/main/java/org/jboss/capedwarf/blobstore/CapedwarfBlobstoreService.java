@@ -61,7 +61,7 @@ import org.jboss.capedwarf.files.ExposedFileService;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-class CapedwarfBlobstoreService implements ExposedBlobstoreService {
+public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
     private static final String UPLOADED_BLOBKEY_ATTR = "com.google.appengine.api.blobstore.upload.blobkeys";
     private static final String UPLOADED_BLOBKEY_LIST_ATTR = "com.google.appengine.api.blobstore.upload.blobkeylists";
 

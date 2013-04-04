@@ -34,7 +34,7 @@ import org.jboss.capedwarf.channel.manager.ChannelManager;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-class CapedwarfChannelService implements ExposedChannelService {
+public class CapedwarfChannelService implements ExposedChannelService {
 
     public static final int DEFAULT_DURATION_MINUTES = 120;
 

@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.taskqueue.Queue;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -33,6 +34,6 @@ public class QueueFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         final ClassPool pool = clazz.getClassPool();
         final CtMethod method = clazz.getDeclaredMethod("getQueue", new CtClass[]{pool.get(String.class.getName())});
-        method.setBody("return org.jboss.capedwarf.tasks.CapedwarfQueue.getQueue($1);");
+        method.setBody(toProxy(Queue.class, "return org.jboss.capedwarf.tasks.CapedwarfQueue.getQueue($1)"));
     }
 }

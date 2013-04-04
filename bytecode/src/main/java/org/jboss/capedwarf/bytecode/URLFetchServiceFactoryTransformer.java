@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.urlfetch.URLFetchService;
 import javassist.CtClass;
 import javassist.CtMethod;
 
@@ -31,6 +32,6 @@ import javassist.CtMethod;
 public class URLFetchServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getURLFetchService");
-        method.setBody("return new org.jboss.capedwarf.urlfetch.CapedwarfURLFetchService();");
+        method.setBody(toProxy(URLFetchService.class, "return new org.jboss.capedwarf.urlfetch.CapedwarfURLFetchService()"));
     }
 }

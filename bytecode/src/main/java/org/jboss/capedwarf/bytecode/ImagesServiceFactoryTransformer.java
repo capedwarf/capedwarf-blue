@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.images.ImagesService;
 import javassist.CtClass;
 import javassist.CtMethod;
 
@@ -31,7 +32,7 @@ import javassist.CtMethod;
 public class ImagesServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getImagesService");
-        method.setBody("return new org.jboss.capedwarf.images.CapedwarfImagesService();");
+        method.setBody(toProxy(ImagesService.class, "return new org.jboss.capedwarf.images.CapedwarfImagesService()"));
     }
 
 }

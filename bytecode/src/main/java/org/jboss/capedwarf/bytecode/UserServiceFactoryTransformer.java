@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.users.UserService;
 import javassist.CtClass;
 import javassist.CtMethod;
 
@@ -31,6 +32,6 @@ import javassist.CtMethod;
 public class UserServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getUserService");
-        method.setBody("return new org.jboss.capedwarf.users.CapedwarfUserService();");
+        method.setBody(toProxy(UserService.class, "return new org.jboss.capedwarf.users.CapedwarfUserService()"));
     }
 }

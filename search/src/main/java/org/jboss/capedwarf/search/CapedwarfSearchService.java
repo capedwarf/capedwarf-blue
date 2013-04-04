@@ -42,7 +42,7 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class CapedwarfSearchService implements SearchService {
+public class CapedwarfSearchService implements SearchService {
 
     private String namespace;
 

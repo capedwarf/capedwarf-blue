@@ -51,7 +51,7 @@ import org.jboss.capedwarf.common.infinispan.WrapperTxCallable;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class CapedwarfMemcacheService implements MemcacheService {
+public class CapedwarfMemcacheService implements MemcacheService {
 
     protected static final Logger log = Logger.getLogger(CapedwarfMemcacheService.class.getName());
     private static final SetPolicy DEFAULT_SET_POLICY = SetPolicy.SET_ALWAYS;

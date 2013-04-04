@@ -24,6 +24,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.xmpp.XMPPService;
 import javassist.CtClass;
 import javassist.CtMethod;
 
@@ -33,6 +34,6 @@ import javassist.CtMethod;
 public class XMPPServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getXMPPService");
-        method.setBody("return new org.jboss.capedwarf.xmpp.CapedwarfXMPPService();");
+        method.setBody(toProxy(XMPPService.class, "return new org.jboss.capedwarf.xmpp.CapedwarfXMPPService()"));
     }
 }

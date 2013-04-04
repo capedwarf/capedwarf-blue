@@ -28,7 +28,7 @@ import org.jboss.capedwarf.environment.EnvironmentFactory;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class CapedwarfQuotaService implements QuotaService {
+public class CapedwarfQuotaService implements QuotaService {
     protected QuotaService getDelegate() {
         return EnvironmentFactory.getEnvironment().getQuotaService();
     }

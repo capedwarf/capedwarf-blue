@@ -49,7 +49,7 @@ import org.jboss.capedwarf.common.threads.DirectFuture;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-class CapedwarfDatastoreService extends AbstractDatastoreService implements ExposedDatastoreService {
+public class CapedwarfDatastoreService extends AbstractDatastoreService implements ExposedDatastoreService {
     public CapedwarfDatastoreService() {
         this(null);
     }

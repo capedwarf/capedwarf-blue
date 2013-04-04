@@ -31,6 +31,6 @@ import javassist.CtMethod;
 public class BlobstoreServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getBlobstoreService");
-        method.setBody("return new org.jboss.capedwarf.blobstore.CapedwarfBlobstoreService();");
+        method.setBody(toProxy("org.jboss.capedwarf.blobstore.ExposedBlobstoreService", "return new org.jboss.capedwarf.blobstore.CapedwarfBlobstoreService()"));
     }
 }

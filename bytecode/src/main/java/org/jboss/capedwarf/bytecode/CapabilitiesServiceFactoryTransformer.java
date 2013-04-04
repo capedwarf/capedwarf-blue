@@ -24,6 +24,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.capabilities.CapabilitiesService;
 import javassist.CtClass;
 import javassist.CtMethod;
 
@@ -33,6 +34,6 @@ import javassist.CtMethod;
 public class CapabilitiesServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getCapabilitiesService");
-        method.setBody("return new org.jboss.capedwarf.capabilities.CapedwarfCapabilitiesService();");
+        method.setBody(toProxy(CapabilitiesService.class, "return new org.jboss.capedwarf.capabilities.CapedwarfCapabilitiesService()"));
     }
 }

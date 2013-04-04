@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import com.google.appengine.api.search.SearchService;
 import javassist.CtClass;
 import javassist.CtMethod;
 
@@ -31,9 +32,9 @@ import javassist.CtMethod;
 public class SearchServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getSearchService");
-        method.setBody("return new org.jboss.capedwarf.search.CapedwarfSearchService();");
+        method.setBody(toProxy(SearchService.class, "return new org.jboss.capedwarf.search.CapedwarfSearchService()"));
 
         CtMethod method2 = clazz.getDeclaredMethod("getSearchService", new CtClass[]{clazz.getClassPool().get("java.lang.String")});
-        method2.setBody("return new org.jboss.capedwarf.search.CapedwarfSearchService($1);");
+        method2.setBody(toProxy(SearchService.class, "return new org.jboss.capedwarf.search.CapedwarfSearchService($1)"));
     }
 }
