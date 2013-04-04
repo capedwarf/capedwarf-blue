@@ -32,6 +32,6 @@ import javassist.CtMethod;
 public class MailServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getMailService");
-        method.setBody(toProxy(MailService.class, "return new org.jboss.capedwarf.mail.CapedwarfMailService()"));
+        method.setBody(toProxy(MailService.class, "new org.jboss.capedwarf.mail.CapedwarfMailService()"));
     }
 }

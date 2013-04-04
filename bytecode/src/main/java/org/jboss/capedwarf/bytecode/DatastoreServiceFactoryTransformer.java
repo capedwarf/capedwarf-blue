@@ -34,18 +34,18 @@ public class DatastoreServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         // w/o config
         CtMethod method = clazz.getDeclaredMethod("getDatastoreService");
-        method.setBody(toProxy("org.jboss.capedwarf.datastore.ExposedDatastoreService", "return new org.jboss.capedwarf.datastore.CapedwarfDatastoreService()"));
+        method.setBody(toProxy("org.jboss.capedwarf.datastore.ExposedDatastoreService", "new org.jboss.capedwarf.datastore.CapedwarfDatastoreService()"));
 
         method = clazz.getDeclaredMethod("getAsyncDatastoreService");
-        method.setBody(toProxy("org.jboss.capedwarf.datastore.ExposedAsyncDatastoreService", "return new org.jboss.capedwarf.datastore.CapedwarfAsyncDatastoreService()"));
+        method.setBody(toProxy("org.jboss.capedwarf.datastore.ExposedAsyncDatastoreService", "new org.jboss.capedwarf.datastore.CapedwarfAsyncDatastoreService()"));
 
         // with config
         final ClassPool pool = clazz.getClassPool();
         final CtClass[] params = {pool.get("com.google.appengine.api.datastore.DatastoreServiceConfig")};
         method = clazz.getDeclaredMethod("getDatastoreService", params);
-        method.setBody(toProxy("org.jboss.capedwarf.datastore.ExposedDatastoreService", "return new org.jboss.capedwarf.datastore.CapedwarfDatastoreService($1)"));
+        method.setBody(toProxy("org.jboss.capedwarf.datastore.ExposedDatastoreService", "new org.jboss.capedwarf.datastore.CapedwarfDatastoreService($1)"));
 
         method = clazz.getDeclaredMethod("getAsyncDatastoreService", params);
-        method.setBody(toProxy("org.jboss.capedwarf.datastore.ExposedAsyncDatastoreService", "return new org.jboss.capedwarf.datastore.CapedwarfAsyncDatastoreService($1)"));
+        method.setBody(toProxy("org.jboss.capedwarf.datastore.ExposedAsyncDatastoreService", "new org.jboss.capedwarf.datastore.CapedwarfAsyncDatastoreService($1)"));
     }
 }
