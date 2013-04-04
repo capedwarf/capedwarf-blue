@@ -25,6 +25,22 @@ package org.jboss.test.capedwarf.cluster.test;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.JBoss;
+import org.jboss.test.capedwarf.testsuite.LibUtils;
+import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountMapper;
+import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountReducer;
+import org.jboss.test.capedwarf.testsuite.mapreduce.test.MapReduceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.KeyFactory;
@@ -41,22 +57,6 @@ import com.google.appengine.tools.mapreduce.outputs.InMemoryOutput;
 import com.google.appengine.tools.mapreduce.outputs.NoOutput;
 import com.google.appengine.tools.mapreduce.reducers.NoReducer;
 import com.google.appengine.tools.pipeline.JobInfo;
-import junit.framework.Assert;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.test.capedwarf.common.support.JBoss;
-import org.jboss.test.capedwarf.testsuite.LibUtils;
-import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountMapper;
-import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountReducer;
-import org.jboss.test.capedwarf.testsuite.mapreduce.support.EntityCreator;
-import org.jboss.test.capedwarf.testsuite.mapreduce.test.MapReduceTestBase;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 
 /**
  * MapReduce cluster tests.
@@ -85,7 +85,9 @@ public class MapReduceTest extends MapReduceTestBase {
     protected static WebArchive getModuleDeployment() {
         LibUtils.applyTempModule("cluster-tests");
         try {
-            return getDefaultDeployment().addPackage(EntityCreator.class.getPackage());
+            return getDefaultDeployment().addPackage(MyEntityCreator.class.getPackage())
+                    .addClass(CountReducer.class)
+                    .addClass(CountMapper.class);
         } finally {
             LibUtils.applyTempModule(null);
         }
@@ -99,7 +101,7 @@ public class MapReduceTest extends MapReduceTestBase {
                 MapReduceSpecification.of(
                         "Create MapReduce entities",
                         new ConsecutiveLongInput(0, payloads.size() * (long) shardCount, shardCount),
-                        new EntityCreator("MapReduceTest", payloads),
+                        new MyEntityCreator("MapReduceTest", payloads),
                         Marshallers.getVoidMarshaller(),
                         Marshallers.getVoidMarshaller(),
                         NoReducer.<Void, Void, Void>create(),
