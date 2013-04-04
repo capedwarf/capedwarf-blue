@@ -104,12 +104,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         final ClassLoader classLoader = getAppClassLoader();
         this.config = (config == null ? withDefaults(classLoader) : config);
 
-        AdvancedCache<Key, Entity> ac = createStore().getAdvancedCache().with(classLoader);
-        if (SyncHack.forceSync()) {
-            store = ac.withFlags(Flag.FORCE_SYNCHRONOUS);
-        } else {
-            store = ac;
-        }
+        store = createStore().getAdvancedCache().with(classLoader);
 
         // we don't expect "put", "remove" to return anything
         ignoreReturnStore = store.withFlags(Flag.IGNORE_RETURN_VALUES);
