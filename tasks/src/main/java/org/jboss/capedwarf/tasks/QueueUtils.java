@@ -102,13 +102,18 @@ class QueueUtils {
 
         Map<String, Object>[] scheduledMsgs = list(server, LIST_SCHEDULED_MESSAGES, new Object[0], EMPTY_SIGNATURE);
         for (Map<String, Object> msg : scheduledMsgs) {
-            String qName = msg.get(TasksMessageCreator.QUEUE_NAME_KEY).toString();
-            if (queueName.equals(qName) && (taskName == null || taskName.equals(msg.get(TasksMessageCreator.TASK_NAME_KEY).toString()))) {
+            if (isEqual(queueName, msg, TasksMessageCreator.QUEUE_NAME_KEY) && (taskName == null || isEqual(taskName, msg, TasksMessageCreator.TASK_NAME_KEY))) {
                 results.add(msg);
             }
         }
 
         return results;
+    }
+
+    private static boolean isEqual(String expected, Map<String, Object> msg, String key) {
+        Object value = msg.get(key);
+        return value != null && expected.equals(value.toString());
+
     }
 
     @SuppressWarnings("unchecked")
