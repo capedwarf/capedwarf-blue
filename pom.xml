@@ -90,7 +90,7 @@
         <version.junit>4.10</version.junit>
         <version.arquillian>1.0.3.Final</version.arquillian>
         <version.shrinkwrap>1.1.2</version.shrinkwrap>
-        <version.shrinkwrap.maven-resolver>2.0.0-beta-3</version.shrinkwrap.maven-resolver>
+        <version.shrinkwrap.resolver>2.0.0-beta-3</version.shrinkwrap.resolver>
         <version.jboss.as7>7.2.0.Final</version.jboss.as7>
         <version.org.jboss.xnio>3.0.7.GA</version.org.jboss.xnio>
         <version.arquillian.gae>1.0.0.Alpha8</version.arquillian.gae>
@@ -712,28 +712,24 @@
                 <version>${version.org.apache.httpcomponents}</version>
             </dependency>
 
+            <!-- ShrinkWrap -->
+
+            <!-- This must go *BEFORE* the Arquillian BOM. -->
+
             <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-api</artifactId>
+                <artifactId>shrinkwrap-bom</artifactId>
                 <version>${version.shrinkwrap}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                <artifactId>shrinkwrap-resolver-api</artifactId>
-                <version>${version.shrinkwrap.maven-resolver}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                <artifactId>shrinkwrap-resolver-api-maven</artifactId>
-                <version>${version.shrinkwrap.maven-resolver}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
-                <version>${version.shrinkwrap.maven-resolver}</version>
+                <artifactId>shrinkwrap-resolver-bom</artifactId>
+                <version>${version.shrinkwrap.resolver}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
 
             <!-- Testing -->
