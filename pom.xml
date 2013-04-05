@@ -107,6 +107,8 @@
         <version.com.google.api-services-bigquery>v2-rev33-1.8.0-beta</version.com.google.api-services-bigquery>
         <!-- Testing Objectify -->
         <version.objectify>4.0b1</version.objectify>
+        <!-- Testing REST -->
+        <version.org.jboss.resteasy>2.3.2.Final</version.org.jboss.resteasy>
         <!-- Build configuration -->
         <version.datanucleus.plugin>3.1.2</version.datanucleus.plugin>
     </properties>
@@ -884,6 +886,14 @@
                 <groupId>com.googlecode.objectify</groupId>
                 <artifactId>objectify</artifactId>
                 <version>${version.objectify}</version>
+            </dependency>
+
+            <!-- REST -->
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>jaxrs-api</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
             </dependency>
 
         </dependencies>
