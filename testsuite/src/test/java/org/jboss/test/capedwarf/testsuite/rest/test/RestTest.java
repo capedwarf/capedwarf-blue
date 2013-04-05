@@ -55,7 +55,6 @@ public class RestTest extends TestBase {
 
         WebArchive war = getCapedwarfDeployment(context);
         war.addPackage(RestMarker.class.getPackage());
-        war.addAsWebInfResource("rest/jboss-deployment-structure.xml", "jboss-deployment-structure.xml");
 
         return war;
     }
