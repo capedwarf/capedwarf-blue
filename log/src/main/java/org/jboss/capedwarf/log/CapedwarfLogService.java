@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.log;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -66,6 +69,7 @@ public class CapedwarfLogService implements ExposedLogService {
     private static final String REQUEST_LOGS_REQUEST_ATTRIBUTE = "__org.jboss.capedwarf.LogRequest__";
     private static final String REQUEST_LOGS_ENV_ATTRIBUTE = "com.google.appengine.runtime.request_logs";
     private static final String REQUEST_LOG_ID = "com.google.appengine.runtime.request_log_id";
+    private static final String LOG_TO_FILE = System.getProperty("logToFile");
 
     private final AdvancedCache<String, CapedwarfLogElement> store;
     private final SearchManager searchManager;
@@ -188,6 +192,10 @@ public class CapedwarfLogService implements ExposedLogService {
     }
 
     public void log(LogRecord record) {
+        if (LOG_TO_FILE != null) {
+            logToFile(record);
+        }
+
         // did we disable logging
         if (ignoreLogging)
             return;
@@ -204,7 +212,20 @@ public class CapedwarfLogService implements ExposedLogService {
         logWriter.put(requestLogs);
     }
 
-    private String getFormattedMessage(LogRecord record) {
+    private static synchronized void logToFile(LogRecord record) {
+        try {
+            PrintWriter out = new PrintWriter(new FileWriter(LOG_TO_FILE, true));
+            try {
+                out.println(record.getMillis() + " " + getLogLevel(record) + " " + record.getLoggerName() + ": " + getFormattedMessage(record));
+            } finally {
+                out.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String getFormattedMessage(LogRecord record) {
         return new MessageFormat(record.getMessage()).format(record.getParameters());
     }
 
@@ -222,7 +243,7 @@ public class CapedwarfLogService implements ExposedLogService {
         return (CapedwarfRequestLogs) environment.getAttributes().get(REQUEST_LOGS_ENV_ATTRIBUTE);
     }
 
-    private LogLevel getLogLevel(LogRecord record) {
+    private static LogLevel getLogLevel(LogRecord record) {
         int level = record.getLevel().intValue();
         if (level <= Level.CONFIG.intValue()) {
             return LogLevel.DEBUG;
