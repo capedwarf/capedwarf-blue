@@ -69,11 +69,11 @@ public class CapedwarfLogService implements ExposedLogService {
     private static final String REQUEST_LOGS_REQUEST_ATTRIBUTE = "__org.jboss.capedwarf.LogRequest__";
     private static final String REQUEST_LOGS_ENV_ATTRIBUTE = "com.google.appengine.runtime.request_logs";
     private static final String REQUEST_LOG_ID = "com.google.appengine.runtime.request_log_id";
-    private static final String LOG_TO_FILE = System.getProperty("logToFile");
 
     private final AdvancedCache<String, CapedwarfLogElement> store;
     private final SearchManager searchManager;
 
+    private final String logToFile;
     private final boolean ignoreLogging;
     private final LogWriter logWriter;
 
@@ -85,6 +85,7 @@ public class CapedwarfLogService implements ExposedLogService {
         this.searchManager = Search.getSearchManager(store);
 
         Compatibility instance = CompatibilityUtils.getInstance();
+        logToFile = instance.getValue(Compatibility.Feature.LOG_TO_FILE);
         ignoreLogging = instance.isEnabled(Compatibility.Feature.IGNORE_LOGGING);
         if (instance.isEnabled(Compatibility.Feature.ASYNC_LOGGING)) {
             logWriter = new AsyncLogWriter();
@@ -192,7 +193,7 @@ public class CapedwarfLogService implements ExposedLogService {
     }
 
     public void log(LogRecord record) {
-        if (LOG_TO_FILE != null) {
+        if (logToFile != null) {
             logToFile(record);
         }
 
@@ -212,9 +213,9 @@ public class CapedwarfLogService implements ExposedLogService {
         logWriter.put(requestLogs);
     }
 
-    private static synchronized void logToFile(LogRecord record) {
+    private synchronized void logToFile(LogRecord record) {
         try {
-            PrintWriter out = new PrintWriter(new FileWriter(LOG_TO_FILE, true));
+            PrintWriter out = new PrintWriter(new FileWriter(logToFile, true));
             try {
                 out.println(record.getMillis() + " " + getLogLevel(record) + " " + record.getLoggerName() + ": " + getFormattedMessage(record));
             } finally {
