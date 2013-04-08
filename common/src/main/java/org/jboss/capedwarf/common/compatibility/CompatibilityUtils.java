@@ -22,7 +22,6 @@
 
 package org.jboss.capedwarf.common.compatibility;
 
-import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.components.Key;
@@ -38,13 +37,6 @@ public class CompatibilityUtils {
     private static final Key<Compatibility> KEY = new SimpleKey<Compatibility>(EnvAppIdFactory.INSTANCE, Compatibility.class);
 
     public static Compatibility getInstance() {
-        return getInstance(null);
-    }
-
-    public synchronized static Compatibility getInstance(ClassLoader cl) {
-        if (cl == null) {
-            cl = Application.getAppClassloader();
-        }
-        return Compatibility.getInstance(cl, KEY);
+        return Compatibility.getInstance(KEY);
     }
 }

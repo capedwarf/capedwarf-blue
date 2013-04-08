@@ -51,7 +51,7 @@ class EagerStatsQueryHandle extends AbstractQueryHandle {
 
     private static class EagerListenerHandle implements CacheListenerHandle {
         public Object createListener(ClassLoader cl) {
-            Compatibility c = CompatibilityUtils.getInstance(cl);
+            Compatibility c = CompatibilityUtils.getInstance();
             String value = c.getValue(Compatibility.Feature.ENABLE_EAGER_DATASTORE_STATS);
             return "async".equals(value) ? new AsyncEagerListener() : new EagerListener();
         }

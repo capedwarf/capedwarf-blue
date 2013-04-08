@@ -109,7 +109,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         // we don't expect "put", "remove" to return anything
         ignoreReturnStore = store.withFlags(Flag.IGNORE_RETURN_VALUES);
 
-        Compatibility c = CompatibilityUtils.getInstance(classLoader);
+        Compatibility c = CompatibilityUtils.getInstance();
         boolean useMetadata = (c.isEnabled(Compatibility.Feature.DISABLE_METADATA) == false);
         if (useMetadata) {
             entityGroupMetadataStore = InfinispanUtils.<Key, EntityGroupMetadata>getCache(appId, CacheName.DATASTORE_VERSIONS)
