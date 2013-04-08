@@ -435,10 +435,12 @@ public class QueryOptimizationsTest extends QueryTestBase {
     public void testProjectionOfCollectionProperties() throws Exception {
         Entity e = createEntity("Kind", 1)
             .withProperty("prop", Arrays.asList("bbb", "ccc", "aaa"))
+            .withProperty("prop2", Arrays.asList("xxx", "yyy"))
             .store();
 
         Query query = new Query("Kind")
-            .addProjection(new PropertyProjection("prop", String.class));
+            .addProjection(new PropertyProjection("prop", String.class))
+            .addSort("prop");
 
         PreparedQuery preparedQuery = service.prepare(query);
         List<Entity> results = preparedQuery.asList(withDefaults());
