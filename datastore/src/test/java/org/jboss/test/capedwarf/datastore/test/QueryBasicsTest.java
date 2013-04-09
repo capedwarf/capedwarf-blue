@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
@@ -54,10 +55,26 @@ import static org.junit.Assert.fail;
  * Datastore querying basic tests.
  *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
 @Category(All.class)
 public class QueryBasicsTest extends QueryTestBase {
+
+    @Test
+    public void testNPE() throws Exception {
+        Entity entity = new Entity("QT", 1);
+        Key key = service.put(entity);
+
+        entity = service.get(key);
+        assertNotNull(entity);
+        service.delete(entity.getKey());
+
+        Query query = new Query("QT");
+        for (Entity e : service.prepare(query).asIterable(FetchOptions.Builder.withChunkSize(10))) {
+            fail("Should not be here: " + e);
+        }
+    }
 
     @Test
     public void textQueryWithoutAnyConstraints() throws Exception {
