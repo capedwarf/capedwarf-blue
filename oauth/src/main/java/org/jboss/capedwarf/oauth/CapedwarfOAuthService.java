@@ -51,4 +51,9 @@ public class CapedwarfOAuthService implements OAuthService {
     public String getOAuthConsumerKey() throws OAuthRequestException {
         return null;  // TODO
     }
+
+    @Override
+    public String getClientId(String s) throws OAuthRequestException {
+        return null;  // TODO
+    }
 }
