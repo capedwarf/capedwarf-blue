@@ -22,19 +22,15 @@
 
 package org.jboss.capedwarf.channel.util;
 
-import java.util.Collections;
 import java.util.concurrent.Callable;
 
-import org.infinispan.AdvancedCache;
-import org.infinispan.commands.read.DistributedExecuteCommand;
-import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ClusterUtils {
 
@@ -62,23 +58,11 @@ public class ClusterUtils {
 
     private static void executeOnAllNodes(Callable<Void> task) {
         final String appId = Application.getAppId();
-        final AdvancedCache cache = InfinispanUtils.getCache(appId, CacheName.DEFAULT).getAdvancedCache();
-        final DistributedExecuteCommand<Void> command = new DistributedExecuteCommand<Void>(cache.getName(), Collections.emptyList(), task);
-        final RpcManager rpc = cache.getRpcManager();
-        rpc.broadcastRpcCommand(command, false);
+        InfinispanUtils.everywhere(appId, task);
     }
 
     public static void submitToNode(Address nodeAddress, Callable<Void> task) {
         final String appId = Application.getAppId();
-        final AdvancedCache cache = InfinispanUtils.getCache(appId, CacheName.DEFAULT).getAdvancedCache();
-        final RpcManager rpc = cache.getRpcManager();
-        rpc.invokeRemotely(
-                Collections.singleton(nodeAddress),
-                new DistributedExecuteCommand<Void>(cache.getName(), Collections.emptyList(), task),
-                false);
-    }
-
-    private static Address getAddress(RpcManager rpc, String nodeAddress) {
-        return null;  // TODO
+        InfinispanUtils.single(appId, task, nodeAddress);
     }
 }

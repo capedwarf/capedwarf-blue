@@ -73,6 +73,12 @@ public class InfinispanUtils {
         return des.submit(task, keys);
     }
 
+    private static DistributedExecutorService getDistributedExecutorService(String appId) {
+        final Cache cache = getCache(appId, CacheName.DIST);
+        final ExecutorService executor = ExecutorFactory.getInstance();
+        return new DefaultExecutorService(cache, executor);
+    }
+
     public static <K, V> Cache<K, V> getCache(String appId, CacheName template) {
         if (template == null)
             throw new IllegalArgumentException("Null template!");
@@ -96,12 +102,20 @@ public class InfinispanUtils {
     }
 
     /**
+     * Submit to single node.
+     */
+    public static <T> Future<T> single(final String appId, Callable<T> callable, Address toAddress) {
+        final DistributedExecutorService des = getDistributedExecutorService(appId);
+        final DistributedTaskBuilder<T> builder = des.createDistributedTaskBuilder(callable);
+        final DistributedTask<T> task = builder.build();
+        return des.submit(toAddress, task);
+    }
+
+    /**
      * Submit to all nodes.
      */
     public static <T> List<Future<T>> everywhere(final String appId, Callable<T> callable) {
-        final Cache cache = getCache(appId, CacheName.DIST);
-        final ExecutorService executor = ExecutorFactory.getInstance();
-        final DistributedExecutorService des = new DefaultExecutorService(cache, executor);
+        final DistributedExecutorService des = getDistributedExecutorService(appId);
         final DistributedTaskBuilder<T> builder = des.createDistributedTaskBuilder(callable);
         final DistributedTask<T> task = builder.build();
         return des.submitEverywhere(task);
