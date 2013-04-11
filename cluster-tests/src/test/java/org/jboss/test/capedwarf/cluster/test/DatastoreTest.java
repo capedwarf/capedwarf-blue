@@ -27,16 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entities;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.FetchOptions.Builder;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.Query;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -48,6 +38,16 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entities;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.FetchOptions.Builder;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>
@@ -234,6 +234,7 @@ public class DatastoreTest extends ClusteredTestBase {
     @OperateOnDeployment("dep1")
     public void testVersionOndepA() throws Exception {
         Entity entity = new Entity("VersionTest", "name");
+        getService().put(entity);
         // 3 puts
         AtomicLong counter = new AtomicLong(1);
         assertVersion(entity, counter);
@@ -250,7 +251,7 @@ public class DatastoreTest extends ClusteredTestBase {
         Entity entity = getService().get(KeyFactory.createKey("VersionTest", "name"));
         try {
             // 3 puts
-            AtomicLong counter = new AtomicLong(4);
+            AtomicLong counter = new AtomicLong(1);
             assertVersion(entity, counter);
             assertVersion(entity, counter);
             assertVersion(entity, counter);
@@ -265,18 +266,9 @@ public class DatastoreTest extends ClusteredTestBase {
     @OperateOnDeployment("dep1")
     public void testVersionWithIdOndepA() throws Exception {
         Entity entity = new Entity(KeyFactory.createKey("versioned", 1));
+        getService().put(entity);
         // 3 puts
         AtomicLong counter = new AtomicLong(1);
-        assertVersion(entity, counter);
-        assertVersion(entity, counter);
-        assertVersion(entity, counter);
-
-        getService().delete(entity.getKey());
-        waitForSync();
-
-        entity = new Entity(KeyFactory.createKey("versioned", 1));
-        // 3 puts
-        counter = new AtomicLong(1);
         assertVersion(entity, counter);
         assertVersion(entity, counter);
         assertVersion(entity, counter);
@@ -298,42 +290,6 @@ public class DatastoreTest extends ClusteredTestBase {
         getService().delete(entity.getKey());
     }
 
-
-    @InSequence(340)
-    @Test
-    @OperateOnDeployment("dep1")
-    public void testQueryOnDepA() throws Exception {
-        Entity e1 = new Entity("VT1");
-        AtomicLong counter = new AtomicLong(1);
-        assertVersion(e1, counter);
-        assertVersion(e1, counter);
-
-        Query query = new Query("VT1");
-        query.setFilter(new Query.FilterPredicate(Entity.VERSION_RESERVED_PROPERTY, Query.FilterOperator.GREATER_THAN, 0L));
-        List<Entity> all = getService().prepare(query).asList(FetchOptions.Builder.withDefaults());
-        Assert.assertEquals(1, all.size());
-        Assert.assertEquals(e1, all.get(0));
-    }
-
-
-    @InSequence(350)
-    @Test
-    @OperateOnDeployment("dep2")
-    public void testQueryOnDepB() throws Exception {
-        waitForSync();
-        Entity e2 = new Entity("VT1");
-        AtomicLong counter = new AtomicLong(1);
-        assertVersion(e2, counter);
-
-        Query query = new Query("VT1");
-        query.setFilter(new Query.FilterPredicate(Entity.VERSION_RESERVED_PROPERTY, Query.FilterOperator.GREATER_THAN, 1L));
-        List<Entity> all = getService().prepare(query).asList(FetchOptions.Builder.withDefaults());
-        Assert.assertEquals(1, all.size());
-        Entity e1 = all.get(0);
-        Assert.assertNotSame(e2, e1);
-        // cleanup
-        getService().delete(e1.getKey(), e2.getKey());
-    }
 
     @InSequence(350)
     @Test
@@ -398,14 +354,13 @@ public class DatastoreTest extends ClusteredTestBase {
     }
 
     protected void assertVersion(Entity entity, AtomicLong counter) throws Exception {
-        entity.setProperty("counter", counter.get());
+        long version = Entities.getVersionProperty(getService().get(Entities.createEntityGroupKey(entity.getKey())));
+
+        entity.setProperty("counter", counter.getAndIncrement());
         Key key = getService().put(entity);
-        entity = getService().get(key);
 
-        Assert.assertEquals(counter.get(), entity.getProperty("counter"));
-
-        long actualVersion = Entities.getVersionProperty(getService().get(Entities.createEntityGroupKey(key)));
-        Assert.assertEquals(counter.getAndIncrement(), actualVersion);
+        long newVersion = Entities.getVersionProperty(getService().get(Entities.createEntityGroupKey(key)));
+        Assert.assertTrue(newVersion > version);
     }
 
 }

@@ -24,9 +24,6 @@ package org.jboss.test.capedwarf.datastore.test;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.google.appengine.api.datastore.Entities;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.Key;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -36,6 +33,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+
+import com.google.appengine.api.datastore.Entities;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -52,6 +53,7 @@ public class VersionTest extends DatastoreTestBase {
     public void testIncrement() throws Exception {
         Entity entity = new Entity("VersionTest");
         try {
+            service.put(entity);
             // 3 puts
             AtomicLong counter = new AtomicLong(1);
             assertVersion(entity, counter);
@@ -64,14 +66,12 @@ public class VersionTest extends DatastoreTestBase {
     }
 
     protected void assertVersion(Entity entity, AtomicLong counter) throws Exception {
-        entity.setProperty("counter", counter.get());
+        long version = Entities.getVersionProperty(service.get(Entities.createEntityGroupKey(entity.getKey())));
 
+        entity.setProperty("counter", counter.getAndIncrement());
         Key key = service.put(entity);
-        entity = service.get(key);
 
-        Assert.assertEquals(counter.get(), entity.getProperty("counter"));
-
-        long actualVersion = Entities.getVersionProperty(service.get(Entities.createEntityGroupKey(key)));
-        Assert.assertEquals(counter.getAndIncrement(), actualVersion);
+        long newVersion = Entities.getVersionProperty(service.get(Entities.createEntityGroupKey(key)));
+        Assert.assertTrue(newVersion > version);
     }
 }
