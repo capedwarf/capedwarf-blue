@@ -1,11 +1,14 @@
+JBoss CapeDwarf
+===============
+
 JBoss CapeDwarf Blue is JBoss' attempt to implement GoogleAppEngine API on top of JBoss' technology / frameworks / libraries.
 This way making the GAE to JBossAS switch seamless.
 
----
 
 How to build CapeDwarf environment?
+-----------------------------------
 
-(1) Checkout JBossAS 7.2.0.Final tag --> JBOSS_HOME
+(1) Build JBossAS 7.2.0.Final tag --> JBOSS_HOME
 
 https://github.com/jbossas/jboss-as/
 
@@ -21,11 +24,11 @@ https://github.com/capedwarf/capedwarf-blue
 
 https://github.com/capedwarf/capedwarf-jboss-as
 
-mvn clean install -Djboss.dir=<JBOSS_HOME> -Pupdate-as
+mvn clean install -Djboss.dir=JBOSS_HOME -Pupdate-as
 
 This will install CapeDwarf Subsystem into previous AS 7.2.0.Final
 
-(5) start CapeDwarf
+(5) Start CapeDwarf
 
 cd JBOSS_HOME/bin
 
@@ -35,4 +38,4 @@ or the long version
 
 ./standalone.sh -c standalone-capedwarf.xml
 
-Voila!
+**Voila!**
