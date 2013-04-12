@@ -80,6 +80,8 @@ public class SearchTest extends ClusteredTestBase {
         Document doc = newEmptyDocument();   // id-less document
         index.put(doc);
 
+        waitForSync();
+
         List<Document> documents = getAllDocumentsIn(index);
         assertEquals(3, documents.size());
         assertFalse(documents.get(0).getId().equals(documents.get(1).getId()));
