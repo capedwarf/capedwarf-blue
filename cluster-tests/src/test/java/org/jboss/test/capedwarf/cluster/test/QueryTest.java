@@ -22,6 +22,8 @@
 
 package org.jboss.test.capedwarf.cluster.test;
 
+import java.util.concurrent.Callable;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -49,17 +51,39 @@ public class QueryTest extends ClusteredTestBase {
     @Test
     @OperateOnDeployment("dep1")
     public void putInA() throws Exception {
-        Entity entity = new Entity("QT", 1);
-        getService().put(entity);
+        final Entity entity = new Entity("QT", 1);
+        wrap(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                getService().put(entity);
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "putInA";
+            }
+        });
     }
 
     @InSequence(20)
     @Test
     @OperateOnDeployment("dep2")
     public void deleteInB() throws Exception {
-        Entity entity = getService().get(KeyFactory.createKey("QT", 1));
+        final Entity entity = getService().get(KeyFactory.createKey("QT", 1));
         Assert.assertNotNull(entity);
-        getService().delete(entity.getKey());
+        wrap(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                getService().delete(entity.getKey());
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "deleteInB";
+            }
+        });
     }
 
     @SuppressWarnings("LoopStatementThatDoesntLoop")
@@ -77,8 +101,19 @@ public class QueryTest extends ClusteredTestBase {
     @Test
     @OperateOnDeployment("dep2")
     public void putInB() throws Exception {
-        Entity entity = new Entity("QT", 2);
-        getService().put(entity);
+        final Entity entity = new Entity("QT", 2);
+        wrap(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                getService().put(entity);
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "putInB";
+            }
+        });
     }
 
     @SuppressWarnings("LoopStatementThatDoesntLoop")
@@ -86,9 +121,68 @@ public class QueryTest extends ClusteredTestBase {
     @Test
     @OperateOnDeployment("dep1")
     public void deleteAndQueryInA() throws Exception {
-        Entity entity = getService().get(KeyFactory.createKey("QT", 2));
+        final Entity entity = getService().get(KeyFactory.createKey("QT", 2));
         Assert.assertNotNull(entity);
-        getService().delete(entity.getKey());
+        wrap(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                getService().delete(entity.getKey());
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "deleteAndQueryInA";
+            }
+        });
+
+        //TODO remove when sync indexing implemented
+        //sync();
+
+        Query query = new Query("QT");
+        for (Entity e : getService().prepare(query).asIterable(FetchOptions.Builder.withChunkSize(10))) {
+            Assert.fail("Should not be here: " + e);
+        }
+    }
+
+    @InSequence(60)
+    @Test
+    @OperateOnDeployment("dep2")
+    public void putInB_2() throws Exception {
+        final Entity entity = new Entity("QT", 3);
+        wrap(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                getService().put(entity);
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "putInB_2";
+            }
+        });
+    }
+
+    @SuppressWarnings("LoopStatementThatDoesntLoop")
+    @InSequence(70)
+    @Test
+    @OperateOnDeployment("dep1")
+    public void deleteAndQueryInA_2() throws Exception {
+        final Entity entity = getService().get(KeyFactory.createKey("QT", 3));
+        Assert.assertNotNull(entity);
+        wrap(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                getService().delete(entity.getKey());
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "deleteAndQueryInA_2";
+            }
+        });
 
         //TODO remove when sync indexing implemented
         //sync();
@@ -111,6 +205,13 @@ public class QueryTest extends ClusteredTestBase {
     @OperateOnDeployment("dep2")
     public void tearDownDepB() throws Exception {
         tearDown();
+    }
+
+    private static <T> T wrap(Callable<T> callable) throws Exception {
+        long now = System.currentTimeMillis();
+        T result = callable.call();
+        System.err.println(callable + " = " + (System.currentTimeMillis() - now) + "ms");
+        return result;
     }
 
     private DatastoreService getService() {
