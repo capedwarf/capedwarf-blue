@@ -32,7 +32,7 @@ import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

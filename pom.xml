@@ -88,7 +88,7 @@
         <version.org.datanucleus.gae>2.1.1</version.org.datanucleus.gae>
         <version.org.datanucleus.jdo>3.0.1</version.org.datanucleus.jdo>
         <!-- Testing -->
-        <version.junit>4.10</version.junit>
+        <version.junit>4.11</version.junit>
         <version.arquillian>1.0.3.Final</version.arquillian>
         <version.shrinkwrap>1.1.2</version.shrinkwrap>
         <version.shrinkwrap.resolver>2.0.0-beta-3</version.shrinkwrap.resolver>
@@ -112,6 +112,7 @@
         <version.org.jboss.resteasy>2.3.2.Final</version.org.jboss.resteasy>
         <!-- Build configuration -->
         <version.datanucleus.plugin>3.1.2</version.datanucleus.plugin>
+        <version.surefire.plugin>2.14.1</version.surefire.plugin>
         <!-- Compiler configuration -->
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
@@ -145,6 +146,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${version.surefire.plugin}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-junit47</artifactId>
+                        <version>${version.surefire.plugin}</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <includes>

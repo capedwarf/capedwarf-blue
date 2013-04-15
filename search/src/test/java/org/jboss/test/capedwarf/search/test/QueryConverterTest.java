@@ -22,7 +22,6 @@
 
 package org.jboss.test.capedwarf.search.test;
 
-import junit.framework.Assert;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
@@ -30,6 +29,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 import org.jboss.capedwarf.search.QueryConverter;
 import org.jboss.test.capedwarf.common.support.All;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

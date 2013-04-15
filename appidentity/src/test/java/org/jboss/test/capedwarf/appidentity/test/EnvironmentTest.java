@@ -36,9 +36,9 @@ import org.junit.runner.RunWith;
 
 import static com.google.appengine.api.utils.SystemProperty.Environment.Value.Development;
 import static com.google.appengine.api.utils.SystemProperty.Environment.Value.Production;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

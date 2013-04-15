@@ -43,7 +43,7 @@ import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Before;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>

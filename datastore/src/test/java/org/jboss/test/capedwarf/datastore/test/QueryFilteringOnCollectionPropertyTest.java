@@ -31,7 +31,7 @@ public class QueryFilteringOnCollectionPropertyTest extends QueryTestBase {
     @Test
     public void queryWithMultipleInequalityFiltersOnMultivaluedPropertyReturnsNothing() throws Exception {
         storeTestEntityWithSingleProperty(Arrays.asList(1, 2));
-        assertThat(
+        assertSet(
             whenFilteringWith(and(
                 new FilterPredicate(SINGLE_PROPERTY_NAME, GREATER_THAN, 1),
                 new FilterPredicate(SINGLE_PROPERTY_NAME, LESS_THAN, 2))),
@@ -42,7 +42,7 @@ public class QueryFilteringOnCollectionPropertyTest extends QueryTestBase {
     @Test
     public void queryWithMultipleEqualityFiltersOnMultivaluedPropertyReturnsEntityIfAllFiltersMatch() throws Exception {
         Entity entity = storeTestEntityWithSingleProperty(Arrays.asList(1, 2));
-        assertThat(
+        assertSet(
             whenFilteringWith(and(
                 new FilterPredicate(SINGLE_PROPERTY_NAME, EQUAL, 1),
                 new FilterPredicate(SINGLE_PROPERTY_NAME, EQUAL, 2))),
@@ -55,9 +55,9 @@ public class QueryFilteringOnCollectionPropertyTest extends QueryTestBase {
         Entity entity12 = storeTestEntityWithSingleProperty(Arrays.asList(1, 2));
         Entity entity123 = storeTestEntityWithSingleProperty(Arrays.asList(1, 2, 3));
 
-        assertThat(whenFilteringWith(new FilterPredicate(SINGLE_PROPERTY_NAME, NOT_EQUAL, 1)), queryReturns(entity12));
+        assertSet(whenFilteringWith(new FilterPredicate(SINGLE_PROPERTY_NAME, NOT_EQUAL, 1)), queryReturns(entity12));
 
-        assertThat(
+        assertSet(
             whenFilteringWith(and(
                 new FilterPredicate(SINGLE_PROPERTY_NAME, NOT_EQUAL, 1),
                 new FilterPredicate(SINGLE_PROPERTY_NAME, NOT_EQUAL, 2))),

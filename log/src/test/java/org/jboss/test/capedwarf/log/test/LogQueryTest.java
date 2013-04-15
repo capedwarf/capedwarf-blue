@@ -46,9 +46,9 @@ import org.junit.runner.RunWith;
 import static com.google.appengine.api.log.LogService.LogLevel.DEBUG;
 import static com.google.appengine.api.log.LogService.LogLevel.ERROR;
 import static com.google.appengine.api.log.LogService.LogLevel.WARN;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

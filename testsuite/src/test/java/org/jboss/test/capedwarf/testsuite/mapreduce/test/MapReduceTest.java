@@ -38,13 +38,13 @@ import com.google.appengine.tools.mapreduce.outputs.InMemoryOutput;
 import com.google.appengine.tools.mapreduce.outputs.NoOutput;
 import com.google.appengine.tools.mapreduce.reducers.NoReducer;
 import com.google.appengine.tools.pipeline.JobInfo;
-import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountMapper;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountReducer;
 import org.jboss.test.capedwarf.testsuite.mapreduce.support.EntityCreator;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

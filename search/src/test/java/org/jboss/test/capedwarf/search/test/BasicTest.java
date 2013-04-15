@@ -42,9 +42,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static com.google.appengine.api.search.Field.FieldType.TEXT;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -215,7 +215,7 @@ public class BasicTest extends SearchTestBase {
         Document retrievedDoc = addAndRetrieve(doc);
         Field field = retrievedDoc.getOnlyField("numberField");
         assertEquals(Field.FieldType.NUMBER, field.getType());
-        assertEquals(123.0, field.getNumber());
+        assertEquals(123.0, field.getNumber(), 0);
     }
 
     @Test
@@ -237,8 +237,8 @@ public class BasicTest extends SearchTestBase {
         Document retrievedDoc = addAndRetrieve(doc);
         Field field = retrievedDoc.getOnlyField("geoPointField");
         assertEquals(Field.FieldType.GEO_POINT, field.getType());
-        assertEquals(45.0, field.getGeoPoint().getLatitude());
-        assertEquals(15.0, field.getGeoPoint().getLongitude());
+        assertEquals(45.0, field.getGeoPoint().getLatitude(), 0);
+        assertEquals(15.0, field.getGeoPoint().getLongitude(), 0);
     }
 
     @Test

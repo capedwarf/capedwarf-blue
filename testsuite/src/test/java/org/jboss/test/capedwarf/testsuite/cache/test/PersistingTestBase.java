@@ -31,9 +31,9 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.KeyFactory;
-import junit.framework.Assert;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.testsuite.TestsuiteTestBase;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**

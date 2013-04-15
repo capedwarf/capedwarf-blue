@@ -26,12 +26,12 @@ import com.google.appengine.tools.mapreduce.MapReduceSettings;
 import com.google.appengine.tools.pipeline.JobInfo;
 import com.google.appengine.tools.pipeline.PipelineService;
 import com.google.appengine.tools.pipeline.PipelineServiceFactory;
-import junit.framework.Assert;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.TestContext;
-import org.jboss.test.capedwarf.testsuite.TestsuiteTestBase;
 import org.jboss.test.capedwarf.testsuite.LibUtils;
+import org.jboss.test.capedwarf.testsuite.TestsuiteTestBase;
+import org.junit.Assert;
 import org.junit.runner.RunWith;
 
 /**

@@ -36,8 +36,8 @@ import org.jboss.test.capedwarf.common.test.TestBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>

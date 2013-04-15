@@ -22,10 +22,10 @@
 
 package org.jboss.test.capedwarf.search.test;
 
-import junit.framework.Assert;
 import org.jboss.capedwarf.search.CacheKey;
 import org.jboss.capedwarf.search.CacheKeyTransformer;
 import org.jboss.test.capedwarf.common.support.JBoss;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

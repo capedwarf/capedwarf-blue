@@ -4,8 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.InputStream;
 
-import junit.framework.Assert;
 import org.jboss.capedwarf.common.io.IOUtils;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
