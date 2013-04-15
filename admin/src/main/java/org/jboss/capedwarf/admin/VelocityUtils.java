@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.servlet.ServletContext;
+
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.RuntimeInstance;
@@ -47,15 +49,19 @@ class VelocityUtils {
         MAP.put(new Key("org.", "apache.", "velocity."), "org.jboss.capedwarf.apache.velocity.");
     }
 
-    static VelocityEngine create() throws Exception {
-        Properties props = defaultVelocityProperties();
+    static VelocityEngine create(ServletContext context) throws Exception {
+        VelocityEngine engine = new VelocityEngine();
 
+        engine.setApplicationAttribute(ServletContext.class.getName(), context);
+
+        Properties props = defaultVelocityProperties();
         props.put("resource.loader", "class");
         props.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
         props.put("tools.toolbox", "application");
         props.put("tools.application.esc", "org.apache.velocity.tools.generic.EscapeTool");
+        engine.init(props);
 
-        return new VelocityEngine(props);
+        return engine;
     }
 
     private static Properties defaultVelocityProperties() throws IOException {

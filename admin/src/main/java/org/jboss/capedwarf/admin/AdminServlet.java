@@ -29,6 +29,7 @@ import java.io.OutputStreamWriter;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -51,13 +52,13 @@ public class AdminServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        createVelocityEngine();
+        createVelocityEngine(config.getServletContext());
     }
 
     @SuppressWarnings("unchecked")
-    private void createVelocityEngine() throws ServletException {
+    private void createVelocityEngine(ServletContext context) throws ServletException {
         try {
-            velocity = VelocityUtils.create();
+            velocity = VelocityUtils.create(context);
         } catch (Exception e) {
             throw new ServletException(e);
         }

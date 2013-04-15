@@ -112,6 +112,9 @@
         <version.org.jboss.resteasy>2.3.2.Final</version.org.jboss.resteasy>
         <!-- Build configuration -->
         <version.datanucleus.plugin>3.1.2</version.datanucleus.plugin>
+        <!-- Compiler configuration -->
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
 
     <build>
@@ -124,8 +127,8 @@
                     <showWarnings>true</showWarnings>
                     <encoding>UTF8</encoding>
                     <compilerArguments>
-                        <source>${maven.compiler.argument.source}</source>
-                        <target>${maven.compiler.argument.target}</target>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
                     </compilerArguments>
                 </configuration>
             </plugin>
