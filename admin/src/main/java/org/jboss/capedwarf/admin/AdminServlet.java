@@ -82,7 +82,7 @@ public class AdminServlet extends HttpServlet {
         try {
             IOUtils.copyStream(in, resp.getOutputStream());
         } finally {
-            in.close();
+            IOUtils.safeClose(in);
         }
     }
 
