@@ -23,6 +23,8 @@
 package org.jboss.capedwarf.tasks;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -59,6 +61,7 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
     static final String PARAMS = "task_option_params_";
 
     private static final String JMSX_DELIVERY_COUNT = "JMSXDeliveryCount";
+    private static final String REGEX_SAFE_DELIMITER = Pattern.quote(DELIMITER);
 
     public HttpServletRequest createServletRequest(ServletContext context, Message message) throws Exception {
         AbstractHttpServletRequest request;
@@ -68,8 +71,8 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
             request = new TasksServletRequest(context);
         }
         request.setMethod(message.getStringProperty(METHOD));
-        request.addHeaders(get(message, HEADERS));
-        request.addParameters(get(message, PARAMS));
+        request.addHeaders(get(message, HEADERS, false));
+        request.addParameters(get(message, PARAMS, true));
 
         int deliveryCount = message.getIntProperty(JMSX_DELIVERY_COUNT);
         String executionCount = String.valueOf(deliveryCount - 1);
@@ -130,20 +133,33 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
         msg.setStringProperty(prefix + offset + COPY, value);
     }
 
-    static Map<String, Set<String>> get(final Message msg, final String prefix) throws JMSException {
-        String regexSafeDelimiter = Pattern.quote(DELIMITER);
-        final Map<String, Set<String>> map = new HashMap<String, Set<String>>();
-        final Enumeration names = msg.getPropertyNames();
+    static Map<String, Set<String>> get(Message msg, String prefix, boolean urlDecode) throws JMSException {
+        Map<String, Set<String>> map = new HashMap<String, Set<String>>();
+        Enumeration names = msg.getPropertyNames();
         while (names.hasMoreElements()) {
-            final String name = names.nextElement().toString();
-            final String value = msg.getStringProperty(name);
+            String name = names.nextElement().toString();
+            String value = msg.getStringProperty(name);
             if (name.startsWith(prefix) && name.endsWith(COPY) == false) {
-                final String property = msg.getStringProperty(name + COPY);
+                String property = msg.getStringProperty(name + COPY);
                 if (property != null) {
-                    map.put(value, new HashSet<String>(Arrays.asList(property.split(regexSafeDelimiter))));
+                    String[] values = property.split(REGEX_SAFE_DELIMITER);
+                    if (urlDecode) {
+                        urlDecode(values);
+                    }
+                    map.put(value, new HashSet<String>(Arrays.asList(values)));
                 }
             }
         }
         return map;
+    }
+
+    private static void urlDecode(String[] values) throws JMSException {
+        try {
+            for (int i = 0; i < values.length; i++) {
+                values[i] = URLDecoder.decode(values[i], "UTF-8");
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new JMSException("UTF-8 not supported on this platform");
+        }
     }
 }
