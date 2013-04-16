@@ -47,8 +47,12 @@ import com.google.common.collect.Sets;
  */
 public class NamespaceServiceImpl implements NamespaceServiceInternal {
     private static final Function<Entity, String> FN = new Function<Entity, String>() {
-        public String apply(Entity input) {
-            return input.getKey().getName();
+        public String apply(Entity entity) {
+            if (entity.getKey().getId() == Entities.NAMESPACE_METADATA_EMPTY_ID) {
+                return "";
+            } else {
+                return entity.getKey().getName();
+            }
         }
     };
 
@@ -63,7 +67,13 @@ public class NamespaceServiceImpl implements NamespaceServiceInternal {
     }
 
     public Set<String> getNamespaces() {
-        return getSet(Entities.NAMESPACE_METADATA_KIND);
+        String oldNS = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            return getSet(Entities.NAMESPACE_METADATA_KIND);
+        } finally {
+            NamespaceManager.set(oldNS);
+        }
     }
 
     public Set<String> getKindsPerNamespace() {
@@ -71,7 +81,13 @@ public class NamespaceServiceImpl implements NamespaceServiceInternal {
     }
 
     public Set<String> getKindsPerNamespace(String namespace) {
-        return getSet(Entities.KIND_METADATA_KIND);
+        String oldNS = NamespaceManager.get();
+        NamespaceManager.set(namespace);
+        try {
+            return getSet(Entities.KIND_METADATA_KIND);
+        } finally {
+            NamespaceManager.set(oldNS);
+        }
     }
 
     public SetMultimap<String, String> getKindsPerNamespaces() {
