@@ -38,6 +38,7 @@ import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.JBoss;
 import org.jboss.test.capedwarf.common.test.TestBase;
+import org.jboss.test.capedwarf.common.test.TestContext;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -52,7 +53,7 @@ import static org.junit.Assert.assertEquals;
 public class NamespacesTest extends TestBase {
     @Deployment
     public static WebArchive getDeployment() {
-        return getCapedwarfDeployment();
+        return getCapedwarfDeployment(TestContext.withMetadata());
     }
 
     @Test
