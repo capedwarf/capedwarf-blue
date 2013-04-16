@@ -64,6 +64,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertArrayEquals;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -185,6 +186,18 @@ public class TasksTest extends TasksTestBase {
     }
 
     @Test
+    public void testByteArrayPayload() throws Exception {
+        byte[] sentPayload = {0, 1, 2, 3, 4};
+
+        Queue queue = QueueFactory.getDefaultQueue();
+        queue.add(withPayload(sentPayload, "application/octet-stream"));
+        sync();
+
+        byte[] receivedPayload = DefaultQueueServlet.getLastRequest().getBody();
+        assertArrayEquals(sentPayload, receivedPayload);
+    }
+
+    @Test
     public void testHeaders() throws Exception {
         Queue queue = QueueFactory.getDefaultQueue();
         queue.add(withHeader("header_key", "header_value"));
@@ -212,6 +225,27 @@ public class TasksTest extends TasksTestBase {
         sync();
 
         assertEquals("param_value", handler.paramValue);
+    }
+
+    @Test
+    public void testByteArrayParam() throws Exception {
+        class ParamHandler implements PrintServlet.RequestHandler {
+            private String paramValue;
+
+            public void handleRequest(ServletRequest req) {
+                paramValue = req.getParameter("byteArray");
+            }
+        }
+
+        ParamHandler handler = new ParamHandler();
+        PrintServlet.setRequestHandler(handler);
+
+        Queue queue = QueueFactory.getQueue("tasks-queue");
+        byte[] value = {0, 1, 2, 3, 4};
+        queue.add(withUrl(URL).param("byteArray", value));
+        sync();
+
+        assertEquals(new String(value), handler.paramValue);
     }
 
     @Test
