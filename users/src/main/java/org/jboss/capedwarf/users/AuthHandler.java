@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -17,6 +18,8 @@ public abstract class AuthHandler {
     public void handleLogoutRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             request.getSession().removeAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY);
+
+            ServletUtils.handleResponse(response, null);
 
             String destinationUrl = request.getParameter(AuthServlet.DESTINATION_URL_PARAM);
             response.sendRedirect(destinationUrl);

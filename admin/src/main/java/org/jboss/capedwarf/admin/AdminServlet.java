@@ -39,6 +39,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
 import org.jboss.capedwarf.common.io.IOUtils;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 
 /**
  * @author Marko Luksa
@@ -94,6 +95,8 @@ public class AdminServlet extends HttpServlet {
     private void serveVelocityPage(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         Context context = CapedwarfVelocityContext.createThreadLocalInstance(manager, req);
         try {
+            ServletUtils.handleResponse(resp, "iso-8859-1"); // same as in header.vm
+
             Template template = velocity.getTemplate(getTemplatePath(req));
             OutputStreamWriter writer = new OutputStreamWriter(resp.getOutputStream());
             template.merge(context, writer);

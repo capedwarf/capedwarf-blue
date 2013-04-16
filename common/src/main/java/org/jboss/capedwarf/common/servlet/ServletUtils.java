@@ -24,12 +24,16 @@
 
 package org.jboss.capedwarf.common.servlet;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ServletUtils {
+    private static final String CONTENT_TYPE = "text/html";
+    private static final String CHAR_ENCODING = "utf-8";
 
     public static boolean isFile(Part part) {
         return getFileName(part) != null;
@@ -49,5 +53,14 @@ public class ServletUtils {
         return null;
     }
 
-
+    /**
+     * Set response headers, etc.
+     *
+     * @param response the http response
+     * @param charEncoding the char encoding; can be null, default is used then
+     */
+    public static void handleResponse(HttpServletResponse response, String charEncoding) {
+        response.setContentType(CONTENT_TYPE);
+        response.setCharacterEncoding(charEncoding != null ? charEncoding : CHAR_ENCODING);
+    }
 }
