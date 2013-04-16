@@ -112,7 +112,7 @@
         <version.org.jboss.resteasy>2.3.2.Final</version.org.jboss.resteasy>
         <!-- Build configuration -->
         <version.datanucleus.plugin>3.1.2</version.datanucleus.plugin>
-        <version.surefire.plugin>2.14.1</version.surefire.plugin>
+        <version.surefire.plugin>2.12.4</version.surefire.plugin>
         <!-- Compiler configuration -->
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
