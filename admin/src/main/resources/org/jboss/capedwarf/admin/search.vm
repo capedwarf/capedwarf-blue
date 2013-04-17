@@ -12,13 +12,18 @@
     <input type="submit" value="Refresh indexes"/>
 </form>
 
+#if($search.errorMessage)
+    <br/>
+    <strong>ERROR: $search.errorMessage</strong>
+#end
+
 <br/><br/>
 
 #if($search.searchPerformed)
     <table width="100%">
         <tr>
             <th>Index name</th>
-            <th>Namaspace</th>
+            <th>Namespace</th>
         </tr>
 
         #foreach ($row in $search.rows)

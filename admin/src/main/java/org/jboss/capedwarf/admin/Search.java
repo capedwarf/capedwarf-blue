@@ -55,6 +55,7 @@ public class Search {
 
     private List<Row> rows;
 
+    private String errorMessage;
 
     public String getNamespace() {
         return namespace == null ? "" : namespace;
@@ -68,6 +69,9 @@ public class Search {
         return namespace != null && indexNamePrefix != null;
     }
 
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 
     public List<Row> getRows() {
         if (rows == null) {
@@ -79,6 +83,12 @@ public class Search {
     @PostConstruct
     private void loadRows() {
         rows = new ArrayList<Row>();
+        try {
+            NamespaceManager.validateNamespace(namespace);
+        } catch (Exception e) {
+            errorMessage = e.getMessage();
+            return;
+        }
         NamespaceManager.set(namespace);
         try {
             SearchService search = SearchServiceFactory.getSearchService(namespace);
