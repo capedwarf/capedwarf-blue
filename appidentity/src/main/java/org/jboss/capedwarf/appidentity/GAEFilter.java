@@ -25,10 +25,12 @@
 package org.jboss.capedwarf.appidentity;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -38,6 +40,9 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import org.jboss.capedwarf.blobstore.ExposedBlobstoreService;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.shared.config.AppEngineWebXml;
+import org.jboss.capedwarf.shared.config.FilePattern;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -49,6 +54,11 @@ public class GAEFilter implements Filter {
     }
 
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+        if (isStaticFile((HttpServletRequest) req)) {
+            serveStaticFile((HttpServletRequest)req, (HttpServletResponse)res);
+            return;
+        }
+
         CapedwarfHttpServletRequestWrapper request = new CapedwarfHttpServletRequestWrapper((HttpServletRequest) req);
         CapedwarfHttpServletResponseWrapper response = new CapedwarfHttpServletResponseWrapper((HttpServletResponse) res);
         request.setAttribute(CapedwarfHttpServletResponseWrapper.class.getName(), response);
@@ -56,6 +66,26 @@ public class GAEFilter implements Filter {
 
         serveBlobIfNecessary(response);
     }
+
+    private boolean isStaticFile(HttpServletRequest request) {
+        AppEngineWebXml appEngineWebXml = CapedwarfEnvironment.getThreadLocalInstance().getAppEngineWebXml();
+        return matches(request.getRequestURI(), appEngineWebXml.getStaticFileIncludes()) && !matches(request.getRequestURI(), appEngineWebXml.getStaticFileExcludes());
+    }
+
+    private boolean matches(String uri, List<? extends FilePattern> patterns) {
+        for (FilePattern pattern : patterns) {
+            if (pattern.matches(uri)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void serveStaticFile(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        RequestDispatcher dispatcher = request.getServletContext().getNamedDispatcher("default");
+        dispatcher.forward(request, response);
+    }
+
 
     private void serveBlobIfNecessary(CapedwarfHttpServletResponseWrapper response) throws IOException {
         String blobKey = response.getBlobKey();

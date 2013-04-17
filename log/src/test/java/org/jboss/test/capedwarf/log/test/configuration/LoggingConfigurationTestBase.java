@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.TestContext;
@@ -41,13 +42,12 @@ public abstract class LoggingConfigurationTestBase extends LoggingTestBase {
     public static final List<Level> LEVELS = Arrays.asList(Level.SEVERE, Level.WARNING, Level.INFO, Level.CONFIG, Level.FINE, Level.FINER, Level.FINEST);
 
     protected void assertLogOnlyLogsMessagesAboveOrAtLevel(Level minLevel) {
+        assertLogOnlyLogsMessagesAboveOrAtLevel(Logger.getLogger(getClass().getName()), minLevel);
+    }
+
+    protected void assertLogOnlyLogsMessagesAboveOrAtLevel(Logger log, Level minLevel) {
         long start = System.currentTimeMillis();
 
-        for (Level level : LEVELS) {
-            assertLogDoesntContain(createMessage(level, start));
-        }
-
-        Logger log = Logger.getLogger(getClass().getName());
         for (Level level : LEVELS) {
             log.log(level, createMessage(level, start));
         }
@@ -67,10 +67,14 @@ public abstract class LoggingConfigurationTestBase extends LoggingTestBase {
     }
 
     protected static Archive getDeploymentWithLoggingLevelSetTo(Level level) {
+        return getDeploymentWithLoggingProperties(new StringAsset(".level=" + level.getName()));
+    }
+
+    protected static Archive getDeploymentWithLoggingProperties(Asset loggingProperties) {
         TestContext context = newTestContext().setAppEngineWebXmlFile("appengine-web-with-logging-properties.xml");
         WebArchive war = getDefaultDeployment(context);
         war.addClass(LoggingConfigurationTestBase.class);
-        war.addAsWebInfResource(new StringAsset(".level=" + level.getName()), "logging.properties");
+        war.addAsWebInfResource(loggingProperties, "logging.properties");
         return war;
     }
 
