@@ -57,10 +57,23 @@ public class ServletUtils {
      * Set response headers, etc.
      *
      * @param response the http response
-     * @param charEncoding the char encoding; can be null, default is used then
      */
-    public static void handleResponse(HttpServletResponse response, String charEncoding) {
+    public static void handleResponse(HttpServletResponse response) {
+        handleResponse(response, null, null);
+    }
+
+    /**
+     * Set response headers, etc.
+     *
+     * @param response the http response
+     * @param charEncoding the char encoding; can be null, default is used then
+     * @param length the content length; only applied if not null
+     */
+    public static void handleResponse(HttpServletResponse response, String charEncoding, Integer length) {
         response.setContentType(CONTENT_TYPE);
         response.setCharacterEncoding(charEncoding != null ? charEncoding : CHAR_ENCODING);
+        if (length != null) {
+            response.setContentLength(length);
+        }
     }
 }

@@ -18,7 +18,7 @@ public class DevelopmentAuthHandler extends AuthHandler {
 
     @Override
     public void handleLoginRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        ServletUtils.handleResponse(response, null);
+        ServletUtils.handleResponse(response);
 
         String email = request.getParameter("email");
         if (email == null) {

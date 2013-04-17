@@ -95,7 +95,7 @@ public class AdminServlet extends HttpServlet {
     private void serveVelocityPage(HttpServletRequest req, HttpServletResponse resp) throws Exception {
         Context context = CapedwarfVelocityContext.createThreadLocalInstance(manager, req);
         try {
-            ServletUtils.handleResponse(resp, "iso-8859-1"); // same as in header.vm
+            ServletUtils.handleResponse(resp, "iso-8859-1", null); // same as in header.vm
 
             Template template = velocity.getTemplate(getTemplatePath(req));
             OutputStreamWriter writer = new OutputStreamWriter(resp.getOutputStream());
