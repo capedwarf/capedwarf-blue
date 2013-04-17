@@ -370,7 +370,7 @@ public class CapedwarfMemcacheService implements MemcacheService {
 
     private NamespacedKey namespacedKey(Object key) {
         String namespace = getNamespace() == null ? NamespaceManager.get() : getNamespace();
-        return new NamespacedKey(namespace, key);
+        return new NamespacedKey(namespace == null ? "" : namespace, key);
     }
 
     private <T> Map<? extends NamespacedKey, ?> toNamespacedMap(Map<T, ?> map) {
