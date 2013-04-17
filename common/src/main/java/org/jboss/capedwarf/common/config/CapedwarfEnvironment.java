@@ -33,6 +33,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.backends.BackendService;
+import com.google.appengine.api.utils.SystemProperty;
+import com.google.apphosting.api.ApiProxy;
+import com.google.common.base.Function;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
@@ -40,12 +45,6 @@ import org.jboss.capedwarf.shared.config.BackendsXml;
 import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
 import org.jboss.capedwarf.shared.config.IndexesXml;
 import org.jboss.capedwarf.shared.config.QueueXml;
-
-import com.google.appengine.api.NamespaceManager;
-import com.google.appengine.api.backends.BackendService;
-import com.google.appengine.api.utils.SystemProperty;
-import com.google.apphosting.api.ApiProxy;
-import com.google.common.base.Function;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -209,6 +208,10 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public void setAppEngineWebXml(AppEngineWebXml appEngineWebXml) {
         this.appEngineWebXml = appEngineWebXml;
+    }
+
+    public AppEngineWebXml getAppEngineWebXml() {
+        return appEngineWebXml;
     }
 
     public QueueXml getQueueXml() {
