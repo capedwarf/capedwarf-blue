@@ -29,12 +29,14 @@ import java.net.URL;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.jboss.test.capedwarf.common.test.TestContext;
+import org.jboss.test.capedwarf.testsuite.config.support.PingFilter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,15 +49,18 @@ public class StaticFilesTest extends TestBase {
     @Deployment
     public static WebArchive getDeployment() {
         TestContext context = TestContext.asDefault();
+        context.setWebXmlFile("static/web.xml");
         context.setAppEngineWebXmlFile("static/appengine-web.xml");
         WebArchive war = getCapedwarfDeployment(context);
+        war.addClass(PingFilter.class);
         war.add(new ByteArrayAsset("12345".getBytes()), "image.png");
         return war;
     }
 
     @Test
     @RunAsClient
-    public void testPing(@ArquillianResource URL url) throws Exception {
+    @InSequence(10)
+    public void applyPing(@ArquillianResource URL url) throws Exception {
         URL imageURL = new URL(url, "image.png");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         InputStream stream = imageURL.openStream();
@@ -65,5 +70,11 @@ public class StaticFilesTest extends TestBase {
             IOUtils.safeClose(stream);
         }
         Assert.assertTrue(baos.size() > 0);
+    }
+
+    @Test
+    @InSequence(20)
+    public void checkPing() {
+        Assert.assertEquals(1, PingFilter.state.size());
     }
 }
