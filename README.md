@@ -28,13 +28,13 @@ https://github.com/capedwarf/capedwarf-blue
 
 https://github.com/capedwarf/capedwarf-jboss-as
 
-mvn clean install -Djboss.dir=JBOSS_HOME -Pupdate-as
+mvn clean install -Djboss.dir=${JBOSS_HOME} -Pupdate-as
 
 This will install CapeDwarf Subsystem into previous AS 7.2.0.Final
 
 (5) Start CapeDwarf
 
-cd JBOSS_HOME/bin
+cd ${JBOSS_HOME}/bin
 
 ./capedwarf.sh
 
