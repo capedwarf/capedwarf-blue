@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
+import com.google.appengine.api.urlfetch.FetchOptions;
 import com.google.appengine.api.urlfetch.HTTPHeader;
 import com.google.appengine.api.urlfetch.HTTPRequest;
 import com.google.appengine.api.urlfetch.HTTPResponse;
@@ -43,8 +44,13 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.params.ClientPNames;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.common.reflection.TargetInvocation;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Keys;
@@ -53,6 +59,8 @@ import org.jboss.capedwarf.shared.components.Keys;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfURLFetchService implements URLFetchService {
+    private static TargetInvocation<Boolean> getFollowRedirects = ReflectionUtils.cacheInvocation(FetchOptions.class, "getFollowRedirects");
+
     public HTTPResponse fetch(URL url) throws IOException {
         return fetch(new HTTPRequest(url));
     }
@@ -107,8 +115,14 @@ public class CapedwarfURLFetchService implements URLFetchService {
             if (payload != null && payload.length > 0) {
                 enclosing.setEntity(new ByteArrayEntity(payload));
             }
+        }
 
-            // TODO -- handle FetchOptions
+        FetchOptions options = request.getFetchOptions();
+        if (options != null) {
+            boolean followRedirects = getFollowRedirects.invokeUnchecked(options);
+            base.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, followRedirects);
+
+            // TODO -- other options
         }
 
         List<HTTPHeader> headers = request.getHeaders();
@@ -124,9 +138,11 @@ public class CapedwarfURLFetchService implements URLFetchService {
     protected HTTPResponse fetch(final HttpUriRequest request) throws IOException {
         try {
             HttpClient client = ComponentRegistry.getInstance().getComponent(Keys.HTTP_CLIENT);
-            HttpResponse response = client.execute(request);
+            HttpContext context = new BasicHttpContext();
+            HttpResponse response = client.execute(request, context);
             HTTPResponseHack jhr = new HTTPResponseHack(response);
-            jhr.setFinalUrl(request.getURI().toURL()); // TODO -- OK?
+            String finalURL = (String) context.getAttribute("final.url");
+            jhr.setFinalUrl(finalURL != null ? new URL(finalURL) : request.getURI().toURL());
             return jhr.getResponse();
         } catch (Exception e) {
             IOException ioe = new IOException();
