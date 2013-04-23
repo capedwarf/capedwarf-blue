@@ -41,11 +41,12 @@ public class CapedwarfTransformerMojo {
                 pathToAppEngineJar,
                 CapedwarfTransformer.class.getName(),
                 "(([.]*ProspectiveSearchServiceFactory*)" +
+                        "|([.]*apphosting.api.ApiProxy.class*)" +
                         "|([.]*datastore.Cursor*)" +
                         "|([.]*datastore.DatastoreServiceConfig*)" +
                         "|([.]*datastore.RawValue*)" +
-                        "|([.]*datastore.Entity*)" +
-                        "|([.]*datastore.Key*))"};
+                        "|([.]*datastore.Entity.class*)" +
+                        "|([.]*datastore.Key.class*))"};
 
     }
 }
