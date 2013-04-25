@@ -26,9 +26,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import com.google.appengine.api.datastore.DatastoreNeedIndexException;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Projection;
@@ -37,14 +40,18 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.RawValue;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.hibernate.search.SearchException;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.ProjectionConstants;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.config.IndexesXml;
 
 /**
  * Handle query projections.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 class Projections {
     private static final String TYPES_FIELD = "__capedwarf___TYPES___";
@@ -64,7 +71,109 @@ class Projections {
         List<String> projections = getProjections(gaeQuery);
         if (projections.isEmpty() == false) {
             cacheQuery.projection(projections.toArray(new String[projections.size()]));
+            if (!gaeQuery.isKeysOnly()) {
+                String fullTextFilterName = getFullTextFilterName(gaeQuery);
+                try {
+                    cacheQuery.enableFullTextFilter(fullTextFilterName);
+                } catch (SearchException e) {
+                    throw new DatastoreNeedIndexException("No matching index found (FullTextFilterName: " + fullTextFilterName + ")");
+                }
+            }
         }
+    }
+
+    private static String getFullTextFilterName(Query gaeQuery) {
+        for (IndexesXml.Index index : CapedwarfEnvironment.getThreadLocalInstance().getIndexes().getIndexes().values()) {
+            if (indexMatches(index, gaeQuery)) {
+                return index.getName();
+            }
+        }
+        throw new DatastoreNeedIndexException("No matching index found");
+    }
+
+    private static boolean indexMatches(IndexesXml.Index index, Query query) {
+        if (!index.getKind().equals(query.getKind())) {
+            return false;
+        }
+
+        Set<String> filterProperties = getFilterProperties(query);
+        Set<String> sortProperties = getSortProperties(query);
+        Set<String> projectionProperties = getProjectionProperties(query);
+        sortProperties.removeAll(filterProperties);
+        projectionProperties.removeAll(filterProperties);
+        projectionProperties.removeAll(sortProperties);
+
+        List<String> indexProperties = index.getPropertyNames();
+
+        while (!indexProperties.isEmpty()) {
+            String property = indexProperties.get(0);
+            if (!filterProperties.isEmpty()) {
+                if (filterProperties.remove(property)) {
+                    indexProperties.remove(0);
+                } else {
+                    return false;
+                }
+            } else if (!sortProperties.isEmpty()) {
+                if (sortProperties.remove(property)) {
+                    indexProperties.remove(0);
+                } else {
+                    return false;
+                }
+            } else if (!projectionProperties.isEmpty()) {
+                if (projectionProperties.remove(property)) {
+                    indexProperties.remove(0);
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        return indexProperties.isEmpty();
+    }
+
+    @SuppressWarnings("deprecation")
+    private static Set<String> getFilterProperties(Query query) {
+        Set<String> set = new HashSet<>();
+        addFilterPropertiesToSet(set, query.getFilter());
+        for (Query.FilterPredicate predicate : query.getFilterPredicates()) {
+            addFilterPropertiesToSet(set, predicate);
+        }
+        return set;
+    }
+
+    private static void addFilterPropertiesToSet(Set<String> set, Query.Filter filter) {
+        if (filter == null) {
+            return;
+        }
+        if (filter instanceof Query.FilterPredicate) {
+            Query.FilterPredicate predicate = (Query.FilterPredicate) filter;
+            set.add(predicate.getPropertyName());
+        } else if (filter instanceof Query.CompositeFilter) {
+            Query.CompositeFilter composite = (Query.CompositeFilter) filter;
+            for (Query.Filter subFilter : composite.getSubFilters()) {
+                addFilterPropertiesToSet(set, subFilter);
+            }
+        } else {
+            throw new IllegalArgumentException("Unsupported filter type " + filter);
+        }
+    }
+
+    private static Set<String> getSortProperties(Query query) {
+        Set<String> set = new HashSet<>();
+        for (Query.SortPredicate sortPredicate : query.getSortPredicates()) {
+            set.add(sortPredicate.getPropertyName());
+        }
+        return set;
+    }
+
+    private static Set<String> getProjectionProperties(Query query) {
+        Set<String> set = new HashSet<>();
+        for (Projection projection : query.getProjections()) {
+            set.add(getPropertyName(projection));
+        }
+        return set;
     }
 
     private static List<String> getProjections(Query gaeQuery) {
@@ -77,7 +186,7 @@ class Projections {
             projections.add(ProjectionConstants.KEY);
             projections.add(TYPES_FIELD);
             for (Projection projection : gaeQuery.getProjections()) {
-                projections.add(getProjection(projection));
+                projections.add(getPropertyName(projection));
             }
             projections.addAll(getPropertiesRequiredOnlyForSorting(gaeQuery));
         }
@@ -98,7 +207,7 @@ class Projections {
         return list;
     }
 
-    private static String getProjection(Projection projection) {
+    private static String getPropertyName(Projection projection) {
         if (projection instanceof PropertyProjection) {
             PropertyProjection propertyProjection = (PropertyProjection) projection;
             return propertyProjection.getName();
