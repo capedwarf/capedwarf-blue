@@ -280,17 +280,16 @@ public class CapedwarfMemcacheService implements MemcacheService {
 
     private Long incrementInternal(final Object key, final long delta, final Long initialValue) {
         lock(key);
+        long newValue;
         Object value = get(key);
         if (value == null) {
             if (initialValue == null) {
                 return null;
             }
             value = initialValue;
-        }
-
-        long newValue = castToLong(value) + delta;
-        if (newValue < 0) {
-            newValue = 0;
+            newValue = initialValue + delta;
+        } else {
+            newValue = Math.max(0, castToLong(value) + delta);
         }
 
         if (value instanceof String) {
