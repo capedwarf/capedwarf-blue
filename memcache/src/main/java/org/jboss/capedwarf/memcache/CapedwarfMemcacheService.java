@@ -69,6 +69,19 @@ public class CapedwarfMemcacheService implements MemcacheService {
         this.cache = InfinispanUtils.getCache(Application.getAppId(), CacheName.MEMCACHE);
     }
 
+    protected NamespacedMarker toMarker(Object key) {
+        String namespace = getNamespace() == null ? NamespaceManager.get() : getNamespace();
+        return new NamespacedMarker(namespace == null ? "" : namespace, key);
+    }
+
+    protected void putMarker(Object key, Object value, long millisNoReAdd) {
+        cache.put(toMarker(key), value, millisNoReAdd, TimeUnit.MILLISECONDS);
+    }
+
+    protected boolean hasMarker(Object key) {
+        return cache.containsKey(toMarker(key));
+    }
+
     public String getNamespace() {
         return namespace;
     }
@@ -104,7 +117,10 @@ public class CapedwarfMemcacheService implements MemcacheService {
         // TODO: batching
         Map<T, Object> map = new HashMap<T, Object>();
         for (T key : keys) {
-            map.put(key, get(key));
+            Object value = get(key);
+            if (value != null) {
+                map.put(key, value);
+            }
         }
         return map;
     }
@@ -127,8 +143,12 @@ public class CapedwarfMemcacheService implements MemcacheService {
                 return true;
             }
             case ADD_ONLY_IF_NOT_PRESENT: {
-                Object previousValue = cache.putIfAbsent(namespacedKey, value, toLifespanMillis(expiration), TimeUnit.MILLISECONDS);
-                return previousValue == null;
+                if (hasMarker(key)) {
+                    return false;
+                } else {
+                    Object previousValue = cache.putIfAbsent(namespacedKey, value, toLifespanMillis(expiration), TimeUnit.MILLISECONDS);
+                    return previousValue == null;
+                }
             }
             case REPLACE_ONLY_IF_PRESENT: {
                 Object previousValue = cache.replace(namespacedKey, value, toLifespanMillis(expiration), TimeUnit.MILLISECONDS);
@@ -185,9 +205,12 @@ public class CapedwarfMemcacheService implements MemcacheService {
             case ADD_ONLY_IF_NOT_PRESENT:
                 Set<T> addedKeys = new HashSet<T>();
                 for (Map.Entry<T, ?> entry : map.entrySet()) {
-                    Object previousValue = cache.putIfAbsent(namespacedKey(entry.getKey()), entry.getValue(), toLifespanMillis(expiration), TimeUnit.MILLISECONDS);
-                    if (previousValue == null) {
-                        addedKeys.add(entry.getKey());
+                    final Object key = entry.getKey();
+                    if (hasMarker(key) == false) {
+                        Object previousValue = cache.putIfAbsent(namespacedKey(key), entry.getValue(), toLifespanMillis(expiration), TimeUnit.MILLISECONDS);
+                        if (previousValue == null) {
+                            addedKeys.add(entry.getKey());
+                        }
                     }
                 }
                 return addedKeys;
@@ -211,7 +234,10 @@ public class CapedwarfMemcacheService implements MemcacheService {
 
     public boolean delete(Object key, long millisNoReAdd) {
         Object removedObject = cache.remove(namespacedKey(key));
-        return removedObject != null; // TODO -- use millisNoReAdd
+        if (millisNoReAdd > 0) {
+            putMarker(key, removedObject, millisNoReAdd);
+        }
+        return removedObject != null;
     }
 
     public <T> Set<T> deleteAll(Collection<T> keys) {
@@ -225,8 +251,11 @@ public class CapedwarfMemcacheService implements MemcacheService {
             if (previousValue != null) {
                 deletedKeys.add(key);
             }
+            if (millisNoReAdd > 0) {
+                putMarker(key, previousValue, millisNoReAdd);
+            }
         }
-        return deletedKeys; // TODO -- use millisNoReAdd
+        return deletedKeys;
     }
 
     protected void lock(Object key) {
