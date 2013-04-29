@@ -57,6 +57,7 @@ import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
@@ -484,8 +485,12 @@ public class CapedwarfQueue implements Queue {
         return createQueueStatistics().fetchStatistics(deadlineInSeconds);
     }
 
+    protected <V> Future<V> wrap(Callable<V> callable) {
+        return ExecutorFactory.wrap(Wrappers.wrap(callable));
+    }
+    
     public Future<TaskHandle> addAsync() {
-        return ExecutorFactory.wrap(new Callable<TaskHandle>() {
+        return wrap(new Callable<TaskHandle>() {
             public TaskHandle call() throws Exception {
                 return add();
             }
@@ -493,7 +498,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<TaskHandle> addAsync(final TaskOptions taskOptions) {
-        return ExecutorFactory.wrap(new Callable<TaskHandle>() {
+        return wrap(new Callable<TaskHandle>() {
             public TaskHandle call() throws Exception {
                 return add(taskOptions);
             }
@@ -501,7 +506,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<List<TaskHandle>> addAsync(final Iterable<TaskOptions> taskOptionses) {
-        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+        return wrap(new Callable<List<TaskHandle>>() {
             public List<TaskHandle> call() throws Exception {
                 return add(taskOptionses);
             }
@@ -509,7 +514,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<TaskHandle> addAsync(final Transaction transaction, final TaskOptions taskOptions) {
-        return ExecutorFactory.wrap(new Callable<TaskHandle>() {
+        return wrap(new Callable<TaskHandle>() {
             public TaskHandle call() throws Exception {
                 return add(transaction, taskOptions);
             }
@@ -517,7 +522,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<List<TaskHandle>> addAsync(final Transaction transaction, final Iterable<TaskOptions> taskOptionses) {
-        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+        return wrap(new Callable<List<TaskHandle>>() {
             public List<TaskHandle> call() throws Exception {
                 return add(transaction, taskOptionses);
             }
@@ -525,7 +530,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<Boolean> deleteTaskAsync(final String taskName) {
-        return ExecutorFactory.wrap(new Callable<Boolean>() {
+        return wrap(new Callable<Boolean>() {
             public Boolean call() throws Exception {
                 return deleteTask(taskName);
             }
@@ -533,7 +538,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<Boolean> deleteTaskAsync(final TaskHandle taskHandle) {
-        return ExecutorFactory.wrap(new Callable<Boolean>() {
+        return wrap(new Callable<Boolean>() {
             public Boolean call() throws Exception {
                 return deleteTask(taskHandle);
             }
@@ -541,7 +546,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<List<Boolean>> deleteTaskAsync(final List<TaskHandle> taskHandles) {
-        return ExecutorFactory.wrap(new Callable<List<Boolean>>() {
+        return wrap(new Callable<List<Boolean>>() {
             public List<Boolean> call() throws Exception {
                 return deleteTask(taskHandles);
             }
@@ -549,7 +554,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<List<TaskHandle>> leaseTasksAsync(final long lease, final TimeUnit unit, final long countLimit) {
-        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+        return wrap(new Callable<List<TaskHandle>>() {
             public List<TaskHandle> call() throws Exception {
                 return leaseTasks(lease, unit, countLimit);
             }
@@ -557,7 +562,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<List<TaskHandle>> leaseTasksByTagBytesAsync(final long lease, final TimeUnit unit, final long countLimit, final byte[] tag) {
-        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+        return wrap(new Callable<List<TaskHandle>>() {
             public List<TaskHandle> call() throws Exception {
                 return leaseTasksByTagBytes(lease, unit, countLimit, tag);
             }
@@ -565,7 +570,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<List<TaskHandle>> leaseTasksByTagAsync(final long lease, final TimeUnit unit, final long countLimit, final String tag) {
-        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+        return wrap(new Callable<List<TaskHandle>>() {
             public List<TaskHandle> call() throws Exception {
                 return leaseTasksByTag(lease, unit, countLimit, tag);
             }
@@ -573,7 +578,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<List<TaskHandle>> leaseTasksAsync(final LeaseOptions leaseOptions) {
-        return ExecutorFactory.wrap(new Callable<List<TaskHandle>>() {
+        return wrap(new Callable<List<TaskHandle>>() {
             public List<TaskHandle> call() throws Exception {
                 return leaseTasks(leaseOptions);
             }
@@ -581,7 +586,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     public Future<QueueStatistics> fetchStatisticsAsync(final Double deadlineInSeconds) {
-        return ExecutorFactory.wrap(new Callable<QueueStatistics>() {
+        return wrap(new Callable<QueueStatistics>() {
             public QueueStatistics call() throws Exception {
                 return fetchStatistics(deadlineInSeconds);
             }
