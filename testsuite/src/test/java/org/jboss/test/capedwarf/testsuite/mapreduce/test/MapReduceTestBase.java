@@ -58,7 +58,6 @@ public abstract class MapReduceTestBase extends TestsuiteTestBase {
         LibUtils.addLibrary(war, "com.google.guava", "guava");
         LibUtils.addLibrary(war, "com.googlecode.charts4j", "charts4j");
         LibUtils.addLibrary(war, "commons-logging", "commons-logging");
-        LibUtils.addLibrary(war, "org.apache.hadoop", "hadoop-core");
         LibUtils.addLibrary(war, "org.json", "json");
 
         return war;

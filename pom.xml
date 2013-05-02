@@ -101,7 +101,6 @@
         <version.com.google.gae.mapper>r452</version.com.google.gae.mapper>
         <version.charts4j>1.3</version.charts4j>
         <version.commons-logging>1.1.1</version.commons-logging>
-        <version.org.apache.hadoop.core>0.20.2</version.org.apache.hadoop.core>
         <version.org.json>20090211</version.org.json>
         <!-- Testing Iddx -->
         <version.com.google.api-client>1.11.0-beta</version.com.google.api-client>
@@ -831,17 +830,10 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-core</artifactId>
-                <version>${version.org.apache.hadoop.core}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>${version.org.apache.log4j}</version>
             </dependency>
-
 
             <!-- Testing Iddx -->
 
