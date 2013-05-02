@@ -37,6 +37,7 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceConfig;
 import com.google.appengine.api.datastore.Entities;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.ImplicitTransactionManagementPolicy;
 import com.google.appengine.api.datastore.Index;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
@@ -93,6 +94,9 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     }
 
     public static DatastoreServiceInternal async(DatastoreServiceConfig config) {
+        if (config.getImplicitTransactionManagementPolicy() == ImplicitTransactionManagementPolicy.AUTO) {
+            throw new IllegalArgumentException("Async Datastore service does not support ImplicitTransactionManagementPolicy.AUTO!");
+        }
         return new DatastoreServiceImpl(config, true);
     }
 

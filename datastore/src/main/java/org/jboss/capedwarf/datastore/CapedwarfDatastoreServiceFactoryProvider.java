@@ -43,6 +43,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfDatastoreServiceFactoryProvider extends CapedwarfFactoryProvider<IDatastoreServiceFactory> {
     static {
         AspectRegistry.addAspect(new TxTasksAspect());
+        AspectRegistry.addAspect(new AutoTxAspect());
     }
 
     private IDatastoreServiceFactory factory = new IDatastoreServiceFactory() {

@@ -87,10 +87,12 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
         }
     }
 
+    @AutoTx
     public Entity get(Key key) throws EntityNotFoundException {
         return get(getCurrentTransaction(null), key);
     }
 
+    @AutoTx
     public Entity get(Transaction transaction, Key key) throws EntityNotFoundException {
         final Entity result = unwrap(doGet(transaction, key));
         if (result == null) {
@@ -99,10 +101,12 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
         return result;
     }
 
+    @AutoTx
     public Map<Key, Entity> get(Iterable<Key> keys) {
         return get(getCurrentTransaction(null), keys);
     }
 
+    @AutoTx
     public Map<Key, Entity> get(final Transaction transaction, final Iterable<Key> keys) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
 
@@ -125,18 +129,22 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
         return map;
     }
 
+    @AutoTx
     public Key put(Entity entity) {
         return put(getCurrentTransaction(null), entity);
     }
 
+    @AutoTx
     public Key put(Transaction transaction, Entity entity) {
         return unwrap(doPut(transaction, entity, true));
     }
 
+    @AutoTx
     public List<Key> put(Iterable<Entity> entities) {
         return put(getCurrentTransaction(null), entities);
     }
 
+    @AutoTx
     public List<Key> put(Transaction transaction, final Iterable<Entity> entities) {
         final boolean isSpecialKind = KindUtils.inProgress(KindUtils.Type.METADATA);
 
@@ -155,18 +163,22 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
         return getDelegate().put(transaction, entities, post);
     }
 
+    @AutoTx
     public void delete(Key... keys) {
         delete(getCurrentTransaction(null), keys);
     }
 
+    @AutoTx
     public void delete(Transaction transaction, Key... keys) {
         delete(transaction, Arrays.asList(keys));
     }
 
+    @AutoTx
     public void delete(Iterable<Key> keys) {
         delete(getCurrentTransaction(null), keys);
     }
 
+    @AutoTx
     public void delete(final Transaction transaction, final Iterable<Key> keys) {
         final boolean isSpecialKind = KindUtils.inProgress(KindUtils.Type.METADATA);
 

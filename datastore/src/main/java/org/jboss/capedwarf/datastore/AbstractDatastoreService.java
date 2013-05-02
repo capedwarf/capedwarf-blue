@@ -167,11 +167,13 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
         }
     }
 
+    @AutoTx
     public PreparedQuery prepare(Query query) {
         getDatastoreCallbacks().executePreQueryCallbacks(this, query);
         return getDelegate().prepare(query);
     }
 
+    @AutoTx
     public PreparedQuery prepare(Transaction transaction, Query query) {
         getDatastoreCallbacks().executePreQueryCallbacks(this, query);
         return getDelegate().prepare(transaction, query);
