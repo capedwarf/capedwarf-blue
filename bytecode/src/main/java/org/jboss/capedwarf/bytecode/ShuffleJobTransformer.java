@@ -29,10 +29,10 @@ import javassist.NotFoundException;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ShuffleServiceTransformer extends JavassistTransformer {
+public class ShuffleJobTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         try {
-            CtMethod method = clazz.getDeclaredMethod("isAvailable");
+            CtMethod method = clazz.getDeclaredMethod("isServiceAvailable");
             method.setBody("{return false;}");
         } catch (NotFoundException ignored) {
         }
