@@ -88,11 +88,13 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
     }
 
     @AutoTx
+    @Deadline
     public Entity get(Key key) throws EntityNotFoundException {
         return get(getCurrentTransaction(null), key);
     }
 
     @AutoTx
+    @Deadline
     public Entity get(Transaction transaction, Key key) throws EntityNotFoundException {
         final Entity result = unwrap(doGet(transaction, key));
         if (result == null) {
@@ -102,11 +104,13 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
     }
 
     @AutoTx
+    @Deadline
     public Map<Key, Entity> get(Iterable<Key> keys) {
         return get(getCurrentTransaction(null), keys);
     }
 
     @AutoTx
+    @Deadline
     public Map<Key, Entity> get(final Transaction transaction, final Iterable<Key> keys) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
 
@@ -130,21 +134,25 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
     }
 
     @AutoTx
+    @Deadline
     public Key put(Entity entity) {
         return put(getCurrentTransaction(null), entity);
     }
 
     @AutoTx
+    @Deadline
     public Key put(Transaction transaction, Entity entity) {
         return unwrap(doPut(transaction, entity, true));
     }
 
     @AutoTx
+    @Deadline
     public List<Key> put(Iterable<Entity> entities) {
         return put(getCurrentTransaction(null), entities);
     }
 
     @AutoTx
+    @Deadline
     public List<Key> put(Transaction transaction, final Iterable<Entity> entities) {
         final boolean isSpecialKind = KindUtils.inProgress(KindUtils.Type.METADATA);
 
@@ -164,21 +172,25 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
     }
 
     @AutoTx
+    @Deadline
     public void delete(Key... keys) {
         delete(getCurrentTransaction(null), keys);
     }
 
     @AutoTx
+    @Deadline
     public void delete(Transaction transaction, Key... keys) {
         delete(transaction, Arrays.asList(keys));
     }
 
     @AutoTx
+    @Deadline
     public void delete(Iterable<Key> keys) {
         delete(getCurrentTransaction(null), keys);
     }
 
     @AutoTx
+    @Deadline
     public void delete(final Transaction transaction, final Iterable<Key> keys) {
         final boolean isSpecialKind = KindUtils.inProgress(KindUtils.Type.METADATA);
 
@@ -196,30 +208,37 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
         getDelegate().delete(transaction, keys, post);
     }
 
+    @Deadline
     public Transaction beginTransaction() {
         return beginTransaction(TransactionOptions.Builder.withDefaults());
     }
 
+    @Deadline
     public Transaction beginTransaction(final TransactionOptions transactionOptions) {
         return getDelegate().beginTransaction(transactionOptions);
     }
 
+    @Deadline
     public KeyRange allocateIds(String kind, long num) {
         return allocateIds(null, kind, num);
     }
 
+    @Deadline
     public KeyRange allocateIds(Key key, String s, long l) {
         return getDelegate().allocateIds(key, s, l);
     }
 
+    @Deadline
     public KeyRangeState allocateIdRange(KeyRange keys) {
         return getDelegate().allocateIdRange(keys);
     }
 
+    @Deadline
     public DatastoreAttributes getDatastoreAttributes() {
         return getDelegate().getDatastoreAttributes();
     }
 
+    @Deadline
     public Map<Index, Index.IndexState> getIndexes() {
         return getDelegate().getIndexes();
     }

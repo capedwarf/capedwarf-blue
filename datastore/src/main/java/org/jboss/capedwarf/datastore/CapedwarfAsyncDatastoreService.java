@@ -118,11 +118,13 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
     }
 
     @TxTask
+    @Deadline
     public Future<Entity> get(final Key key) {
         return get(getCurrentTransaction(null), key);
     }
 
     @TxTask
+    @Deadline
     public Future<Entity> get(Transaction transaction, final Key key) {
         Future<Entity> future = doGet(transaction, key);
         return new FutureWrapper<Entity, Entity>(future) {
@@ -139,11 +141,13 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
     }
 
     @TxTask
+    @Deadline
     public Future<Map<Key, Entity>> get(final Iterable<Key> keyIterable) {
         return get(getCurrentTransaction(null), keyIterable);
     }
 
     @TxTask
+    @Deadline
     public Future<Map<Key, Entity>> get(final Transaction transaction, final Iterable<Key> keyIterable) {
         final Map<Key, Entity> map = new LinkedHashMap<Key, Entity>();
 
@@ -174,21 +178,25 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
     }
 
     @TxTask
+    @Deadline
     public Future<Key> put(final Entity entity) {
         return put(getCurrentTransaction(null), entity);
     }
 
     @TxTask
+    @Deadline
     public Future<List<Key>> put(final Iterable<Entity> entityIterable) {
         return put(getCurrentTransaction(null), entityIterable);
     }
 
     @TxTask
+    @Deadline
     public Future<Key> put(Transaction transaction, Entity entity) {
         return doPut(transaction, entity, false);
     }
 
     @TxTask
+    @Deadline
     public Future<List<Key>> put(final Transaction transaction, final Iterable<Entity> entityIterable) {
         getDatastoreCallbacks().executePrePutCallbacks(this, Lists.newArrayList(entityIterable));
 
@@ -215,21 +223,25 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
     }
 
     @TxTask
+    @Deadline
     public Future<Void> delete(final Key... keys) {
         return delete(getCurrentTransaction(null), keys);
     }
 
     @TxTask
+    @Deadline
     public Future<Void> delete(final Transaction transaction, final Key... keys) {
         return delete(transaction, Arrays.asList(keys));
     }
 
     @TxTask
+    @Deadline
     public Future<Void> delete(final Iterable<Key> keyIterable) {
         return delete(getCurrentTransaction(null), keyIterable);
     }
 
     @TxTask
+    @Deadline
     public Future<Void> delete(final Transaction transaction, final Iterable<Key> keyIterable) {
         getDatastoreCallbacks().executePreDeleteCallbacks(this, Lists.newArrayList(keyIterable));
 
@@ -254,10 +266,12 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
         return handleGetWithPost(wrap, CapedwarfTransaction.getTx(), post);
     }
 
+    @Deadline
     public Future<KeyRange> allocateIds(final String s, final long l) {
         return allocateIds(null, s, l);
     }
 
+    @Deadline
     public Future<KeyRange> allocateIds(final Key key, final String s, final long l) {
         return tx(new Callable<KeyRange>() {
             public KeyRange call() throws Exception {
@@ -266,6 +280,7 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
         });
     }
 
+    @Deadline
     public Future<DatastoreAttributes> getDatastoreAttributes() {
         return wrap(new Callable<DatastoreAttributes>() {
             public DatastoreAttributes call() throws Exception {
@@ -274,6 +289,7 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
         });
     }
 
+    @Deadline
     public Future<Map<Index, Index.IndexState>> getIndexes() {
         return wrap(new Callable<Map<Index, Index.IndexState>>() {
             public Map<Index, Index.IndexState> call() throws Exception {

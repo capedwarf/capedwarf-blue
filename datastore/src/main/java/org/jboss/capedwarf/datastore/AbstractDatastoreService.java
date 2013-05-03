@@ -179,14 +179,17 @@ public abstract class AbstractDatastoreService implements BaseDatastoreService, 
         return getDelegate().prepare(transaction, query);
     }
 
+    @Deadline
     public Transaction getCurrentTransaction() {
         return getDelegate().getCurrentTransaction();
     }
 
+    @Deadline
     public Transaction getCurrentTransaction(Transaction transaction) {
         return getDelegate().getCurrentTransaction(transaction);
     }
 
+    @Deadline
     public Collection<Transaction> getActiveTransactions() {
         return getDelegate().getActiveTransactions();
     }

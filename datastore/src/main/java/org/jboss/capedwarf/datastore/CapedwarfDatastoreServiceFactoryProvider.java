@@ -44,6 +44,7 @@ public class CapedwarfDatastoreServiceFactoryProvider extends CapedwarfFactoryPr
     static {
         AspectRegistry.addAspect(new TxTasksAspect());
         AspectRegistry.addAspect(new AutoTxAspect());
+        AspectRegistry.addAspect(new DeadlineAspect());
     }
 
     private IDatastoreServiceFactory factory = new IDatastoreServiceFactory() {
