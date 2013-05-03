@@ -34,7 +34,7 @@ public class GlobalTimeLimitAspect extends AbstractAspect<TimeLimit> {
     }
 
     public int priority() {
-        return Integer.MAX_VALUE;
+        return Integer.MAX_VALUE - 100;
     }
 
     public Object invoke(AspectContext context) throws Throwable {

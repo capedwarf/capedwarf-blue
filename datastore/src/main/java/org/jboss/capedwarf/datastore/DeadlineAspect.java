@@ -35,6 +35,11 @@ final class DeadlineAspect extends AbstractAspect<Deadline> {
         super(Deadline.class);
     }
 
+    @Override
+    public int priority() {
+        return Integer.MAX_VALUE; // this should be last
+    }
+
     public Object invoke(AspectContext context) throws Throwable {
         AbstractDatastoreService service = (AbstractDatastoreService) context.getInfo().getApiImpl();
         DatastoreServiceConfig config = service.getDatastoreServiceConfig();

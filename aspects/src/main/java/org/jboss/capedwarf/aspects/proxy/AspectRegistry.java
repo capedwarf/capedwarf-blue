@@ -153,7 +153,7 @@ public final class AspectRegistry {
 
     private static class AspectWrapperComparator implements Comparator<AspectWrapper> {
         public int compare(AspectWrapper a1, AspectWrapper a2) {
-            return a2.priority() - a1.priority();
+            return a1.priority() - a2.priority();
         }
     }
 }
