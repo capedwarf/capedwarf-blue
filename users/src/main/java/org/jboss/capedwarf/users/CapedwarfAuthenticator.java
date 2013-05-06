@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.authenticator.AuthenticatorBase;
+import org.apache.catalina.authenticator.BasicAuthenticator;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.deploy.LoginConfig;
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
@@ -39,17 +40,41 @@ import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
 public class CapedwarfAuthenticator extends AuthenticatorBase {
     private static final String KEY = CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY;
 
-    protected boolean authenticate(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
-        HttpSession session = request.getSession();
-        if (session == null)
-            return false;
+    private volatile AuthenticatorBase basicDelegate;
 
-        CapedwarfUserPrincipal principal = getPrincipal(session);
-        if (principal != null) {
-            request.setUserPrincipal(principal);
-            return true;
+    protected AuthenticatorBase getBasicDelegate() {
+        if (basicDelegate == null) {
+            synchronized (this) {
+                if (basicDelegate == null) {
+                    AuthenticatorBase tmp = new BasicAuthenticator();
+                    tmp.setContainer(getContainer());
+                    basicDelegate = tmp;
+                }
+            }
+        }
+        return basicDelegate;
+    }
+
+    protected boolean authenticate(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
+        final String authMethod = config.getAuthMethod();
+        if (authMethod != null && "BASIC".equals(authMethod.toUpperCase())) {
+            try {
+                return getBasicDelegate().authenticate(request, response);
+            } catch (ServletException e) {
+                throw new IOException(e);
+            }
         } else {
-            return false;
+            HttpSession session = request.getSession();
+            if (session == null)
+                return false;
+
+            CapedwarfUserPrincipal principal = getPrincipal(session);
+            if (principal != null) {
+                request.setUserPrincipal(principal);
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
