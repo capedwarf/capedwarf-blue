@@ -42,19 +42,6 @@ public class CapedwarfAuthenticator extends AuthenticatorBase {
 
     private volatile AuthenticatorBase basicDelegate;
 
-    protected AuthenticatorBase getBasicDelegate() {
-        if (basicDelegate == null) {
-            synchronized (this) {
-                if (basicDelegate == null) {
-                    AuthenticatorBase tmp = new BasicAuthenticator();
-                    tmp.setContainer(getContainer());
-                    basicDelegate = tmp;
-                }
-            }
-        }
-        return basicDelegate;
-    }
-
     protected boolean authenticate(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
         final String authMethod = config.getAuthMethod();
         if (authMethod != null && "BASIC".equals(authMethod.toUpperCase())) {
@@ -66,14 +53,14 @@ public class CapedwarfAuthenticator extends AuthenticatorBase {
         } else {
             HttpSession session = request.getSession();
             if (session == null)
-                return false;
+                return unauthorized(response);
 
             CapedwarfUserPrincipal principal = getPrincipal(session);
             if (principal != null) {
                 request.setUserPrincipal(principal);
                 return true;
             } else {
-                return false;
+                return unauthorized(response);
             }
         }
     }
@@ -90,7 +77,25 @@ public class CapedwarfAuthenticator extends AuthenticatorBase {
         }
     }
 
+    protected boolean unauthorized(HttpServletResponse response) throws IOException {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        return false;
+    }
+
     protected CapedwarfUserPrincipal getPrincipal(HttpSession session) {
         return (CapedwarfUserPrincipal) session.getAttribute(KEY);
+    }
+
+    protected AuthenticatorBase getBasicDelegate() {
+        if (basicDelegate == null) {
+            synchronized (this) {
+                if (basicDelegate == null) {
+                    AuthenticatorBase tmp = new BasicAuthenticator();
+                    tmp.setContainer(getContainer());
+                    basicDelegate = tmp;
+                }
+            }
+        }
+        return basicDelegate;
     }
 }
