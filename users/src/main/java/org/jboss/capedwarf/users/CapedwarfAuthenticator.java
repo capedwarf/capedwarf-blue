@@ -44,24 +44,24 @@ public class CapedwarfAuthenticator extends AuthenticatorBase {
 
     protected boolean authenticate(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
         final String authMethod = config.getAuthMethod();
-        if (authMethod != null && "BASIC".equals(authMethod.toUpperCase())) {
+        if (authMethod != null && "BASIC".equals(authMethod.toUpperCase()) && isAdmin(request)) {
             try {
                 return getBasicDelegate().authenticate(request, response);
             } catch (ServletException e) {
                 throw new IOException(e);
             }
-        } else {
-            HttpSession session = request.getSession();
-            if (session == null)
-                return unauthorized(response);
+        }
 
-            CapedwarfUserPrincipal principal = getPrincipal(session);
-            if (principal != null) {
-                request.setUserPrincipal(principal);
-                return true;
-            } else {
-                return unauthorized(response);
-            }
+        HttpSession session = request.getSession(false);
+        if (session == null)
+            return unauthorized(response);
+
+        CapedwarfUserPrincipal principal = getPrincipal(session);
+        if (principal != null) {
+            request.setUserPrincipal(principal);
+            return true;
+        } else {
+            return unauthorized(response);
         }
     }
 
@@ -75,6 +75,12 @@ public class CapedwarfAuthenticator extends AuthenticatorBase {
                 session.removeAttribute(KEY);
             }
         }
+    }
+
+    protected boolean isAdmin(Request request) {
+        String requestURI = request.getRequestURI();
+        // any better way?
+        return (requestURI != null && requestURI.contains("_ah/admin"));
     }
 
     protected boolean unauthorized(HttpServletResponse response) throws IOException {
