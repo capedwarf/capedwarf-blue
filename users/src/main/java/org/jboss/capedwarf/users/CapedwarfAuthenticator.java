@@ -43,8 +43,7 @@ public class CapedwarfAuthenticator extends AuthenticatorBase {
     private volatile AuthenticatorBase basicDelegate;
 
     protected boolean authenticate(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
-        final String authMethod = config.getAuthMethod();
-        if (authMethod != null && "BASIC".equals(authMethod.toUpperCase()) && isAdmin(request)) {
+        if (isAdminConsoleAccess(request, config)) {
             try {
                 return getBasicDelegate().authenticate(request, response);
             } catch (ServletException e) {
@@ -77,7 +76,13 @@ public class CapedwarfAuthenticator extends AuthenticatorBase {
         }
     }
 
-    protected boolean isAdmin(Request request) {
+    protected boolean isAdminConsoleAccess(Request request, LoginConfig config) {
+        final String authMethod = config.getAuthMethod();
+        // enabled admin console sets BASIC auth method
+        return (authMethod != null && "BASIC".equals(authMethod.toUpperCase()) && isAdminConsoleURI(request));
+    }
+
+    protected boolean isAdminConsoleURI(Request request) {
         String requestURI = request.getRequestURI();
         // any better way?
         return (requestURI != null && requestURI.contains("_ah/admin"));
