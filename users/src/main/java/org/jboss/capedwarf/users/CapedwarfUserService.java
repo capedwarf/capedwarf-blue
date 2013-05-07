@@ -89,6 +89,7 @@ public class CapedwarfUserService implements UserService {
     private <T> T getEnvAttribute(String key) {
         ApiProxy.Environment environment = ApiProxy.getCurrentEnvironment();
         Map<String, Object> attributes = environment.getAttributes();
+        //noinspection unchecked
         return (T) attributes.get(key);
     }
 }

@@ -53,7 +53,7 @@ public class AuthServlet extends HttpServlet {
     private static final String LOGOUT_PATH = "/logout";
 
     public static final String FEDERATED_IDENTITY_PARAM = "federatedIdentity";
-    public static final String DESTINATION_URL_PARAM = "destinationURL";
+    public static final String DESTINATION_URL_PARAM = "continue";
     public static final String AUTH_DOMAIN_PARAM = "authDomain";
 
     private AuthHandler authHandler;
