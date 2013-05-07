@@ -24,19 +24,12 @@
 
 package org.jboss.capedwarf.users;
 
-import java.io.IOException;
-import java.util.Set;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.common.url.URLUtils;
 
 import static com.google.appengine.api.utils.SystemProperty.Environment.Value.Development;
 import static com.google.appengine.api.utils.SystemProperty.Environment.Value.Production;
@@ -44,19 +37,13 @@ import static com.google.appengine.api.utils.SystemProperty.Environment.Value.Pr
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-@WebServlet(urlPatterns = AuthServlet.SERVLET_URI + "/*")
 public class AuthServlet extends HttpServlet {
-
-    public static final String SERVLET_URI = "/_ah/auth";
-
-    private static final String LOGIN_PATH = "/login";
-    private static final String LOGOUT_PATH = "/logout";
-
     public static final String FEDERATED_IDENTITY_PARAM = "federatedIdentity";
     public static final String DESTINATION_URL_PARAM = "continue";
     public static final String AUTH_DOMAIN_PARAM = "authDomain";
+    public static final String OTHER = "other";
 
-    private AuthHandler authHandler;
+    protected AuthHandler authHandler;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -72,35 +59,8 @@ public class AuthServlet extends HttpServlet {
         }
     }
 
-    @Override
-    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String pathInfo = request.getPathInfo();
-        if (pathInfo.equals(LOGIN_PATH)) {
-            authHandler.handleLoginRequest(request, response);
-        } else if (pathInfo.equals(LOGOUT_PATH)) {
-            authHandler.handleLogoutRequest(request, response);
-        } else {
-            authHandler.handleOtherRequest(request, response);
-        }
-    }
-
-    public static String createLoginURL(String destinationURL, String authDomain, String federatedIdentity, Set<String> attributesRequest) {
-        return getServletUrl()
-                + LOGIN_PATH
-                + "?" + DESTINATION_URL_PARAM + "=" + URLUtils.encode(destinationURL)
-                + (authDomain == null ? "" : ("&" + AUTH_DOMAIN_PARAM + "=" + URLUtils.encode(authDomain)))
-                + (federatedIdentity == null ? "" : ("&" + FEDERATED_IDENTITY_PARAM + "=" + URLUtils.encode(federatedIdentity)));
-    }
-
-    public static String createLogoutURL(String destinationURL, String authDomain) {
-        return getServletUrl()
-                + LOGOUT_PATH
-                + "?" + DESTINATION_URL_PARAM + "=" + URLUtils.encode(destinationURL)
-                + "&" + AUTH_DOMAIN_PARAM + "=" + URLUtils.encode(authDomain);
-    }
-
     protected static String getServletUrl() {
-        return CapedwarfEnvironment.getThreadLocalInstance().getBaseApplicationUrl() + SERVLET_URI;
+        return CapedwarfEnvironment.getThreadLocalInstance().getBaseApplicationUrl();
     }
 
 }

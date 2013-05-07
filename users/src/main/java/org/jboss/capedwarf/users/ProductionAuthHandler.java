@@ -49,12 +49,7 @@ public class ProductionAuthHandler extends AuthHandler {
 
     @Override
     public void handleOtherRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        if (pathInfo.equals(LOGIN_RETURN_PATH)) {
-            handleOpenIdCallBack(request, response);
-        } else {
-            super.handleOtherRequest(request, response);
-        }
+        handleOpenIdCallBack(request, response);
     }
 
     private void handleOpenIdCallBack(final HttpServletRequest request, final HttpServletResponse response) {
@@ -82,8 +77,10 @@ public class ProductionAuthHandler extends AuthHandler {
     private String getReturnUrl(HttpServletRequest request) {
         String destinationURL = request.getParameter(AuthServlet.DESTINATION_URL_PARAM);
         return AuthServlet.getServletUrl()
-            + LOGIN_RETURN_PATH
-            + "?" + AuthServlet.DESTINATION_URL_PARAM + "=" + URLUtils.encode(destinationURL);
+                + LoginServlet.LOGIN_PATH
+                + "?"
+                + AuthServlet.OTHER + "=true"
+                + "&" + AuthServlet.DESTINATION_URL_PARAM + "=" + URLUtils.encode(destinationURL);
     }
 
     private String getFullRequestURL(HttpServletRequest request) {
