@@ -37,7 +37,7 @@ import static com.google.appengine.api.utils.SystemProperty.Environment.Value.Pr
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class AuthServlet extends HttpServlet {
+public abstract class AuthServlet extends HttpServlet {
     public static final String FEDERATED_IDENTITY_PARAM = "federatedIdentity";
     public static final String DESTINATION_URL_PARAM = "continue";
     public static final String AUTH_DOMAIN_PARAM = "authDomain";
