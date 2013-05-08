@@ -63,9 +63,11 @@ where you then simply do
 
     mvn clean install
 
-Note: you need to manually build "AS 7.2.0.Final" with its .zip distribution.
-
 This will grab AS .zip distribution, overlay it with CapeDwarf extension, and run tests via managed Arquillian AS container.
+
+Note: you need to **first** manually build "AS 7.2.0.Final" for its .zip distribution.
+
+    Checkout JBossAS7' 7.2.0.Final tag and build it with "mvn clean install -DskipTests -Prelease".
 
 (3) Run different versions of GAE API jar against CapeDwarf
 
