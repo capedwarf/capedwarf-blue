@@ -1,8 +1,8 @@
 package org.jboss.capedwarf.tasks;
 
 import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskOptions;
@@ -21,7 +21,7 @@ public class TaskOptionsHelper {
     private static final TargetInvocation<RetryOptions> getRetryOptions = ReflectionUtils.cacheInvocation(TaskOptions.class, "getRetryOptions");
     private static final TargetInvocation<byte[]> getPayload = ReflectionUtils.cacheInvocation(TaskOptions.class, "getPayload");
     private static final TargetInvocation<List<Object>> getParams = ReflectionUtils.cacheInvocation(TaskOptions.class, "getParams");
-    private static final TargetInvocation<HashMap<String, List<String>>> getHeaders = ReflectionUtils.cacheInvocation(TaskOptions.class, "getHeaders");
+    private static final TargetInvocation<Map<String, List<String>>> getHeaders = ReflectionUtils.cacheInvocation(TaskOptions.class, "getHeaders");
 
     private static final TargetInvocation<Integer> getTaskRetryLimit = ReflectionUtils.cacheInvocation(RetryOptions.class, "getTaskRetryLimit");
     private static final TargetInvocation<Boolean> supportsBody = ReflectionUtils.cacheInvocation(TaskOptions.Method.class, "supportsBody");
@@ -68,7 +68,7 @@ public class TaskOptionsHelper {
         return invoke(taskOptions, getParams);
     }
 
-    public HashMap<String, List<String>> getHeaders() {
+    public Map<String, List<String>> getHeaders() {
         return invoke(taskOptions, getHeaders);
     }
 

@@ -29,7 +29,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -76,6 +78,13 @@ import org.jboss.capedwarf.shared.config.QueueXml;
 public class CapedwarfQueue implements Queue {
     private static final String ID = "ID:";
     private static final Sort SORT = new Sort(new SortField(Task.ETA_MILLIS, SortField.LONG));
+
+    private static final Set<String> ALLOWED_HEADERS;
+
+    static {
+        ALLOWED_HEADERS = new HashSet<String>();
+        ALLOWED_HEADERS.add("content-type");
+    }
 
     private final String queueName;
 
@@ -279,7 +288,7 @@ public class CapedwarfQueue implements Queue {
         if (options.getUrl() != null) {
             throw new IllegalArgumentException("May not specify url for tasks that have method PULL.");
         }
-        if (!options.getHeaders().isEmpty()) {
+        if (!checkPullHeaders(options.getHeaders())) {
             throw new IllegalArgumentException("May not specify any headers for tasks that have method PULL.");
         }
         if (options.getPayload() != null && !options.getParams().isEmpty()) {
@@ -288,6 +297,13 @@ public class CapedwarfQueue implements Queue {
         if (options.getRetryOptions() != null) {
             throw new IllegalArgumentException("May not specify retry options in tasks that have method PULL.");
         }
+    }
+
+    private boolean checkPullHeaders(Map<String, List<String>> headers) {
+        Set<String> keys = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+        keys.addAll(headers.keySet());
+        keys.removeAll(ALLOWED_HEADERS);
+        return keys.isEmpty();
     }
 
     private TaskHandle addTask(ServletExecutorProducer producer, TaskOptionsHelper options) {
