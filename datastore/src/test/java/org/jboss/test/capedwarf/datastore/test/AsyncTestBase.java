@@ -22,6 +22,8 @@
 
 package org.jboss.test.capedwarf.datastore.test;
 
+import java.util.concurrent.Future;
+
 import com.google.appengine.api.datastore.AsyncDatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Transaction;
@@ -44,12 +46,14 @@ public abstract class AsyncTestBase extends DatastoreTestBase {
             ok = true;
             return result;
         } finally {
+            Future<Void> txFinishFuture;
             if (ok)
-                tx.commitAsync();
+                txFinishFuture = tx.commitAsync();
             else
-                tx.rollbackAsync();
+                txFinishFuture = tx.rollbackAsync();
 
-            sync(); // wait for tx to finish
+            txFinishFuture.get();   // wait for tx to finish
+            sync(); // TODO: is this still necessary now that we're calling txFinishFuture.get()?
         }
     }
 
