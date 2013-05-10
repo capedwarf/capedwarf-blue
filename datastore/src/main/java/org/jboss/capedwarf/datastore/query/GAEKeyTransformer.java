@@ -31,6 +31,7 @@ import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import org.infinispan.query.Transformer;
+import org.jboss.capedwarf.shared.datastore.DatastoreConstants;
 
 
 /**
@@ -59,6 +60,7 @@ public class GAEKeyTransformer implements Transformer {
     }
 
     private static Key fromInternal(String string) {
+        string = removeIndexName(string);
         String[] split = split(string);
         if (split.length == 0) {
             throw new IllegalArgumentException("Bad key: " + string);
@@ -83,6 +85,16 @@ public class GAEKeyTransformer implements Transformer {
             }
         }
         return build(builder, split);
+    }
+
+    private static String removeIndexName(String string) {
+        int index = string.lastIndexOf(DatastoreConstants.SEPARATOR);
+        if (index == -1) {
+            return string;
+        }
+
+        index = string.lastIndexOf(DatastoreConstants.SEPARATOR, index - 1);
+        return string.substring(0, index);
     }
 
     private static String[] split(String string) {

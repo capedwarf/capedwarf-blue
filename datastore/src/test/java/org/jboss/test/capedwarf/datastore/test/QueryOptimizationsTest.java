@@ -57,6 +57,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
+import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
 import static com.google.appengine.api.datastore.Query.FilterOperator.IN;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -158,6 +159,19 @@ public class QueryOptimizationsTest extends QueryTestBase {
         Query query = new Query("Kind")
             .addProjection(new PropertyProjection("foo", String.class))
             .addProjection(new PropertyProjection("bar", String.class));
+
+        List<Entity> results = service.prepare(query).asList(withDefaults());
+        assertEquals(Collections.singletonList(e1), results);
+    }
+
+    @Test
+    public void testProjectionQueryReturnsEntitiesContainingProjectedPropertyEvenIfPropertyValueIsSetToNull() throws Exception {
+        Entity e1 = createEntity("Kind", 1)
+            .withProperty("foo", null)
+            .store();
+
+        Query query = new Query("Kind")
+            .addProjection(new PropertyProjection("foo", String.class));
 
         List<Entity> results = service.prepare(query).asList(withDefaults());
         assertEquals(Collections.singletonList(e1), results);
@@ -430,21 +444,19 @@ public class QueryOptimizationsTest extends QueryTestBase {
         preparedQuery.asSingleEntity();
     }
 
-    @Ignore("CAPEDWARF-67")
     @Test
     public void testProjectionOfCollectionProperties() throws Exception {
-        Entity e = createEntity("Kind", 1)
+        Entity e = createEntity("test", 1)
             .withProperty("prop", Arrays.asList("bbb", "ccc", "aaa"))
             .withProperty("prop2", Arrays.asList("xxx", "yyy"))
             .store();
 
-        Query query = new Query("Kind")
+        Query query = new Query("test")
             .addProjection(new PropertyProjection("prop", String.class))
             .addSort("prop");
 
         PreparedQuery preparedQuery = service.prepare(query);
         List<Entity> results = preparedQuery.asList(withDefaults());
-        System.out.println("results.get(0) = " + results.get(0));
         assertEquals(3, results.size());
 
         Entity firstResult = results.get(0);
@@ -457,6 +469,57 @@ public class QueryOptimizationsTest extends QueryTestBase {
         assertEquals("aaa", firstResult.getProperty("prop"));
         assertEquals("bbb", secondResult.getProperty("prop"));
         assertEquals("ccc", thirdResult.getProperty("prop"));
+    }
+
+    @Test
+    public void testProjectionOfCollectionPropertyWithFilterOnCollectionProperty() throws Exception {
+        Entity e = createEntity("Product", 1)
+            .withProperty("name", Arrays.asList("aaa", "bbb"))
+            .withProperty("price", Arrays.asList(10L, 20L))
+            .store();
+
+        Query query = new Query("Product")
+            .addProjection(new PropertyProjection("name", String.class))
+            .setFilter(new Query.FilterPredicate("price", GREATER_THAN, 0L))
+            .addSort("price")
+            .addSort("name");
+
+        PreparedQuery preparedQuery = service.prepare(query);
+        List<Entity> results = preparedQuery.asList(withDefaults());
+        assertEquals(4, results.size());
+
+        assertEquals(e.getKey(), results.get(0).getKey());
+        assertEquals(e.getKey(), results.get(1).getKey());
+        assertEquals(e.getKey(), results.get(2).getKey());
+        assertEquals(e.getKey(), results.get(3).getKey());
+
+        assertEquals("aaa", results.get(0).getProperty("name"));
+        assertEquals("bbb", results.get(1).getProperty("name"));
+        assertEquals("aaa", results.get(2).getProperty("name"));
+        assertEquals("bbb", results.get(3).getProperty("name"));
+    }
+
+    @Test
+    public void testProjectionQueriesHandleEntityModificationProperly() throws Exception {
+        Entity e = createEntity("test", 1)
+            .withProperty("prop", Arrays.asList("aaa", "bbb", "ccc"))
+            .store();
+
+        Query query = new Query("test")
+            .addProjection(new PropertyProjection("prop", String.class))
+            .addSort("prop");
+
+        assertEquals(3, service.prepare(query).asList(withDefaults()).size());
+
+        e = createEntity(e.getKey())
+            .withProperty("prop", Arrays.asList("aaa", "bbb"))
+            .store();
+
+        assertEquals(2, service.prepare(query).asList(withDefaults()).size());
+
+        service.delete(e.getKey());
+
+        assertEquals(0, service.prepare(query).asList(withDefaults()).size());
     }
 
     @Test
