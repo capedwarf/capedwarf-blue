@@ -39,6 +39,7 @@ import com.google.appengine.api.datastore.DatastoreFailureException;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.common.tx.TxUtils;
 import org.jboss.capedwarf.environment.EnvironmentFactory;
@@ -273,7 +274,7 @@ final class CapedwarfTransaction implements Transaction {
             throw new IllegalArgumentException("No Tx -- should exist?!");
         }
 
-        return ExecutorFactory.wrap(new Callable<Void>() {
+        final Callable<Void> callable = new Callable<Void>() {
             public Void call() throws Exception {
                 resumeTx(tx);
                 try {
@@ -287,7 +288,8 @@ final class CapedwarfTransaction implements Transaction {
                     suspendTx();
                 }
             }
-        });
+        };
+        return ExecutorFactory.wrap(Wrappers.wrap(callable));
     }
 
     public void rollback() {
@@ -315,7 +317,7 @@ final class CapedwarfTransaction implements Transaction {
             throw new IllegalArgumentException("No Tx -- should exist?!");
         }
 
-        return ExecutorFactory.wrap(new Callable<Void>() {
+        final Callable<Void> callable = new Callable<Void>() {
             public Void call() throws Exception {
                 resumeTx(tx);
                 try {
@@ -329,7 +331,8 @@ final class CapedwarfTransaction implements Transaction {
                     suspendTx();
                 }
             }
-        });
+        };
+        return ExecutorFactory.wrap(Wrappers.wrap(callable));
     }
 
     private static javax.transaction.Transaction resumeAsync(CapedwarfTransaction previous) {
