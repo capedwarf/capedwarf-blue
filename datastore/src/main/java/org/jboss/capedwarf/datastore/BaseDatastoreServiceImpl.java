@@ -47,7 +47,6 @@ import org.infinispan.context.Flag;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
-import org.infinispan.query.impl.ComponentRegistryUtils;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.infinispan.CacheName;
@@ -127,8 +126,6 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
                 return new ApiProxy.ApiDeadlineExceededException("datastore", "RunQuery");
             }
         });
-        ComponentRegistryUtils.getQueryInterceptor(store).setSearchWorkCreator(new CapedwarfSearchWorkCreator());
-
         this.queryConverter = new QueryConverter(searchManager);
         this.factories = new QueryTypeFactories(this);
     }
