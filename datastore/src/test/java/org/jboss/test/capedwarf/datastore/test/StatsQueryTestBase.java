@@ -111,6 +111,10 @@ public abstract class StatsQueryTestBase extends TestBase {
 
     protected abstract void doSync();
 
+    protected String withSuffix(String name) {
+        return name + "_" + getClass().getSimpleName();
+    }
+
     @Test
     public void testTotalStats() throws Exception {
         Key k1 = null;
@@ -124,7 +128,7 @@ public abstract class StatsQueryTestBase extends TestBase {
             NamespaceManager.set("namespace2");
             Entity initialNs2Stats = currentNsTotalStats();
 
-            Entity e2 = new Entity("SC");
+            Entity e2 = new Entity(withSuffix("SC"));
             k2 = datastore.put(e2);
             doSync();
             assertStatsLargerBy(e2, initialNs2Stats, currentNsTotalStats());
@@ -133,7 +137,7 @@ public abstract class StatsQueryTestBase extends TestBase {
             NamespaceManager.set("namespace1");
             assertStatsEqual(initialNs1Stats, currentNsTotalStats());
 
-            Entity e1 = new Entity("SC");
+            Entity e1 = new Entity(withSuffix("SC"));
             k1 = datastore.put(e1);
             doSync();
             assertStatsLargerBy(e1, initialNs1Stats, currentNsTotalStats());
@@ -160,25 +164,25 @@ public abstract class StatsQueryTestBase extends TestBase {
 
     @Test
     public void testKindStats() throws Exception {
-        Entity e1 = new Entity("SCK");
+        Entity e1 = new Entity(withSuffix("SCK"));
         e1.setProperty("x", "original");
         Key k1 = datastore.put(e1);
 
         doSync();
 
-        Entity e3 = new Entity("QWE");
+        Entity e3 = new Entity(withSuffix("QWE"));
         e3.setProperty("foo", "bar");
         Key k3 = datastore.put(e3);
 
         doSync();
 
-        Query.FilterPredicate filter = new Query.FilterPredicate("kind_name", Query.FilterOperator.EQUAL, "SCK");
+        Query.FilterPredicate filter = new Query.FilterPredicate("kind_name", Query.FilterOperator.EQUAL, withSuffix("SCK"));
 
         Entity kindStats = getStatsEntity(STAT_KIND, filter);
         long count = getCount(kindStats);
         assertEquals(1L, count);
 
-        Entity e2 = new Entity("SCK");
+        Entity e2 = new Entity(withSuffix("SCK"));
         e2.setProperty("y", "replacement");
         Key k2 = datastore.put(e2);
 
@@ -187,7 +191,8 @@ public abstract class StatsQueryTestBase extends TestBase {
         kindStats = getStatsEntity(STAT_KIND, filter);
         assertEquals(count + 1, getCount(kindStats));
 
-        assertEquals(1, countEntitiesMatching(getStatsList(STAT_KIND), "kind_name", "QWE"));
+        List<Entity> list = getStatsList(STAT_KIND);
+        assertEquals(list.toString(), 1, countEntitiesMatching(list, "kind_name", withSuffix("QWE")));
 
         datastore.delete(k2);
 
