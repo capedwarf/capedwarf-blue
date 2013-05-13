@@ -130,7 +130,7 @@ class Projections {
             }
         }
 
-        return indexProperties.isEmpty();
+        return indexProperties.isEmpty() && filterProperties.isEmpty() && sortProperties.isEmpty() && projectionProperties.isEmpty();
     }
 
     @SuppressWarnings("deprecation")
