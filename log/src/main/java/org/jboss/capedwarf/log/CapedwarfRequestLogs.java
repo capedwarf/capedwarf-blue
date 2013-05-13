@@ -8,13 +8,16 @@ import java.io.ObjectOutput;
 import com.google.appengine.api.log.AppLogLine;
 import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.RequestLogs;
+import com.google.appengine.api.utils.SystemProperty;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.ProvidedId;
+import org.jboss.util.Base64;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @Indexed
 @ProvidedId
@@ -24,12 +27,16 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
     public static final String MAX_LOG_LEVEL = "maxLogLevel";
     public static final String FINISHED = "finished";
 
-    private static final int EXTERNALIZER_VERSION = 1;
+    private static final int EXTERNALIZER_VERSION = 2;
 
     private RequestLogs requestLogs = new RequestLogs();
     private Integer maxLogLevel;
 
     public CapedwarfRequestLogs() {
+        // TODO -- right values?
+        requestLogs.setAppEngineRelease(SystemProperty.version.get());
+        requestLogs.setUrlMapEntry("");
+        requestLogs.setOffset(Base64.encodeBytes(String.valueOf(System.nanoTime()).getBytes()));
     }
 
     public RequestLogs getRequestLogs() {
@@ -98,12 +105,13 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
         out.writeInt(requestLogs.getReplicaIndex());
         out.writeBoolean(requestLogs.isFinished());
         writeUTF(out, requestLogs.getInstanceKey());
+        writeUTF(out, requestLogs.getAppEngineRelease());
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         int version = in.readInt();
-        if (version == 1) {
+        if (version == EXTERNALIZER_VERSION) {
             maxLogLevel = (Integer) in.readObject();
             requestLogs.setAppId(readUTF(in));
             requestLogs.setVersionId(readUTF(in));
@@ -134,6 +142,7 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
             requestLogs.setReplicaIndex(in.readInt());
             requestLogs.setFinished(in.readBoolean());
             requestLogs.setInstanceKey(readUTF(in));
+            requestLogs.setAppEngineRelease(readUTF(in));
         } else {
             throw new IOException("Unsupported version " + version);
         }
