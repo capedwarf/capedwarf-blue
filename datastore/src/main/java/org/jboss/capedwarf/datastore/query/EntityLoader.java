@@ -23,10 +23,10 @@
 package org.jboss.capedwarf.datastore.query;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
@@ -58,13 +58,13 @@ public class EntityLoader {
 
     public List<Object> getList() {
         boolean conversionNeeded = mustConvertResultsToEntities();
-        Set<Entity> distinct = (getType() == Type.PROJECTIONS && query.getDistinct() ? new TreeSet<Entity>(EntityComparator.INSTANCE) : null);
+        Set<EntityWrapper> distinct = (getType() == Type.PROJECTIONS && query.getDistinct() ? new HashSet<EntityWrapper>() : null);
         List<Object> results = cacheQuery.list();
         List<Object> list = new ArrayList<Object>(results.size());
         for (Object result : results) {
             if (conversionNeeded) {
                 Entity entity = Projections.convertToEntity(query, result);
-                if (distinct == null || distinct.add(entity)) {
+                if (distinct == null || distinct.add(new EntityWrapper(entity))) {
                     list.add(entity);
                 }
             } else {
@@ -170,6 +170,31 @@ public class EntityLoader {
             } finally {
                 super.finalize();
             }
+        }
+    }
+
+    private static class EntityWrapper {
+        private Entity entity;
+
+        private EntityWrapper(Entity entity) {
+            this.entity = entity;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            EntityWrapper that = (EntityWrapper) o;
+
+            if (!entity.getProperties().equals(that.entity.getProperties())) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return entity.getProperties().hashCode();
         }
     }
 }
