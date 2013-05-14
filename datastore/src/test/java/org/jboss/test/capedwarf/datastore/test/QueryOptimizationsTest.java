@@ -524,12 +524,12 @@ public class QueryOptimizationsTest extends QueryTestBase {
 
     @Test
     public void testOrderOfReturnedResultsIsSameAsOrderOfElementsInInStatementWhenUsingProjections() throws Exception {
-        Entity a = createEntity("Product", 1)
+        Entity b = createEntity("Product", 1)
             .withProperty("name", "b")
             .withProperty("price", 1L)
             .store();
 
-        Entity b = createEntity("Product", 2)
+        Entity a = createEntity("Product", 2)
             .withProperty("name", "a")
             .withProperty("price", 2L)
             .store();
@@ -545,11 +545,11 @@ public class QueryOptimizationsTest extends QueryTestBase {
 
     @Test
     public void testOrderOfReturnedResultsIsSameAsOrderOfElementsInInStatementWhenUsingKeysOnly() throws Exception {
-        Entity a = createEntity("Product", 1)
+        Entity b = createEntity("Product", 1)
             .withProperty("name", "b")
             .store();
 
-        Entity b = createEntity("Product", 2)
+        Entity a = createEntity("Product", 2)
             .withProperty("name", "a")
             .store();
 
@@ -597,7 +597,7 @@ public class QueryOptimizationsTest extends QueryTestBase {
         Entity firstResult = results.get(0);
         Entity secondResult = results.get(1);
 
-        assertEquals(b.getKey(), firstResult.getKey());
-        assertEquals(a.getKey(), secondResult.getKey());
+        assertEquals(a.getKey(), firstResult.getKey());
+        assertEquals(b.getKey(), secondResult.getKey());
     }
 }
