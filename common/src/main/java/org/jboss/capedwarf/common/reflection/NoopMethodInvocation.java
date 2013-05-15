@@ -22,45 +22,22 @@
 
 package org.jboss.capedwarf.common.reflection;
 
-import java.lang.reflect.Method;
-
 /**
- * Cache method invocation.
+ * Cache noop method invocation.
  *
  * @param <T> exact return type
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class MethodInvocation<T> {
-    private Object target;
-    private final Method method;
-
-    protected MethodInvocation() {
-        this(null);
-    }
-
-    MethodInvocation(Method method) {
-        this.method = method;
-    }
-
-    MethodInvocation(Object target, Method method) {
-        this(method);
-        this.target = target;
+class NoopMethodInvocation<T> extends MethodInvocation<T> {
+    NoopMethodInvocation() {
     }
 
     public T invoke(final Object... args) {
-        return invoke(target, args);
+        return null;
     }
 
     @SuppressWarnings("unchecked")
     public T invoke(final Object object , final Object[] args) {
-        try {
-            return (T) method.invoke(object, args);
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) {
-                throw RuntimeException.class.cast(e);
-            } else {
-                throw new RuntimeException(e);
-            }
-        }
+        return null;
     }
 }

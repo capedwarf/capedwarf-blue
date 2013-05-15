@@ -277,6 +277,26 @@ public final class ReflectionUtils {
     }
 
     /**
+     * Optional method.
+     *
+     * @param clazz the class
+     * @param methodName the method name
+     * @param types      the types
+     * @return optional target invocation
+     */
+    public static <T> MethodInvocation<T> optionalMethod(Class<?> clazz, String methodName, Class... types) {
+        if (clazz == null)
+            throw new IllegalArgumentException("Null class");
+
+        try {
+            Method m = findMethod(clazz, methodName, types);
+            return new MethodInvocation<T>(m);
+        } catch (IllegalStateException ignored) {
+            return new NoopMethodInvocation<T>();
+        }
+    }
+
+    /**
      * Get field value.
      *
      * @param target the target

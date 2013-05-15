@@ -13,6 +13,8 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.ProvidedId;
+import org.jboss.capedwarf.common.reflection.MethodInvocation;
+import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.util.Base64;
 
 /**
@@ -22,19 +24,21 @@ import org.jboss.util.Base64;
 @Indexed
 @ProvidedId
 public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externalizable {
-
     public static final String END_TIME_USEC = "endTimeUsec";
     public static final String MAX_LOG_LEVEL = "maxLogLevel";
     public static final String FINISHED = "finished";
 
     private static final int EXTERNALIZER_VERSION = 2;
 
+    private static MethodInvocation<String> getAppEngineRelease = ReflectionUtils.optionalMethod(RequestLogs.class, "getAppEngineRelease");
+    private static MethodInvocation<Void> setAppEngineRelease = ReflectionUtils.optionalMethod(RequestLogs.class, "setAppEngineRelease", String.class);
+
     private RequestLogs requestLogs = new RequestLogs();
     private Integer maxLogLevel;
 
     public CapedwarfRequestLogs() {
         // TODO -- right values?
-        requestLogs.setAppEngineRelease(SystemProperty.version.get());
+        setAppEngineRelease.invoke(requestLogs, new Object[]{SystemProperty.version.get()});
         requestLogs.setUrlMapEntry("");
         requestLogs.setOffset(Base64.encodeBytes(String.valueOf(System.nanoTime()).getBytes()));
     }
@@ -105,7 +109,7 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
         out.writeInt(requestLogs.getReplicaIndex());
         out.writeBoolean(requestLogs.isFinished());
         writeUTF(out, requestLogs.getInstanceKey());
-        writeUTF(out, requestLogs.getAppEngineRelease());
+        writeUTF(out, getAppEngineRelease.invoke(requestLogs));
     }
 
     @Override
@@ -142,7 +146,7 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
             requestLogs.setReplicaIndex(in.readInt());
             requestLogs.setFinished(in.readBoolean());
             requestLogs.setInstanceKey(readUTF(in));
-            requestLogs.setAppEngineRelease(readUTF(in));
+            setAppEngineRelease.invoke(requestLogs, readUTF(in));
         } else {
             throw new IOException("Unsupported version " + version);
         }
