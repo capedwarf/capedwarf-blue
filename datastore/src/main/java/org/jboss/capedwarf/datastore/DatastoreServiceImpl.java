@@ -101,7 +101,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     }
 
     static void applyKeyChecked(Key original, Key clone) {
-        setChecked.invoke(original, new Object[]{isChecked.invokeUnchecked(clone)});
+        setChecked.invokeWithTarget(original, isChecked.invokeUnchecked(clone));
     }
 
     static void applyKeyChecked(Entity original, Entity clone) {
@@ -211,14 +211,14 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         Key key = entity.getKey();
         if (key.isComplete() == false) {
             Long id = getRangeStart(key.getParent(), key.getKind(), 1).getStart();
-            setId.invoke(key, new Object[]{id});
+            setId.invokeWithTarget(key, id);
         } else if (isChecked.invokeUnchecked(key) == false) {
             SequenceTuple st = SequenceTuple.getSequenceTuple(getAllocationsMap(), key.getKind());
             String sequenceName = st.getSequenceName();
             long allocationSize = st.getAllocationSize();
             KeyGenerator.updateRange(appId, key.getId(), sequenceName, allocationSize);
         }
-        setChecked.invoke(key, new Object[]{true});
+        setChecked.invokeWithTarget(key, true);
     }
 
     @Override

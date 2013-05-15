@@ -37,7 +37,7 @@ class NoopMethodInvocation<T> extends MethodInvocation<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public T invoke(final Object object , final Object[] args) {
+    public T invokeWithTarget(final Object object, final Object[] args) {
         return null;
     }
 }

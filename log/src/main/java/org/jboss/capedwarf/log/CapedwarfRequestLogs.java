@@ -38,7 +38,7 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
 
     public CapedwarfRequestLogs() {
         // TODO -- right values?
-        setAppEngineRelease.invoke(requestLogs, new Object[]{SystemProperty.version.get()});
+        setAppEngineRelease.invokeWithTarget(requestLogs, SystemProperty.version.get());
         requestLogs.setUrlMapEntry("");
         requestLogs.setOffset(Base64.encodeBytes(String.valueOf(System.nanoTime()).getBytes()));
     }
@@ -109,7 +109,7 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
         out.writeInt(requestLogs.getReplicaIndex());
         out.writeBoolean(requestLogs.isFinished());
         writeUTF(out, requestLogs.getInstanceKey());
-        writeUTF(out, getAppEngineRelease.invoke(requestLogs));
+        writeUTF(out, getAppEngineRelease.invokeWithTarget(requestLogs));
     }
 
     @Override
@@ -146,7 +146,7 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
             requestLogs.setReplicaIndex(in.readInt());
             requestLogs.setFinished(in.readBoolean());
             requestLogs.setInstanceKey(readUTF(in));
-            setAppEngineRelease.invoke(requestLogs, readUTF(in));
+            setAppEngineRelease.invokeWithTarget(requestLogs, readUTF(in));
         } else {
             throw new IOException("Unsupported version " + version);
         }

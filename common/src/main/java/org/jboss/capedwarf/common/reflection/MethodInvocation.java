@@ -48,13 +48,13 @@ public class MethodInvocation<T> {
     }
 
     public T invoke(final Object... args) {
-        return invoke(target, args);
+        return invokeWithTarget(target, args);
     }
 
     @SuppressWarnings("unchecked")
-    public T invoke(final Object object , final Object[] args) {
+    public T invokeWithTarget(final Object target, final Object... args) {
         try {
-            return (T) method.invoke(object, args);
+            return (T) method.invoke(target, args);
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw RuntimeException.class.cast(e);
