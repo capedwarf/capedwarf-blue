@@ -40,6 +40,8 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.RawValue;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.hibernate.search.SearchException;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.ProjectionConstants;
@@ -72,20 +74,29 @@ class Projections {
         if (projections.isEmpty() == false) {
             cacheQuery.projection(projections.toArray(new String[projections.size()]));
             if (!gaeQuery.isKeysOnly()) {
-                String fullTextFilterName = getFullTextFilterName(gaeQuery);
+                IndexesXml.Index index = getIndex(gaeQuery);
                 try {
-                    cacheQuery.enableFullTextFilter(fullTextFilterName);
+                    cacheQuery.enableFullTextFilter(index.getName());
                 } catch (SearchException e) {
-                    throw new DatastoreNeedIndexException("No matching index found (FullTextFilterName: " + fullTextFilterName + ")");
+                    throw new DatastoreNeedIndexException("No matching index found (FullTextFilterName: " + index.getName() + ")");
+                }
+
+                if (gaeQuery.getSortPredicates().isEmpty()) {
+                    List<SortField> sortFields = new ArrayList<>();
+                    for (IndexesXml.Property property : index.getProperties()) {
+                        boolean reverse = "desc".equals(property.getDirection());
+                        sortFields.add(new SortField(property.getName(), SortField.STRING, reverse));
+                    }
+                    cacheQuery.sort(new Sort(sortFields.toArray(new SortField[sortFields.size()])));
                 }
             }
         }
     }
 
-    private static String getFullTextFilterName(Query gaeQuery) {
+    private static IndexesXml.Index getIndex(Query query) {
         for (IndexesXml.Index index : CapedwarfEnvironment.getThreadLocalInstance().getIndexes().getIndexes().values()) {
-            if (indexMatches(index, gaeQuery)) {
-                return index.getName();
+            if (indexMatches(index, query)) {
+                return index;
             }
         }
         throw new DatastoreNeedIndexException("No matching index found");
