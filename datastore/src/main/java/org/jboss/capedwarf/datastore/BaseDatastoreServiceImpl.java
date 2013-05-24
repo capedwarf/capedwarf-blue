@@ -23,7 +23,6 @@
 package org.jboss.capedwarf.datastore;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
@@ -42,6 +41,7 @@ import com.google.apphosting.api.ApiProxy;
 import org.hibernate.search.query.engine.spi.TimeoutExceptionFactory;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.Metadata;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.query.CacheQuery;
@@ -163,8 +163,9 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
     }
 
     private Long readEntityGroupVersion(Key key) {
-        CacheEntry cacheEntry = entityGroupMetadataStore.getCacheEntry(key, EnumSet.noneOf(Flag.class), getAppClassLoader());
-        return VERSION.invoke(cacheEntry.getVersion());
+        CacheEntry cacheEntry = entityGroupMetadataStore.getCacheEntry(key);
+        Metadata metadata = cacheEntry.getMetadata();
+        return VERSION.invoke(metadata.version());
     }
 
     public void execute(Entity result) {
