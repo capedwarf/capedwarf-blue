@@ -26,10 +26,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import com.google.appengine.api.datastore.DatastoreNeedIndexException;
 import com.google.appengine.api.datastore.Entity;
@@ -45,7 +43,6 @@ import org.apache.lucene.search.SortField;
 import org.hibernate.search.SearchException;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.ProjectionConstants;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.shared.config.IndexesXml;
 
@@ -69,152 +66,37 @@ class Projections {
      * @param gaeQuery   the GAE query
      * @param cacheQuery the cache query
      */
-    static void applyProjections(Query gaeQuery, CacheQuery cacheQuery) {
+    static void applyProjections(Query gaeQuery, CacheQuery cacheQuery, IndexesXml.Index index) {
         List<String> projections = getProjections(gaeQuery);
         if (projections.isEmpty() == false) {
             cacheQuery.projection(projections.toArray(new String[projections.size()]));
             if (!gaeQuery.isKeysOnly()) {
-                IndexesXml.Index index = getIndex(gaeQuery);
-                try {
-                    cacheQuery.enableFullTextFilter(index.getName());
-                } catch (SearchException e) {
-                    throw new DatastoreNeedIndexException("No matching index found (FullTextFilterName: " + index.getName() + ")");
-                }
-
-                if (gaeQuery.getSortPredicates().isEmpty()) {
-                    List<SortField> sortFields = new ArrayList<>();
-                    for (IndexesXml.Property property : index.getProperties()) {
-                        boolean reverse = "desc".equals(property.getDirection());
-                        sortFields.add(new SortField(property.getName(), SortField.STRING, reverse));
+                if (index != null) {
+                    try {
+                        cacheQuery.enableFullTextFilter(index.getName());
+                    } catch (SearchException e) {
+                        throw new DatastoreNeedIndexException("No matching index found (FullTextFilterName: " + index.getName() + ")");
                     }
-                    cacheQuery.sort(new Sort(sortFields.toArray(new SortField[sortFields.size()])));
+
+                    if (gaeQuery.getSortPredicates().isEmpty()) {
+                        addDefaultSort(cacheQuery, index);
+                    }
                 }
             }
         }
     }
 
-    private static IndexesXml.Index getIndex(Query query) {
-        for (IndexesXml.Index index : CapedwarfEnvironment.getThreadLocalInstance().getIndexes().getIndexes().values()) {
-            if (indexMatches(index, query)) {
-                return index;
-            }
-        }
-
-        DatastoreNeedIndexException ex = new DatastoreNeedIndexException("No matching index found");
-        ReflectionUtils.invokeInstanceMethod(ex, "setMissingIndexDefinitionXml", String.class, createIndexXml(query));
-        throw ex;
-    }
-
-    private static String createIndexXml(Query query) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<datastore-index kind=\"").append(query.getKind()).append("\" ancestor=\"").append(query.getAncestor() != null).append("\" source=\"manual\">\n");
-        for (String property : getIndexProperties(query)) {
-            sb.append("  <property name=\"").append(property).append("\" direction=\"asc\"/>\n"); // TODO: proper direction (when necessary)
-        }
-        sb.append("</datastore-index>\n");
-        return sb.toString();
-    }
-
-    private static List<String> getIndexProperties(Query query) {
-        Set<String> filterProperties = getFilterProperties(query);
-        Set<String> sortProperties = getSortProperties(query);
-        Set<String> projectionProperties = getProjectionProperties(query);
-        removeDuplicates(filterProperties, sortProperties, projectionProperties);
-
-        List<String> properties = new ArrayList<>();
-        properties.addAll(filterProperties);
-        properties.addAll(sortProperties);
-        properties.addAll(projectionProperties);
-        return properties;
-    }
-
-    private static boolean indexMatches(IndexesXml.Index index, Query query) {
-        if (!index.getKind().equals(query.getKind())) {
-            return false;
-        }
-
-        Set<String> filterProperties = getFilterProperties(query);
-        Set<String> sortProperties = getSortProperties(query);
-        Set<String> projectionProperties = getProjectionProperties(query);
-        removeDuplicates(filterProperties, sortProperties, projectionProperties);
-
-        List<String> indexProperties = index.getPropertyNames();
-
-        while (!indexProperties.isEmpty()) {
-            String property = indexProperties.get(0);
-            if (!filterProperties.isEmpty()) {
-                if (filterProperties.remove(property)) {
-                    indexProperties.remove(0);
-                } else {
-                    return false;
-                }
-            } else if (!sortProperties.isEmpty()) {
-                if (sortProperties.remove(property)) {
-                    indexProperties.remove(0);
-                } else {
-                    return false;
-                }
-            } else if (!projectionProperties.isEmpty()) {
-                if (projectionProperties.remove(property)) {
-                    indexProperties.remove(0);
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-
-        return indexProperties.isEmpty() && filterProperties.isEmpty() && sortProperties.isEmpty() && projectionProperties.isEmpty();
-    }
-
-    private static void removeDuplicates(Set<String> filterProperties, Set<String> sortProperties, Set<String> projectionProperties) {
-        sortProperties.removeAll(filterProperties);
-        projectionProperties.removeAll(filterProperties);
-        projectionProperties.removeAll(sortProperties);
-    }
-
-    @SuppressWarnings("deprecation")
-    private static Set<String> getFilterProperties(Query query) {
-        Set<String> set = new HashSet<>();
-        addFilterPropertiesToSet(set, query.getFilter());
-        for (Query.FilterPredicate predicate : query.getFilterPredicates()) {
-            addFilterPropertiesToSet(set, predicate);
-        }
-        return set;
-    }
-
-    private static void addFilterPropertiesToSet(Set<String> set, Query.Filter filter) {
-        if (filter == null) {
+    public static void addDefaultSort(CacheQuery cacheQuery, IndexesXml.Index index) {
+        if (index.getProperties().isEmpty()) {
             return;
         }
-        if (filter instanceof Query.FilterPredicate) {
-            Query.FilterPredicate predicate = (Query.FilterPredicate) filter;
-            set.add(predicate.getPropertyName());
-        } else if (filter instanceof Query.CompositeFilter) {
-            Query.CompositeFilter composite = (Query.CompositeFilter) filter;
-            for (Query.Filter subFilter : composite.getSubFilters()) {
-                addFilterPropertiesToSet(set, subFilter);
-            }
-        } else {
-            throw new IllegalArgumentException("Unsupported filter type " + filter);
-        }
-    }
 
-    private static Set<String> getSortProperties(Query query) {
-        Set<String> set = new HashSet<>();
-        for (Query.SortPredicate sortPredicate : query.getSortPredicates()) {
-            set.add(sortPredicate.getPropertyName());
+        List<SortField> sortFields = new ArrayList<>();
+        for (IndexesXml.Property property : index.getProperties()) {
+            boolean reverse = "desc".equals(property.getDirection());
+            sortFields.add(new SortField(property.getName(), SortField.STRING, reverse));
         }
-        return set;
-    }
-
-    private static Set<String> getProjectionProperties(Query query) {
-        Set<String> set = new HashSet<>();
-        for (Projection projection : query.getProjections()) {
-            set.add(getPropertyName(projection));
-        }
-        return set;
+        cacheQuery.sort(new Sort(sortFields.toArray(new SortField[sortFields.size()])));
     }
 
     private static List<String> getProjections(Query gaeQuery) {
@@ -248,7 +130,7 @@ class Projections {
         return list;
     }
 
-    private static String getPropertyName(Projection projection) {
+    public static String getPropertyName(Projection projection) {
         if (projection instanceof PropertyProjection) {
             PropertyProjection propertyProjection = (PropertyProjection) projection;
             return propertyProjection.getName();

@@ -10,6 +10,7 @@ import com.google.appengine.api.datastore.Query;
 import org.apache.lucene.search.Sort;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.SearchManager;
+import org.jboss.capedwarf.shared.config.IndexesXml;
 
 /**
  * Converts a GAE query to Infinispan's CacheQuery
@@ -43,7 +44,8 @@ public class QueryConverter {
 
     private CacheQuery getCacheQuery(Query gaeQuery) {
         CacheQuery cacheQuery = getCacheQuery(createLuceneQuery(gaeQuery));
-        Projections.applyProjections(gaeQuery, cacheQuery);
+        IndexesXml.Index index = Indexes.getIndex(gaeQuery);
+        Projections.applyProjections(gaeQuery, cacheQuery, index);
         return cacheQuery;
     }
 
