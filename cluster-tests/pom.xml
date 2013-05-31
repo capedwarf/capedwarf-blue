@@ -71,13 +71,7 @@
            	<artifactId>infinispan-core</artifactId>
             <scope>test</scope>
         </dependency>
-        
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-distexec-demo</artifactId>
-            <scope>test</scope>
-            <version>${version.org.infinispan}</version>
-        </dependency>
+
         <dependency>
             <groupId>javax.enterprise</groupId>
         	   <artifactId>cdi-api</artifactId>
