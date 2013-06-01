@@ -27,16 +27,24 @@
             <artifactId>jboss-servlet-api_3.0_spec</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
             <scope>test</scope>
         </dependency>
 
+
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-arquillian-container-remote</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-container-managed</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -67,15 +75,15 @@
         </dependency>
 
         <dependency>
-           	<groupId>org.infinispan</groupId>
-           	<artifactId>infinispan-core</artifactId>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-core</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>javax.enterprise</groupId>
-        	   <artifactId>cdi-api</artifactId>
-        	   <scope>test</scope>
+            <artifactId>cdi-api</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- MapReduce libs -->
@@ -129,7 +137,7 @@
         <profile>
             <id>cluster</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <activeByDefault>true</activeByDefault>
                 <property>
                     <name>cluster</name>
                 </property>
@@ -139,10 +147,86 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>2.10</version>
-                        <configuration>
-                            <skipTests>false</skipTests>
-                        </configuration>
+                        <version>2.13</version>
+
+                        <executions combine.children="append">
+
+                            <execution>
+                                <id>capedward.test.start</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+
+                                <configuration>
+                                    <!-- Never fork this process for the containers to keep running -->
+                                    <forkMode>never</forkMode>
+                                    <skipTests>false</skipTests>
+                                    <!--<groups>org.jboss.test.capedwarf.common.support.JBoss</groups>-->
+
+                                    <includes>
+                                        <include>org/jboss/test/capedwarf/cluster/setup/**/*Start.java</include>
+                                    </includes>
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>jboss-cluster-setup</arquillian.launch>
+                                        <capedwarf.dist>${env.JBOSS_HOME}</capedwarf.dist>
+                                    </systemPropertyVariables>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExcludes>org.jboss.as:jboss-as-arquillian-container-remote</classpathDependencyExcludes>
+                                    </classpathDependencyExcludes>
+
+                                    <!-- Not to mixup logs -->
+                                    <reportNameSuffix>start</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                            <!-- Actual test execution -->
+                            <execution>
+                                <id>capedward.test.execute</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <skipTests>false</skipTests>
+                                    <groups>org.jboss.test.capedwarf.common.support.JBoss</groups>
+                                    <includes>
+                                        <include>org/jboss/test/capedwarf/cluster/test/**/*Test.java</include>
+                                    </includes>
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>jboss-cluster</arquillian.launch>
+                                    </systemPropertyVariables>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExcludes>org.jboss.as:jboss-as-arquillian-container-managed</classpathDependencyExcludes>
+                                    </classpathDependencyExcludes>
+                                    <reportNameSuffix>execute</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                             <execution>
+                                <id>capedward.test.stop</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <forkMode>never</forkMode>
+                                    <skipTests>false</skipTests>
+                                    <includes>
+                                        <include>org/jboss/test/capedwarf/cluster/setup/**/*Stop.java</include>
+                                    </includes>
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>jboss-cluster-setup</arquillian.launch>
+                                        <capedwarf.dist>${env.JBOSS_HOME}</capedwarf.dist>
+                                    </systemPropertyVariables>
+                                    <classpathDependencyExcludes>
+                                        <classpathDependencyExcludes>org.jboss.as:jboss-as-arquillian-container-remote</classpathDependencyExcludes>
+                                    </classpathDependencyExcludes>
+                                    <reportNameSuffix>stop</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
