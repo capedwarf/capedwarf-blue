@@ -31,6 +31,7 @@
         <property name="deploymentExportPath">target/deployments</property>
     </engine -->
 
+    <!-- Group to treat containers as remote but managed deployments -->
     <group qualifier="jboss-cluster" >
 
         <container qualifier="container-1" >
@@ -40,17 +41,45 @@
             </configuration>
         </container>
 
-        <!--
-        node B config:
-         - run with -Djboss.node.name=node-b
-         - use port offset 100
-         -->
         <container qualifier="container-2">
             <configuration>
                 <property name="managementAddress">127.0.0.1</property>
                 <property name="managementPort">10099</property>
             </configuration>
         </container>
+
+    </group>
+
+    <!-- Group to start the containers in custom mode -->
+
+    <group qualifier="jboss-cluster-setup">
+
+        <container qualifier="container-1" mode="custom" managed="true" default="true">
+            <configuration>
+                <property name="jbossHome">${capedwarf.dist}</property>
+                <!-- Do not wrap the following line! -->
+                <property name="javaVmArguments">-Djboss.inst=${capedwarf.dist} -Djboss.node.name=nodeA -Djboss.server.data.dir=${capedwarf.dist}/standalone/dataA -Djboss.server.temp.dir=${capedwarf.dist}/standalone/tmpA -Djboss.server.log.dir=${capedwarf.dist}/standalone/logA -Djboss.server.deploy.dir=${capedwarf.dist}/standalone/contentA</property>
+                <property name="serverConfig">standalone-capedwarf.xml</property>
+                <property name="managementAddress">127.0.0.1</property>
+                <property name="managementPort">9999</property>
+                <property name="waitForPorts">9999</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+
+        <container qualifier="container-2" mode="custom" managed="true">
+            <configuration>
+                <property name="jbossHome">${capedwarf.dist}</property>
+                <!-- Do not wrap the following line! -->
+                <property name="javaVmArguments">-Djboss.inst=${capedwarf.dist} -Djboss.node.name=nodeB -Djboss.server.data.dir=${capedwarf.dist}/standalone/dataB -Djboss.server.temp.dir=${capedwarf.dist}/standalone/tmpB -Djboss.server.log.dir=${capedwarf.dist}/standalone/logB -Djboss.server.deploy.dir=${capedwarf.dist}/standalone/contentB -Djboss.socket.binding.port-offset=100</property>
+                <property name="serverConfig">standalone-capedwarf.xml</property>
+                <property name="managementAddress">127.0.0.1</property>
+                <property name="managementPort">10099</property>
+                <property name="waitForPorts">10099</property>
+                <property name="waitForPortsTimeoutInSeconds">8</property>
+            </configuration>
+        </container>
+
     </group>
 
 </arquillian>

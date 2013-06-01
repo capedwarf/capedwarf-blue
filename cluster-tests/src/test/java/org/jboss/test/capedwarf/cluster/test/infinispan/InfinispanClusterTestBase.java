@@ -23,8 +23,8 @@ import org.jboss.test.capedwarf.common.test.TestBase;
  */
 public abstract class InfinispanClusterTestBase extends TestBase {
 
-    private final String textFileName = "dummy.txt";
-    private final int numPopularWords = 20;
+    private static final String textFileName = "dummy.txt";
+    private static final int numPopularWords = 20;
 
     protected void wordCount() throws IOException {
         Cache<String, String> cache = getCache();
@@ -50,7 +50,7 @@ public abstract class InfinispanClusterTestBase extends TestBase {
         }
     }
 
-    abstract protected Cache<String, String> getCache();
+    protected abstract Cache<String, String> getCache();
 
     private void loadData(Cache<String, String> cache) throws IOException {
         //
