@@ -112,7 +112,21 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
                 public int read() throws IOException {
                     try {
                         final int rc = msg.readBytes(buf, 1);
-                        return (rc != -1) ? buf[0] : -1;
+                        return (rc != -1) ? (buf[0] & 0xFF) : -1;
+                    } catch (JMSException e) {
+                        throw new IOException(e);
+                    }
+                }
+
+                @Override
+                public void close() throws IOException {
+                    reset(); // reset on close, so it can be reused
+                }
+
+                @Override
+                public synchronized void reset() throws IOException {
+                    try {
+                        msg.reset();
                     } catch (JMSException e) {
                         throw new IOException(e);
                     }
