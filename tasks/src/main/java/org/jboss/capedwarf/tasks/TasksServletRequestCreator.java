@@ -28,7 +28,7 @@ import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -160,7 +160,7 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
                     if (urlDecode) {
                         urlDecode(values);
                     }
-                    map.put(value, new HashSet<String>(Arrays.asList(values)));
+                    map.put(value, new LinkedHashSet<String>(Arrays.asList(values)));
                 }
             }
         }
