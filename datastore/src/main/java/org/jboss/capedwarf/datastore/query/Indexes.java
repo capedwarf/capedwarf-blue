@@ -73,7 +73,8 @@ public class Indexes {
         if (isAncestorQuery(query)) {
             return has(nonKeyInequalityFilters) || has(nonKeySortOrders);
         } else {
-            return has(nonKeyInequalityFilters) && has(equalityFilters);
+            Set<String> otherEqualityFilters = Sets.difference(equalityFilters, nonKeyInequalityFilters);
+            return has(nonKeyInequalityFilters) && has(otherEqualityFilters);
         }
     }
 
