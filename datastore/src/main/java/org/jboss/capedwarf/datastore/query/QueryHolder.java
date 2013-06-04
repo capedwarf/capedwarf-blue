@@ -24,12 +24,14 @@ package org.jboss.capedwarf.datastore.query;
 
 import com.google.appengine.api.datastore.Query;
 import org.infinispan.query.CacheQuery;
+import org.jboss.capedwarf.shared.config.IndexesXml;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class QueryHolder {
     abstract Query getQuery();
+    abstract IndexesXml.Index getIndex();
     abstract CacheQuery getCacheQuery();
     abstract boolean isInTx();
     abstract boolean isDistinct();

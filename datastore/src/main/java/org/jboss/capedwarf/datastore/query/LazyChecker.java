@@ -85,6 +85,9 @@ public class LazyChecker extends LazyKeyChecker {
         if (checked.compareAndSet(false, true)) {
             checkInequalityConstraints();
         }
+        if (holder.getIndex() == null) {
+            Indexes.checkIfExplicitlyDefinedIndexIsRequired(holder.getQuery());
+        }
         super.check();
     }
 

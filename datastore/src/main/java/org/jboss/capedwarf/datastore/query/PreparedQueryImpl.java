@@ -34,6 +34,7 @@ import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.datastore.QueryResultList;
 import org.infinispan.query.CacheQuery;
 import org.jboss.capedwarf.datastore.PostLoadHandle;
+import org.jboss.capedwarf.shared.config.IndexesXml;
 
 import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaults;
 
@@ -46,18 +47,24 @@ import static com.google.appengine.api.datastore.FetchOptions.Builder.withDefaul
 public class PreparedQueryImpl extends QueryHolder implements PreparedQuery {
     private final PostLoadHandle callback;
     private final Query gaeQuery;
+    private final IndexesXml.Index index;
     private final CacheQuery cacheQuery;
     private final boolean inTx;
 
-    public PreparedQueryImpl(PostLoadHandle callback, Query gaeQuery, CacheQuery cacheQuery, boolean inTx) {
+    public PreparedQueryImpl(PostLoadHandle callback, Query gaeQuery, IndexesXml.Index index, CacheQuery cacheQuery, boolean inTx) {
         this.callback = callback;
         this.gaeQuery = gaeQuery;
+        this.index = index;
         this.cacheQuery = cacheQuery;
         this.inTx = inTx;
     }
 
     Query getQuery() {
         return gaeQuery;
+    }
+
+    IndexesXml.Index getIndex() {
+        return index;
     }
 
     CacheQuery getCacheQuery() {
