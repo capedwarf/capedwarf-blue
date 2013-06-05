@@ -29,11 +29,12 @@ public class Indexes {
                 return index;
             }
         }
+        return null;
+    }
 
+    public static void checkIfExplicitlyDefinedIndexIsRequired(Query query) {
         if (needsExplicitlyDefinedIndex(query)) {
             throw newDatastoreNeedIndexException("No matching index found", createIndexXml(query));
-        } else {
-            return null;
         }
     }
 
@@ -64,15 +65,16 @@ public class Indexes {
         Set<String> nonKeyInequalityFilters = Sets.difference(inequalityFilters, KEY_RESERVED_PROPERTY_AS_SET);
         Set<String> nonKeySortOrders = Sets.difference(sortOrders, KEY_RESERVED_PROPERTY_AS_SET);
 
-        Set<String> otherNonKeySortProperties = Sets.difference(nonKeySortOrders, equalityFilters);
-        if (has(equalityFilters) && has(otherNonKeySortProperties)) {
+        Set<String> otherNonKeySortOrders = Sets.difference(nonKeySortOrders, equalityFilters);
+        if (has(equalityFilters) && has(otherNonKeySortOrders)) {
             return true;
         }
 
         if (isAncestorQuery(query)) {
             return has(nonKeyInequalityFilters) || has(nonKeySortOrders);
         } else {
-            return has(nonKeyInequalityFilters) && has(equalityFilters);
+            Set<String> otherEqualityFilters = Sets.difference(equalityFilters, nonKeyInequalityFilters);
+            return has(nonKeyInequalityFilters) && has(otherEqualityFilters);
         }
     }
 

@@ -53,10 +53,12 @@ import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.reflection.FieldInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.datastore.query.Indexes;
 import org.jboss.capedwarf.datastore.query.PreparedQueryImpl;
 import org.jboss.capedwarf.datastore.query.QueryConverter;
 import org.jboss.capedwarf.datastore.query.QueryHandleService;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.config.IndexesXml;
 
 /**
  * Base Datastore service.
@@ -186,7 +188,8 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         }
         javax.transaction.Transaction transaction = beforeTx(tx);
         try {
-            CacheQuery cacheQuery = queryConverter.convert(query);
+            IndexesXml.Index index = Indexes.getIndex(query);
+            CacheQuery cacheQuery = queryConverter.convert(query, index);
 
             Double deadlineSeconds = getDatastoreServiceConfig().getDeadline();
             if (deadlineSeconds != null) {
@@ -194,7 +197,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
                 cacheQuery.timeout(deadlineMicroseconds, TimeUnit.MICROSECONDS);
             }
 
-            return new PreparedQueryImpl(this, query, cacheQuery, tx != null);
+            return new PreparedQueryImpl(this, query, index, cacheQuery, tx != null);
         } finally {
             afterTx(transaction);
         }

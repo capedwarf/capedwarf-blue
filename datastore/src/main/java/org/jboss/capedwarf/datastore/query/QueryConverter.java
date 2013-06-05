@@ -36,16 +36,10 @@ public class QueryConverter {
         this.sortPredicateConverter = new SortPredicateConverter();
     }
 
-    public CacheQuery convert(Query gaeQuery) {
-        CacheQuery cacheQuery = getCacheQuery(gaeQuery);
-        addSortToQuery(cacheQuery, gaeQuery);
-        return cacheQuery;
-    }
-
-    private CacheQuery getCacheQuery(Query gaeQuery) {
+    public CacheQuery convert(Query gaeQuery, IndexesXml.Index index) {
         CacheQuery cacheQuery = getCacheQuery(createLuceneQuery(gaeQuery));
-        IndexesXml.Index index = Indexes.getIndex(gaeQuery);
         Projections.applyProjections(gaeQuery, cacheQuery, index);
+        addSortToQuery(cacheQuery, gaeQuery);
         return cacheQuery;
     }
 
