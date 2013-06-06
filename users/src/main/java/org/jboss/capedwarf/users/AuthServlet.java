@@ -63,4 +63,17 @@ public abstract class AuthServlet extends HttpServlet {
         return CapedwarfEnvironment.getThreadLocalInstance().getBaseApplicationUrl();
     }
 
+    protected static String addContextPath(String path) {
+        String contextPath = CapedwarfEnvironment.getThreadLocalInstance().getContextPath();
+        int length = contextPath.length();
+        if (length == 0 || (length == 1 && contextPath.charAt(0) == '/')) {
+            return path;
+        } else {
+            if (contextPath.startsWith("/")) {
+                return contextPath + path;
+            } else {
+                return "/" + contextPath + path;
+            }
+        }
+    }
 }

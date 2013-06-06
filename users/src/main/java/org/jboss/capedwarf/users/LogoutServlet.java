@@ -49,7 +49,7 @@ public class LogoutServlet extends AuthServlet {
     }
 
     public static String createLogoutURL(String destinationURL, String authDomain) {
-        return LOGOUT_PATH
+        return addContextPath(LOGOUT_PATH)
                 + "?" + DESTINATION_URL_PARAM + "=" + URLUtils.encode(destinationURL)
                 + "&" + AUTH_DOMAIN_PARAM + "=" + URLUtils.encode(authDomain);
     }

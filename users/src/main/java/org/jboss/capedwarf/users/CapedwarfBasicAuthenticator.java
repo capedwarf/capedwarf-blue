@@ -26,53 +26,23 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.authenticator.BasicAuthenticator;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.deploy.LoginConfig;
-import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfAuthenticator extends AuthenticatorBase {
-    private static final String KEY = CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY;
-
+public class CapedwarfBasicAuthenticator extends AbstractAuthenticator {
     private volatile AuthenticatorBase basicDelegate;
 
-    protected boolean authenticate(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
-        if (isAdminConsoleAccess(request, config)) {
-            try {
-                return getBasicDelegate().authenticate(request, response);
-            } catch (ServletException e) {
-                throw new IOException(e);
-            }
-        }
-
-        HttpSession session = request.getSession(false);
-        if (session == null)
-            return unauthorized(response);
-
-        CapedwarfUserPrincipal principal = getPrincipal(session);
-        if (principal != null) {
-            request.setUserPrincipal(principal);
-            return true;
-        } else {
-            return unauthorized(response);
-        }
-    }
-
-    @Override
-    public void logout(Request request) throws ServletException {
+    protected boolean authenticateAdmin(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
         try {
-            super.logout(request);
-        } finally {
-            HttpSession session = request.getSession();
-            if (session != null) {
-                session.removeAttribute(KEY);
-            }
+            return getBasicDelegate().authenticate(request, response);
+        } catch (ServletException e) {
+            throw new IOException(e);
         }
     }
 
@@ -80,21 +50,6 @@ public class CapedwarfAuthenticator extends AuthenticatorBase {
         final String authMethod = config.getAuthMethod();
         // enabled admin console sets BASIC auth method
         return (authMethod != null && "BASIC".equals(authMethod.toUpperCase()) && isAdminConsoleURI(request));
-    }
-
-    protected boolean isAdminConsoleURI(Request request) {
-        String requestURI = request.getRequestURI();
-        // any better way?
-        return (requestURI != null && requestURI.contains("_ah/admin"));
-    }
-
-    protected boolean unauthorized(HttpServletResponse response) throws IOException {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-        return false;
-    }
-
-    protected CapedwarfUserPrincipal getPrincipal(HttpSession session) {
-        return (CapedwarfUserPrincipal) session.getAttribute(KEY);
     }
 
     protected AuthenticatorBase getBasicDelegate() {

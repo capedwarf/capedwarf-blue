@@ -96,6 +96,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private String baseApplicationUrl;
     private String secureBaseApplicationUrl;
     private String defaultVersionHostname;
+    private String contextPath;
 
     private int counter;
 
@@ -256,6 +257,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
             secureBaseApplicationUrl = HTTPS + DELIMITER + defaultVersionHostname;
         }
         attributes.put(DEFAULT_VERSION_HOSTNAME, defaultVersionHostname);
+        contextPath = context;
     }
 
     public String getBaseApplicationUrl() {
@@ -268,6 +270,10 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public String getDefaultVersionHostname() {
         return defaultVersionHostname;
+    }
+
+    public String getContextPath() {
+        return contextPath;
     }
 
     public static CapedwarfEnvironment createThreadLocalInstance() {

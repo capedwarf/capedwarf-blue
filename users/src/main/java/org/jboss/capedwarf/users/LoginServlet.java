@@ -50,7 +50,7 @@ public class LoginServlet extends AuthServlet {
     }
 
     public static String createLoginURL(String destinationURL, String authDomain, String federatedIdentity, Set<String> attributesRequest) {
-        return LOGIN_PATH
+        return addContextPath(LOGIN_PATH)
                 + "?" + DESTINATION_URL_PARAM + "=" + URLUtils.encode(destinationURL)
                 + (authDomain == null ? "" : ("&" + AUTH_DOMAIN_PARAM + "=" + URLUtils.encode(authDomain)))
                 + (federatedIdentity == null ? "" : ("&" + FEDERATED_IDENTITY_PARAM + "=" + URLUtils.encode(federatedIdentity)));
