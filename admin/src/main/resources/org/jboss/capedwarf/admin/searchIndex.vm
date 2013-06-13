@@ -1,26 +1,55 @@
 #parse("/org/jboss/capedwarf/admin/header.vm")
 
 <h2>Text search</h2>
+<form action="searchIndex.vm" method="post">
+    <input type="hidden" name="namespace" value="${searchIndex.namespace}"/>
+    <input type="hidden" name="indexName" value="${searchIndex.indexName}"/>
+
+    <label for="query">Query:</label><br/>
+    <textarea id="query" name="query" rows="3" cols="70">${esc.html($searchIndex.query)}</textarea>
+
+    <div>
+        Learn more about
+        <a href="https://developers.google.com/appengine/docs/java/search/querylanguage" target="_blank">text search syntax</a>.
+    </div>
+
+    <br/>
+    <br/>
+
+    <input type="submit" value="Run Query"/>
+</form>
+
+#if($searchIndex.errorMessage)
+<br/>
+<strong>ERROR: $searchIndex.errorMessage</strong>
+#end
+
 <br/><br/>
 
-<table width="100%">
-    <tr>
-        <th>DocId</th>
-        <th>OrderId</th>
-        #foreach ($property in $searchIndex.fieldNames)
-            <th>$property</th>
-        #end
-    </tr>
+#if($searchIndex.searchPerformed)
+    #if($searchIndex.resultCount == 0)
+        <strong>No results!</strong>
+    #else
+        <table width="100%">
+            <tr>
+                <th>DocId</th>
+                <th>OrderId</th>
+                #foreach ($property in $searchIndex.fieldNames)
+                    <th>$property</th>
+                #end
+            </tr>
 
-    #foreach ($row in $searchIndex.rows)
-        <tr>
-            <td><a href="searchDocument.vm?namespace=${searchIndex.namespace}&amp;indexName=${searchIndex.indexName}&amp;docId=${row.docId}">$row.docId</a></td>
-            <td>$row.orderId</td>
-            #foreach ($cell in $row.cells)
-                <td>$cell</td>
+            #foreach ($row in $searchIndex.rows)
+                <tr>
+                    <td><a href="searchDocument.vm?namespace=${searchIndex.namespace}&amp;indexName=${searchIndex.indexName}&amp;docId=${row.docId}">$row.docId</a></td>
+                    <td>$row.orderId</td>
+                    #foreach ($cell in $row.cells)
+                        <td>$cell</td>
+                    #end
+                </tr>
             #end
-        </tr>
+        </table>
     #end
-</table>
+#end
 
 #parse("/org/jboss/capedwarf/admin/footer.vm")

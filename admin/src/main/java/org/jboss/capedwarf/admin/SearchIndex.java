@@ -35,10 +35,10 @@ import javax.inject.Named;
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
-import com.google.appengine.api.search.GetRequest;
-import com.google.appengine.api.search.GetResponse;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
+import com.google.appengine.api.search.Results;
+import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
 
@@ -57,16 +57,34 @@ public class SearchIndex {
     @HttpParam
     private String indexName;
 
+    @Inject
+    @HttpParam
+    private String query;
+
+    private String errorMessage;
+
     private List<String> fieldNames = new ArrayList<String>();
     private List<Row> rows;
 
 
     public String getNamespace() {
-        return namespace;
+        return namespace == null ? "" : namespace;
     }
 
     public String getIndexName() {
-        return indexName;
+        return indexName == null ? "" : indexName;
+    }
+
+    public String getQuery() {
+        return query == null ? "" : query;
+    }
+
+    public boolean isSearchPerformed() {
+        return query != null;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
     public List<Row> getRows() {
@@ -74,6 +92,13 @@ public class SearchIndex {
             loadEntities();
         }
         return rows;
+    }
+
+    public int getResultCount() {
+        if (rows == null) {
+            loadEntities();
+        }
+        return rows.size();
     }
 
     public List<String> getFieldNames() {
@@ -85,22 +110,28 @@ public class SearchIndex {
 
     @PostConstruct
     private void loadEntities() {
-        rows = new ArrayList<Row>();
-        SortedSet<String> fieldNameSet = new TreeSet<String>();
-        NamespaceManager.set(namespace);
-        try {
-            SearchService search = SearchServiceFactory.getSearchService(namespace);
-            Index index = search.getIndex(IndexSpec.newBuilder().setName(indexName));
-            GetResponse<Document> response = index.getRange(GetRequest.newBuilder().build());
-            for (Document document : response.getResults()) {
-                fieldNameSet.addAll(document.getFieldNames());
-                rows.add(new Row(document));
+        if (query != null) {
+            try {
+                rows = new ArrayList<Row>();
+                SortedSet<String> fieldNameSet = new TreeSet<String>();
+                NamespaceManager.set(namespace);
+                try {
+                    SearchService search = SearchServiceFactory.getSearchService(namespace);
+                    Index index = search.getIndex(IndexSpec.newBuilder().setName(indexName));
+                    Results<ScoredDocument> results = index.search(query);
+                    for (Document document : results) {
+                        fieldNameSet.addAll(document.getFieldNames());
+                        rows.add(new Row(document));
+                    }
+                } finally {
+                    NamespaceManager.set("");
+                }
+                fieldNames.clear();
+                fieldNames.addAll(fieldNameSet);
+            } catch (Exception e) {
+                errorMessage = e.getMessage();
             }
-        } finally {
-            NamespaceManager.set("");
         }
-        fieldNames.clear();
-        fieldNames.addAll(fieldNameSet);
     }
 
     public class Row {
