@@ -35,7 +35,7 @@ import org.apache.velocity.context.AbstractContext;
 import org.apache.velocity.tools.generic.EscapeTool;
 
 /**
- *
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class CapedwarfVelocityContext extends AbstractContext {
 
