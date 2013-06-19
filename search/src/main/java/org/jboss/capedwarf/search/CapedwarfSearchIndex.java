@@ -147,7 +147,8 @@ public class CapedwarfSearchIndex implements Index {
         CacheQuery cacheQuery = searchManager.getQuery(
             createQueryBuilder().bool()
                 .must(createIndexAndNamespaceQuery())
-                .must(createLuceneQuery(query)).createQuery());
+                .must(createLuceneQuery(query))
+                .createQuery());
 
         List<ScoredDocument> scoredDocuments = new ArrayList<ScoredDocument>();
         for (Object o : cacheQuery.list()) {
