@@ -27,6 +27,7 @@ import com.google.appengine.api.search.query.QueryTreeWalker;
 import com.google.appengine.repackaged.org.antlr.runtime.RecognitionException;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.CommonTree;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.Tree;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 
 /**
@@ -42,6 +43,9 @@ public class QueryConverter {
     }
 
     public Query convert(String queryString) {
+        if (queryString.isEmpty()) {
+            return new MatchAllDocsQuery();
+        }
         final Tree tree = parseQuery(queryString);
         return convert(tree);
     }

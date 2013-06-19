@@ -52,6 +52,14 @@ import static org.junit.Assert.fail;
 public class SearchTest extends SearchTestBase {
 
     @Test
+    public void testEmptyQueryReturnsAllDocuments() {
+        Index index = getTestIndex();
+        index.put(newDocument("fooaaa", newField("foo").setText("aaa")));
+        index.put(newDocument("foobbb", newField("bar").setText("bbb")));
+        assertSearchYields(index, "", "fooaaa", "foobbb");
+    }
+
+    @Test
     public void testSearchBySingleField() {
         Index index = getTestIndex();
         index.put(newDocument("fooaaa", newField("foo").setText("aaa")));
@@ -320,7 +328,7 @@ public class SearchTest extends SearchTestBase {
     }
 
     @Test
-     public void testGet() {
+    public void testGet() {
         Index index = getTestIndex();
         PutResponse ar = index.put(newDocument("get_id", newField("acme").setText("bipbip")));
         List<String> ids = ar.getIds();
