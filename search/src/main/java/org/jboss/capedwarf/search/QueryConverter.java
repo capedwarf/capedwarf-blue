@@ -43,7 +43,7 @@ public class QueryConverter {
     }
 
     public Query convert(String queryString) {
-        if (queryString.isEmpty()) {
+        if (queryString.trim().isEmpty()) {
             return new MatchAllDocsQuery();
         }
         final Tree tree = parseQuery(queryString);

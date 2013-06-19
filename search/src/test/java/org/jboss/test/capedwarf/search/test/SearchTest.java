@@ -60,6 +60,21 @@ public class SearchTest extends SearchTestBase {
     }
 
     @Test
+    public void testLeadingAndTrailingWhitespaceInQueryIsIgnored() {
+        Index index = getTestIndex();
+        index.put(newDocument("fooaaa", newField("foo").setText("aaa")));
+        index.put(newDocument("foobbb", newField("foo").setText("bbb")));
+
+        assertSearchYields(index, "    ", "fooaaa", "foobbb");
+        assertSearchYields(index, "\t\n", "fooaaa", "foobbb");
+
+        assertSearchYields(index, "   foo:aaa       ", "fooaaa");
+        assertSearchYields(index, "\tfoo:aaa\t", "fooaaa");
+        assertSearchYields(index, "\nfoo:aaa\n", "fooaaa");
+        assertSearchYields(index, "   \n foo:aaa \n ", "fooaaa");
+    }
+
+    @Test
     public void testSearchBySingleField() {
         Index index = getTestIndex();
         index.put(newDocument("fooaaa", newField("foo").setText("aaa")));
