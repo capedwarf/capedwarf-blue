@@ -38,20 +38,6 @@ import java.nio.channels.WritableByteChannel;
  */
 public class IOUtils {
     /**
-     * Get new digest instance.
-     *
-     * @param algorithm the algorithm
-     * @return new digest
-     */
-    public static Digest getDigest(String algorithm) throws Exception {
-        if ("MD5".equalsIgnoreCase(algorithm)) {
-            return new BCMD5Digest();
-        } else {
-            return new JDKDigest(algorithm);
-        }
-    }
-
-    /**
      * Safe close.
      *
      * @param closeable the closeable resource

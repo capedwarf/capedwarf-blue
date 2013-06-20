@@ -30,7 +30,7 @@ import com.google.appengine.api.files.FileWriteChannel;
 import org.infinispan.io.WritableGridFileChannel;
 import org.jboss.capedwarf.common.io.Digest;
 import org.jboss.capedwarf.common.io.DigestResult;
-import org.jboss.capedwarf.common.io.IOUtils;
+import org.jboss.capedwarf.common.io.DigestUtils;
 
 /**
  * JBoss file write channel.
@@ -92,7 +92,7 @@ class CapedwarfFileWriteChannel implements FileWriteChannel {
     protected synchronized Digest getDigest() {
         if (digest == null) {
             try {
-                digest = IOUtils.getDigest("MD5");
+                digest = DigestUtils.getDigest("MD5");
                 DigestResult previousResult = fileService.readMd5(file);
                 digest.initialize(previousResult);
             } catch (Exception e) {
