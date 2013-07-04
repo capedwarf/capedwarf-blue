@@ -61,7 +61,7 @@ class QueueStatisticsImpl implements QueueStatisticsInternal {
             int numTasks;
             long oldestEtaUsec = -1L;
             int requestsInFlight = (int) AbstractQueueTask.count(new QueueStatisticsTask(queueName));
-            double enforcedRate = 0;
+            double enforcedRate = 1.0; // TODO - how to get the real value?
 
             QueryBuilder builder = manager.buildQueryBuilderForClass(Task.class).get();
             Query query = CapedwarfQueue.toTerm(builder, "queue", queueName).createQuery();
