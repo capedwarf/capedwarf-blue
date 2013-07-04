@@ -78,6 +78,12 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
         String executionCount = String.valueOf(deliveryCount - 1);
         request.addHeader(TasksMessageCreator.TASK_EXECUTION_COUNT, executionCount);
         request.addHeader(TasksMessageCreator.TASK_RETRY_COUNT, executionCount);
+
+        Object eta = request.getHeader(TasksMessageCreator.TASK_ETA);
+        if (eta == null) {
+            request.addHeader(TasksMessageCreator.TASK_ETA, String.valueOf(System.currentTimeMillis()));
+        }
+
         return request;
     }
 

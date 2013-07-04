@@ -50,7 +50,7 @@ public class TasksMessageCreator implements MessageCreator {
     private static final String TASK_NAME_HEADER = "X-AppEngine-TaskName";
     public static final String TASK_RETRY_COUNT = "X-AppEngine-TaskRetryCount";
     public static final String TASK_EXECUTION_COUNT = "X-AppEngine-TaskExecutionCount";
-    private static final String TASK_ETA = "X-AppEngine-TaskETA";
+    public static final String TASK_ETA = "X-AppEngine-TaskETA";
     private static final String FAIL_FAST = "X-AppEngine-FailFast";
     static final String CURRENT_NAMESPACE = "X-AppEngine-Current-Namespace";
 
