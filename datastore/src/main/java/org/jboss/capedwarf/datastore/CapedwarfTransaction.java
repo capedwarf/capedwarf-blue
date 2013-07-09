@@ -102,9 +102,17 @@ final class CapedwarfTransaction implements Transaction {
 
     static TransactionWrapper getTxWrapper(Transaction tx) {
         if (tx != null) {
-            return new TransactionWrapper(getTx(), CapedwarfTransaction.class.cast(tx));
+            return new TransactionWrapper(getTx(), unwrap(tx));
         } else {
             return null;
+        }
+    }
+
+    static CapedwarfTransaction unwrap(Transaction tx) {
+        if (tx instanceof CapedwarfTransaction) {
+            return CapedwarfTransaction.class.cast(tx);
+        } else {
+            return currentTransaction();
         }
     }
 

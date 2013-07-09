@@ -28,6 +28,7 @@ import java.util.Map;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.VoidWork;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -35,6 +36,7 @@ import org.jboss.test.capedwarf.testsuite.LibUtils;
 import org.jboss.test.capedwarf.testsuite.TestsuiteTestBase;
 import org.jboss.test.capedwarf.testsuite.objectify.support.Car;
 import org.jboss.test.capedwarf.testsuite.objectify.support.Snapshot;
+import org.jboss.test.capedwarf.testsuite.objectify.support.TestEntity;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -61,6 +63,7 @@ public class ObjectifyTest extends TestsuiteTestBase {
     public void setUp() {
         ObjectifyService.register(Car.class);
         ObjectifyService.register(Snapshot.class);
+        ObjectifyService.register(TestEntity.class);
 
         objectify = ObjectifyService.ofy();
     }
@@ -105,5 +108,27 @@ public class ObjectifyTest extends TestsuiteTestBase {
                 .list();
 
         Assert.assertEquals(1, list.size());
+    }
+
+    @Test
+    public void testWithCache() throws Exception {
+        System.out.println("Current: " + ObjectifyService.ofy().load().type(TestEntity.class).list());
+
+        final TestEntity entity = new TestEntity().setName("TESTING 1");
+
+        //simple save
+        ObjectifyService.ofy().transact(new VoidWork() {
+            public void vrun() {
+                ObjectifyService.ofy().save().entity(entity).now();
+            }
+        });
+
+        //get and save again
+        ObjectifyService.ofy().transact(new VoidWork() {
+            public void vrun() {
+                TestEntity entityBack = ObjectifyService.ofy().load().type(TestEntity.class).id(entity.getId()).get();
+                ObjectifyService.ofy().save().entity(entityBack.setName("TESTING 2"));
+            }
+        });
     }
 }
