@@ -205,6 +205,25 @@ public class FilesTest extends TestBase {
         }
     }
 
+    @Test
+    public void testWrite195() throws Exception {
+        // Get a file service
+        FileService fileService = FileServiceFactory.getFileService();
+
+        // Create a new Blob file with mime-type "text/plain"
+        AppEngineFile file = fileService.createNewBlobFile("text/plain");
+
+        // This time lock because we intend to finalize
+        boolean lock = true;
+        FileWriteChannel writeChannel = fileService.openWriteChannel(file, lock);
+
+        // This time we write to the channel directly
+        writeChannel.write(ByteBuffer.wrap("And miles to go before I sleep.".getBytes()));
+
+        // Now finalize
+        writeChannel.closeFinally();
+    }
+
     private void writeToFile(AppEngineFile file, String content) throws IOException {
         writeToFile(file, content, false);
     }
