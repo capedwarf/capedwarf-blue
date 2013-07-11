@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.blobstore.BlobInfo;
 import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
@@ -207,21 +208,23 @@ public class FilesTest extends TestBase {
 
     @Test
     public void testWrite195() throws Exception {
-        // Get a file service
-        FileService fileService = FileServiceFactory.getFileService();
+        final String oldNamespace = NamespaceManager.get();
+        NamespaceManager.set("Test");
+        try {
+            // Get a file service
+            FileService fileService = FileServiceFactory.getFileService();
+            String imageBase64 = "qwerty";
 
-        // Create a new Blob file with mime-type "text/plain"
-        AppEngineFile file = fileService.createNewBlobFile("text/plain");
+            // Create a new Blob file with mime-type "text/png"
+            AppEngineFile file = fileService.createNewBlobFile("image/png");
 
-        // This time lock because we intend to finalize
-        boolean lock = true;
-        FileWriteChannel writeChannel = fileService.openWriteChannel(file, lock);
-
-        // This time we write to the channel directly
-        writeChannel.write(ByteBuffer.wrap("And miles to go before I sleep.".getBytes()));
-
-        // Now finalize
-        writeChannel.closeFinally();
+            // Open a channel to write to it
+            FileWriteChannel writeChannel = fileService.openWriteChannel(file, true);
+            writeChannel.write(ByteBuffer.wrap(imageBase64.getBytes()));
+            writeChannel.closeFinally();
+        } finally {
+            NamespaceManager.set(oldNamespace);
+        }
     }
 
     private void writeToFile(AppEngineFile file, String content) throws IOException {

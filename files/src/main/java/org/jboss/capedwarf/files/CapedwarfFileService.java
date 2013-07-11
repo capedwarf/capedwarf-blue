@@ -117,21 +117,21 @@ public class CapedwarfFileService implements ExposedFileService {
     }
 
     private void storeTemporaryBlobInfo(AppEngineFile file, String contentType, Date creationTimestamp, String uploadedFileName) {
-        String origNamespace = NamespaceManager.get();
-        NamespaceManager.set("");
-        try {
-            Entity tempBlobInfo = new Entity(getTempBlobInfoKey(file));
-            tempBlobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, contentType);
-            tempBlobInfo.setProperty(BlobInfoFactory.CREATION, creationTimestamp);
-            tempBlobInfo.setProperty(BlobInfoFactory.FILENAME, uploadedFileName);
-            datastoreService.put(tempBlobInfo);
-        } finally {
-            NamespaceManager.set(origNamespace);
-        }
+        Entity tempBlobInfo = new Entity(getTempBlobInfoKey(file));
+        tempBlobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, contentType);
+        tempBlobInfo.setProperty(BlobInfoFactory.CREATION, creationTimestamp);
+        tempBlobInfo.setProperty(BlobInfoFactory.FILENAME, uploadedFileName);
+        datastoreService.put(tempBlobInfo);
     }
 
     private Key getTempBlobInfoKey(AppEngineFile file) {
-        return KeyFactory.createKey(KIND_TEMP_BLOB_INFO, file.getFullPath());
+        final String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            return KeyFactory.createKey(KIND_TEMP_BLOB_INFO, file.getFullPath());
+        } finally {
+            NamespaceManager.set(origNamespace);
+        }
     }
 
     private Entity getTemporaryInfo(AppEngineFile file) {
@@ -160,24 +160,23 @@ public class CapedwarfFileService implements ExposedFileService {
     }
 
     void finalizeFile(AppEngineFile file) {
-        String origNamespace = NamespaceManager.get();
+        Entity tempBlobInfo = getTemporaryInfo(file);
+
+        File gfsFile = getGfsFile(file);
+        if (gfsFile.exists() == false) {
+            throw new IllegalStateException("Cannot finalize file " + file + ". Cannot find file on grid filesystem.");
+        }
+
+        final String origNamespace = NamespaceManager.get();
         NamespaceManager.set("");
         try {
-            Entity tempBlobInfo = getTemporaryInfo(file);
-
-            File gfsFile = getGfsFile(file);
-            if (!gfsFile.exists()) {
-                throw new IllegalStateException("Cannot finalize file " + file + ". Cannot find file on grid filesystem.");
-            }
-            long fileSize = gfsFile.length();
-
             String blobKeyString = getBlobKey(file).getKeyString();
             Entity blobInfo = new Entity(BlobInfoFactory.KIND, blobKeyString);
             blobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, tempBlobInfo.getProperty(BlobInfoFactory.CONTENT_TYPE));
             blobInfo.setProperty(BlobInfoFactory.CREATION, tempBlobInfo.getProperty(BlobInfoFactory.CREATION));
             blobInfo.setProperty(BlobInfoFactory.FILENAME, tempBlobInfo.getProperty(BlobInfoFactory.FILENAME));
             blobInfo.setProperty(BlobInfoFactory.MD5_HASH, tempBlobInfo.getProperty(BlobInfoFactory.MD5_HASH));
-            blobInfo.setProperty(BlobInfoFactory.SIZE, fileSize);
+            blobInfo.setProperty(BlobInfoFactory.SIZE, gfsFile.length());
             datastoreService.put(blobInfo);
         } finally {
             NamespaceManager.set(origNamespace);
@@ -315,7 +314,7 @@ public class CapedwarfFileService implements ExposedFileService {
             final FileStat stat = new FileStat();
             stat.setFinalized(true);
             stat.setFilename(file.getFullPath());
-            stat.setLength((Long)info.getProperty(BlobInfoFactory.SIZE));
+            stat.setLength((Long) info.getProperty(BlobInfoFactory.SIZE));
             // TODO -- setMtime, setCtime
             return stat;
         }
