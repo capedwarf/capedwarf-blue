@@ -66,7 +66,7 @@
         <version.org.apache.velocity-tool>2.0</version.org.apache.velocity-tool>
         <version.org.bouncycastle>1.47</version.org.bouncycastle>
         <version.org.jboss.logging>3.1.2.GA</version.org.jboss.logging>
-        <version.org.jboss.modules.jboss-modules>1.2.0.CR1</version.org.jboss.modules.jboss-modules>
+        <version.org.jboss.modules.jboss-modules>1.2.2.Final</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.vfs>3.1.0.Final</version.org.jboss.vfs>
         <version.org.jboss.web>7.2.0.Final</version.org.jboss.web>
         <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
@@ -95,8 +95,8 @@
         <!-- Testing -->
         <version.junit>4.11</version.junit>
         <version.arquillian>1.1.1.Final</version.arquillian>
-        <version.jboss.as7>7.2.0.Final</version.jboss.as7>
-        <version.org.jboss.xnio>3.0.7.GA</version.org.jboss.xnio>
+        <version.jboss.wildfly>8.0.0.Alpha4</version.jboss.wildfly>
+        <version.org.jboss.xnio>3.1.0.CR3</version.org.jboss.xnio>
         <version.arquillian.gae>1.0.0.Beta7</version.arquillian.gae>
         <version.jboss.maven.transformer>1.0.0.Beta5</version.jboss.maven.transformer>
         <version.jboss.maven.arquillian>1.0.0.Alpha1</version.jboss.maven.arquillian>
@@ -791,9 +791,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-container-remote</artifactId>
-                <version>${version.jboss.as7}</version>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-container-remote</artifactId>
+                <version>${version.jboss.wildfly}</version>
                 <scope>test</scope>
             </dependency>
 
@@ -1014,8 +1014,8 @@
             </build>
             <dependencies>
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-arquillian-container-remote</artifactId>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-arquillian-container-remote</artifactId>
                     <scope>test</scope>
                     <exclusions>
                         <exclusion>
