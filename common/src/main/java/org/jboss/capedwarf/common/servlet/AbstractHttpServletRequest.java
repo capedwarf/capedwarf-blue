@@ -55,6 +55,7 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
     private List<Cookie> cookies = new ArrayList<Cookie>();
     private Map<String, Set<String>> headers = new HashMap<String, Set<String>>();
     private Map<String, Part> parts = new HashMap<String, Part>();
+    private HttpSession session;
 
     protected AbstractHttpServletRequest(ServletContext context) {
         super(context);
@@ -175,11 +176,14 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
     }
 
     public HttpSession getSession(boolean create) {
-        return null;  // TODO
+        if (session == null && create) {
+            session = new MockHttpSession(getServletContext());
+        }
+        return session;
     }
 
     public HttpSession getSession() {
-        return getSession(false);
+        return getSession(true);
     }
 
     public boolean isRequestedSessionIdValid() {
