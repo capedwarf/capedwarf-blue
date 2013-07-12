@@ -32,6 +32,8 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.Appspot;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.jboss.test.capedwarf.common.test.TestContext;
 import org.jboss.test.capedwarf.testsuite.LibUtils;
@@ -39,12 +41,14 @@ import org.jboss.test.capedwarf.testsuite.secure.support.SecureServlet;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @RunWith(Arquillian.class)
+@Category({JBoss.class, Appspot.class})
 public class SecureTest extends TestBase {
     @Deployment
     public static WebArchive getDeployment() {
@@ -67,7 +71,7 @@ public class SecureTest extends TestBase {
             Assert.fail("Should not be here!");
         } catch (IOException e) {
             int responseCode = conn.getResponseCode();
-            Assert.assertEquals(401, responseCode);
+            Assert.assertTrue(400 <= responseCode && responseCode < 500); // OK?
         } finally {
             conn.disconnect();
         }
