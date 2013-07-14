@@ -31,6 +31,7 @@ import com.google.appengine.api.taskqueue.TaskHandle;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.tasks.support.SessionChecker;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -55,5 +56,11 @@ public class SmokeTest extends TasksTestBase {
         } finally {
             queue.deleteTask(th);
         }
+    }
+
+    @Test
+    public void testHttpSession() throws Exception {
+        final Queue queue = QueueFactory.getDefaultQueue();
+        queue.add(TaskOptions.Builder.withPayload(new SessionChecker()));
     }
 }
