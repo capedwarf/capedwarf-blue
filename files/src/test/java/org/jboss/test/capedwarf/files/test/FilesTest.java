@@ -22,9 +22,13 @@
 
 package org.jboss.test.capedwarf.files.test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.util.Arrays;
 
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.blobstore.BlobInfo;
@@ -38,6 +42,7 @@ import com.google.appengine.api.files.FileStat;
 import com.google.appengine.api.files.FileWriteChannel;
 import com.google.appengine.api.files.FinalizationException;
 import com.google.appengine.api.files.RecordWriteChannel;
+import com.google.appengine.repackaged.com.google.common.util.Base64;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -219,11 +224,31 @@ public class FilesTest extends TestBase {
             AppEngineFile file = fileService.createNewBlobFile("image/png");
 
             // Open a channel to write to it
-            FileWriteChannel writeChannel = fileService.openWriteChannel(file, true);
-            writeChannel.write(ByteBuffer.wrap(imageBase64.getBytes()));
-            writeChannel.closeFinally();
+            writeToFile(file, imageBase64, true);
         } finally {
             NamespaceManager.set(oldNamespace);
+        }
+    }
+
+    @Test
+    public void testLoop() throws Exception {
+        String imageBase64 = "qwerty";
+
+        FileService fileService = FileServiceFactory.getFileService();
+
+        // Create a new Blob file with mime-type "text/png"
+        AppEngineFile file = fileService.createNewBlobFile("image/png");
+        // Open a channel to write to it
+        writeToFile(file, imageBase64, true);
+
+        //read the file to an inputstream
+        AppEngineFile aeFile = fileService.getBlobFile(fileService.getBlobKey(file));
+        FileReadChannel readChannel = fileService.openReadChannel(aeFile, false);
+        InputStream is = Channels.newInputStream(readChannel);
+        try {
+            Assert.assertArrayEquals(imageBase64.getBytes(), toBytes(is));
+        } finally {
+            is.close();
         }
     }
 
@@ -266,5 +291,18 @@ public class FilesTest extends TestBase {
         buffer.get(bytes);
 
         return new String(bytes);
+    }
+
+    private static byte[] toBytes(InputStream is) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int nRead;
+        byte[] data = new byte[16384];
+
+        while ((nRead = is.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+
+        buffer.flush();
+        return buffer.toByteArray();
     }
 }
