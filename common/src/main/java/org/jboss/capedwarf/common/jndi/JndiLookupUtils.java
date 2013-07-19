@@ -40,9 +40,11 @@ import javassist.util.proxy.MethodHandler;
 import org.jboss.capedwarf.common.reflection.BytecodeUtils;
 
 /**
+ * JNDI lookup should be limited.
+ * Preferred way of lookup is via ComponentRegistry.
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@Deprecated
 public class JndiLookupUtils {
     private static final Logger log = Logger.getLogger(JndiLookupUtils.class.getName());
 

@@ -40,6 +40,7 @@
         <module>prospectivesearch</module>
         <module>quota</module>
         <module>search</module>
+        <module>sql</module>
         <module>tasks</module>
         <module>testsuite</module>
         <module>tools</module>
@@ -381,6 +382,12 @@
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-search</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-sql</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -46,7 +46,8 @@ public class CapedwarfTransformerMojo {
                         "|([.]*datastore.DatastoreServiceConfig*)" +
                         "|([.]*datastore.RawValue*)" +
                         "|([.]*datastore.Entity.class*)" +
-                        "|([.]*datastore.Key.class*))"};
+                        "|([.]*datastore.Key.class*)" +
+                        "|([.]*cloud.sql.jdbc.Driver.class*))"};
 
     }
 }
