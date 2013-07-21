@@ -60,7 +60,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @Category(All.class)
 public class URLFetchTest extends TestBase {
-    static final String[] URLS = {"http://localhost:9990", "http://localhost:8080/_ah/admin", "http://capedwarf-test.appspot.com/index.html"};
+    static final String[] URLS = {"http://localhost:8080/_ah/admin", "http://capedwarf-test.appspot.com/index.html"};
 
     @Deployment
     public static Archive getDeployment() {

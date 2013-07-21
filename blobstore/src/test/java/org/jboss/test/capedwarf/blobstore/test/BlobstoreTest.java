@@ -43,6 +43,7 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -71,7 +72,7 @@ public class BlobstoreTest extends BlobstoreTestBase {
         try {
             String response = readFullyAndClose(connection.getInputStream());
 
-            assertEquals(MIME_TYPE, connection.getContentType());
+            assertTrue(connection.getContentType().startsWith(MIME_TYPE));
             assertEquals(CONTENTS, response);
             assertNull("header should have been removed from response", connection.getHeaderField("X-AppEngine-BlobKey"));
         } finally {
