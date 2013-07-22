@@ -41,6 +41,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.Part;
 
 /**
@@ -165,11 +166,11 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
     }
 
     public String getRequestURI() {
-        return null;  // TODO
+        return path; // OK?
     }
 
     public StringBuffer getRequestURL() {
-        return null;  // TODO
+        return new StringBuffer(path); // OK?
     }
 
     public String getServletPath() {
@@ -225,5 +226,17 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
 
     public Part getPart(String name) throws IOException, ServletException {
         return parts.get(name);
+    }
+
+    public String changeSessionId() {
+        return null;
+    }
+
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
+        return null;
+    }
+
+    public long getContentLengthLong() {
+        return (long) getContentLength();
     }
 }
