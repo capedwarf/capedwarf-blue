@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.servlet.ReadListener;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -152,6 +153,17 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
                     } catch (JMSException e) {
                         throw new IOException(e);
                     }
+                }
+
+                public boolean isFinished() {
+                    return false; // TODO
+                }
+
+                public boolean isReady() {
+                    return false; // TODO
+                }
+
+                public void setReadListener(ReadListener readListener) {
                 }
             };
         }

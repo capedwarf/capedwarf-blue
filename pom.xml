@@ -70,7 +70,7 @@
         <version.org.jboss.vfs>3.1.0.Final</version.org.jboss.vfs>
         <version.org.jboss.web>7.2.0.Final</version.org.jboss.web>
         <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
-        <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
+        <version.org.jboss.spec.javax.servlet.api>1.0.0.Beta1</version.org.jboss.spec.javax.servlet.api>
         <version.org.jivesoftware.smack>3.1.0</version.org.jivesoftware.smack>
         <version.org.picketlink>2.1.8.Final</version.org.picketlink>
         <version.org.picketlink.social>2.5.2.Final</version.org.picketlink.social>
@@ -549,7 +549,7 @@
 
             <dependency>
                 <groupId>org.jboss.spec.javax.servlet</groupId>
-                <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                <artifactId>jboss-servlet-api_3.1_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.servlet.api}</version>
                 <scope>provided</scope>
             </dependency>
