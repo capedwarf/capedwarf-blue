@@ -22,6 +22,7 @@
 
 package org.jboss.test.capedwarf.testsuite.objectify.test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,7 @@ import org.jboss.test.capedwarf.testsuite.objectify.support.TestEntity;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -130,5 +132,25 @@ public class ObjectifyTest extends TestsuiteTestBase {
                 ObjectifyService.ofy().save().entity(entityBack.setName("TESTING 2"));
             }
         });
+    }
+
+    @Test
+    @Ignore("issue-194")
+    public void testPassivationTime() throws Exception {
+        int count = 100;
+
+        //add cars to a list
+        List<Car> cars = new ArrayList<Car>();
+        for(int i = 0; i < count; i++) {
+            Car car = new Car();
+            car.setType("Random Car " + i);
+            car.setMark(String.valueOf(i));
+
+            cars.add(car);
+        }
+
+        long start = System.currentTimeMillis();
+        ObjectifyService.ofy().save().entities(cars).now(); //save the cars
+        System.out.println("Creating " + count + " entities took " + (System.currentTimeMillis() - start) + " milliseconds");
     }
 }
