@@ -49,5 +49,7 @@ final class MiscTransformer extends MultipleTransformer {
         register("com.google.appengine.tools.mapreduce.impl.ShuffleJob", new ShuffleJobTransformer());
         // GAE DN plugin
         register("com.google.appengine.tools.development.testing.LocalServiceTestHelper", new LocalServiceTestHelperTransformer());
+        // GAE GCS client
+        register("com.google.appengine.tools.cloudstorage.GcsServiceFactory", new GcsServiceFactoryTransformer());
     }
 }

@@ -105,14 +105,24 @@ public class CapedwarfFileService implements ExposedFileService {
     }
 
     public AppEngineFile createNewBlobFile(String contentType, String uploadedFileName) throws IOException {
+        return createNewBlobFile(contentType, null, uploadedFileName, AppEngineFile.FileSystem.BLOBSTORE);
+    }
+
+    private AppEngineFile createNewBlobFile(String contentType, String fileName, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException {
         if (contentType == null || contentType.trim().isEmpty()) {
             contentType = DEFAULT_MIME_TYPE;
         }
 
-        String fileName = generateUniqueFileName();
-        AppEngineFile file = new AppEngineFile(AppEngineFile.FileSystem.BLOBSTORE, fileName);
+        AppEngineFile file;
+        if (fileName == null) {
+            fileName = generateUniqueFileName();
+            file = new AppEngineFile(fs, fileName);
+        } else {
+            file = new AppEngineFile(fileName);
+        }
 
         storeTemporaryBlobInfo(file, contentType, new Date(), uploadedFileName);
+
         return file;
     }
 
@@ -192,8 +202,10 @@ public class CapedwarfFileService implements ExposedFileService {
         return UUID.randomUUID().toString();
     }
 
-    public AppEngineFile createNewGSFile(GSFileOptions gsFileOptions) throws IOException {
-        return null; // TODO
+    public AppEngineFile createNewGSFile(GSFileOptions options) throws IOException {
+        final GSFileOptionsAdapter adapter = new GSFileOptionsAdapter(options);
+        final String fileName = adapter.getFileName();
+        return createNewBlobFile(adapter.getMimeType(), fileName, fileName, AppEngineFile.FileSystem.GS);
     }
 
     public void delete(BlobKey... blobKeys) {
@@ -214,7 +226,9 @@ public class CapedwarfFileService implements ExposedFileService {
         if (isFinalized(file)) {
             throwFinalizationException();
         }
-        createBlobstoreDirIfNeeded();
+
+        createBlobstoreDirIfNeeded(file);
+
         GridFilesystem gfs = getGridFilesystem();
         return new CapedwarfFileWriteChannel(file, gfs.getWritableChannel(getFilePath(file), true), this, lock);
     }
@@ -229,9 +243,13 @@ public class CapedwarfFileService implements ExposedFileService {
         return blobInfo != null;
     }
 
-    private void createBlobstoreDirIfNeeded() {
+    private void createBlobstoreDirIfNeeded(AppEngineFile file) {
+        // TODO: this is temporary
+        String fullPath = file.getFullPath();
+        int p = fullPath.lastIndexOf("/");
+        String dirs = fullPath.substring(0, p);
         //noinspection ResultOfMethodCallIgnored
-        getGridFilesystem().getFile("blobstore").mkdirs();  // TODO: this is temporary
+        getGridFilesystem().getFile(dirs).mkdirs();
     }
 
     public FileReadChannel openReadChannel(AppEngineFile file, boolean lock) throws IOException {
@@ -246,7 +264,7 @@ public class CapedwarfFileService implements ExposedFileService {
     }
 
     public String getDefaultGsBucketName() {
-        return null; // TODO
+        return String.format("%s.appspot.com", Application.getAppId()); // OK?
     }
 
     @Override

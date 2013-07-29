@@ -35,7 +35,7 @@ class AppEngineFileAdapter {
 
     public AppEngineFileAdapter(AppEngineFile file) {
         if (file == null) {
-            throw new NullPointerException("file is null");
+            throw new IllegalArgumentException("file is null");
         }
 
         this.file = file;
@@ -49,25 +49,13 @@ class AppEngineFileAdapter {
         return file.getFullPath();
     }
 
-    private AppEngineFile.FileSystem getFileSystem() {
-        return file.getFileSystem();
-    }
-
     public BlobKey getBlobKey() {
-        assertBlobStoreFileSystem();
-
         BlobKey cached = getCachedBlobKey();
         if (cached != null) {
             return cached;
         }
 
         return new BlobKey(file.getNamePart());
-    }
-
-    private void assertBlobStoreFileSystem() {
-        if (getFileSystem() != AppEngineFile.FileSystem.BLOBSTORE) {
-            throw new IllegalArgumentException("file is not of type BLOBSTORE");
-        }
     }
 
     public BlobKey getCachedBlobKey() {
