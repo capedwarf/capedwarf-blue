@@ -23,7 +23,6 @@
 package org.jboss.test.capedwarf.testsuite.config.test;
 
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.BackendsXml;
 import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
 import org.jboss.test.capedwarf.common.support.JBoss;
@@ -59,18 +58,6 @@ public class CapedwarfEnvironmentTest {
     @After
     public void tearDown() throws Exception {
         CapedwarfEnvironment.clearThreadLocalInstance();
-    }
-
-    @Test
-    public void getAppId_ReturnsApplicationFromAppEngineWebXml() throws Exception {
-        env.setAppEngineWebXml(new AppEngineWebXml("my-app", "my-version"));
-        Assert.assertEquals("my-app", env.getAppId());
-    }
-
-    @Test
-    public void getVersionId_ReturnsApplicationFromAppEngineWebXml() throws Exception {
-        env.setAppEngineWebXml(new AppEngineWebXml("my-app", "my-version"));
-        Assert.assertEquals("my-version", env.getVersionId());
     }
 
     @Test

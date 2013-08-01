@@ -31,6 +31,7 @@ import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import com.google.appengine.api.LifecycleManager;
 import com.google.appengine.api.log.LogServiceFactory;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
@@ -92,6 +93,10 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
+        ServletContext servletContext = sce.getServletContext();
+        String deadlineParameter = servletContext.getInitParameter("lifecycle-manager-deadline");
+        long deadline = Long.parseLong((deadlineParameter != null) ? deadlineParameter : "0");
+        LifecycleManager.getInstance().beginShutdown(deadline);
     }
 
     public void requestInitialized(ServletRequestEvent sre) {
