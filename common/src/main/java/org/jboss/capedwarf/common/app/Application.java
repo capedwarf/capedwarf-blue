@@ -25,6 +25,7 @@ package org.jboss.capedwarf.common.app;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import com.google.appengine.api.utils.SystemProperty;
 import com.google.apphosting.api.ApiProxy;
 
 /**
@@ -69,5 +70,14 @@ public final class Application {
                 }
             });
         }
+    }
+
+    /**
+     * Are we running in development mode / env?
+     *
+     * @return true if development, false otherwise
+     */
+    public static boolean isDevelopmentEnv() {
+        return (SystemProperty.environment.value() == SystemProperty.Environment.Value.Development);
     }
 }
