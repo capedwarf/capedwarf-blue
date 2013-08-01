@@ -52,5 +52,6 @@ final class FactoriesTransformer extends MultipleTransformer {
 //        register("com.google.appengine.api.urlfetch.URLFetchServiceFactory", new URLFetchServiceFactoryTransformer());
 //        register("com.google.appengine.api.users.UserServiceFactory", new UserServiceFactoryTransformer());
 //        register("com.google.appengine.api.xmpp.XMPPServiceFactory", new XMPPServiceFactoryTransformer());
+        register("com.google.appengine.api.labs.modules.ModulesServiceFactory", new ModulesServiceFactoryTransformer());
     }
 }

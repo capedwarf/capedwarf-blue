@@ -33,6 +33,7 @@
         <module>log</module>
         <module>mail</module>
         <module>memcache</module>
+        <module>modules</module>
         <module>multitenancy</module>
         <module>oauth</module>
         <module>openshift</module>
@@ -346,6 +347,12 @@
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-memcache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-modules</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
