@@ -80,4 +80,13 @@ public final class Application {
     public static boolean isDevelopmentEnv() {
         return (SystemProperty.environment.value() == SystemProperty.Environment.Value.Development);
     }
+
+    /**
+     * Is the application modular.
+     *
+     * @return true if modular, false otherwise
+     */
+    public static boolean isModular() {
+        return Boolean.getBoolean("capedwarf.modules");
+    }
 }

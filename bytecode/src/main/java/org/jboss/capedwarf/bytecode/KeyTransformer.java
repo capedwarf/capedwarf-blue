@@ -28,6 +28,7 @@ import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
+import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
@@ -49,19 +50,30 @@ public class KeyTransformer extends RewriteTransformer {
         String transformableClassName = "org.infinispan.query.Transformable";
         String gaeKeyTransformerClassName = "org.jboss.capedwarf.datastore.query.GAEKeyTransformer";
 
+//        String serializeWithClassName = "org.infinispan.marshall.SerializeWith";
+//        String gaeKeyExternalizerClassName = "org.jboss.capedwarf.datastore.query.KeyExternalizer";
+
         constPool.addUtf8Info(transformableClassName);
         constPool.addUtf8Info(gaeKeyTransformerClassName);
+
+//        constPool.addUtf8Info(serializeWithClassName);
+//        constPool.addUtf8Info(gaeKeyExternalizerClassName);
 
         Annotation annotation = new Annotation(transformableClassName, constPool);
         annotation.addMemberValue("transformer", new ClassMemberValue(gaeKeyTransformerClassName, constPool));
         attr.addAnnotation(annotation);
 
+//        annotation = new Annotation(serializeWithClassName, constPool);
+//        annotation.addMemberValue("value", new ClassMemberValue(gaeKeyExternalizerClassName, constPool));
+//        attr.addAnnotation(annotation);
+
         ccFile.addAttribute(attr);
 
-        // boolean checked;
-        // TODO - are we sure this survives Infinispan serialization
+//        boolean checked;
 
         CtField checked = new CtField(CtClass.booleanType, "checked", clazz);
+        // Note: we could optimize this for non-modular apps, as serialzation of this field doesn't cause issues
+        checked.setModifiers(Modifier.PRIVATE | Modifier.TRANSIENT);
         clazz.addField(checked);
 
         CtMethod isChecked = CtNewMethod.make(CtClass.booleanType, "isChecked", new CtClass[0], new CtClass[0], "{return checked;}", clazz);
