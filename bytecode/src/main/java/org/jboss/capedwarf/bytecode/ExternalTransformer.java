@@ -23,26 +23,22 @@
 package org.jboss.capedwarf.bytecode;
 
 /**
- * Non service factory transformers go here.
- * (service factory transfomers go to FactoriesTransfomer)
+ * External service factory transformers go here.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-final class MiscTransformer extends MultipleTransformer {
+public final class ExternalTransformer extends MultipleTransformer {
 
     // -- Keep lexicographical order --
 
-    public MiscTransformer() {
-        // GAE apphosting
-        register("com.google.apphosting.api.ApiProxy", new ApiProxyTransformer());
-        // GAE API
-        register("com.google.appengine.api.datastore.Cursor", new CursorTransformer());
-        register("com.google.appengine.api.datastore.DatastoreServiceConfig$Builder", new DatastoreServiceConfigBuilderTransformer());
-        register("com.google.appengine.api.datastore.Entity", new EntityTransformer());
-        register("com.google.appengine.api.datastore.Key", new KeyTransformer());
-        register("com.google.appengine.api.datastore.RawValue", new RawValueTransformer());
-        // GAE SQL
-        register("com.google.cloud.sql.jdbc.Driver", new DriverTransformer());
+    public ExternalTransformer() {
+        // GAE MapReduce
+        register("com.google.appengine.tools.mapreduce.impl.ShuffleServiceImpl", new ShuffleServiceTransformer());
+        register("com.google.appengine.tools.mapreduce.impl.ShuffleJob", new ShuffleJobTransformer());
+        // GAE DN plugin
+        register("com.google.appengine.tools.development.testing.LocalServiceTestHelper", new LocalServiceTestHelperTransformer());
+        // GAE GCS client
+        register("com.google.appengine.tools.cloudstorage.GcsServiceFactory", new GcsServiceFactoryTransformer());
     }
 }
