@@ -27,25 +27,35 @@ package org.jboss.capedwarf.bytecode;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.logging.Logger;
 
 import org.jboss.maven.plugins.transformer.TransformerUtils;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfTransformerMojo {
 
     public static void main(String[] args) {
-        String pathToAppEngineJar = args[0];
-        String pathToTransformedAppEngineJar = pathToAppEngineJar.replace(".jar", "-capedwarf.jar");
-        TransformerUtils.main(createArgs(pathToAppEngineJar, pathToTransformedAppEngineJar));
+        Logger.getLogger(CapedwarfTransformerMojo.class.getName()).info("Args: " + Arrays.asList(args));
 
-        File appEngineJar = new File(pathToAppEngineJar).getAbsoluteFile();
-        File transformedAppEngineJar = new File(pathToTransformedAppEngineJar).getAbsoluteFile();
+        for (String pathToJar : args) {
+            modifyJar(pathToJar);
+        }
+    }
 
-        File moduleXml = new File(appEngineJar.getParent(), "module.xml");
+    private static void modifyJar(String pathToJar) {
+        String pathToTransformedJar = pathToJar.replace(".jar", "-capedwarf.jar");
+        TransformerUtils.main(createArgs(pathToJar, pathToTransformedJar));
+
+        File jar = new File(pathToJar).getAbsoluteFile();
+        File transformedJar = new File(pathToTransformedJar).getAbsoluteFile();
+
+        File moduleXml = new File(jar.getParent(), "module.xml");
         if (moduleXml.exists()) {
-            replaceText(moduleXml, appEngineJar.getName(), transformedAppEngineJar.getName());
+            replaceText(moduleXml, jar.getName(), transformedJar.getName());
         }
     }
 
@@ -60,12 +70,12 @@ public class CapedwarfTransformerMojo {
         }
     }
 
-
     private static String[] createArgs(String pathToAppEngineJar, String pathToTransformedAppEngineJar) {
         return new String[]{
                 pathToAppEngineJar,
                 CapedwarfTransformer.class.getName(),
                 "(([.]*ProspectiveSearchServiceFactory*)" +
+                        "|([.]*labs.modules.ModulesServiceFactory.class*)" +
                         "|([.]*apphosting.api.ApiProxy.class*)" +
                         "|([.]*datastore.Cursor*)" +
                         "|([.]*datastore.DatastoreServiceConfig*)" +
