@@ -24,6 +24,10 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
 import org.jboss.maven.plugins.transformer.TransformerUtils;
 
 /**
@@ -33,10 +37,31 @@ public class CapedwarfTransformerMojo {
 
     public static void main(String[] args) {
         String pathToAppEngineJar = args[0];
-        TransformerUtils.main(createArgs(pathToAppEngineJar));
+        String pathToTransformedAppEngineJar = pathToAppEngineJar.replace(".jar", "-capedwarf.jar");
+        TransformerUtils.main(createArgs(pathToAppEngineJar, pathToTransformedAppEngineJar));
+
+        File appEngineJar = new File(pathToAppEngineJar).getAbsoluteFile();
+        File transformedAppEngineJar = new File(pathToTransformedAppEngineJar).getAbsoluteFile();
+
+        File moduleXml = new File(appEngineJar.getParent(), "module.xml");
+        if (moduleXml.exists()) {
+            replaceText(moduleXml, appEngineJar.getName(), transformedAppEngineJar.getName());
+        }
     }
 
-    private static String[] createArgs(String pathToAppEngineJar) {
+    private static void replaceText(File file, String oldText, String newText) {
+        try {
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            String contents = new String(bytes);
+            contents = contents.replace(oldText, newText);
+            Files.write(file.toPath(), contents.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private static String[] createArgs(String pathToAppEngineJar, String pathToTransformedAppEngineJar) {
         return new String[]{
                 pathToAppEngineJar,
                 CapedwarfTransformer.class.getName(),
@@ -47,7 +72,7 @@ public class CapedwarfTransformerMojo {
                         "|([.]*datastore.RawValue*)" +
                         "|([.]*datastore.Entity.class*)" +
                         "|([.]*datastore.Key.class*)" +
-                        "|([.]*cloud.sql.jdbc.Driver.class*))"};
-
+                        "|([.]*cloud.sql.jdbc.Driver.class*))",
+                pathToTransformedAppEngineJar};
     }
 }
