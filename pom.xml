@@ -110,7 +110,7 @@
         <!-- Testing Objectify -->
         <version.objectify>4.0b1</version.objectify>
         <!-- Testing REST -->
-        <version.org.jboss.resteasy>2.3.2.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>2.3.5.Final</version.org.jboss.resteasy>
         <!-- Build configuration -->
         <version.datanucleus.plugin>3.1.2</version.datanucleus.plugin>
         <version.surefire.plugin>2.12.4</version.surefire.plugin>
@@ -498,6 +498,12 @@
             <dependency>
                 <groupId>com.google.appengine</groupId>
                 <artifactId>appengine-api-labs</artifactId>
+                <version>${version.com.google.gae.api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.appengine</groupId>
+                <artifactId>appengine-endpoints</artifactId>
                 <version>${version.com.google.gae.api}</version>
             </dependency>
 
