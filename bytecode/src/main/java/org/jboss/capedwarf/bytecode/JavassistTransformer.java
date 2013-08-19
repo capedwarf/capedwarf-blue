@@ -23,7 +23,6 @@
 package org.jboss.capedwarf.bytecode;
 
 import java.io.ByteArrayInputStream;
-import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
@@ -35,7 +34,7 @@ import javassist.LoaderClassPath;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class JavassistTransformer implements ClassFileTransformer {
+public abstract class JavassistTransformer extends AbstractClassFileTransformer {
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
             ClassPool pool = new ClassPool();

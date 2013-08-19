@@ -927,12 +927,6 @@
                 <version>${version.org.jboss.resteasy}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.jboss.resteasy</groupId>
-                <artifactId>resteasy-jaxrs</artifactId>
-                <version>${version.org.jboss.resteasy}</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 

@@ -26,15 +26,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javassist.bytecode.ClassFile;
+import org.jboss.capedwarf.bytecode.AbstractClassFileTransformer;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
@@ -42,31 +40,7 @@ import org.jboss.capedwarf.shared.compatibility.Compatibility;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class BlackListTransformer implements ClassFileTransformer {
-    private static final Set<String> ALLOWED_PACKAGES = new HashSet<String>();
-
-    static {
-        // do not transform CapeDwarf
-        ALLOWED_PACKAGES.add("org/jboss/capedwarf/");
-        ALLOWED_PACKAGES.add("org.jboss.capedwarf.");
-        // do not tranform GAE
-        ALLOWED_PACKAGES.add("com/google/appengine/spi/");
-        ALLOWED_PACKAGES.add("com.google.appengine.spi.");
-        ALLOWED_PACKAGES.add("com/google/appengine/api/");
-        ALLOWED_PACKAGES.add("com.google.appengine.api.");
-        ALLOWED_PACKAGES.add("com/google/appengine/tools/");
-        ALLOWED_PACKAGES.add("com.google.appengine.tools.");
-        ALLOWED_PACKAGES.add("com/google/apphosting/api/");
-        ALLOWED_PACKAGES.add("com.google.apphosting.api.");
-        ALLOWED_PACKAGES.add("com/google/apphosting/base/");
-        ALLOWED_PACKAGES.add("com.google.apphosting.base.");
-        // we should be able to tests things
-        ALLOWED_PACKAGES.add("org/junit/");
-        ALLOWED_PACKAGES.add("org.junit.");
-        ALLOWED_PACKAGES.add("org/jboss/arquillian/");
-        ALLOWED_PACKAGES.add("org.jboss.arquillian.");
-    }
-
+public class BlackListTransformer extends AbstractClassFileTransformer {
     private volatile Boolean disabled;
 
     private List<Rewriter> rewriters = new ArrayList<Rewriter>();
@@ -87,17 +61,8 @@ public class BlackListTransformer implements ClassFileTransformer {
         return disabled;
     }
 
-    protected boolean isAllowedPackage(String className) {
-        for (String pckg : ALLOWED_PACKAGES) {
-            if (className.startsWith(pckg)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain domain, byte[] bytes) throws IllegalClassFormatException {
-        if (isAllowedPackage(className) || isDisabled(loader)) {
+        if (isIgnoredPackage(className) || isDisabled(loader)) {
             return bytes;
         }
 
