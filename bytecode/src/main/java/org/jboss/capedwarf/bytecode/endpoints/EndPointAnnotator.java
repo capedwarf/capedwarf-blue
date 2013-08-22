@@ -52,7 +52,7 @@ import org.jboss.capedwarf.bytecode.Annotator;
  */
 public class EndPointAnnotator extends Annotator {
 
-    public static final String DEFAULT_NAME = "myApi";
+    public static final String DEFAULT_NAME = "myapi";
     public static final String DEFAULT_VERSION = "v1";
 
     private static Map<String, Class<? extends java.lang.annotation.Annotation>> HTTP_METHODS = new HashMap<>();
