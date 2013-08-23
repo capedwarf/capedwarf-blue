@@ -25,7 +25,7 @@
             xmlns="http://jboss.org/schema/arquillian"
             xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
 
-    <defaultProtocol type="Servlet 2.5"/>
+    <defaultProtocol type="Modules Servlet Protocol 1.0" />
 
     <!-- engine>
         <property name="deploymentExportPath">target/deployments</property>

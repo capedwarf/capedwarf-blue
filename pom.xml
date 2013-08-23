@@ -91,7 +91,7 @@
         <version.org.datanucleus.jdo>3.0.1</version.org.datanucleus.jdo>
         <!-- Testing -->
         <version.junit>4.11</version.junit>
-        <version.arquillian>1.0.3.Final</version.arquillian>
+        <version.arquillian>1.0.4.Final</version.arquillian>
         <version.shrinkwrap>1.1.2</version.shrinkwrap>
         <version.shrinkwrap.resolver>2.0.0-beta-3</version.shrinkwrap.resolver>
         <version.jboss.as7>7.2.0.Final</version.jboss.as7>
@@ -804,6 +804,13 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.arquillian.protocol</groupId>
+                <artifactId>arquillian-protocol-modules</artifactId>
+                <version>${version.arquillian.gae}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.arquillian.container</groupId>
                 <artifactId>arquillian-gae-local</artifactId>
                 <version>${version.arquillian.gae}</version>
@@ -1010,7 +1017,7 @@
 
                 <dependency>
                     <groupId>org.jboss.arquillian.protocol</groupId>
-                    <artifactId>arquillian-protocol-servlet</artifactId>
+                    <artifactId>arquillian-protocol-modules</artifactId>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -1043,6 +1050,11 @@
                 <dependency>
                     <groupId>org.jboss.capedwarf.blue</groupId>
                     <artifactId>capedwarf-arquillian</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.arquillian.protocol</groupId>
+                    <artifactId>arquillian-protocol-modules</artifactId>
                     <scope>test</scope>
                 </dependency>
                 <dependency>
@@ -1096,6 +1108,11 @@
                 <dependency>
                     <groupId>org.jboss.capedwarf.blue</groupId>
                     <artifactId>capedwarf-arquillian</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.arquillian.protocol</groupId>
+                    <artifactId>arquillian-protocol-modules</artifactId>
                     <scope>test</scope>
                 </dependency>
                 <dependency>
