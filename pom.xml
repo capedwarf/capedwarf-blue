@@ -91,9 +91,7 @@
         <version.org.datanucleus.jdo>3.0.1</version.org.datanucleus.jdo>
         <!-- Testing -->
         <version.junit>4.11</version.junit>
-        <version.arquillian>1.0.4.Final</version.arquillian>
-        <version.shrinkwrap>1.1.2</version.shrinkwrap>
-        <version.shrinkwrap.resolver>2.0.0-beta-3</version.shrinkwrap.resolver>
+        <version.arquillian>1.1.1.Final</version.arquillian>
         <version.jboss.as7>7.2.0.Final</version.jboss.as7>
         <version.org.jboss.xnio>3.0.7.GA</version.org.jboss.xnio>
         <version.arquillian.gae>1.0.0.Beta5</version.arquillian.gae>
@@ -743,26 +741,6 @@
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpmime</artifactId>
                 <version>${version.org.apache.httpcomponents}</version>
-            </dependency>
-
-            <!-- ShrinkWrap -->
-
-            <!-- This must go *BEFORE* the Arquillian BOM. -->
-
-            <dependency>
-                <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-bom</artifactId>
-                <version>${version.shrinkwrap}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                <artifactId>shrinkwrap-resolver-bom</artifactId>
-                <version>${version.shrinkwrap.resolver}</version>
-                <scope>import</scope>
-                <type>pom</type>
             </dependency>
 
             <!-- Testing -->
