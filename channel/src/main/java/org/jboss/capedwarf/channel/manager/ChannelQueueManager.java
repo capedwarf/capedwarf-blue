@@ -47,14 +47,15 @@ public class ChannelQueueManager {
     }
 
     public ChannelQueue getChannelQueue(String channelToken) {
-        return queues.get(channelToken);
+        ChannelQueue queue = queues.get(channelToken);
+        return queue == null ? createChannelQueue(channelToken) : queue;
     }
 
-    public ChannelQueue createChannelQueue(String channelToken) {
+    private ChannelQueue createChannelQueue(String channelToken) {
         Channel channel = ChannelManager.getInstance().getChannelByToken(channelToken);
         channel.setConnectedNode(InfinispanUtils.getLocalNode(Application.getAppId()));
 
-        ChannelQueue queue = new ChannelQueue();
+        ChannelQueue queue = new ChannelQueue(channel);
         queues.put(channelToken, queue);
         return queue;
     }

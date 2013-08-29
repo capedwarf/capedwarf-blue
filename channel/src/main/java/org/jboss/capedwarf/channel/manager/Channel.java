@@ -22,9 +22,20 @@
 
 package org.jboss.capedwarf.channel.manager;
 
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.capedwarf.channel.util.ClusterUtils;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 /**
@@ -32,6 +43,9 @@ import java.util.concurrent.Callable;
  */
 public class Channel {
 
+    public static final String CHANNEL_MESSAGE = "ChannelMessage";
+
+    private Key channelEntityKey;
     private String clientId;
     private long expirationTime;
     private String token;
@@ -41,7 +55,10 @@ public class Channel {
      */
     private Address connectedNode;
 
-    public Channel(String clientId, long expirationTime, String token) {
+    private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+
+    public Channel(Key channelEntityKey, String clientId, long expirationTime, String token) {
+        this.channelEntityKey = channelEntityKey;
         this.clientId = clientId;
         this.expirationTime = expirationTime;
         this.token = token;
@@ -72,7 +89,11 @@ public class Channel {
     }
 
     public void sendMessage(String message) {
-        submitTask(new SendMessageTask(getToken(), message));
+        Entity entity = new Entity(CHANNEL_MESSAGE, channelEntityKey);
+        entity.setProperty("type", "message");
+        entity.setProperty("message", message);
+        datastore.put(entity);
+        submitTask(new MessageNotificationTask(getToken()));
     }
 
     public void close() {
@@ -82,5 +103,31 @@ public class Channel {
     private void submitTask(Callable<Void> task) {
         ClusterUtils.submitToAllNodes(task);
 //        ClusterUtils.submitToNode(getConnectedNode(), task);  TODO: submit only to node which holds the connection for the channel
+    }
+
+    public List<Message> getPendingMessages() {
+        Query query = new Query(CHANNEL_MESSAGE)
+            .setAncestor(channelEntityKey)
+            .addSort(Entity.KEY_RESERVED_PROPERTY);
+
+        List<Entity> entities = datastore.prepare(query).asList(FetchOptions.Builder.withDefaults());
+        List<Message> messages = new ArrayList<>();
+        for (Entity entity : entities) {
+            messages.add(new Message(
+                KeyFactory.keyToString(entity.getKey()),
+                (String) entity.getProperty("message")));
+        }
+        return messages;
+
+    }
+
+    public void ackMessages(List<String> messageIds) {
+        List<Key> keys = new ArrayList<>(messageIds.size());
+        for (String messageId : messageIds) {
+            Key key = KeyFactory.stringToKey(messageId);
+            keys.add(key);
+        }
+
+        datastore.delete(keys);
     }
 }

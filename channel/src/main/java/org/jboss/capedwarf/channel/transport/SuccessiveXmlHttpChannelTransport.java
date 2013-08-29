@@ -24,11 +24,14 @@ package org.jboss.capedwarf.channel.transport;
 
 import org.jboss.capedwarf.channel.manager.ChannelQueue;
 import org.jboss.capedwarf.channel.manager.ChannelQueueClosedException;
+import org.jboss.capedwarf.channel.manager.Message;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -37,6 +40,7 @@ import java.util.logging.Logger;
  */
 public class SuccessiveXmlHttpChannelTransport extends AbstractTransport {
 
+    public static final String DELIMITER = ":_:";
     private final Logger log = Logger.getLogger(getClass().getName());
 
     public SuccessiveXmlHttpChannelTransport(HttpServletRequest req, HttpServletResponse resp, String channelToken, ChannelQueue queue) {
@@ -45,11 +49,11 @@ public class SuccessiveXmlHttpChannelTransport extends AbstractTransport {
 
     public void serveMessages() throws IOException {
         log.info("Channel queue opened.");
-        getResponse().setContentType("text/javascript");
-        getResponse().setHeader("Transfer-Encoding", "chunked");
+        getQueue().ackMessages(getAckMessageIds());
+
+        getResponse().setContentType("text/plain");
 
         PrintWriter writer = getResponse().getWriter();
-
         if (isFirstRequest()) {
             writeOpenMessage(writer);
             return;
@@ -58,56 +62,51 @@ public class SuccessiveXmlHttpChannelTransport extends AbstractTransport {
         serveMessages(writer);
     }
 
+    private List<String> getAckMessageIds() {
+        String ackIds = getRequest().getParameter("ackIds");
+        if (ackIds == null || ackIds.equals("")) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(ackIds.split(","));
+    }
+
     private boolean isFirstRequest() {
         int requestIndex = Integer.valueOf(getRequest().getParameter("requestIndex"));
         return requestIndex == 0;
     }
 
     private void serveMessages(PrintWriter writer) {
-        long startTime = System.currentTimeMillis();
-        while (true) {
-            long timeActive = System.currentTimeMillis() - startTime;
-            long timeLeft = MAX_CONNECTION_DURATION - timeActive;
-            if (timeLeft < 0) {
-                return;
-            }
-
-            try {
-                log.info("Waiting for message (for " + timeLeft + "ms)");
-                List<String> messages = getQueue().getPendingMessages(timeLeft);
-                if (!messages.isEmpty()) {
-                    writeMessages(writer, messages);
-                    return;
-                }
-            } catch (ChannelQueueClosedException ex) {
-                log.info("Channel closed: " + getChannelToken());
-                writeCloseMessage(writer);
-                return;
-            } catch (InterruptedException e) {
-                // ignored
-            }
+        try {
+            log.info("Waiting for message (for a maximum of " + MAX_CONNECTION_DURATION + "ms)");
+            List<Message> messages = getQueue().getPendingMessages(MAX_CONNECTION_DURATION);
+            writeMessages(writer, messages);
+        } catch (ChannelQueueClosedException ex) {
+            log.info("Channel closed: " + getChannelToken());
+            writeCloseMessage(writer);
+        } catch (InterruptedException e) {
+            log.warning("InterruptedException in serveMessages");
+            // ignored
         }
     }
 
-    private void writeMessages(PrintWriter writer, List<String> messages) {
-        for (String message : messages) {
+    private void writeMessages(PrintWriter writer, List<Message> messages) {
+        for (Message message : messages) {
             log.info("Received message " + message);
-            writeMessage(writer, getChannelToken(), "message", message);
+            writeMessage(writer, "message", message);
         }
     }
 
     private void writeOpenMessage(PrintWriter writer) {
-        writeMessage(writer, getChannelToken(), "open", "");
+        writeMessage(writer, "open", Message.NULL);
     }
 
     private void writeCloseMessage(PrintWriter writer) {
-        writeMessage(writer, getChannelToken(), "close", "");
+        writeMessage(writer, "close", Message.NULL);
     }
 
-    private void writeMessage(PrintWriter writer, String channelToken, String type, String message) {
+    private void writeMessage(PrintWriter writer, String type, Message message) {
         log.info("Sending message to browser: type=" + type + "; message=" + message);
-        writer.println("handleChannelMessage(\"" + channelToken + "\", \"" + type + "\", \"" + message + "\");");
+        writer.println(type + DELIMITER + message.getId() + DELIMITER + message.getMessage());
         writer.flush();
     }
-
 }

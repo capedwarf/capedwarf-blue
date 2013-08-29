@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.channel.transport;
 
 import org.jboss.capedwarf.channel.manager.ChannelQueue;
+import org.jboss.capedwarf.channel.manager.Message;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,7 +50,7 @@ public class LongIFrameChannelTransport extends AbstractTransport {
 
         PrintWriter writer = getResponse().getWriter();
 
-        writeMessage(writer, getChannelToken(), "open", "");
+        writeMessage(writer, getChannelToken(), "open", Message.NULL);
 
 
         long startTime = System.currentTimeMillis();
@@ -61,8 +62,8 @@ public class LongIFrameChannelTransport extends AbstractTransport {
             }
             try {
                 log.info("Waiting for message (for " + timeLeft + "ms)");
-                List<String> messages = getQueue().getPendingMessages(timeLeft);
-                for (String message : messages) {
+                List<Message> messages = getQueue().getPendingMessages(timeLeft);
+                for (Message message : messages) {
                     log.info("Received message " + message);
                     writeMessage(writer, getChannelToken(), "message", message);
                 }
@@ -71,13 +72,13 @@ public class LongIFrameChannelTransport extends AbstractTransport {
             }
         }
 
-        writeMessage(writer, getChannelToken(), "close", "");
+        writeMessage(writer, getChannelToken(), "close", Message.NULL);
     }
 
-    private void writeMessage(PrintWriter writer, String channelToken, String type, String message) {
+    private void writeMessage(PrintWriter writer, String channelToken, String type, Message message) {
         log.info("Sending message to browser: type=" + type + "; message=" + message);
         writer.println("<script language=\"JavaScript\" type=\"text/javascript\">");
-        writer.println("parent.handleChannelMessage(\"" + channelToken + "\", \"" + type + "\", \"" + message + "\");");
+        writer.println("parent.handleChannelMessage(\"" + channelToken + "\", \"" + type + "\", \"" + message.getId() + "\", \"" + message + "\");");
         writer.println("</script>");
         writer.flush();
     }

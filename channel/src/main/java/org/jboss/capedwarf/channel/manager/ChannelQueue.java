@@ -22,34 +22,34 @@
 
 package org.jboss.capedwarf.channel.manager;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.capedwarf.channel.servlet.ChannelServlet;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class ChannelQueue {
 
-    private BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
+    private final Channel channel;
 
     private boolean closed;
 
-    public void send(String message) {
-        try {
-            queue.put(message);
-        } catch (InterruptedException e) {
-            // ignored
+    public ChannelQueue(Channel channel) {
+        this.channel = channel;
+    }
+
+    public void notifyMessageAvailable() {
+        synchronized (this) {
+            notifyAll();
         }
     }
 
     public void close() {
         this.closed = true;
-        send("");   // send empty message to unblock queue
+        notifyMessageAvailable();   // unblock queue
     }
 
     /**
@@ -60,18 +60,21 @@ public class ChannelQueue {
      * @return a list of messages
      * @throws InterruptedException
      */
-    public List<String> getPendingMessages(long timeoutMillis) throws InterruptedException {
-        List<String> messages = new LinkedList<String>();
-        String message = queue.poll(timeoutMillis, TimeUnit.MILLISECONDS);
-        if (message != null) {
-            messages.add(message);
-            if (!queue.isEmpty()) {
-                queue.drainTo(messages);
+    public List<Message> getPendingMessages(long timeoutMillis) throws InterruptedException {
+        List<Message> messages = channel.getPendingMessages();
+        if (messages.isEmpty()) {
+            synchronized (this) {
+                wait(timeoutMillis);
             }
-        }
-        if (closed) {
-            throw new ChannelQueueClosedException();
+            if (closed) {
+                throw new ChannelQueueClosedException();
+            }
+            messages = channel.getPendingMessages();
         }
         return messages;
+    }
+
+    public void ackMessages(List<String> messageIds) {
+        channel.ackMessages(messageIds);
     }
 }

@@ -1,18 +1,3 @@
-function handleChannelMessage(token, type, msg) {
-    var socket = CapedwarfChannelManager.instance.getSocket(token);
-
-    if (type == "message") {
-        socket.handleMessage(msg);
-    } else if (type == "open") {
-        socket.handleOpen();
-    } else if (type == "close") {
-        socket.handleClose();
-    } else if (type == "error") {
-        socket.handleError();
-    }
-}
-
-
 var win = window;
 var undef = void 0;
 

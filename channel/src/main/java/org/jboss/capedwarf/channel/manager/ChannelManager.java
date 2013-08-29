@@ -48,10 +48,12 @@ public class ChannelManager {
     private DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
 
     public Channel createChannel(String clientId, int durationMinutes) {
-        Channel channel = new Channel(clientId, toExpirationTime(durationMinutes), generateToken());
-        Entity entity = channelToEntity(channel);
+        Entity entity = new Entity(CHANNEL_ENTITY_KIND);
+        entity.setProperty(PROPERTY_CLIENT_ID, clientId);
+        entity.setProperty(PROPERTY_EXPIRATION_TIME, toExpirationTime(durationMinutes));
+        entity.setProperty(PROPERTY_TOKEN, generateToken());
         datastoreService.put(entity);
-        return channel;
+        return entityToChannel(entity);
     }
 
     private String generateToken() {
@@ -62,16 +64,9 @@ public class ChannelManager {
         return System.currentTimeMillis() + (durationMinutes * 60 * 1000);
     }
 
-    private Entity channelToEntity(Channel channel) {
-        Entity entity = new Entity(CHANNEL_ENTITY_KIND);
-        entity.setProperty(PROPERTY_CLIENT_ID, channel.getClientId());
-        entity.setProperty(PROPERTY_EXPIRATION_TIME, channel.getExpirationTime());
-        entity.setProperty(PROPERTY_TOKEN, channel.getToken());
-        return entity;
-    }
-
     private Channel entityToChannel(Entity entity) {
         return new Channel(
+                entity.getKey(),
                 (String) entity.getProperty(PROPERTY_CLIENT_ID),
                 (Long) entity.getProperty(PROPERTY_EXPIRATION_TIME),
                 (String) entity.getProperty(PROPERTY_TOKEN));
