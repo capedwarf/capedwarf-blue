@@ -36,7 +36,9 @@ import com.google.appengine.api.log.LogServiceFactory;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.security.PrincipalInfo;
+import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.log.ExposedLogService;
+import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.BackendsXml;
 import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
@@ -107,6 +109,8 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
             initJBossEnvironment((HttpServletRequest) req);
         }
 
+        AppIdFactory.setCurrentFactory(EnvAppIdFactory.INSTANCE);
+
         CapedwarfDelegate.INSTANCE.addRequest(req);
 
         getLogService().requestStarted(req, requestStartMillis);
@@ -115,14 +119,18 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
     public void requestDestroyed(ServletRequestEvent sre) {
         final ServletRequest req = sre.getServletRequest();
         try {
-            CapedwarfHttpServletResponseWrapper response = (CapedwarfHttpServletResponseWrapper) req.getAttribute(CapedwarfHttpServletResponseWrapper.class.getName());
-            if (response != null) {
-                getLogService().requestFinished(req, response.getStatus(), response.getContentLength());
-            } else {
-                // TODO -- looks like some error before GAEFilter kicked in.
+            try {
+                CapedwarfHttpServletResponseWrapper response = (CapedwarfHttpServletResponseWrapper) req.getAttribute(CapedwarfHttpServletResponseWrapper.class.getName());
+                if (response != null) {
+                    getLogService().requestFinished(req, response.getStatus(), response.getContentLength());
+                } else {
+                    // TODO -- looks like some error before GAEFilter kicked in.
+                }
+            } finally {
+                CapedwarfDelegate.INSTANCE.removeRequest();
             }
         } finally {
-            CapedwarfDelegate.INSTANCE.removeRequest();
+            AppIdFactory.resetCurrentFactory();
         }
     }
 
