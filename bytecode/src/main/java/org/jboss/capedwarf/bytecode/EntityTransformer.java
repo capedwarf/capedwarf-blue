@@ -43,7 +43,7 @@ public class EntityTransformer extends JavassistTransformer {
         new EntityAnnotator(clazz).addAnnotations();
     }
 
-    private class EntityAnnotator extends HibernateSearchAnnotator {
+    private static class EntityAnnotator extends HibernateSearchAnnotator {
         private EntityAnnotator(CtClass clazz) {
             super(clazz);
         }

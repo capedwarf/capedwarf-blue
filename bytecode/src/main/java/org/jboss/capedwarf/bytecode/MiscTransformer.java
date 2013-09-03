@@ -37,11 +37,14 @@ final class MiscTransformer extends MultipleTransformer {
         // GAE apphosting
         register("com.google.apphosting.api.ApiProxy", new ApiProxyTransformer());
         // GAE API
+        // datastore
         register("com.google.appengine.api.datastore.Cursor", new CursorTransformer());
         register("com.google.appengine.api.datastore.DatastoreServiceConfig$Builder", new DatastoreServiceConfigBuilderTransformer());
         register("com.google.appengine.api.datastore.Entity", new EntityTransformer());
         register("com.google.appengine.api.datastore.Key", new KeyTransformer());
         register("com.google.appengine.api.datastore.RawValue", new RawValueTransformer());
+        // search
+        register("com.google.appengine.api.search.GeoPoint", new GeoPointTransformer());
         // GAE SQL
         register("com.google.cloud.sql.jdbc.Driver", new DriverTransformer());
     }
