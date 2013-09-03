@@ -22,28 +22,28 @@
 
 package org.jboss.capedwarf.bytecode;
 
+import java.io.Serializable;
+
 import javassist.CtClass;
-import javassist.bytecode.annotation.Annotation;
-import org.infinispan.marshall.SerializeWith;
-import org.jboss.capedwarf.search.GeoPointExternalizer;
+import javassist.NotFoundException;
 
 /**
+ * Make GeoPoint serializable for Infinispan.
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class GeoPointTransformer extends JavassistTransformer {
-
-    protected void transform(CtClass clazz) throws Exception {
-        new GeoPointAnnotator(clazz).addAnnotations();
+public class GeoPointTransformer extends RewriteTransformer {
+    protected void transformInternal(CtClass clazz) throws Exception {
+        CtClass sc = clazz.getClassPool().get(Serializable.class.getName());
+        clazz.addInterface(sc);
     }
 
-    private static class GeoPointAnnotator extends Annotator {
-        private GeoPointAnnotator(CtClass clazz) {
-            super(clazz);
+    protected boolean doCheck(CtClass clazz) throws NotFoundException {
+        for (CtClass iface : clazz.getInterfaces()) {
+            if (iface.getName().equals(Serializable.class.getName())) {
+                return true;
+            }
         }
-
-        public void addAnnotations() throws Exception {
-            Annotation annotation = createAnnotation(SerializeWith.class, createClassMemberValue(GeoPointExternalizer.class));
-            addAnnotationsToClass(annotation);
-        }
+        return false;
     }
 }

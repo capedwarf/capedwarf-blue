@@ -25,6 +25,8 @@ package org.jboss.capedwarf.search;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 
 import com.google.appengine.api.search.GeoPoint;
 import org.infinispan.marshall.Externalizer;
@@ -32,7 +34,10 @@ import org.infinispan.marshall.Externalizer;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class GeoPointExternalizer implements Externalizer<GeoPoint> {
+public class GeoPointExternalizer implements Externalizer<GeoPoint>, Serializable {
+    private static final long serialVersionUID = 1L;
+    public static final GeoPointExternalizer INSTANCE = new GeoPointExternalizer();
+
     public void writeObject(ObjectOutput output, GeoPoint gp) throws IOException {
         output.writeDouble(gp.getLatitude());
         output.writeDouble(gp.getLongitude());
@@ -40,5 +45,9 @@ public class GeoPointExternalizer implements Externalizer<GeoPoint> {
 
     public GeoPoint readObject(ObjectInput input) throws IOException, ClassNotFoundException {
         return new GeoPoint(input.readDouble(), input.readDouble());
+    }
+
+    Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
     }
 }

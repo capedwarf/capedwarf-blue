@@ -48,5 +48,12 @@ public abstract class RewriteTransformer extends JavassistTransformer {
         }
     }
 
+    /**
+     * Return true if class is already modified.
+     *
+     * @param clazz the current class
+     * @return true if modified, false otherwise
+     * @throws NotFoundException it's OK to throw if not modified
+     */
     protected abstract boolean doCheck(final CtClass clazz) throws NotFoundException;
 }
