@@ -22,9 +22,11 @@
 
 package org.jboss.test.capedwarf.search.test;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
@@ -34,6 +36,10 @@ import com.google.appengine.api.search.GetResponse;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.PutResponse;
+import com.google.appengine.api.search.Query;
+import com.google.appengine.api.search.QueryOptions;
+import com.google.appengine.api.search.Results;
+import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -227,4 +233,29 @@ public abstract class SearchTestBase extends TestBase {
         return index;
     }
 
+    protected void assertSearchYields(Index index, String queryString, String... documentIds) {
+        assertSearchYields(index, queryString, null, documentIds.length, documentIds);
+    }
+
+    protected void assertSearchYields(Index index, String queryString, QueryOptions options, int expectedNumberFound, String... documentIds) {
+        Results<ScoredDocument> results = getResults(index, queryString, options);
+        Collection<ScoredDocument> scoredDocuments = results.getResults();
+
+        assertEquals("number of found documents", expectedNumberFound, results.getNumberFound());
+        assertEquals("number of returned documents", documentIds.length, results.getNumberReturned());
+        assertEquals("actual number of ScoredDcuments", documentIds.length, results.getResults().size());
+
+        Set<String> expectedDocumentIds = new HashSet<String>(Arrays.asList(documentIds));
+        for (ScoredDocument scoredDocument : scoredDocuments) {
+            boolean wasContained = expectedDocumentIds.remove(scoredDocument.getId());
+            if (!wasContained) {
+                fail("Search \"" + queryString + "\" yielded unexpected document id: " + scoredDocument.getId());
+            }
+        }
+    }
+
+    protected Results<ScoredDocument> getResults(Index index, String queryString, QueryOptions options) {
+        Query query = Query.newBuilder().setOptions(options).build(queryString);
+        return index.search(query);
+    }
 }

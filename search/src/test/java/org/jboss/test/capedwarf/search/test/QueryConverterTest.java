@@ -22,6 +22,8 @@
 
 package org.jboss.test.capedwarf.search.test;
 
+import java.util.Collections;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
@@ -103,7 +105,7 @@ public class QueryConverterTest {
 
     private static void assertQueryEquals(String expectedLuceneQueryString, String gaeQueryString) throws ParseException {
         Query query = new QueryConverter("all").convert(gaeQueryString);
-        Query expectedQuery = new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION)).parse(expectedLuceneQueryString);
+        Query expectedQuery = new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION, Collections.emptySet())).parse(expectedLuceneQueryString);
         System.out.println("expectedQuery = " + expectedQuery + "    (" + expectedQuery.getClass() + ")");
         System.out.println("query = " + query + "    (" + query.getClass() + ")");
         Assert.assertEquals(expectedQuery.toString(), query.toString());

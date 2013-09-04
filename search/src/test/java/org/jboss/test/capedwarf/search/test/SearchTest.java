@@ -22,18 +22,13 @@
 
 package org.jboss.test.capedwarf.search.test;
 
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.google.appengine.api.search.GeoPoint;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.PutResponse;
-import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchServiceFactory;
 import org.jboss.test.capedwarf.common.support.All;
@@ -43,7 +38,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -122,6 +116,15 @@ public class SearchTest extends SearchTestBase {
     }
 
     @Test
+    public void testTextWithCommonWord() {
+        Index index = getTestIndex();
+        index.put(newDocument("fooaaa", newField("foo").setText("text with num 0")));   // "with" is a very common word
+        index.put(newDocument("foobbb", newField("foo").setText("text with num 1")));
+
+        assertSearchYields(index, "text with num", "fooaaa", "foobbb");
+    }
+
+    @Test
     public void testSearchByStringEquality() {
         Index index = getTestIndex();
         index.put(newDocument("d", newField("foo").setText("ddd")));
@@ -165,6 +168,7 @@ public class SearchTest extends SearchTestBase {
         assertSearchYields(index, "num < 2", "a");
         assertSearchYields(index, "num <= 2", "a", "b");
         assertSearchYields(index, "num = 2", "b");
+        assertSearchYields(index, "num:2", "b");
     }
 
     @Test
@@ -222,39 +226,6 @@ public class SearchTest extends SearchTestBase {
         cal.set(year, month - 1, day, 0, 0, 0);
         cal.clear(Calendar.MILLISECOND);
         return cal.getTime();
-    }
-
-    private void assertSearchYields(Index index, String queryString, String... documentIds) {
-        Collection<ScoredDocument> scoredDocuments = getScoredDocuments(index, queryString, documentIds);
-
-        Set<String> expectedDocumentIds = new HashSet<String>(Arrays.asList(documentIds));
-        for (ScoredDocument scoredDocument : scoredDocuments) {
-            boolean wasContained = expectedDocumentIds.remove(scoredDocument.getId());
-            if (!wasContained) {
-                fail("Search \"" + queryString + "\" yielded unexpected document id: " + scoredDocument.getId());
-            }
-        }
-    }
-
-    private Collection<ScoredDocument> getScoredDocuments(Index index, String queryString, String[] documentIds) {
-        Results<ScoredDocument> results = index.search(queryString);
-        Collection<ScoredDocument> scoredDocuments = results.getResults();
-        System.out.println("-------------------------------");
-        System.out.println("queryString = " + queryString);
-        System.out.println("scoredDocuments = " + scoredDocuments);
-
-        for (ScoredDocument scoredDocument : scoredDocuments) {
-            System.out.println("scoredDocument = " + scoredDocument);
-        }
-        assertNumberOfResults(documentIds.length, results);
-
-        return scoredDocuments;
-    }
-
-    private void assertNumberOfResults(int numberOfResults, Results<ScoredDocument> results) {
-        assertEquals("number of found documents", numberOfResults, results.getNumberFound());
-        assertEquals("number of returned documents", numberOfResults, results.getNumberReturned());
-        assertEquals("actual number of ScoredDcuments", numberOfResults, results.getResults().size());
     }
 
     @Ignore("No stemming yet")
@@ -351,4 +322,16 @@ public class SearchTest extends SearchTestBase {
         Assert.assertFalse(ids.isEmpty());
         Assert.assertNotNull(index.get(ids.get(0)));
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetOnlyField() {
+        Index index = getTestIndex();
+        index.put(newDocument("get_only_field", newField("foo").setText("foo"), newField("foo").setText("bar")));
+
+        for (ScoredDocument document : index.search("").getResults()) {
+            document.getOnlyField("foo");
+        }
+    }
+
+
 }
