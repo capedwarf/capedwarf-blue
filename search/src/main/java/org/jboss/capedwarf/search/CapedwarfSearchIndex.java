@@ -45,7 +45,9 @@ import com.google.appengine.api.search.Schema;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.StatusCode;
 import com.google.common.base.Function;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.SetMultimap;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.query.dsl.RangeTerminationExcludable;
 import org.infinispan.Cache;
@@ -74,11 +76,18 @@ public class CapedwarfSearchIndex implements Index {
     private Cache<CacheKey, CacheValue> cache;
     private SearchManager searchManager;
 
+    private SchemaAdapter schemaAdapter;
+
     public CapedwarfSearchIndex(String name, String namespace, Cache<CacheKey, CacheValue> cache) {
         this.name = name;
         this.namespace = namespace;
         this.cache = cache;
         this.searchManager = Search.getSearchManager(cache);
+        this.schemaAdapter = new CapedwarfSchema(getSchemaName(name, namespace));
+    }
+
+    private String getSchemaName(String name, String namespace) {
+        return "__Schema__#" + name + "#" + normalizeNamespace(namespace);
     }
 
     public String getName() {
@@ -135,6 +144,7 @@ public class CapedwarfSearchIndex implements Index {
         return new CacheValue(getName(), getNamespace(), document);
     }
 
+    @SuppressWarnings("UnusedParameters")
     private String generateId(Document document) {
         return UUID.randomUUID().toString();
     }
@@ -241,7 +251,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public Schema getSchema() {
-        return null;  // TODO
+        return schemaAdapter.buildSchema();
     }
 
     public Future<Void> deleteSchemaAsync() {
@@ -254,7 +264,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public void deleteSchema() {
-        // TODO
+        schemaAdapter.deleteSchema();
     }
 
     public Future<Void> deleteAsync(String... strings) {
@@ -312,7 +322,11 @@ public class CapedwarfSearchIndex implements Index {
 
     public void delete(Iterable<String> documentIds) {
         for (String documentId : documentIds) {
-            cache.remove(getCacheKey(documentId));
+            CacheValue cacheValue = cache.remove(getCacheKey(documentId));
+            if (cacheValue != null) {
+                Document document = cacheValue.getDocument();
+                schemaAdapter.removeFields(document.getFieldNames());
+            }
         }
     }
 
@@ -327,6 +341,8 @@ public class CapedwarfSearchIndex implements Index {
     public PutResponse put(Iterable<Document> documents) {
         final List<OperationResult> results = new ArrayList<OperationResult>();
         final List<String> ids = new ArrayList<String>();
+        final SetMultimap<String, Field.FieldType> fields = HashMultimap.create();
+
         for (Document document : documents) {
             StatusCode status = StatusCode.OK;
             String errorDetail = null;
@@ -345,7 +361,14 @@ public class CapedwarfSearchIndex implements Index {
             }
             results.add(new OperationResult(status, errorDetail));
             ids.add(id);
+
+            for (Field field : document.getFields()) {
+                fields.put(field.getName(), field.getType());
+            }
         }
+
+        schemaAdapter.addFields(fields);
+
         return new PutResponse(results, ids){};
     }
 
