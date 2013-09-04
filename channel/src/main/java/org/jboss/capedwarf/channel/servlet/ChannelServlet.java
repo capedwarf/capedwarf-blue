@@ -85,7 +85,7 @@ public class ChannelServlet extends HttpServlet {
 
         ChannelQueue queue;
         try {
-            queue = ChannelQueueManager.getInstance().createChannelQueue(channelToken);
+            queue = ChannelQueueManager.getInstance().getChannelQueue(channelToken);
         } catch (NoSuchChannelException e) {
             log.severe("No channel for token " + channelToken);
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);

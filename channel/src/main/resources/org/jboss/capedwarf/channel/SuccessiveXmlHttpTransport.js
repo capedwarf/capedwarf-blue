@@ -1,27 +1,44 @@
 
 SuccessiveXmlHttpTransport = function(socket) {
     this.socket = socket;
-    this.xhr = new XMLHttpRequest();
     this.requestIndex = 0;
-    var x = this.xhr;
-    var t = this;
-    this.xhr.onreadystatechange = function() {
-        if (x.readyState == 4) {
-            eval(x.responseText);
-            if (socket.readyState != goog.appengine.Socket.ReadyState.CLOSED) {
-                t.sendRequest();
-            }
-        }
-    };
 };
 
 SuccessiveXmlHttpTransport.prototype.start = function() {
-    this.sendRequest();
+    this.sendRequest("");
 };
 
-SuccessiveXmlHttpTransport.prototype.sendRequest = function() {
-    this.xhr.open("POST", "/_ah/channel?transport=SuccessiveXmlHttp&token=" + this.socket.token + "&requestIndex=" + this.requestIndex++, true);
-    this.xhr.send();
+SuccessiveXmlHttpTransport.prototype.sendRequest = function(ackList) {
+    var reqIndex = this.requestIndex++;
+    var t = this;
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4) {
+            var lines = xhr.responseText.split(/\r\n|\r|\n/g);
+            var ackIds = "";
+            for (var i=0; i<lines.length; i++) {
+                var line = lines[i];
+                var tokens = line.split(/:_:/g);
+                var type = tokens[0];
+                var messageId = tokens[1];
+                var message = tokens[2];
+                if (type != undefined) {
+                    t.socket.processMessage(type, message);
+                    if (messageId != "" && messageId != undefined) {
+                        ackIds = (ackIds == "" ? "" : (ackIds + ",")) + messageId;
+                    }
+                }
+            }
+
+            if (socket.readyState != goog.appengine.Socket.ReadyState.CLOSED) {
+                setTimeout(function() {
+                    socket.transport.sendRequest(ackIds);
+                }, 1);
+            }
+        }
+    };
+    xhr.open("POST", "/_ah/channel?transport=SuccessiveXmlHttp&token=" + this.socket.token + "&requestIndex=" + reqIndex + "&ackIds=" + ackList, true);
+    xhr.send();
 };
 
 SuccessiveXmlHttpTransport.prototype.close = function() {

@@ -29,24 +29,22 @@ import java.util.logging.Logger;
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class SendMessageTask implements Callable<Void>, Serializable {
+public class MessageNotificationTask implements Callable<Void>, Serializable {
 
     private final Logger log = Logger.getLogger(getClass().getName());
 
     private String channelToken;
-    private String message;
 
-    public SendMessageTask(String channelToken, String message) {
+    public MessageNotificationTask(String channelToken) {
         this.channelToken = channelToken;
-        this.message = message;
     }
 
     public Void call() throws Exception {
         if (ChannelQueueManager.getInstance().channelQueueExists(channelToken)) {
             log.info("Obtaining channel connection for token " + channelToken);
             ChannelQueue channelQueue = ChannelQueueManager.getInstance().getChannelQueue(channelToken);
-            log.info("Sending message " + message);
-            channelQueue.send(message);
+            log.info("Notifying listeners that a message is available");
+            channelQueue.notifyMessageAvailable();
         }
         return null;
     }

@@ -9,6 +9,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -25,6 +26,20 @@ public class SingleThreadFilter implements Filter {
     }
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
+        if (isChannelRequest(servletRequest)) {
+            chain.doFilter(servletRequest, servletResponse);
+        } else {
+            doFilterWithSemaphore(servletRequest, servletResponse, chain);
+        }
+
+    }
+
+    private boolean isChannelRequest(ServletRequest servletRequest) {
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        return request.getRequestURI().startsWith("/_ah/channel");
+    }
+
+    private void doFilterWithSemaphore(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
         final boolean isNew = (reentered.get() == null);
         try {
             // make the app process one request at a time
@@ -54,6 +69,5 @@ public class SingleThreadFilter implements Filter {
     }
 
     public void destroy() {
-        semaphore = null;
     }
 }

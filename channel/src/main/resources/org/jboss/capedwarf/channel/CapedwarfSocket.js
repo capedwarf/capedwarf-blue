@@ -51,6 +51,18 @@ CapedwarfSocket.prototype.handleOpen = function () {
     this.onopen();
 };
 
+CapedwarfSocket.prototype.processMessage = function (type, msg) {
+    if (type == "message") {
+        this.handleMessage(msg);
+    } else if (type == "open") {
+        this.handleOpen();
+    } else if (type == "close") {
+        this.handleClose();
+    } else if (type == "error") {
+        this.handleError();
+    }
+};
+
 CapedwarfSocket.prototype.handleMessage = function (msg) {
     this.onmessage({data:msg});
 };
