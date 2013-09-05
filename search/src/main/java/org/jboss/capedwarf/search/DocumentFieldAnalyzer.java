@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.search;
 
 import java.io.Reader;
+import java.util.Collections;
 
 import com.google.appengine.api.search.Field;
 import org.apache.lucene.analysis.Analyzer;
@@ -38,7 +39,7 @@ public final class DocumentFieldAnalyzer extends Analyzer {
     private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
 
     private StandardHtmlAnalyzer standardHtmlAnalyzer = new StandardHtmlAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
-    private StandardAnalyzer standardAnalyzer = new StandardAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
+    private StandardAnalyzer standardAnalyzer = new StandardAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION, Collections.emptySet());
     private PassThroughAnalyzer passThroughAnalyzer = new PassThroughAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
 
     public final TokenStream tokenStream(String fieldName, Reader reader) {

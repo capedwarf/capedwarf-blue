@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.search;
 
+import java.util.Collections;
+
 import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.GeoPoint;
 import com.google.appengine.api.search.query.ParserUtils;
@@ -194,7 +196,10 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
 
         switch (operator) {
             case CONTAINS:
-                return new TermQuery(new Term(field, value.getText()));
+                BooleanQuery bool = new BooleanQuery();
+                bool.add(new BooleanClause(NumericRangeQuery.newDoubleRange(field, doubleValue, doubleValue, true, true), BooleanClause.Occur.SHOULD));
+                bool.add(new BooleanClause(new TermQuery(new Term(field, value.getText())), BooleanClause.Occur.SHOULD));
+                return bool;
             case EQ:
                 return NumericRangeQuery.newDoubleRange(field, doubleValue, doubleValue, true, true);
             case GREATER_THAN:
@@ -234,7 +239,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
     private Query createContainsQuery(String field, Context text) {
         if (text.isPhrase()) {
             try {
-                return new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION)).parse(field + ":" + text.getText());
+                return new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION, Collections.emptySet())).parse(field + ":" + text.getText());
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }

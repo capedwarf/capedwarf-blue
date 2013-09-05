@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.search;
 
 import java.io.Reader;
+import java.util.Collections;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharReader;
@@ -39,7 +40,7 @@ public final class StandardHtmlAnalyzer extends Analyzer {
     private StandardAnalyzer standardAnalyzer;
 
     public StandardHtmlAnalyzer(Version luceneVersion) {
-        this.standardAnalyzer = new StandardAnalyzer(luceneVersion);
+        this.standardAnalyzer = new StandardAnalyzer(luceneVersion, Collections.emptySet());
     }
 
     public final TokenStream tokenStream(String fieldName, Reader reader) {

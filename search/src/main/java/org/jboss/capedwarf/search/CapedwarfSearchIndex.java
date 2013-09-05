@@ -40,6 +40,7 @@ import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.OperationResult;
 import com.google.appengine.api.search.PutResponse;
 import com.google.appengine.api.search.Query;
+import com.google.appengine.api.search.QueryOptions;
 import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.Schema;
 import com.google.appengine.api.search.ScoredDocument;
@@ -160,14 +161,21 @@ public class CapedwarfSearchIndex implements Index {
                 .must(createLuceneQuery(query))
                 .createQuery());
 
-        List<ScoredDocument> scoredDocuments = new ArrayList<ScoredDocument>();
+        if (query.getOptions() != null) {
+            cacheQuery.firstResult(query.getOptions().getOffset());
+            if (query.getOptions().getLimit() > 0) {
+                cacheQuery.maxResults(query.getOptions().getLimit());
+            }
+        }
+
+        List<ScoredDocument> scoredDocuments = new ArrayList<>();
         for (Object o : cacheQuery.list()) {
             CacheValue cacheValue = (CacheValue) o;
-            scoredDocuments.add(createScoredDocument(cacheValue.getDocument()));
+            scoredDocuments.add(createScoredDocument(cacheValue.getDocument(), query));
         }
 
         OperationResult operationResult = new OperationResult(StatusCode.OK, null);
-        return newResults(operationResult, scoredDocuments, scoredDocuments.size(), scoredDocuments.size(), null);
+        return newResults(operationResult, scoredDocuments, cacheQuery.getResultSize(), scoredDocuments.size(), null);
     }
 
     private org.apache.lucene.search.Query createIndexAndNamespaceQuery() {
@@ -186,25 +194,27 @@ public class CapedwarfSearchIndex implements Index {
         return searchManager.buildQueryBuilderForClass(CacheValue.class).get();
     }
 
-    private ScoredDocument createScoredDocument(Document document) {
+    private ScoredDocument createScoredDocument(Document document, Query query) {
         ScoredDocument.Builder builder = ScoredDocument.newBuilder();
-        copyPropertiesToBuilder(document, builder);
+        copyPropertiesToBuilder(document, builder, query.getOptions());
         return builder.build();
     }
 
     private Document createCopyWithId(Document document, String id) {
         Document.Builder builder = Document.newBuilder();
         builder.setId(id);
-        copyPropertiesToBuilder(document, builder);
+        copyPropertiesToBuilder(document, builder, null);
         return builder.build();
     }
 
-    private void copyPropertiesToBuilder(Document document, Document.Builder builder) {
+    private void copyPropertiesToBuilder(Document document, Document.Builder builder, QueryOptions options) {
         builder.setId(document.getId());
         builder.setLocale(document.getLocale());
         builder.setRank(document.getRank());
         for (Field field : document.getFields()) {
-            builder.addField(field);
+            if (options == null || (!options.isReturningIdsOnly() && (options.getFieldsToReturn().isEmpty() || options.getFieldsToReturn().contains(field.getName())))) {
+                builder.addField(field);
+            }
         }
     }
 
