@@ -27,6 +27,7 @@
         <module>cluster</module>
         <module>cluster-tests</module>
         <module>datastore</module>
+        <module>endpoints</module>
         <module>environment</module>
         <module>files</module>
         <module>images</module>
@@ -73,7 +74,7 @@
         <version.org.jivesoftware.smack>3.1.0</version.org.jivesoftware.smack>
         <version.org.picketlink>2.1.1.Final</version.org.picketlink>
         <version.org.picketlink.consolidated.social>2.0.0.Beta1</version.org.picketlink.consolidated.social>
-        <version.javassist>3.15.0-GA</version.javassist>
+        <version.javassist>3.18.1-GA</version.javassist>
         <version.javax.jpa2>1.0.1.Final</version.javax.jpa2>
         <version.javax.mail>1.4.4</version.javax.mail>
         <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
@@ -84,6 +85,7 @@
         <version.metainf>1.1</version.metainf>
         <version.org.apache.httpcomponents>4.2.1</version.org.apache.httpcomponents>
         <version.org.xerial.sqlite>3.7.2</version.org.xerial.sqlite>
+        <version.org.codehaus.jackson>1.9.9</version.org.codehaus.jackson>
         <!-- DataNucleus -->
         <version.org.datanucleus>3.1.2</version.org.datanucleus>
         <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
@@ -910,6 +912,12 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>jaxrs-api</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-core-asl</artifactId>
+                <version>${version.org.codehaus.jackson}</version>
             </dependency>
 
         </dependencies>

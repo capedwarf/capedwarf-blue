@@ -35,6 +35,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
@@ -105,7 +106,7 @@ public class EndPointAnnotator extends Annotator {
 
         addAnnotationsToMethod(method, Arrays.asList(
             createAnnotation(httpMethod),
-            createProducesAnnotation("application/json"),
+            createProducesAnnotation(MediaType.APPLICATION_JSON),
             createPathAnnotation(path)
         ));
 

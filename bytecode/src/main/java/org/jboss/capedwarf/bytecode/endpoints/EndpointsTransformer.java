@@ -27,10 +27,10 @@ import java.security.ProtectionDomain;
 
 import javassist.CtClass;
 import org.jboss.capedwarf.bytecode.JavassistTransformer;
-import org.jboss.capedwarf.common.reflection.BytecodeUtils;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class EndpointsTransformer extends JavassistTransformer {
     @Override
@@ -44,5 +44,6 @@ public class EndpointsTransformer extends JavassistTransformer {
     @Override
     protected void transform(CtClass clazz) throws Exception {
         new EndPointAnnotator(clazz).addAnnotations();
+        new DtoAnnotator(clazz).addAnnotations();
     }
 }
