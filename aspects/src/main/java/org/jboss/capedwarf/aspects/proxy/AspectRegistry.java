@@ -55,6 +55,7 @@ public final class AspectRegistry {
     static {
         // default aspects
         addDefaultAspect(new GlobalTimeLimitAspect());
+        // addDefaultAspect(new DisableSocketsAspect());
         // per annotation aspects
         addAspect(new InvocationTimeLimitAspect());
     }
