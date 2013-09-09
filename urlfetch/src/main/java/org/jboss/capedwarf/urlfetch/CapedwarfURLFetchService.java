@@ -78,9 +78,10 @@ public class CapedwarfURLFetchService implements URLFetchService {
     public Future<HTTPResponse> fetchAsync(final HTTPRequest httpRequest) {
         final HttpUriRequest request = toHttpUriRequest(httpRequest);
 
+        final String appId = AppIdFactory.getAppId();
         final AppIdFactory appIdFactory = new AppIdFactory() {
             public String appId() {
-                return AppIdFactory.getAppId();
+                return appId;
             }
         };
 
