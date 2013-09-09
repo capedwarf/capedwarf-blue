@@ -23,6 +23,7 @@
 package org.jboss.capedwarf.xmpp;
 
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.config.XmppConfiguration;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.Roster;
@@ -41,6 +42,7 @@ public class XMPPConnectionManager {
     }
 
     public XMPPConnection createConnection() {
+        Compatibility.enable(Compatibility.Feature.IGNORE_CAPEDWARF_SOCKETS);
         try {
             XmppConfiguration xmppConfig = CapedwarfEnvironment.getThreadLocalInstance().getCapedwarfConfiguration().getXmppConfiguration();
 
@@ -53,6 +55,8 @@ public class XMPPConnectionManager {
             return connection;
         } catch (XMPPException e) {
             throw new RuntimeException(e);
+        } finally {
+            Compatibility.disable(Compatibility.Feature.IGNORE_CAPEDWARF_SOCKETS);
         }
     }
 
