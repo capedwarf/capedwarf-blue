@@ -50,11 +50,23 @@ public class EndpointsSerializerProvider<T> implements MessageBodyWriter<T>, Mes
     private Class<T> clazz;
     private Serializer<T, String> serializer;
 
-    @SuppressWarnings("unchecked")
+    private static Class<? extends Serializer> check(Class<?> clazz) {
+        ApiSerializer as = clazz.getAnnotation(ApiSerializer.class);
+        if (as == null) {
+            throw new IllegalArgumentException(String.format("Class %s is missing @ApiSerializer.", clazz));
+        }
+        return as.value();
+    }
+
     public EndpointsSerializerProvider(Class<T> clazz) {
+        this(clazz, check(clazz));
+    }
+
+    @SuppressWarnings("unchecked")
+    public EndpointsSerializerProvider(Class<T> clazz, Class<? extends Serializer> serializerClass) {
         try {
             this.clazz = clazz;
-            this.serializer = (Serializer<T, String>) clazz.getAnnotation(ApiSerializer.class).value().newInstance();
+            this.serializer = serializerClass.newInstance();
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
