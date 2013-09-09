@@ -52,6 +52,8 @@ import org.apache.http.protocol.HttpContext;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.common.reflection.TargetInvocation;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Keys;
 
@@ -75,9 +77,21 @@ public class CapedwarfURLFetchService implements URLFetchService {
 
     public Future<HTTPResponse> fetchAsync(final HTTPRequest httpRequest) {
         final HttpUriRequest request = toHttpUriRequest(httpRequest);
+
+        final AppIdFactory appIdFactory = new AppIdFactory() {
+            public String appId() {
+                return AppIdFactory.getAppId();
+            }
+        };
+
         return ExecutorFactory.wrap(new Callable<HTTPResponse>() {
             public HTTPResponse call() throws Exception {
-                return fetch(request);
+                AppIdFactory.setCurrentFactory(appIdFactory);
+                try {
+                    return fetch(request);
+                } finally {
+                    AppIdFactory.resetCurrentFactory();
+                }
             }
         });
     }
@@ -136,6 +150,7 @@ public class CapedwarfURLFetchService implements URLFetchService {
     }
 
     protected HTTPResponse fetch(final HttpUriRequest request) throws IOException {
+        Compatibility.enable(Compatibility.Feature.IGNORE_CAPEDWARF_SOCKETS);
         try {
             HttpClient client = ComponentRegistry.getInstance().getComponent(Keys.HTTP_CLIENT);
             HttpContext context = new BasicHttpContext();
@@ -148,6 +163,8 @@ public class CapedwarfURLFetchService implements URLFetchService {
             IOException ioe = new IOException();
             ioe.initCause(e);
             throw ioe;
+        } finally {
+            Compatibility.disable(Compatibility.Feature.IGNORE_CAPEDWARF_SOCKETS);
         }
     }
 
