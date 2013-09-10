@@ -42,7 +42,7 @@
 
         <dependency>
             <groupId>org.jboss.arquillian.protocol</groupId>
-            <artifactId>arquillian-protocol-servlet</artifactId>
+            <artifactId>arquillian-protocol-modules</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -117,7 +117,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.10</version>
                 <configuration>
                     <skipTests>true</skipTests>
                 </configuration>
@@ -139,7 +138,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>2.10</version>
                         <configuration>
                             <skipTests>false</skipTests>
                         </configuration>
