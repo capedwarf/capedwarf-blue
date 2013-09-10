@@ -113,13 +113,7 @@ public class CapedwarfAppIdentityService implements AppIdentityService {
             dsa.update(bytes);
             return dsa.sign();
 
-        } catch (NoSuchAlgorithmException e) {
-            throw new AppIdentityServiceFailureException("Cannot sign: " + e);
-        } catch (NoSuchProviderException e) {
-            throw new AppIdentityServiceFailureException("Cannot sign: " + e);
-        } catch (InvalidKeyException e) {
-            throw new AppIdentityServiceFailureException("Cannot sign: " + e);
-        } catch (SignatureException e) {
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException e) {
             throw new AppIdentityServiceFailureException("Cannot sign: " + e);
         }
     }
@@ -132,9 +126,7 @@ public class CapedwarfAppIdentityService implements AppIdentityService {
             pemWriter.flush();
             return stringWriter.toString();
 
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot format certificate to PEM format", e);
-        } catch (CertificateEncodingException e) {
+        } catch (IOException | CertificateEncodingException e) {
             throw new RuntimeException("Cannot format certificate to PEM format", e);
         }
     }
@@ -173,6 +165,10 @@ public class CapedwarfAppIdentityService implements AppIdentityService {
                 new Class[]{String.class, String.class, String.class},
                 new Object[]{partition, domain, appId}
         );
+    }
+
+    public String getDefaultGcsBucketName() {
+        return System.getProperty("default.gcs.bucket.name", "CAPEDWARF_GCS_BUCKET"); // TODO?
     }
 
     protected static String toKey(final Iterable<String> scopes) {
