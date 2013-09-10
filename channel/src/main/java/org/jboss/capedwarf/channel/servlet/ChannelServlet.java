@@ -22,6 +22,16 @@
 
 package org.jboss.capedwarf.channel.servlet;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.jboss.capedwarf.channel.manager.Channel;
 import org.jboss.capedwarf.channel.manager.ChannelManager;
 import org.jboss.capedwarf.channel.manager.ChannelQueue;
@@ -30,15 +40,6 @@ import org.jboss.capedwarf.channel.manager.NoSuchChannelException;
 import org.jboss.capedwarf.channel.transport.ChannelTransport;
 import org.jboss.capedwarf.channel.transport.ChannelTransportFactory;
 import org.jboss.capedwarf.common.io.IOUtils;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -71,6 +72,7 @@ public class ChannelServlet extends HttpServlet {
         serveChannelMessages(req, resp, channelToken);
     }
 
+    @SuppressWarnings("UnusedParameters")
     private void closeChannel(HttpServletRequest req, HttpServletResponse resp, String channelToken) {
         try {
             Channel channel = ChannelManager.getInstance().getChannelByToken(channelToken);
@@ -98,6 +100,7 @@ public class ChannelServlet extends HttpServlet {
     }
 
 
+    @SuppressWarnings("UnusedParameters")
     private void serveJavascript(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/javascript");
         includeScript(resp, "/org/jboss/capedwarf/channel/channelapi.js");
@@ -110,11 +113,8 @@ public class ChannelServlet extends HttpServlet {
     }
 
     private void includeScript(HttpServletResponse resp, String scriptPath) throws IOException {
-        InputStream in = getClass().getResourceAsStream(scriptPath);
-        try {
+        try (InputStream in = getClass().getResourceAsStream(scriptPath)) {
             IOUtils.copyStream(in, resp.getOutputStream());
-        } finally {
-            in.close();
         }
     }
 

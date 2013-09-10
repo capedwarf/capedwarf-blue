@@ -22,28 +22,28 @@
 
 package org.jboss.capedwarf.channel;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.google.appengine.api.channel.ChannelMessage;
 import com.google.appengine.api.channel.ChannelPresence;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class IncomingChannelRequestParser {
+    public static final String CLIENT_ID = "clientId";
 
-
-    public ChannelMessage parseMessage(HttpServletRequest request) {
+    ChannelMessage parseMessage(HttpServletRequest request) {
         return new ChannelMessage(
-                request.getParameter("clientId"),
+                request.getParameter(CLIENT_ID),
                 request.getParameter("message")
         );
     }
 
-    public ChannelPresence parsePresence(HttpServletRequest request) {
+    ChannelPresence parsePresence(HttpServletRequest request) {
         boolean isConnected = Boolean.valueOf(request.getParameter("connected"));
-        String clientId = request.getParameter("clientId");
+        String clientId = request.getParameter(CLIENT_ID);
         return ReflectionUtils.newInstance(ChannelPresence.class, new Class[] {boolean.class, String.class}, new Object[] {isConnected, clientId});
     }
 }

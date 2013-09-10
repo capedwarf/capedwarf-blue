@@ -22,10 +22,6 @@
 
 package org.jboss.capedwarf.channel.transport;
 
-import org.jboss.capedwarf.channel.manager.ChannelQueue;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**

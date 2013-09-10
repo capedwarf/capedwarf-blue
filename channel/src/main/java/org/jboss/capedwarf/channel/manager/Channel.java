@@ -22,6 +22,10 @@
 
 package org.jboss.capedwarf.channel.manager;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -31,12 +35,6 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.capedwarf.channel.util.ClusterUtils;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -96,8 +94,16 @@ public class Channel {
         submitTask(new MessageNotificationTask(getToken()));
     }
 
+    public void open() {
+        ChannelNotifications.connect(this);
+    }
+
     public void close() {
-        submitTask(new CloseChannelTask(getToken()));
+        try {
+            submitTask(new CloseChannelTask(getToken()));
+        } finally {
+            ChannelNotifications.disconnect(this);
+        }
     }
 
     private void submitTask(Callable<Void> task) {

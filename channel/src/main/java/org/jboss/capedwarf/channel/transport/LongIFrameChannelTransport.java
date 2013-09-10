@@ -22,15 +22,16 @@
 
 package org.jboss.capedwarf.channel.transport;
 
-import org.jboss.capedwarf.channel.manager.ChannelQueue;
-import org.jboss.capedwarf.channel.manager.Message;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.logging.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.jboss.capedwarf.channel.manager.ChannelQueue;
+import org.jboss.capedwarf.channel.manager.Message;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>

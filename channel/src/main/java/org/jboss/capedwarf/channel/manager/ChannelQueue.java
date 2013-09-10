@@ -22,11 +22,7 @@
 
 package org.jboss.capedwarf.channel.manager;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.jboss.capedwarf.channel.servlet.ChannelServlet;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>

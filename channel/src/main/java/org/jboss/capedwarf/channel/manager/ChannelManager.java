@@ -53,7 +53,10 @@ public class ChannelManager {
         entity.setProperty(PROPERTY_EXPIRATION_TIME, toExpirationTime(durationMinutes));
         entity.setProperty(PROPERTY_TOKEN, generateToken());
         datastoreService.put(entity);
-        return entityToChannel(entity);
+
+        Channel channel = entityToChannel(entity);
+        channel.open();
+        return channel;
     }
 
     private String generateToken() {

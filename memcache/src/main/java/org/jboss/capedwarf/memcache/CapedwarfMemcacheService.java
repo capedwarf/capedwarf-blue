@@ -98,13 +98,16 @@ public class CapedwarfMemcacheService implements MemcacheService {
     }
 
     public IdentifiableValue getIdentifiable(final Object key) {
-        return new MyIdentifiableValue(get(key));
+        return (contains(key)) ? new MyIdentifiableValue(get(key)) : null;
     }
 
     public <T> Map<T, IdentifiableValue> getIdentifiables(Collection<T> keys) {
         Map<T, IdentifiableValue> map = new HashMap<T, IdentifiableValue>();
         for (T key : keys) {
-            map.put(key, getIdentifiable(key));
+            final IdentifiableValue identifiable = getIdentifiable(key);
+            if (identifiable != null) {
+                map.put(key, identifiable);
+            }
         }
         return map;
     }
