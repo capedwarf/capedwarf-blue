@@ -22,13 +22,9 @@
 
 package org.jboss.capedwarf.channel.manager;
 
-import java.net.URL;
-import java.net.URLEncoder;
-
-import com.google.appengine.api.urlfetch.HTTPMethod;
-import com.google.appengine.api.urlfetch.HTTPRequest;
-import com.google.appengine.api.urlfetch.URLFetchService;
-import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.capedwarf.channel.IncomingChannelRequestParser;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
@@ -44,29 +40,25 @@ class ChannelNotifications {
         return (services != null && services.getServices().contains(InboundServices.Service.channel_presence));
     }
 
-    private static void submit(String url, String clientId) {
-        try {
-            String base = CapedwarfEnvironment.getThreadLocalInstance().getBaseApplicationUrl();
-            url = base + url;
-            url += String.format("?%s=%s", IncomingChannelRequestParser.CLIENT_ID, URLEncoder.encode(clientId));
+    private static void submit(String url, String clientId, boolean connected) {
+        Queue queue = QueueFactory.getQueue("CAPEDWARF-INTERNAL");
 
-            URLFetchService service = URLFetchServiceFactory.getURLFetchService();
-            HTTPRequest request = new HTTPRequest(new URL(url), HTTPMethod.POST);
-            service.fetchAsync(request);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+        TaskOptions options = TaskOptions.Builder.withUrl(url);
+        options.param(IncomingChannelRequestParser.CONNECTED, String.valueOf(connected));
+        options.param(IncomingChannelRequestParser.CLIENT_ID, clientId);
+
+        queue.add(null, options); // no Tx
     }
 
     protected static void connect(Channel channel) {
         if (enabled()) {
-            submit("/_ah/channel/connected/", channel.getClientId());
+            submit("/_ah/channel/connected/", channel.getClientId(), false);
         }
     }
 
     protected static void disconnect(Channel channel) {
         if (enabled()) {
-            submit("/_ah/channel/disconnected/", channel.getClientId());
+            submit("/_ah/channel/disconnected/", channel.getClientId(), true);
         }
     }
 }

@@ -32,6 +32,7 @@ import org.jboss.capedwarf.common.reflection.ReflectionUtils;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class IncomingChannelRequestParser {
+    public static final String CONNECTED = "connected";
     public static final String CLIENT_ID = "clientId";
 
     ChannelMessage parseMessage(HttpServletRequest request) {
@@ -42,7 +43,7 @@ public class IncomingChannelRequestParser {
     }
 
     ChannelPresence parsePresence(HttpServletRequest request) {
-        boolean isConnected = Boolean.valueOf(request.getParameter("connected"));
+        boolean isConnected = Boolean.valueOf(request.getParameter(CONNECTED));
         String clientId = request.getParameter(CLIENT_ID);
         return ReflectionUtils.newInstance(ChannelPresence.class, new Class[] {boolean.class, String.class}, new Object[] {isConnected, clientId});
     }
