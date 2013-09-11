@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.capedwarf.aspects.Aspect;
 import org.jboss.capedwarf.aspects.AspectAdapter;
+import org.jboss.capedwarf.aspects.DisableSocketsAspect;
 import org.jboss.capedwarf.aspects.GlobalTimeLimitAspect;
 import org.jboss.capedwarf.aspects.InvocationTimeLimitAspect;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
@@ -55,7 +56,7 @@ public final class AspectRegistry {
     static {
         // default aspects
         addDefaultAspect(new GlobalTimeLimitAspect());
-        // addDefaultAspect(new DisableSocketsAspect());
+        addDefaultAspect(new DisableSocketsAspect());
         // per annotation aspects
         addAspect(new InvocationTimeLimitAspect());
     }

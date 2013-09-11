@@ -151,6 +151,7 @@ public class CapedwarfURLFetchService implements URLFetchService {
     }
 
     protected HTTPResponse fetch(final HttpUriRequest request) throws IOException {
+        // this one is OK, as it's needed in async invocation
         Compatibility.enable(Compatibility.Feature.IGNORE_CAPEDWARF_SOCKETS);
         try {
             HttpClient client = ComponentRegistry.getInstance().getComponent(Keys.HTTP_CLIENT);
