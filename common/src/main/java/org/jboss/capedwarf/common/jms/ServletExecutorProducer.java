@@ -28,7 +28,8 @@ import javax.jms.MessageProducer;
 
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.shared.jms.MessageConstants;
-import org.jboss.modules.ModuleClassLoader;
+import org.jboss.capedwarf.shared.util.Utils;
+import org.jboss.modules.Module;
 
 
 /**
@@ -69,14 +70,7 @@ public class ServletExecutorProducer extends JmsAdapter {
     }
 
     private static String getModuleName() {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        while (cl instanceof ModuleClassLoader == false) {
-            cl = cl.getParent();
-        }
-        if (cl == null)
-            throw new IllegalArgumentException("No ModuleClassLoader found in hierarchy.");
-
-        final ModuleClassLoader mcl = (ModuleClassLoader) cl;
-        return mcl.getModule().getIdentifier().toString();
+        final Module module = Utils.toModule();
+        return module.getIdentifier().toString();
     }
 }

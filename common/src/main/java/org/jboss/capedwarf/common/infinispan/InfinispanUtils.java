@@ -66,10 +66,11 @@ public class InfinispanUtils {
         return template.getName() + "_" + appId;
     }
 
-    private static <R> Future<R> distribute(final String appId, final CacheName template, final Callable<R> task, final boolean direct, final Object... keys) {
+    private static <R> Future<R> distribute(final String appId, final CacheName template, final Callable<R> callable, final boolean direct, final Object... keys) {
         final Cache cache = getCache(appId, template);
         final ExecutorService executor = (direct ? ExecutorFactory.getDirectExecutor() : ExecutorFactory.getInstance());
         final DistributedExecutorService des = new DefaultExecutorService(cache, executor);
+        final DistributedTask<R> task = toTask(des, callable);
         return des.submit(task, keys);
     }
 
@@ -79,6 +80,19 @@ public class InfinispanUtils {
         return new DefaultExecutorService(cache, executor);
     }
 
+    private static <T> DistributedTask<T> toTask(DistributedExecutorService des, Callable<T> callable) {
+        final Callable<T> wrapper = toTCCL(callable);
+        final DistributedTaskBuilder<T> builder = des.createDistributedTaskBuilder(wrapper);
+        return builder.build();
+    }
+
+    private static <R> Callable<R> toTCCL(Callable<R> callable) {
+        return new TCCLCallable<R>(callable);
+    }
+
+    /**
+     * Get cache.
+     */
     public static <K, V> Cache<K, V> getCache(String appId, CacheName template) {
         if (template == null)
             throw new IllegalArgumentException("Null template!");
@@ -106,8 +120,7 @@ public class InfinispanUtils {
      */
     public static <T> Future<T> single(final String appId, Callable<T> callable, Address toAddress) {
         final DistributedExecutorService des = getDistributedExecutorService(appId);
-        final DistributedTaskBuilder<T> builder = des.createDistributedTaskBuilder(callable);
-        final DistributedTask<T> task = builder.build();
+        final DistributedTask<T> task = toTask(des, callable);
         return des.submit(toAddress, task);
     }
 
@@ -116,8 +129,7 @@ public class InfinispanUtils {
      */
     public static <T> List<Future<T>> everywhere(final String appId, Callable<T> callable) {
         final DistributedExecutorService des = getDistributedExecutorService(appId);
-        final DistributedTaskBuilder<T> builder = des.createDistributedTaskBuilder(callable);
-        final DistributedTask<T> task = builder.build();
+        final DistributedTask<T> task = toTask(des, callable);
         return des.submitEverywhere(task);
     }
 

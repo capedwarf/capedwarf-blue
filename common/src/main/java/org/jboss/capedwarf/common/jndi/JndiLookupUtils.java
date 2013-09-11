@@ -38,6 +38,7 @@ import javax.naming.NamingException;
 
 import javassist.util.proxy.MethodHandler;
 import org.jboss.capedwarf.common.reflection.BytecodeUtils;
+import org.jboss.capedwarf.shared.util.Utils;
 
 /**
  * JNDI lookup should be limited.
@@ -50,7 +51,7 @@ public class JndiLookupUtils {
 
     protected static Properties findProperties(String propertiesName) throws IOException {
         Properties jndiProperties = new Properties();
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        ClassLoader cl = Utils.getAppClassLoader();
         URL jndiPropertiesURL = cl.getResource(propertiesName);
         if (jndiPropertiesURL != null) {
             InputStream is = jndiPropertiesURL.openStream();
