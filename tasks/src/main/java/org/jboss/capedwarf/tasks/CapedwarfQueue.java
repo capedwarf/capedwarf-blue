@@ -76,7 +76,6 @@ import org.jboss.capedwarf.shared.config.QueueXml;
  */
 @QueueInitialization
 public class CapedwarfQueue implements Queue {
-    private static final String INTERNAL = "CAPEDWARF-INTERNAL";
     private static final String ID = "ID:";
     private static final Sort SORT = new Sort(new SortField(Task.ETA_MILLIS, SortField.LONG));
 
@@ -105,14 +104,6 @@ public class CapedwarfQueue implements Queue {
         this.queueName = queueName;
     }
 
-    private static boolean isInternal(String queueName) {
-        return INTERNAL.equals(queueName);
-    }
-
-    private boolean isInternal() {
-        return isInternal(queueName);
-    }
-
     void initialize() {
         if (initilized == false) {
             synchronized (this) {
@@ -120,11 +111,11 @@ public class CapedwarfQueue implements Queue {
                     CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
                     QueueXml qx = env.getQueueXml();
                     QueueXml.Queue queue = qx.getQueues().get(queueName);
-                    if (queue == null && isInternal() == false) {
+                    if (queue == null) {
                         throw new IllegalStateException("No such queue " + queueName + " in queue.xml!");
                     }
 
-                    this.isPushQueue = isInternal() || (queue.getMode() == QueueXml.Mode.PUSH);
+                    this.isPushQueue = (queue.getMode() == QueueXml.Mode.PUSH);
                     this.tasks = getCache().getAdvancedCache().with(Application.getAppClassloader());
                     this.searchManager = Search.getSearchManager(tasks);
 
@@ -623,9 +614,6 @@ public class CapedwarfQueue implements Queue {
     }
 
     static void validateQueueName(String queueName) {
-        if (isInternal(queueName)) {
-            return;
-        }
         if (queueName == null || queueName.length() == 0 || QueueConstants.QUEUE_NAME_PATTERN.matcher(queueName).matches() == false) {
             throw new IllegalArgumentException("Queue name does not match expression " + QueueConstants.QUEUE_NAME_REGEX + "; found '" + queueName + "'");
         }

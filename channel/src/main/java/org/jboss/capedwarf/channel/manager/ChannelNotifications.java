@@ -29,6 +29,7 @@ import org.jboss.capedwarf.channel.IncomingChannelRequestParser;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.InboundServices;
+import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -41,7 +42,7 @@ class ChannelNotifications {
     }
 
     private static void submit(String url, String clientId, boolean connected) {
-        Queue queue = QueueFactory.getQueue("CAPEDWARF-INTERNAL");
+        Queue queue = QueueFactory.getQueue(QueueXml.INTERNAL);
 
         TaskOptions options = TaskOptions.Builder.withUrl(url);
         options.param(IncomingChannelRequestParser.CONNECTED, String.valueOf(connected));
