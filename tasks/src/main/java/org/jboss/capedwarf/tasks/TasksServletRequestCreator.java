@@ -39,10 +39,12 @@ import javax.jms.Message;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.NamespaceManager;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.servlet.AbstractHttpServletRequest;
+import org.jboss.capedwarf.shared.config.QueueXml;
 import org.jboss.capedwarf.shared.jms.AbstractServletRequestCreator;
 
 /**
@@ -95,6 +97,16 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
 
     public void finish() {
         CapedwarfEnvironment.clearThreadLocalInstance();
+    }
+
+    @Override
+    public boolean isValid(HttpServletRequest request, HttpServletResponse response) {
+        boolean result = super.isValid(request, response);
+        if (result == false) {
+            String queueName = request.getHeader(TasksMessageCreator.QUEUE_NAME_HEADER);
+            result = QueueXml.INTERNAL.equals(queueName) && isStatusInRange(response, 403, 404);
+        }
+        return result;
     }
 
     private static class TasksServletRequest extends AbstractHttpServletRequest {

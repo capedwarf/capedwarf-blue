@@ -46,13 +46,13 @@ import org.jboss.capedwarf.shared.jms.ServletRequestCreator;
  */
 public class TasksMessageCreator implements MessageCreator {
 
-    private static final String QUEUE_NAME_HEADER = "X-AppEngine-QueueName";
-    private static final String TASK_NAME_HEADER = "X-AppEngine-TaskName";
+    public static final String QUEUE_NAME_HEADER = "X-AppEngine-QueueName";
+    public static final String TASK_NAME_HEADER = "X-AppEngine-TaskName";
     public static final String TASK_RETRY_COUNT = "X-AppEngine-TaskRetryCount";
     public static final String TASK_EXECUTION_COUNT = "X-AppEngine-TaskExecutionCount";
     public static final String TASK_ETA = "X-AppEngine-TaskETA";
-    private static final String FAIL_FAST = "X-AppEngine-FailFast";
-    static final String CURRENT_NAMESPACE = "X-AppEngine-Current-Namespace";
+    public static final String FAIL_FAST = "X-AppEngine-FailFast";
+    public static final String CURRENT_NAMESPACE = "X-AppEngine-Current-Namespace";
 
     public static final String HDR_SCHEDULED_DELIVERY_TIME = "_HQ_SCHED_DELIVERY";
     public static final String QUEUE_NAME_KEY = "__CD__QueueName__";
