@@ -11,14 +11,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.jboss.capedwarf.common.url.URLUtils;
-import org.picketlink.social.openid.api.OpenIDManager;
-import org.picketlink.social.openid.api.OpenIDProtocolAdapter;
-import org.picketlink.social.openid.api.OpenIDRequest;
-import org.picketlink.social.openid.api.exceptions.OpenIDAssociationException;
-import org.picketlink.social.openid.api.exceptions.OpenIDDiscoveryException;
-import org.picketlink.social.openid.api.exceptions.OpenIDGeneralException;
-import org.picketlink.social.openid.api.exceptions.OpenIDLifeCycleException;
-import org.picketlink.social.openid.api.exceptions.OpenIDMessageException;
+import org.picketlink.social.standalone.openid.api.OpenIDManager;
+import org.picketlink.social.standalone.openid.api.OpenIDProtocolAdapter;
+import org.picketlink.social.standalone.openid.api.OpenIDRequest;
+import org.picketlink.social.standalone.openid.api.exceptions.OpenIDAssociationException;
+import org.picketlink.social.standalone.openid.api.exceptions.OpenIDDiscoveryException;
+import org.picketlink.social.standalone.openid.api.exceptions.OpenIDGeneralException;
+import org.picketlink.social.standalone.openid.api.exceptions.OpenIDLifeCycleException;
+import org.picketlink.social.standalone.openid.api.exceptions.OpenIDMessageException;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

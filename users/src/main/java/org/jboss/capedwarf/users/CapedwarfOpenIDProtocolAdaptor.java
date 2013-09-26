@@ -33,12 +33,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.picketlink.social.openid.api.OpenIDAttributeMap;
-import org.picketlink.social.openid.api.OpenIDLifecycle;
-import org.picketlink.social.openid.api.OpenIDLifecycleEvent;
-import org.picketlink.social.openid.api.OpenIDProtocolAdapter;
-import org.picketlink.social.openid.api.exceptions.OpenIDLifeCycleException;
-import org.picketlink.social.openid.api.exceptions.OpenIDProtocolException;
+import org.picketlink.social.standalone.openid.api.OpenIDAttributeMap;
+import org.picketlink.social.standalone.openid.api.OpenIDLifecycle;
+import org.picketlink.social.standalone.openid.api.OpenIDLifecycleEvent;
+import org.picketlink.social.standalone.openid.api.OpenIDProtocolAdapter;
+import org.picketlink.social.standalone.openid.api.exceptions.OpenIDLifeCycleException;
+import org.picketlink.social.standalone.openid.api.exceptions.OpenIDProtocolException;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
