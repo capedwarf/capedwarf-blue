@@ -30,19 +30,19 @@ import com.google.appengine.api.channel.ChannelMessage;
 import com.google.appengine.api.channel.ChannelPresence;
 import org.jboss.capedwarf.channel.manager.Channel;
 import org.jboss.capedwarf.channel.manager.ChannelManager;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class CapedwarfChannelService implements ExposedChannelService {
-
-    public static final int DEFAULT_DURATION_MINUTES = 120;
-
     private ChannelManager channelManager = new ChannelManager();
     private IncomingChannelRequestParser parser = new IncomingChannelRequestParser();
 
     public String createChannel(String clientId) {
-        return createChannel(clientId, DEFAULT_DURATION_MINUTES);
+        final Compatibility compatibility = Compatibility.getInstance();
+        final int durationMinutes = (Integer) compatibility.toObject(Compatibility.Feature.CHANNEL_DEFAULT_DURATION_MINUTES);
+        return createChannel(clientId, durationMinutes);
     }
 
     public String createChannel(String clientId, int durationMinutes) {
