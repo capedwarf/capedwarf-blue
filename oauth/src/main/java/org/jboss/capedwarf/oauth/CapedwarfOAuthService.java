@@ -33,7 +33,7 @@ import com.google.appengine.api.users.User;
  */
 public class CapedwarfOAuthService implements OAuthService {
     public User getCurrentUser() throws OAuthRequestException {
-        return null;  // TODO
+        return getCurrentUser(null);
     }
 
     public User getCurrentUser(String scope) throws OAuthRequestException {
@@ -41,10 +41,10 @@ public class CapedwarfOAuthService implements OAuthService {
     }
 
     public boolean isUserAdmin() throws OAuthRequestException {
-        return false;  // TODO
+        return isUserAdmin(null);
     }
 
-    public boolean isUserAdmin(String user) throws OAuthRequestException {
+    public boolean isUserAdmin(String scope) throws OAuthRequestException {
         return false;  // TODO
     }
 
@@ -52,8 +52,7 @@ public class CapedwarfOAuthService implements OAuthService {
         return null;  // TODO
     }
 
-    @Override
-    public String getClientId(String s) throws OAuthRequestException {
+    public String getClientId(String scope) throws OAuthRequestException {
         return null;  // TODO
     }
 }

@@ -30,8 +30,8 @@ import java.util.logging.Logger;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class MessageNotificationTask implements Callable<Void>, Serializable {
-
-    private final Logger log = Logger.getLogger(getClass().getName());
+    private final static long serialVersionUID = 1L;
+    private final static Logger log = Logger.getLogger(MessageNotificationTask.class.getName());
 
     private String channelToken;
 
