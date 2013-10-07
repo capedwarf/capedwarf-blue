@@ -114,6 +114,11 @@ public class GAEKeyTransformerTest {
             return "1";
         }
 
+        @Override
+        public String getModuleId() {
+            return "default";
+        }
+
         public String getEmail() {
             return null;
         }

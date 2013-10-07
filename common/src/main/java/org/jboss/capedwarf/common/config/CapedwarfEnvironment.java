@@ -147,6 +147,12 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
         return appEngineWebXml.getVersion();
     }
 
+    @Override
+    public String getModuleId() {
+        assertInitialized();
+        return appEngineWebXml.getModule();
+    }
+
     private void assertInitialized() {
         if (appEngineWebXml == null)
             throw new IllegalStateException("Application data has not been initialized. Was this method called AFTER GAEFilter did its job?");
