@@ -38,9 +38,9 @@ public final class DocumentFieldAnalyzer extends Analyzer {
 
     private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
 
-    private StandardHtmlAnalyzer standardHtmlAnalyzer = new StandardHtmlAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
-    private StandardAnalyzer standardAnalyzer = new StandardAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION, Collections.emptySet());
-    private PassThroughAnalyzer passThroughAnalyzer = new PassThroughAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
+    public static final StandardHtmlAnalyzer STANDARD_HTML_ANALYZER = new StandardHtmlAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
+    public static final StandardAnalyzer STANDARD_ANALYZER = new StandardAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION, Collections.emptySet());
+    public static final PassThroughAnalyzer PASS_THROUGH_ANALYZER = new PassThroughAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
 
     public final TokenStream tokenStream(String fieldName, Reader reader) {
         Field.FieldType fieldType = fieldNamePrefixer.getFieldType(fieldName);
@@ -51,17 +51,17 @@ public final class DocumentFieldAnalyzer extends Analyzer {
     private Analyzer getAnalyzer(Field.FieldType fieldType) {
         switch (fieldType) {
             case NUMBER:
-                return passThroughAnalyzer;
+                return PASS_THROUGH_ANALYZER;
             case TEXT:
-                return standardAnalyzer;
+                return STANDARD_ANALYZER;
             case HTML:
-                return standardHtmlAnalyzer;
+                return STANDARD_HTML_ANALYZER;
             case ATOM:
-                return passThroughAnalyzer;
+                return PASS_THROUGH_ANALYZER;
             case DATE:
-                return passThroughAnalyzer;
+                return PASS_THROUGH_ANALYZER;
             case GEO_POINT:
-                return passThroughAnalyzer;
+                return PASS_THROUGH_ANALYZER;
             default:
                 throw new IllegalArgumentException("Unsupported field type: " + fieldType);
 

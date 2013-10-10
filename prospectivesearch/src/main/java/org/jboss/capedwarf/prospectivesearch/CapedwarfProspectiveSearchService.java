@@ -54,7 +54,6 @@ import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.search.QueryConverter;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -100,7 +99,7 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
     }
 
     private Query parseQuery(String query) throws ParseException {
-        return new QueryConverter("all").convert(query);
+        return new ProspectiveSearchQueryConverter().convert(query);
     }
 
     public void unsubscribe(String topic, String subId) {

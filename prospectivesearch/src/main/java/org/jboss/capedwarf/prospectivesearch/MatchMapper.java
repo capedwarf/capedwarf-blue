@@ -28,10 +28,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.appengine.api.datastore.Entity;
-import org.apache.lucene.analysis.miscellaneous.PatternAnalyzer;
 import org.apache.lucene.index.memory.MemoryIndex;
 import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distexec.mapreduce.Mapper;
+import org.jboss.capedwarf.search.CacheValue;
+import org.jboss.capedwarf.search.DocumentFieldAnalyzer;
 
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -41,23 +42,33 @@ class MatchMapper implements Mapper<TopicAndSubId, SubscriptionHolder, String, L
     private final String topic;
 
     public static final String KEY = "result";
-    private Map<String, String> map = new HashMap<String, String>();
+    private Map<String, Object> fields = new HashMap<>();
     private transient MemoryIndex memoryIndex;
 
     public MatchMapper(String topic, Entity entity) {
         this.topic = topic;
 
         for (Map.Entry<String, Object> entry : entity.getProperties().entrySet()) {
-            map.put(entry.getKey(), String.valueOf(entry.getValue()));
+            fields.put(entry.getKey(), entry.getValue());
         }
     }
 
     private synchronized MemoryIndex getMemoryIndex() {
         if (memoryIndex == null) {
             memoryIndex = new MemoryIndex();
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                memoryIndex.addField(entry.getKey(), entry.getValue(), PatternAnalyzer.DEFAULT_ANALYZER);
+            StringBuilder allFieldValue = new StringBuilder();   // since MemoryIndex does not support adding multiple fields with same name, we have to concatenate values and store them under a single field
+            for (Map.Entry<String, Object> entry : fields.entrySet()) {
+                Object value = entry.getValue();
+                if (value instanceof Number) {
+                    memoryIndex.addField(entry.getKey(), DoubleBridge.INSTANCE.objectToString(value), DocumentFieldAnalyzer.PASS_THROUGH_ANALYZER);
+                } else {
+                    String string = String.valueOf(value);
+                    memoryIndex.addField(entry.getKey(), string, DocumentFieldAnalyzer.STANDARD_ANALYZER);
+                    allFieldValue.append(string);
+                }
             }
+            memoryIndex.addField(CacheValue.ALL_FIELD_NAME, allFieldValue.toString(), DocumentFieldAnalyzer.STANDARD_ANALYZER);
+            memoryIndex.addField(CacheValue.MATCH_ALL_DOCS_FIELD_NAME, CacheValue.MATCH_ALL_DOCS_FIELD_VALUE, DocumentFieldAnalyzer.PASS_THROUGH_ANALYZER);
         }
         return memoryIndex;
     }

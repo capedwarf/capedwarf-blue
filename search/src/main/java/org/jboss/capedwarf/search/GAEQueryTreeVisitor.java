@@ -191,7 +191,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
         }
     }
 
-    private Query createNumericQuery(String field, Operator operator, Context value) {
+    protected Query createNumericQuery(String field, Operator operator, Context value) {
         double doubleValue = Double.parseDouble(value.getText());
 
         switch (operator) {
