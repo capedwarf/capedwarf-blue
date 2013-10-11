@@ -50,8 +50,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.params.HttpParams;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.servlet.CapedwarfApiProxy;
@@ -115,7 +117,7 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
 
     private static class CapedwarfURLStreamHandler extends URLStreamHandler {
         protected URLConnection openConnection(URL u, Proxy p, boolean useProxy) throws IOException {
-            if (CapedwarfApiProxy.isCapedwarfApp()) {
+            if (CapedwarfApiProxy.isCapedwarfApp() && CompatibilityUtils.getInstance().isEnabled(Compatibility.Feature.IGNORE_CAPEDWARF_URL_STREAM_HANDLER) == false) {
                 return new CapedwarfURLConnection(u);
             } else {
                 String protocol = u.getProtocol();
