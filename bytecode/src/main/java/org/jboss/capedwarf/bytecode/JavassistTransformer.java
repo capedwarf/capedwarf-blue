@@ -35,9 +35,14 @@ import javassist.LoaderClassPath;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class JavassistTransformer extends AbstractClassFileTransformer {
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+    public byte[] transform(final ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
         try {
-            ClassPool pool = new ClassPool();
+            ClassPool pool = new ClassPool() {
+                @Override
+                public ClassLoader getClassLoader() {
+                    return loader;
+                }
+            };
             pool.appendClassPath(new LoaderClassPath(loader));
             CtClass clazz = pool.makeClass(new ByteArrayInputStream(classfileBuffer));
             transform(clazz);

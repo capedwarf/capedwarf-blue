@@ -41,6 +41,7 @@ import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import javassist.CtClass;
 import javassist.CtMethod;
+import javassist.NotFoundException;
 import javassist.bytecode.ParameterAnnotationsAttribute;
 import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.ArrayMemberValue;
@@ -71,7 +72,7 @@ public class EndPointAnnotator extends Annotator {
 
     @Override
     public void addAnnotations() throws Exception {
-        Api api = (Api) getClazz().getAnnotation(Api.class);
+        Api api = findApi(getClazz());
         if (api == null) {
             return;
         }
@@ -82,11 +83,50 @@ public class EndPointAnnotator extends Annotator {
                 + "/" + (api.version().isEmpty() ? DEFAULT_VERSION : api.version())));
 
         for (CtMethod method : getClazz().getDeclaredMethods()) {
-            ApiMethod apiMethod = (ApiMethod) method.getAnnotation(ApiMethod.class);
+            ApiMethod apiMethod = findApiMethod(method);
             if (apiMethod != null) {
                 convertApiMethodAnnotation(method, apiMethod);
             }
         }
+    }
+
+    protected Api findApi(CtClass ctClass) throws Exception {
+        if (ctClass == null) {
+            return null;
+        }
+
+        Api api = (Api) ctClass.getAnnotation(Api.class);
+        return (api == null) ? findApi(ctClass.getSuperclass()) : api;
+    }
+
+    protected ApiMethod findApiMethod(CtMethod ctMethod) throws Exception {
+        if (ctMethod == null) {
+            return null;
+        }
+
+        ApiMethod method = (ApiMethod) ctMethod.getAnnotation(ApiMethod.class);
+        if (method != null) {
+            return method;
+        }
+
+        CtClass declaringClass = ctMethod.getDeclaringClass();
+        CtClass superClass = declaringClass.getSuperclass();
+        if (superClass == null) {
+            return null;
+        }
+        return findApiMethod(findCtMethod(superClass, ctMethod));
+    }
+
+    protected CtMethod findCtMethod(CtClass clazz, CtMethod method) throws Exception {
+        if (clazz == null) {
+            return null;
+        }
+
+        try {
+            return clazz.getDeclaredMethod(method.getName(), method.getParameterTypes());
+        } catch (NotFoundException ignored) {
+        }
+        return findCtMethod(clazz.getSuperclass(), method);
     }
 
     private Annotation createPathAnnotation(String urlPath) {

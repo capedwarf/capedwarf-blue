@@ -24,15 +24,26 @@ package org.jboss.capedwarf.bytecode.endpoints;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 
 import com.google.api.server.spi.config.AnnotationBoolean;
-import com.google.api.server.spi.config.ApiSerializationProperty;
+import com.google.api.server.spi.config.ApiResourceProperty;
+import com.google.appengine.repackaged.org.codehaus.jackson.map.annotate.JsonDeserialize;
+import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtConstructor;
 import javassist.CtMethod;
+import javassist.bytecode.SignatureAttribute;
 import javassist.bytecode.annotation.Annotation;
+import javassist.bytecode.annotation.ClassMemberValue;
+import javassist.bytecode.annotation.StringMemberValue;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.jboss.capedwarf.bytecode.Annotator;
+import org.jboss.capedwarf.endpoints.EndpointsJsonDeserializer;
+import org.jboss.capedwarf.endpoints.EndpointsJsonSerializer;
+import org.jboss.capedwarf.shared.endpoints.Converters;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -43,30 +54,94 @@ public class DtoAnnotator extends Annotator {
     }
 
     public void addAnnotations() throws Exception {
+        final Converters converters = Converters.getInstance(getClassLoader());
+
+        final boolean isResultType = converters.checkForConverters(getClazz());
+
         for (CtMethod method : getClazz().getDeclaredMethods()) {
-            ApiSerializationProperty apiSP = (ApiSerializationProperty) method.getAnnotation(ApiSerializationProperty.class);
-            if (apiSP != null) {
-                convertApiSerializationProperty(method, apiSP);
+            boolean ignored = false;
+            Collection<Annotation> annotations = new ArrayList<>();
+
+            ApiResourceProperty apiRP = (ApiResourceProperty) method.getAnnotation(ApiResourceProperty.class);
+            if (apiRP != null) {
+                ignored = convertApiResourceProperty(apiRP, annotations);
+            }
+
+            if (ignored == false && isResultType) {
+                addConverters(annotations);
+            }
+
+            if (annotations.size() > 0) {
+                addAnnotationsToMethod(method, annotations);
             }
         }
     }
 
-    private void convertApiSerializationProperty(CtMethod method, ApiSerializationProperty apiSP) {
-        final Collection<Annotation> annotations = new ArrayList<>();
+    private boolean convertApiResourceProperty(ApiResourceProperty apiRP, Collection<Annotation> annotations) {
+        boolean ignored = false;
 
-        if (apiSP.ignored() == AnnotationBoolean.TRUE) {
+        if (apiRP.ignored() == AnnotationBoolean.TRUE) {
+            ignored = true;
+
             annotations.add(createAnnotation(JsonIgnore.class));
             annotations.add(createAnnotation(com.google.appengine.repackaged.org.codehaus.jackson.annotate.JsonIgnore.class));
         }
 
-        final String name = apiSP.name();
+        final String name = apiRP.name();
         if (name.length() > 0) {
-            annotations.add(createAnnotation(JsonProperty.class, memberValueOf(name)));
-            annotations.add(createAnnotation(com.google.appengine.repackaged.org.codehaus.jackson.annotate.JsonProperty.class, memberValueOf(name)));
+            StringMemberValue value = memberValueOf(name);
+            annotations.add(createAnnotation(JsonProperty.class, value));
+            annotations.add(createAnnotation(com.google.appengine.repackaged.org.codehaus.jackson.annotate.JsonProperty.class, value));
         }
 
-        if (annotations.size() > 0) {
-            addAnnotationsToMethod(method, annotations);
+        return ignored;
+    }
+
+    private void addConverters(Collection<Annotation> annotations) {
+        ClassMemberValue using1 = createClassMemberValue(EndpointsJsonSerializer.class);
+        annotations.add(createAnnotation(JsonSerialize.class, "using", using1));
+        annotations.add(createAnnotation(com.google.appengine.repackaged.org.codehaus.jackson.map.annotate.JsonSerialize.class, "using", using1));
+
+        ClassMemberValue using2 = createClassMemberValue(generateDeserializer());
+        annotations.add(createAnnotation(JsonDeserialize.class, "using", using2));
+        annotations.add(createAnnotation(com.google.appengine.repackaged.org.codehaus.jackson.map.annotate.JsonDeserialize.class, "using", using2));
+    }
+
+    protected String generateDeserializer() {
+        try {
+            return generateSimpleSub(EndpointsJsonDeserializer.class.getName(), getClazz());
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
         }
+    }
+
+    protected static String getSimpleName(String className) {
+        int p = className.lastIndexOf(".");
+        return (p > 0) ? className.substring(p + 1) : className;
+    }
+
+    protected static String toDesc(String className) {
+        return "L" + className.replace('.', '/');
+    }
+
+    protected String generateSimpleSub(String superClass, CtClass ctorParamClass) throws Exception {
+        int p = superClass.lastIndexOf(".");
+        String prefix = (p > 0) ? superClass.substring(0, p) : "";
+        String suffix = (p > 0) ? superClass.substring(p + 1) : superClass;
+        String classname = prefix + "." + getSimpleName(ctorParamClass.getName()) + Math.abs(new Random().nextInt()) + suffix;
+
+        ClassPool pool = getClazz().getClassPool();
+        CtClass newClass = pool.makeClass(classname);
+        newClass.setSuperclass(pool.get(superClass));
+        SignatureAttribute.ClassSignature cs = SignatureAttribute.toClassSignature(toDesc(superClass) + "<" + toDesc(ctorParamClass.getName()) + ";>;");
+        newClass.setGenericSignature(cs.encode());
+
+        CtConstructor ctor = new CtConstructor(new CtClass[0], newClass);
+        ctor.setBody(String.format("{super(%s.class);}", ctorParamClass.getName()));
+        newClass.addConstructor(ctor);
+
+        newClass.toClass();
+
+        return classname;
     }
 }

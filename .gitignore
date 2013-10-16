@@ -2,6 +2,7 @@
 *.iml
 *.ipr
 *.iws
+*/dependency-reduced-pom.xml
 target/
 admin/target/
 appidentity/target/

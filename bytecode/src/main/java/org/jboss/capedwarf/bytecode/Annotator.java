@@ -10,6 +10,7 @@ import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.ConstPool;
+import javassist.bytecode.MethodInfo;
 import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.ArrayMemberValue;
 import javassist.bytecode.annotation.ClassMemberValue;
@@ -43,6 +44,10 @@ public abstract class Annotator {
         return constPool;
     }
 
+    protected ClassLoader getClassLoader() {
+        return clazz.getClassPool().getClassLoader();
+    }
+
     public abstract void addAnnotations() throws Exception;
 
     protected EnumMemberValue createEnumMemberValue(Enum enumValue) {
@@ -52,15 +57,25 @@ public abstract class Annotator {
     }
 
     protected ClassMemberValue createClassMemberValue(Class<?> clazz) {
-        return new ClassMemberValue(clazz.getName(), constPool);
+        return createClassMemberValue(clazz.getName());
     }
 
+    protected ClassMemberValue createClassMemberValue(String clazz) {
+        return new ClassMemberValue(clazz, constPool);
+    }
+
+    @SuppressWarnings("unchecked")
     protected void addAnnotationsToClass(Class<? extends java.lang.annotation.Annotation>... annotationClasses) {
         addAnnotationsToClass(createAnnotations(annotationClasses));
     }
 
     protected void addAnnotationsToClass(Annotation... annotations) {
-        classFile.addAttribute(createAnnotationAttribute(annotations));
+        AnnotationsAttribute aa = (AnnotationsAttribute) classFile.getAttribute(AnnotationsAttribute.visibleTag);
+        if (aa == null) {
+            classFile.addAttribute(createAnnotationAttribute(annotations));
+        } else {
+            addAnnotations(aa, annotations);
+        }
     }
 
     protected void addAnnotationsToMethod(String methodName, Annotation... annotations) throws NotFoundException {
@@ -72,7 +87,13 @@ public abstract class Annotator {
     }
 
     protected void addAnnotationsToMethod(CtMethod method, Annotation... annotations) {
-        method.getMethodInfo().addAttribute(createAnnotationAttribute(annotations));
+        MethodInfo methodInfo = method.getMethodInfo();
+        AnnotationsAttribute aa = (AnnotationsAttribute) methodInfo.getAttribute(AnnotationsAttribute.visibleTag);
+        if (aa == null) {
+            methodInfo.addAttribute(createAnnotationAttribute(annotations));
+        } else {
+            addAnnotations(aa, annotations);
+        }
     }
 
     protected void addAnnotationsToField(String fieldName, Annotation... annotations) throws NotFoundException {
@@ -92,17 +113,25 @@ public abstract class Annotator {
     }
 
     protected Annotation createAnnotation(Class<? extends java.lang.annotation.Annotation> annotationClass, MemberValue value) {
+        return createAnnotation(annotationClass, "value", value);
+    }
+
+    protected Annotation createAnnotation(Class<? extends java.lang.annotation.Annotation> annotationClass, String name, MemberValue value) {
         Annotation queryParam = createAnnotation(annotationClass);
-        queryParam.addMemberValue("value", value);
+        queryParam.addMemberValue(name, value);
         return queryParam;
     }
 
     private AnnotationsAttribute createAnnotationAttribute(Annotation... annotations) {
         AnnotationsAttribute attribute = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+        addAnnotations(attribute, annotations);
+        return attribute;
+    }
+
+    private void addAnnotations(AnnotationsAttribute attribute, Annotation[] annotations) {
         for (Annotation annotation : annotations) {
             attribute.addAnnotation(annotation);
         }
-        return attribute;
     }
 
     protected StringMemberValue memberValueOf(String value) {
