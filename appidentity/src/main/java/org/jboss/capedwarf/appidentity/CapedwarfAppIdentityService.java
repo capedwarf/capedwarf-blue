@@ -148,7 +148,7 @@ public class CapedwarfAppIdentityService implements AppIdentityService {
         final String key = toKey(scopes);
         GetAccessTokenResult result = (GetAccessTokenResult) cache.get(key);
         if (result == null) {
-            result = getAccessToken(scopes);
+            result = getAccessTokenUncached(scopes);
             final Date expDate = new Date(result.getExpirationTime().getTime() - OFFSET);
             cache.put(key, result, Expiration.onDate(expDate));
         }
