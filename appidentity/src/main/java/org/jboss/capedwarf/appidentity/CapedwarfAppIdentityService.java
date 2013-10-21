@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.UUID;
 
 import com.google.appengine.api.appidentity.AppIdentityService;
 import com.google.appengine.api.appidentity.AppIdentityServiceFailureException;
@@ -59,6 +60,7 @@ public class CapedwarfAppIdentityService implements AppIdentityService {
     public static final String MEMCACHE_NAMESPACE = "_ah_";
     public static final String MEMCACHE_KEY_PREFIX = "_ah_app_identity_";
     public static final long OFFSET = 300000L;
+    public static final long VALID = 6 * 30 * 24 * 60 * 60 * 1000L;
 
     public SigningResult signForApp(byte[] bytes) {
         rotateCertificatesIfNeeded();
@@ -138,8 +140,10 @@ public class CapedwarfAppIdentityService implements AppIdentityService {
     }
 
     public GetAccessTokenResult getAccessTokenUncached(final Iterable<String> scopes) {
-        final String token = null;
-        final Date expDate = null;
+        // TODO -- proper token, expDate generation
+        final String token = UUID.randomUUID().toString();
+        final Date now = new Date();
+        final Date expDate = new Date(now.getTime() + VALID);
         return new GetAccessTokenResult(token, expDate);
     }
 
