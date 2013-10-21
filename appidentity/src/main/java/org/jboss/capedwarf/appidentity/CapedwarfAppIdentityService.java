@@ -48,9 +48,11 @@ import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.environment.Environment;
 import org.jboss.capedwarf.environment.EnvironmentFactory;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -172,7 +174,8 @@ public class CapedwarfAppIdentityService implements AppIdentityService {
     }
 
     public String getDefaultGcsBucketName() {
-        return System.getProperty("default.gcs.bucket.name", "CAPEDWARF_GCS_BUCKET"); // TODO?
+        String value = CompatibilityUtils.getInstance().getValue(Compatibility.Feature.DEFAULT_GCS_BUCKET_NAME);
+        return (value != null) ? value : "CAPEDWARF_GCS_BUCKET";
     }
 
     protected static String toKey(final Iterable<String> scopes) {
