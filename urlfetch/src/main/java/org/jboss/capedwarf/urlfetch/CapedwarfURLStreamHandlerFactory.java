@@ -50,12 +50,13 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.params.HttpParams;
-import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.reflection.MethodInvocation;
 import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.Keys;
+import org.jboss.capedwarf.shared.components.SimpleKey;
 import org.jboss.capedwarf.shared.servlet.CapedwarfApiProxy;
 import org.jboss.capedwarf.shared.url.URLHack;
 import org.kohsuke.MetaInfServices;
@@ -115,9 +116,16 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
         return handler;
     }
 
+    private static boolean isStreamHandlerEnabled() {
+        final String appId = CapedwarfApiProxy.getAppId();
+        final Key<Compatibility> key = new SimpleKey<>(appId, Compatibility.class);
+        final Compatibility compatibility = Compatibility.getInstance(key);
+        return (compatibility.isEnabled(Compatibility.Feature.IGNORE_CAPEDWARF_URL_STREAM_HANDLER) == false);
+    }
+
     private static class CapedwarfURLStreamHandler extends URLStreamHandler {
         protected URLConnection openConnection(URL u, Proxy p, boolean useProxy) throws IOException {
-            if (CapedwarfApiProxy.isCapedwarfApp() && CompatibilityUtils.getInstance().isEnabled(Compatibility.Feature.IGNORE_CAPEDWARF_URL_STREAM_HANDLER) == false) {
+            if (CapedwarfApiProxy.isCapedwarfApp() && isStreamHandlerEnabled()) {
                 return new CapedwarfURLConnection(u);
             } else {
                 String protocol = u.getProtocol();
