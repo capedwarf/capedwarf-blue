@@ -56,7 +56,10 @@ public class DtoAnnotator extends Annotator {
     public void addAnnotations() throws Exception {
         final Converters converters = Converters.getInstance(getClassLoader());
 
-        final boolean isResultType = converters.checkForConverters(getClazz());
+        final boolean isResultType = converters.isResultType(getClazz());
+        if (isResultType == false) {
+            return;
+        }
 
         for (CtMethod method : getClazz().getDeclaredMethods()) {
             boolean ignored = false;
@@ -67,8 +70,11 @@ public class DtoAnnotator extends Annotator {
                 ignored = convertApiResourceProperty(apiRP, annotations);
             }
 
-            if (ignored == false && isResultType) {
-                addConverters(annotations);
+            if (ignored == false) {
+                final CtClass returnType = method.getReturnType();
+                if (converters.hasConverter(returnType)) {
+                    addConverters(returnType, annotations);
+                }
             }
 
             if (annotations.size() > 0) {
@@ -97,19 +103,19 @@ public class DtoAnnotator extends Annotator {
         return ignored;
     }
 
-    private void addConverters(Collection<Annotation> annotations) {
+    private void addConverters(CtClass returnType, Collection<Annotation> annotations) {
         ClassMemberValue using1 = createClassMemberValue(EndpointsJsonSerializer.class);
         annotations.add(createAnnotation(JsonSerialize.class, "using", using1));
         annotations.add(createAnnotation(com.google.appengine.repackaged.org.codehaus.jackson.map.annotate.JsonSerialize.class, "using", using1));
 
-        ClassMemberValue using2 = createClassMemberValue(generateDeserializer());
+        ClassMemberValue using2 = createClassMemberValue(generateDeserializer(returnType));
         annotations.add(createAnnotation(JsonDeserialize.class, "using", using2));
         annotations.add(createAnnotation(com.google.appengine.repackaged.org.codehaus.jackson.map.annotate.JsonDeserialize.class, "using", using2));
     }
 
-    protected String generateDeserializer() {
+    protected String generateDeserializer(CtClass clazz) {
         try {
-            return generateSimpleSub(EndpointsJsonDeserializer.class.getName(), getClazz());
+            return generateSimpleSub(EndpointsJsonDeserializer.class.getName(), clazz);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
