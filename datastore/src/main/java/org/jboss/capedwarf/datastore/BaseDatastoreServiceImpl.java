@@ -47,6 +47,7 @@ import org.infinispan.metadata.Metadata;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
+import org.infinispan.query.spi.SearchManagerImplementor;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.infinispan.CacheName;
@@ -123,11 +124,14 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         }
 
         this.searchManager = Search.getSearchManager(store);
-        this.searchManager.setTimeoutExceptionFactory(new TimeoutExceptionFactory() {
-            public RuntimeException createTimeoutException(String message, org.apache.lucene.search.Query query) {
-                return new ApiProxy.ApiDeadlineExceededException("datastore", "RunQuery");
-            }
-        });
+        if (searchManager instanceof SearchManagerImplementor) {
+            SearchManagerImplementor smi = (SearchManagerImplementor) searchManager;
+            smi.setTimeoutExceptionFactory(new TimeoutExceptionFactory() {
+                public RuntimeException createTimeoutException(String message, org.apache.lucene.search.Query query) {
+                    return new ApiProxy.ApiDeadlineExceededException("datastore", "RunQuery");
+                }
+            });
+        }
         this.queryConverter = new QueryConverter(searchManager);
         this.factories = new QueryTypeFactories(this);
     }

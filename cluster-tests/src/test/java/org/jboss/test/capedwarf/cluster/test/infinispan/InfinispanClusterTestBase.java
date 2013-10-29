@@ -12,7 +12,6 @@ import java.util.Map.Entry;
 
 import org.infinispan.Cache;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
-import org.infinispan.util.Util;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -55,36 +54,32 @@ public abstract class InfinispanClusterTestBase extends TestBase {
     private void loadData(Cache<String, String> cache) throws IOException {
         //
 
-        InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(textFileName);
-        InputStreamReader reader = new InputStreamReader(in);
-        try {
+        try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(textFileName)) {
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
+            //chunk and insert into cache
+            int chunkSize = 10; // 10K
+            int chunkId = 0;
 
-           BufferedReader bufferedReader = new BufferedReader(reader);
-
-           //chunk and insert into cache
-           int chunkSize = 10; // 10K
-           int chunkId = 0;
-
-           CharBuffer cbuf = CharBuffer.allocate(1024 * chunkSize);
-           while (bufferedReader.read(cbuf) >= 0) {
-              Buffer buffer = cbuf.flip();
-              String textChunk = buffer.toString();
-              cache.put(textFileName + (chunkId++), textChunk);
-              cbuf.clear();
-              if (chunkId % 100 == 0) System.out.printf("  Inserted %s chunks from %s into grid%n", chunkId, textFileName);
-           }
-        } finally {
-           Util.close(reader);
-           Util.close(in);
+            CharBuffer cbuf = CharBuffer.allocate(1024 * chunkSize);
+            while (bufferedReader.read(cbuf) >= 0) {
+                Buffer buffer = cbuf.flip();
+                String textChunk = buffer.toString();
+                cache.put(textFileName + (chunkId++), textChunk);
+                cbuf.clear();
+                if (chunkId % 100 == 0)
+                    System.out.printf("  Inserted %s chunks from %s into grid%n", chunkId, textFileName);
+            }
         }
-     }
+    }
 
-    @Deployment (name = "dep1") @TargetsContainer("container-1")
+    @Deployment(name = "dep1")
+    @TargetsContainer("container-1")
     public static WebArchive getDeploymentA() {
         return getDeployment();
     }
 
-    @Deployment(name = "dep2") @TargetsContainer("container-2")
+    @Deployment(name = "dep2")
+    @TargetsContainer("container-2")
     public static WebArchive getDeploymentB() {
         return getDeployment();
     }
