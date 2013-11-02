@@ -40,7 +40,7 @@ public class Logger {
     private static ConcurrentMap<ClassLoader, Logable> logs = new ConcurrentReferenceHashMap<ClassLoader, Logable>();
 
     public static void publish(LogRecord record) {
-        ClassLoader cl = Application.getAppClassloader();
+        ClassLoader cl = Application.getAppClassLoader();
         LoggerLogable logable = new LoggerLogable();
         Logable previous = logs.putIfAbsent(cl, logable);
         if (previous == null) {

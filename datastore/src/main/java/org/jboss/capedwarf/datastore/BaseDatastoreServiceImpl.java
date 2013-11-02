@@ -133,7 +133,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
     }
 
     protected ClassLoader getAppClassLoader() {
-        return Application.getAppClassloader();
+        return Application.getAppClassLoader();
     }
 
     protected Cache<Key, Entity> createStore() {

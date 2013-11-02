@@ -22,17 +22,19 @@
 
 package org.jboss.capedwarf.bytecode.endpoints;
 
-import org.jboss.capedwarf.bytecode.MultipleTransformer;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
+import org.jboss.capedwarf.bytecode.JavassistTransformer;
 
 /**
- * Modify GAE Endpoints to work with CapeDwarf.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class EndpointsTransformer extends MultipleTransformer {
-    public EndpointsTransformer() {
-        register("com.google.api.server.spi.ServletInitializationParameters", new ServletInitializationParametersTransformer());
-        register("com.google.api.server.spi.SystemServiceServlet", new SystemServiceServletTransformer());
-        register("com.google.api.server.spi.tools.devserver.LilyClient", new LilyClientTransformer());
+public class SystemServiceServletTransformer extends JavassistTransformer {
+    protected void transform(CtClass clazz) throws Exception {
+        ClassPool pool = clazz.getClassPool();
+        CtClass[] params = new CtClass[]{pool.get("javax.servlet.ServletConfig")};
+        CtMethod getUserClassLoader = clazz.getDeclaredMethod("getUserClassLoader", params);
+        getUserClassLoader.setBody("{return org.jboss.capedwarf.common.app.Application.getAppClassLoader();}");
     }
 }

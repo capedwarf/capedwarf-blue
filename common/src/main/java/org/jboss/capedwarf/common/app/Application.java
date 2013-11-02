@@ -56,7 +56,7 @@ public final class Application {
      *
      * @return the app's classloader
      */
-    public static ClassLoader getAppClassloader() {
+    public static ClassLoader getAppClassLoader() {
         return Utils.getAppClassLoader();
     }
 

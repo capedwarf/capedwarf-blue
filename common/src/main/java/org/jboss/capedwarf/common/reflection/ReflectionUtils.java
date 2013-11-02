@@ -45,7 +45,7 @@ public final class ReflectionUtils {
      * @return loaded class or rutime exception
      */
     public static Class<?> loadClass(String className) {
-        ClassLoader appCL = Application.getAppClassloader();
+        ClassLoader appCL = Application.getAppClassLoader();
         Class<?> clazz = loadClass(appCL, className);
         if (clazz != null)
             return clazz;

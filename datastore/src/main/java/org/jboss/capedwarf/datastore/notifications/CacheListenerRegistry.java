@@ -54,7 +54,7 @@ public class CacheListenerRegistry {
             }
             handles.add(handle);
 
-            final ClassLoader cl = Application.getAppClassloader();
+            final ClassLoader cl = Application.getAppClassLoader();
             listenable.addListener(handle.createListener(cl));
         }
     }

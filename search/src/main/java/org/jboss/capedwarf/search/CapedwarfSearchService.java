@@ -62,7 +62,7 @@ public class CapedwarfSearchService implements SearchService {
 
     private void initCache() {
         String appId = Application.getAppId();
-        ClassLoader classLoader = Application.getAppClassloader();
+        ClassLoader classLoader = Application.getAppClassLoader();
         this.cache = InfinispanUtils.<CacheKey, CacheValue>getCache(appId, CacheName.SEARCH).getAdvancedCache().with(classLoader);
     }
 

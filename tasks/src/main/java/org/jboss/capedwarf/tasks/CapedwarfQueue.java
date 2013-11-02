@@ -116,7 +116,7 @@ public class CapedwarfQueue implements Queue {
                     }
 
                     this.isPushQueue = (queue.getMode() == QueueXml.Mode.PUSH);
-                    this.tasks = getCache().getAdvancedCache().with(Application.getAppClassloader());
+                    this.tasks = getCache().getAdvancedCache().with(Application.getAppClassLoader());
                     this.searchManager = Search.getSearchManager(tasks);
 
                     this.datastoreService = DatastoreServiceFactory.getDatastoreService();

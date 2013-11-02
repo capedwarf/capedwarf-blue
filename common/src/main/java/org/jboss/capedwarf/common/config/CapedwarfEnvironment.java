@@ -144,7 +144,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     @Override
     public String getVersionId() {
         assertInitialized();
-        return appEngineWebXml.getVersion();
+        return appEngineWebXml.getVersion() + ".1"; // TODO?
     }
 
     @Override

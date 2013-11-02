@@ -52,7 +52,7 @@ import org.jboss.capedwarf.bytecode.Annotator;
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class EndPointAnnotator extends Annotator {
+public class ApiAnnotator extends Annotator {
 
     public static final String DEFAULT_NAME = "myapi";
     public static final String DEFAULT_VERSION = "v1";
@@ -66,7 +66,7 @@ public class EndPointAnnotator extends Annotator {
         HTTP_METHODS.put(ApiMethod.HttpMethod.DELETE, DELETE.class);
     }
 
-    public EndPointAnnotator(CtClass clazz) {
+    public ApiAnnotator(CtClass clazz) {
         super(clazz);
     }
 

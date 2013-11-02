@@ -22,17 +22,30 @@
 
 package org.jboss.capedwarf.bytecode.endpoints;
 
-import org.jboss.capedwarf.bytecode.MultipleTransformer;
+import java.lang.instrument.IllegalClassFormatException;
+import java.security.ProtectionDomain;
+
+import javassist.CtClass;
+import org.jboss.capedwarf.bytecode.JavassistTransformer;
 
 /**
- * Modify GAE Endpoints to work with CapeDwarf.
+ * This transforms GAE Endpoints to JAXRS.
  *
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class EndpointsTransformer extends MultipleTransformer {
-    public EndpointsTransformer() {
-        register("com.google.api.server.spi.ServletInitializationParameters", new ServletInitializationParametersTransformer());
-        register("com.google.api.server.spi.SystemServiceServlet", new SystemServiceServletTransformer());
-        register("com.google.api.server.spi.tools.devserver.LilyClient", new LilyClientTransformer());
+public class EndpointsToJaxrsTransformer extends JavassistTransformer {
+    @Override
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+        if (isIgnoredPackage(className)) {
+            return classfileBuffer;
+        }
+        return super.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer);
+    }
+
+    @Override
+    protected void transform(CtClass clazz) throws Exception {
+        new ApiAnnotator(clazz).addAnnotations();
+        new DtoAnnotator(clazz).addAnnotations();
     }
 }

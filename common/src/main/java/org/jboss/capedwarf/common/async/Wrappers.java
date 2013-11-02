@@ -72,7 +72,7 @@ public final class Wrappers {
         private final Callable<V> callable;
 
         private CallableWrapper(Callable<V> callable) {
-            this.appCL = Application.getAppClassloader();
+            this.appCL = Application.getAppClassLoader();
             this.env = CapedwarfEnvironment.getThreadLocalInstance();
             this.callable = callable;
         }

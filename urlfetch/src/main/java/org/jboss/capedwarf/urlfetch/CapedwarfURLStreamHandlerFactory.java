@@ -131,9 +131,9 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
                 String protocol = u.getProtocol();
                 URLStreamHandler handler = defaultHandlers.get(protocol);
                 if (useProxy)
-                    return openConnectionWithProxy.invoke(handler, u, p);
+                    return openConnectionWithProxy.invokeWithTarget(handler, u, p);
                 else
-                    return openConnectionDirect.invoke(handler, u);
+                    return openConnectionDirect.invokeWithTarget(handler, u);
             }
         }
 

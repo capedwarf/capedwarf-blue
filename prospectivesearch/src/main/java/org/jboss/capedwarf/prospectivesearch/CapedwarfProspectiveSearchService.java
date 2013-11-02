@@ -67,7 +67,7 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
     private SearchManager searchManager;
 
     public CapedwarfProspectiveSearchService() {
-        ClassLoader classLoader = Application.getAppClassloader();
+        ClassLoader classLoader = Application.getAppClassLoader();
         this.cache = createStore().getAdvancedCache().with(classLoader);
         this.searchManager = Search.getSearchManager(cache);
     }
