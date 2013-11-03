@@ -22,14 +22,15 @@
 
 package org.jboss.capedwarf.common.reflection;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
-import javassist.util.proxy.ProxyObject;
 
 /**
  * Bytecode hacks.
@@ -44,7 +45,22 @@ public final class BytecodeUtils {
         }
     };
 
-    public static <T> T proxy(final Class<T> expected, final MethodHandler handler) {
+    public static <T> T proxy(Class<T> expected, MethodHandler handler) {
+        return proxy(expected, handler, null, null);
+    }
+
+    public static <T> T proxy(Class<T> expected, MethodHandler handler, Class<?>[] paramTypes, Object[] args) {
+        Class<?>[] interfaces = null;
+        Class<?> superClass = null;
+        if (expected.isInterface()) {
+            interfaces = new Class[]{expected};
+        } else {
+            superClass = expected;
+        }
+        return proxy(expected, interfaces, superClass, handler, paramTypes, args);
+    }
+
+    public static <T> T proxy(Class<T> expected, Class<?>[] interfaces, Class<?> superClass, MethodHandler handler, Class<?>[] paramTypes, Object[] args) {
         if (expected == null)
             throw new IllegalArgumentException("Null expected class!");
         if (handler == null)
@@ -52,16 +68,27 @@ public final class BytecodeUtils {
 
         final ProxyFactory factory = new InternalProxyFactory();
         factory.setFilter(BytecodeUtils.FINALIZE_FILTER);
-        factory.setSuperclass(expected);
+        if (interfaces != null && interfaces.length > 0) {
+            factory.setInterfaces(interfaces);
+        }
+        if (superClass != null) {
+            factory.setSuperclass(superClass);
+        }
+
         final Class<?> proxyClass = getProxyClass(factory);
-        final ProxyObject proxy;
         try {
-            proxy = (ProxyObject) proxyClass.newInstance();
+            Proxy proxy;
+            if (paramTypes == null || paramTypes.length == 0) {
+                proxy = (Proxy) proxyClass.newInstance();
+            } else {
+                Constructor<?> ctor = proxyClass.getConstructor(paramTypes);
+                proxy = (Proxy) ctor.newInstance(args);
+            }
+            proxy.setHandler(handler);
+            return expected.cast(proxy);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        proxy.setHandler(handler);
-        return expected.cast(proxy);
     }
 
     protected static Class<?> getProxyClass(ProxyFactory factory) {

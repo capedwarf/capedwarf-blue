@@ -20,7 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.aspects.proxy;
+package org.jboss.capedwarf.urlfetch;
+
+import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import javassist.util.proxy.MethodHandler;
 import org.jboss.capedwarf.common.reflection.BytecodeUtils;
@@ -28,15 +32,19 @@ import org.jboss.capedwarf.common.reflection.BytecodeUtils;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public final class AspectFactory {
-    public static <T> T createProxy(Class<T> apiInterface, T apiImpl) {
-        return createProxy(apiInterface, apiImpl, false);
+class CapedwarfURLConnectionProxyHandler implements MethodHandler {
+    private static final Class<?>[] PARAM_TYPES = new Class[]{URL.class};
+    private final HttpURLConnection delegate;
+
+    private CapedwarfURLConnectionProxyHandler(HttpURLConnection delegate) {
+        this.delegate = delegate;
     }
 
-    @SuppressWarnings("unchecked")
-    protected static <T> T createProxy(Class<T> apiInterface, T apiImpl, boolean exposeImpl) {
-        Class<?> superClass = (exposeImpl ? apiImpl.getClass() : null);
-        MethodHandler handler = new AspectHandler(apiInterface, apiImpl);
-        return BytecodeUtils.proxy(apiInterface, new Class[]{apiInterface}, superClass, handler, null, null);
+    static <T extends HttpURLConnection> T wrap(Class<T> exactType, HttpURLConnection delegate) {
+        return BytecodeUtils.proxy(exactType, new CapedwarfURLConnectionProxyHandler(delegate), PARAM_TYPES, new Object[]{delegate.getURL()});
+    }
+
+    public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
+        return thisMethod.invoke(delegate, args); // add any logic if/when needed
     }
 }
