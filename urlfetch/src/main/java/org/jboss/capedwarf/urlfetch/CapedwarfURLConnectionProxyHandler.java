@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.urlfetch;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -45,6 +46,10 @@ class CapedwarfURLConnectionProxyHandler implements MethodHandler {
     }
 
     public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
-        return thisMethod.invoke(delegate, args); // add any logic if/when needed
+        try {
+            return thisMethod.invoke(delegate, args); // add any logic if/when needed
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        }
     }
 }
