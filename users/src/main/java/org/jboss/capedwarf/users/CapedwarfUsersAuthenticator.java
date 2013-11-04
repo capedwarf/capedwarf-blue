@@ -39,25 +39,21 @@ import io.undertow.servlet.handlers.ServletRequestContext;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfUsersAuthenticator extends AbstractAuthenticator {
-    public CapedwarfUsersAuthenticator() {
-        super("OAUTH");
-    }
-
-    protected AuthenticationMechanismOutcome authenticateAdmin(HttpServletRequest request, HttpServletResponse response, LoginConfig config) {
+    protected AuthenticationMechanismOutcome authenticateAdmin(SecurityContext securityContext, HttpServletRequest request, HttpServletResponse response, LoginConfig config) {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
+            return notAttempted();
         }
 
         CapedwarfUserPrincipal principal = getPrincipal(session);
         if (principal != null) {
             if (principal.isAdmin()) {
-                return AuthenticationMechanismOutcome.AUTHENTICATED;
+                return authorized(securityContext, principal);
             } else {
                 return unauthorized(response);
             }
         } else {
-            return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
+            return notAttempted();
         }
     }
 

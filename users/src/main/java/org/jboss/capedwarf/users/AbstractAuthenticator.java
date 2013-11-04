@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSession;
 
 import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.security.api.SecurityContext;
+import io.undertow.security.idm.Account;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.handlers.ServletRequestContext;
@@ -41,12 +42,6 @@ import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
 public abstract class AbstractAuthenticator implements AuthenticationMechanism {
     protected static final String KEY = CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY;
 
-    private final String supportedAuthMethod;
-
-    protected AbstractAuthenticator(String supportedAuthMethod) {
-        this.supportedAuthMethod = supportedAuthMethod;
-    }
-
     public AuthenticationMechanismOutcome authenticate(HttpServerExchange exchange, SecurityContext securityContext) {
         final ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
         final HttpServletRequest request = (HttpServletRequest) servletRequestContext.getServletRequest();
@@ -54,19 +49,19 @@ public abstract class AbstractAuthenticator implements AuthenticationMechanism {
         final LoginConfig config = servletRequestContext.getDeployment().getDeploymentInfo().getLoginConfig();
 
         if (isAdminConsoleAccess(request, config)) {
-            return authenticateAdmin(request, response, config);
+            return authenticateAdmin(securityContext, request, response, config);
         }
 
         HttpSession session = request.getSession(false);
         if (session == null) {
-            return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
+            return notAttempted();
         }
 
         CapedwarfUserPrincipal principal = getPrincipal(session);
         if (principal != null) {
-            return AuthenticationMechanismOutcome.AUTHENTICATED;
+            return authorized(securityContext, principal);
         } else {
-            return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
+            return notAttempted();
         }
     }
 
@@ -75,17 +70,26 @@ public abstract class AbstractAuthenticator implements AuthenticationMechanism {
     }
 
     protected boolean isAdminConsoleAccess(HttpServletRequest request, LoginConfig config) {
-        final String authMethod = (config != null ? config.getAuthMethod() : null);
-        // enabled admin console sets OAUTH auth method
-        return (authMethod != null && supportedAuthMethod.equals(authMethod.toUpperCase()) && isAdminConsoleURI(request));
+        // if config exists, it means we want to check for auth
+        return (config != null && isAdminConsoleURI(request));
     }
 
-    protected abstract AuthenticationMechanismOutcome authenticateAdmin(HttpServletRequest request, HttpServletResponse response, LoginConfig config);
+    protected abstract AuthenticationMechanismOutcome authenticateAdmin(SecurityContext securityContext, HttpServletRequest request, HttpServletResponse response, LoginConfig config);
 
     protected boolean isAdminConsoleURI(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         // any better way?
         return (requestURI != null && requestURI.contains("_ah/admin"));
+    }
+
+    protected final AuthenticationMechanismOutcome notAttempted() {
+        return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
+    }
+
+    protected AuthenticationMechanismOutcome authorized(SecurityContext securityContext, final CapedwarfUserPrincipal principal) {
+        Account account = new CapedwarfAccount(principal);
+        securityContext.authenticationComplete(account, "CAPEDWARF");
+        return AuthenticationMechanismOutcome.AUTHENTICATED;
     }
 
     protected AuthenticationMechanismOutcome unauthorized(HttpServletResponse response) {
