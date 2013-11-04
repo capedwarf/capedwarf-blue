@@ -297,7 +297,8 @@ public class RequestLogsTest extends LoggingTestBase {
     public void testApplicationInfo() throws Exception {
         RequestLogs requestLogs1 = getRequestLogs1();
         assertEquals("capedwarf-test", requestLogs1.getAppId());
-        assertEquals("1", requestLogs1.getVersionId());
+        String versionId = requestLogs1.getVersionId();
+        assertTrue("1".equals(versionId) || versionId.startsWith("1."));
     }
 
     @Test
