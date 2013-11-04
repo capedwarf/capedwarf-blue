@@ -149,7 +149,7 @@ public class URLFetchTest extends TestBase {
         URL url = getFetchUrl();
 
         HTTPRequest req = new HTTPRequest(url, HTTPMethod.POST);
-        req.setHeader(new HTTPHeader("Content-Type", "application/x-www-form-urlencoded"));
+        req.setHeader(new HTTPHeader("Content-Type", "application/octet-stream"));
         req.setPayload("Tralala".getBytes(Charsets.UTF_8));
 
         HTTPResponse response = service.fetch(req);
@@ -164,11 +164,14 @@ public class URLFetchTest extends TestBase {
         Assert.assertTrue(conn instanceof HttpURLConnection);
         HttpURLConnection huc = (HttpURLConnection) conn;
         conn.setDoOutput(true);
-        conn.addRequestProperty("key", "value");
+        conn.setDoInput(true);
+        conn.addRequestProperty("Content-Type", "application/octet-stream");
         huc.connect();
         try {
             OutputStream out = conn.getOutputStream();
             out.write("Juhuhu".getBytes());
+            out.flush();
+
             String content = new String(FetchServlet.toBytes(conn.getInputStream()));
             Assert.assertEquals("Bruhuhu", content);
             Assert.assertEquals(200, huc.getResponseCode());

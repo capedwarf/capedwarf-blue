@@ -3,6 +3,7 @@
 *.ipr
 *.iws
 */dependency-reduced-pom.xml
+datanucleus.log
 target/
 admin/target/
 appidentity/target/
