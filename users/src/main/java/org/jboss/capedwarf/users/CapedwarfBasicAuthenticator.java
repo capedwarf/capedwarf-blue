@@ -25,17 +25,14 @@ package org.jboss.capedwarf.users;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import io.undertow.security.api.SecurityContext;
 import io.undertow.servlet.api.LoginConfig;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfBasicAuthenticator extends AbstractAuthenticator {
-    public CapedwarfBasicAuthenticator() {
-        super("BASIC");
-    }
-
-    protected AuthenticationMechanismOutcome authenticateAdmin(HttpServletRequest request, HttpServletResponse response, LoginConfig config) {
-        return AuthenticationMechanismOutcome.NOT_ATTEMPTED; // leave it to BASIC
+    protected AuthenticationMechanismOutcome authenticateAdmin(SecurityContext securityContext, HttpServletRequest request, HttpServletResponse response, LoginConfig config) {
+        return notAttempted(); // leave it to BASIC
     }
 }
