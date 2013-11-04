@@ -22,20 +22,26 @@
 
 package org.jboss.capedwarf.users;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletContext;
 
-import io.undertow.servlet.api.LoginConfig;
+import io.undertow.security.api.AuthenticationMechanism;
+import io.undertow.servlet.ServletExtension;
+import io.undertow.servlet.api.DeploymentInfo;
+import org.kohsuke.MetaInfServices;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfBasicAuthenticator extends AbstractAuthenticator {
-    public CapedwarfBasicAuthenticator() {
-        super("BASIC");
-    }
-
-    protected AuthenticationMechanismOutcome authenticateAdmin(HttpServletRequest request, HttpServletResponse response, LoginConfig config) {
-        return AuthenticationMechanismOutcome.NOT_ATTEMPTED; // leave it to BASIC
+@MetaInfServices
+public class AuthenticatorServletExtension implements ServletExtension {
+    public void handleDeployment(DeploymentInfo deploymentInfo, ServletContext servletContext) {
+        final String tgt = servletContext.getInitParameter("__TGT__");
+        AuthenticationMechanism am;
+        if ("CAPEDWARF".equals(tgt)) {
+            am = new CapedwarfUsersAuthenticator();
+        } else {
+            am = new CapedwarfBasicAuthenticator();
+        }
+        deploymentInfo.addAuthenticationMechanism(am);
     }
 }
