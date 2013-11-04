@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.reflection;
+package org.jboss.capedwarf.common.bytecode;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;

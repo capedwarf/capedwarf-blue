@@ -37,7 +37,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import javassist.util.proxy.MethodHandler;
-import org.jboss.capedwarf.common.reflection.BytecodeUtils;
+import org.jboss.capedwarf.common.bytecode.BytecodeUtils;
 import org.jboss.capedwarf.shared.util.Utils;
 
 /**

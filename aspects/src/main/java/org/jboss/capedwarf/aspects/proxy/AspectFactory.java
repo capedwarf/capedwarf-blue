@@ -23,7 +23,7 @@
 package org.jboss.capedwarf.aspects.proxy;
 
 import javassist.util.proxy.MethodHandler;
-import org.jboss.capedwarf.common.reflection.BytecodeUtils;
+import org.jboss.capedwarf.common.bytecode.BytecodeUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
