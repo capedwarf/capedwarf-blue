@@ -24,64 +24,77 @@ package org.jboss.capedwarf.users;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.catalina.authenticator.AuthenticatorBase;
-import org.apache.catalina.connector.Request;
-import org.apache.catalina.deploy.LoginConfig;
+import io.undertow.security.api.AuthenticationMechanism;
+import io.undertow.security.api.SecurityContext;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.servlet.api.LoginConfig;
+import io.undertow.servlet.handlers.ServletRequestContext;
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public abstract class AbstractAuthenticator extends AuthenticatorBase {
+public abstract class AbstractAuthenticator implements AuthenticationMechanism {
     protected static final String KEY = CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY;
 
-    protected boolean authenticate(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
+    private final String supportedAuthMethod;
+
+    protected AbstractAuthenticator(String supportedAuthMethod) {
+        this.supportedAuthMethod = supportedAuthMethod;
+    }
+
+    public AuthenticationMechanismOutcome authenticate(HttpServerExchange exchange, SecurityContext securityContext) {
+        final ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+        final HttpServletRequest request = (HttpServletRequest) servletRequestContext.getServletRequest();
+        final HttpServletResponse response = (HttpServletResponse) servletRequestContext.getServletResponse();
+        final LoginConfig config = servletRequestContext.getDeployment().getDeploymentInfo().getLoginConfig();
+
         if (isAdminConsoleAccess(request, config)) {
             return authenticateAdmin(request, response, config);
         }
 
         HttpSession session = request.getSession(false);
-        if (session == null)
-            return unauthorized(response);
+        if (session == null) {
+            return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
+        }
 
         CapedwarfUserPrincipal principal = getPrincipal(session);
         if (principal != null) {
-            request.setUserPrincipal(principal);
-            return true;
+            return AuthenticationMechanismOutcome.AUTHENTICATED;
         } else {
-            return unauthorized(response);
+            return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
         }
     }
 
-    protected abstract boolean authenticateAdmin(Request request, HttpServletResponse response, LoginConfig config) throws IOException;
-
-    @Override
-    public void logout(Request request) throws ServletException {
-        try {
-            super.logout(request);
-        } finally {
-            HttpSession session = request.getSession();
-            if (session != null) {
-                session.removeAttribute(KEY);
-            }
-        }
+    public ChallengeResult sendChallenge(HttpServerExchange exchange, SecurityContext securityContext) {
+        return new ChallengeResult(false);
     }
 
-    protected abstract boolean isAdminConsoleAccess(Request request, LoginConfig config);
+    protected boolean isAdminConsoleAccess(HttpServletRequest request, LoginConfig config) {
+        final String authMethod = (config != null ? config.getAuthMethod() : null);
+        // enabled admin console sets OAUTH auth method
+        return (authMethod != null && supportedAuthMethod.equals(authMethod.toUpperCase()) && isAdminConsoleURI(request));
+    }
 
-    protected boolean isAdminConsoleURI(Request request) {
+    protected abstract AuthenticationMechanismOutcome authenticateAdmin(HttpServletRequest request, HttpServletResponse response, LoginConfig config);
+
+    protected boolean isAdminConsoleURI(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
         // any better way?
         return (requestURI != null && requestURI.contains("_ah/admin"));
     }
 
-    protected boolean unauthorized(HttpServletResponse response) throws IOException {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-        return false;
+    protected AuthenticationMechanismOutcome unauthorized(HttpServletResponse response) {
+        try {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
     }
 
     protected CapedwarfUserPrincipal getPrincipal(HttpSession session) {

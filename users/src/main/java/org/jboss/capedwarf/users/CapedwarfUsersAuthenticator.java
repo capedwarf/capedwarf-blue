@@ -24,47 +24,55 @@ package org.jboss.capedwarf.users;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import org.apache.catalina.connector.Request;
-import org.apache.catalina.deploy.LoginConfig;
+import io.undertow.security.api.SecurityContext;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.servlet.api.LoginConfig;
+import io.undertow.servlet.handlers.ServletRequestContext;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfUsersAuthenticator extends AbstractAuthenticator {
-    protected boolean authenticateAdmin(Request request, HttpServletResponse response, LoginConfig config) throws IOException {
+    public CapedwarfUsersAuthenticator() {
+        super("OAUTH");
+    }
+
+    protected AuthenticationMechanismOutcome authenticateAdmin(HttpServletRequest request, HttpServletResponse response, LoginConfig config) {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            return redirect(request, response);
+            return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
         }
 
         CapedwarfUserPrincipal principal = getPrincipal(session);
         if (principal != null) {
             if (principal.isAdmin()) {
-                request.setUserPrincipal(principal);
-                return true;
+                return AuthenticationMechanismOutcome.AUTHENTICATED;
             } else {
                 return unauthorized(response);
             }
         } else {
-            return redirect(request, response);
+            return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
         }
     }
 
-    protected boolean isAdminConsoleAccess(Request request, LoginConfig config) {
-        final String authMethod = config.getAuthMethod();
-        // enabled admin console sets OAUTH auth method
-        return (authMethod != null && "OAUTH".equals(authMethod.toUpperCase()) && isAdminConsoleURI(request));
-    }
+    public ChallengeResult sendChallenge(HttpServerExchange exchange, SecurityContext securityContext) {
+        final ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+        final HttpServletRequest request = (HttpServletRequest) servletRequestContext.getServletRequest();
+        final HttpServletResponse response = (HttpServletResponse) servletRequestContext.getServletResponse();
 
-    protected boolean redirect(Request request, HttpServletResponse response) throws IOException {
         UserService userService = UserServiceFactory.getUserService();
         String location = userService.createLoginURL(request.getRequestURI());
-        response.sendRedirect(location);
-        return false;
+        try {
+            response.sendRedirect(location);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return new ChallengeResult(true);
     }
 }
