@@ -56,9 +56,30 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
     private Map<String, Set<String>> headers = new HashMap<String, Set<String>>();
     private Map<String, Part> parts = new HashMap<String, Part>();
     private HttpSession session;
+    // paths
+    private String path;
+    private String servletPath;
+    private String pathInfo;
+    private String queryString;
 
     protected AbstractHttpServletRequest(ServletContext context) {
         super(context);
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public void setServletPath(String servletPath) {
+        this.servletPath = servletPath;
+    }
+
+    public void setPathInfo(String pathInfo) {
+        this.pathInfo = pathInfo;
+    }
+
+    public void setQueryString(String queryString) {
+        this.queryString = queryString;
     }
 
     public void addCookie(Cookie cookie) {
@@ -132,7 +153,7 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
     }
 
     public String getPathInfo() {
-        return null;  // TODO
+        return pathInfo;
     }
 
     public String getPathTranslated() {
@@ -140,11 +161,11 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
     }
 
     public String getContextPath() {
-        return null;  // TODO
+        return getServletContext().getContextPath();
     }
 
     public String getQueryString() {
-        return null;  // TODO
+        return queryString;
     }
 
     public String getRemoteUser() {
@@ -164,7 +185,7 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
     }
 
     public String getRequestURI() {
-        return null;  // TODO
+        return path;
     }
 
     public StringBuffer getRequestURL() {
@@ -172,7 +193,7 @@ public abstract class AbstractHttpServletRequest extends AbstractServletRequest 
     }
 
     public String getServletPath() {
-        return null;  // TODO
+        return servletPath;
     }
 
     public HttpSession getSession(boolean create) {
