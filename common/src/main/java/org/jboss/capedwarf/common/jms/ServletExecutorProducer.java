@@ -65,6 +65,10 @@ public class ServletExecutorProducer extends JmsAdapter {
         return message.getJMSMessageID();
     }
 
+    public static String getString(final Message msg, String key) throws JMSException {
+        return msg.getStringProperty(MessageConstants.PREFIX + key);
+    }
+
     private static void setString(final Message msg, String key, String value) throws JMSException {
         msg.setStringProperty(MessageConstants.PREFIX + key, value);
     }
