@@ -149,9 +149,20 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.appengine</groupId>
-            <artifactId>appengine-mapper</artifactId>
+            <groupId>com.google.appengine.tools</groupId>
+            <artifactId>appengine-mapreduce</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.appengine.tools</groupId>
+            <artifactId>appengine-pipeline</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.appengine.tools</groupId>
+            <artifactId>appengine-gcs-client</artifactId>
         </dependency>
 
         <dependency>
