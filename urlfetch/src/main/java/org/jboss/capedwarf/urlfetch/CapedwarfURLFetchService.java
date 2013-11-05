@@ -158,8 +158,20 @@ public class CapedwarfURLFetchService implements URLFetchService {
             HttpContext context = new BasicHttpContext();
             HttpResponse response = client.execute(request, context);
             HTTPResponseHack jhr = new HTTPResponseHack(response);
-            String finalURL = (String) context.getAttribute("final.url");
-            jhr.setFinalUrl(finalURL != null ? new URL(finalURL) : request.getURI().toURL());
+
+            String finalURLString = (String) context.getAttribute("final.url");
+            URL finalURL;
+            if (finalURLString != null) {
+                if (finalURLString.contains(":/")) {
+                    finalURL = new URL(finalURLString);
+                } else {
+                    finalURL = new URL("http", "localhost", 8080, finalURLString); // TODO
+                }
+            } else {
+                finalURL = request.getURI().toURL();
+            }
+            jhr.setFinalUrl(finalURL);
+
             return jhr.getResponse();
         } catch (Exception e) {
             IOException ioe = new IOException();
