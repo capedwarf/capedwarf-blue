@@ -24,6 +24,7 @@ package org.jboss.capedwarf.search;
 
 import com.google.appengine.api.search.ISearchServiceFactory;
 import com.google.appengine.api.search.SearchService;
+import com.google.appengine.api.search.SearchServiceConfig;
 import com.google.appengine.spi.FactoryProvider;
 import com.google.appengine.spi.ServiceProvider;
 import org.jboss.capedwarf.aspects.proxy.AspectFactory;
@@ -37,8 +38,12 @@ import org.kohsuke.MetaInfServices;
 @ServiceProvider(value = ISearchServiceFactory.class, precedence = CapedwarfFactoryProvider.PRECEDENCE)
 public class CapedwarfSearchServiceFactoryProvider extends CapedwarfFactoryProvider<ISearchServiceFactory> {
     private final ISearchServiceFactory factory = new ISearchServiceFactory() {
-        public SearchService getSearchService(String s) {
-            return AspectFactory.createProxy(SearchService.class, new CapedwarfSearchService(s));
+        public SearchService getSearchService(String namespace) {
+            return AspectFactory.createProxy(SearchService.class, new CapedwarfSearchService(namespace));
+        }
+
+        public SearchService getSearchService(SearchServiceConfig config) {
+            return AspectFactory.createProxy(SearchService.class, new CapedwarfSearchService(config));
         }
     };
 

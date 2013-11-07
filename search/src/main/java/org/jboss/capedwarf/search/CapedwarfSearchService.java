@@ -31,6 +31,7 @@ import com.google.appengine.api.search.GetResponse;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.SearchService;
+import com.google.appengine.api.search.SearchServiceConfig;
 import org.infinispan.Cache;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
 import org.jboss.capedwarf.common.app.Application;
@@ -45,19 +46,29 @@ import org.jboss.capedwarf.common.threads.ExecutorFactory;
 public class CapedwarfSearchService implements SearchService {
 
     private String namespace;
-
+    @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration"})
+    private Double deadline; // TODO
     private Cache<CacheKey, CacheValue> cache;
 
-    public CapedwarfSearchService() {
-        initCache();
-    }
-
-    public CapedwarfSearchService(String namespace) {
-        if (namespace != null) {
+    private CapedwarfSearchService(String namespace, Double deadline, boolean validate) {
+        if (validate && namespace != null) {
             NamespaceManager.validateNamespace(namespace);
         }
         this.namespace = namespace;
+        this.deadline = deadline;
         initCache();
+    }
+
+    public CapedwarfSearchService() {
+        this(null, null, false);
+    }
+
+    public CapedwarfSearchService(String namespace) {
+        this(namespace, null, true);
+    }
+
+    public CapedwarfSearchService(SearchServiceConfig config) {
+        this(config.getNamespace(), config.getDeadline(), false);
     }
 
     private void initCache() {
