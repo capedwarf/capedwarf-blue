@@ -51,24 +51,29 @@ public class CapedwarfSearchService implements SearchService {
     private Cache<CacheKey, CacheValue> cache;
 
     private CapedwarfSearchService(String namespace, Double deadline, boolean validate) {
-        if (validate && namespace != null) {
-            NamespaceManager.validateNamespace(namespace);
+        if (namespace != null) {
+            if (validate) {
+                NamespaceManager.validateNamespace(namespace);
+            }
+        } else {
+            namespace = resolveNamespace(namespace);
         }
         this.namespace = namespace;
         this.deadline = deadline;
         initCache();
     }
 
-    public CapedwarfSearchService() {
-        this(null, null, false);
-    }
-
-    public CapedwarfSearchService(String namespace) {
-        this(namespace, null, true);
-    }
-
     public CapedwarfSearchService(SearchServiceConfig config) {
         this(config.getNamespace(), config.getDeadline(), false);
+    }
+
+    private static String resolveNamespace(String namespace) {
+        if (namespace == null) {
+            namespace = NamespaceManager.get();
+            return namespace == null ? "" : namespace;
+        } else {
+            return namespace;
+        }
     }
 
     private void initCache() {
@@ -78,7 +83,7 @@ public class CapedwarfSearchService implements SearchService {
     }
 
     public Index getIndex(IndexSpec indexSpec) {
-        return new CapedwarfSearchIndex(indexSpec.getName(), resolveNamespace(), cache);
+        return new CapedwarfSearchIndex(indexSpec.getName(), getNamespace(), cache);
     }
 
     public Index getIndex(IndexSpec.Builder builder) {
@@ -89,18 +94,9 @@ public class CapedwarfSearchService implements SearchService {
         return namespace;
     }
 
-    private String resolveNamespace() {
-        if (namespace == null) {
-            String namespace = NamespaceManager.get();
-            return namespace == null ? "" : namespace;
-        } else {
-            return namespace;
-        }
-    }
-
     @SuppressWarnings("unchecked")
     public GetResponse<Index> getIndexes(GetIndexesRequest request) {
-        GetIndexesMapper mapper = new GetIndexesMapper(request, resolveNamespace());
+        GetIndexesMapper mapper = new GetIndexesMapper(request, getNamespace());
         GetIndexesReducer reducer = new GetIndexesReducer();
         GetIndexesCollator collator = new GetIndexesCollator(request, cache);
 
@@ -135,5 +131,4 @@ public class CapedwarfSearchService implements SearchService {
     public boolean isEmpty() {
         return cache.isEmpty();
     }
-
 }

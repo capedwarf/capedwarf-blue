@@ -39,7 +39,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfSearchServiceFactoryProvider extends CapedwarfFactoryProvider<ISearchServiceFactory> {
     private final ISearchServiceFactory factory = new ISearchServiceFactory() {
         public SearchService getSearchService(String namespace) {
-            return AspectFactory.createProxy(SearchService.class, new CapedwarfSearchService(namespace));
+            return getSearchService(SearchServiceConfig.newBuilder().setNamespace(namespace).build());
         }
 
         public SearchService getSearchService(SearchServiceConfig config) {
