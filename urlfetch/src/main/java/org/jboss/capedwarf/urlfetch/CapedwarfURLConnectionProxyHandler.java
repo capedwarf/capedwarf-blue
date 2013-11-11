@@ -29,6 +29,7 @@ import java.net.URL;
 
 import javassist.util.proxy.MethodHandler;
 import org.jboss.capedwarf.common.bytecode.BytecodeUtils;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -46,10 +47,13 @@ class CapedwarfURLConnectionProxyHandler implements MethodHandler {
     }
 
     public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
+        Compatibility.enable(Compatibility.Feature.IGNORE_CAPEDWARF_SOCKETS);
         try {
             return thisMethod.invoke(delegate, args); // add any logic if/when needed
         } catch (InvocationTargetException e) {
             throw e.getTargetException();
+        } finally {
+            Compatibility.disable(Compatibility.Feature.IGNORE_CAPEDWARF_SOCKETS);
         }
     }
 }

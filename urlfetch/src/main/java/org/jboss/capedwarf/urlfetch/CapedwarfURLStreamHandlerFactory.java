@@ -103,14 +103,18 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
     }
 
     private static boolean isStreamHandlerEnabled() {
-        final String appId = CapedwarfApiProxy.getAppId();
-        final Key<Compatibility> key = new SimpleKey<>(appId, Compatibility.class);
-        final Compatibility compatibility = Compatibility.getInstance(key);
+        final Compatibility compatibility = getCompatibility();
         return (compatibility.isEnabled(Compatibility.Feature.IGNORE_CAPEDWARF_URL_STREAM_HANDLER) == false);
     }
 
+    private static Compatibility getCompatibility() {
+        final String appId = CapedwarfApiProxy.getAppId();
+        final Key<Compatibility> key = new SimpleKey<>(appId, Compatibility.class);
+        return Compatibility.getInstance(key);
+    }
+
     private static class CapedwarfURLStreamHandler extends URLStreamHandler {
-        protected URLConnection openConnection(URL u, Proxy p, boolean useProxy) throws IOException {
+        private URLConnection openConnectionInternal(URL u, Proxy p, boolean useProxy) throws IOException {
             HttpURLConnection delegate;
             String protocol = u.getProtocol();
             URLStreamHandler handler = defaultHandlers.get(protocol);
@@ -125,6 +129,15 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
                 return CapedwarfURLConnectionProxyHandler.wrap(exactType, delegate);
             } else {
                 return delegate;
+            }
+        }
+
+        protected URLConnection openConnection(URL u, Proxy p, boolean useProxy) throws IOException {
+            Compatibility.enable(Compatibility.Feature.IGNORE_CAPEDWARF_SOCKETS);
+            try {
+                return openConnectionInternal(u, p, useProxy);
+            } finally {
+                Compatibility.disable(Compatibility.Feature.IGNORE_CAPEDWARF_SOCKETS);
             }
         }
 
