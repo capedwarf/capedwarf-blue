@@ -45,7 +45,7 @@ public class CapedwarfUserService implements UserService {
     }
 
     public String createLoginURL(String destinationURL, String authDomain, String federatedIdentity, Set<String> attributesRequest) {
-        return LoginServlet.createLoginURL(destinationURL, authDomain, federatedIdentity, attributesRequest);
+        return AuthServlet.createLoginURL(destinationURL, authDomain, federatedIdentity, attributesRequest);
     }
 
     public String createLogoutURL(String destinationURL) {
@@ -53,7 +53,7 @@ public class CapedwarfUserService implements UserService {
     }
 
     public String createLogoutURL(String destinationURL, String authDomain) {
-        return LogoutServlet.createLogoutURL(destinationURL, authDomain);
+        return AuthServlet.createLogoutURL(destinationURL, authDomain);
     }
 
     public boolean isUserLoggedIn() {

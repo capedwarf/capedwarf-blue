@@ -82,12 +82,6 @@ class CapedwarfOpenIDProtocolAdaptor implements OpenIDProtocolAdapter, OpenIDLif
             request.getSession().setAttribute(
                     CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY,
                     new CapedwarfUserPrincipal(userId, email, authDomain, isAdmin));
-
-            try {
-                response.sendRedirect(request.getParameter(AuthServlet.DESTINATION_URL_PARAM));
-            } catch (IOException e) {
-                throw new OpenIDLifeCycleException(e);
-            }
         } else if (event.getEventType() == OpenIDLifecycleEvent.TYPE.SESSION) {
             String attr = event.getAttributeName();
             Object attrVal = event.getAttributeValue();
@@ -103,8 +97,9 @@ class CapedwarfOpenIDProtocolAdaptor implements OpenIDProtocolAdapter, OpenIDLif
     public void sendToProvider(int version, String destinationURL, Map<String, String> paramMap) throws OpenIDProtocolException {
         if (version == 1) {
             sendWithRedirect(destinationURL);
+        } else {
+            sendWithPost(destinationURL, paramMap);
         }
-        sendWithPost(destinationURL, paramMap);
     }
 
     private void sendWithRedirect(String destinationURL) throws OpenIDProtocolException {
