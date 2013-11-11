@@ -28,7 +28,7 @@ public abstract class AuthHandler {
         }
     }
 
-    public void handleOtherRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void handleOpenIDCallBackRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 }
