@@ -124,9 +124,13 @@ public class CapedwarfURLStreamHandlerFactory implements URLStreamHandlerFactory
                 delegate = openConnectionDirect.invokeWithTarget(handler, u);
             }
 
-            if (CapedwarfApiProxy.isCapedwarfApp() && isStreamHandlerEnabled()) {
-                Class<? extends HttpURLConnection> exactType = (delegate instanceof HttpsURLConnection) ? HttpsURLConnection.class : HttpURLConnection.class;
-                return CapedwarfURLConnectionProxyHandler.wrap(exactType, delegate);
+            if (CapedwarfApiProxy.isCapedwarfApp()) {
+                final Class<? extends HttpURLConnection> exactType = (delegate instanceof HttpsURLConnection) ? HttpsURLConnection.class : HttpURLConnection.class;
+                if (isStreamHandlerEnabled()) {
+                    return CapedwarfURLConnectionProxyFactory.streaming(exactType, delegate);
+                } else {
+                    return CapedwarfURLConnectionProxyFactory.basic(exactType, delegate);
+                }
             } else {
                 return delegate;
             }

@@ -22,18 +22,23 @@
 
 package org.jboss.capedwarf.urlfetch;
 
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 
+import org.jboss.capedwarf.shared.socket.DisableSocketsMethodHandler;
+
 /**
+ * Disable sockets.
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class CapedwarfURLConnectionProxyHandler extends DefaultURLConnectionProxyHandler {
-    CapedwarfURLConnectionProxyHandler(HttpURLConnection delegate) {
-        super(delegate);
+class DefaultURLConnectionProxyHandler extends DisableSocketsMethodHandler {
+    private final HttpURLConnection delegate;
+
+    DefaultURLConnectionProxyHandler(HttpURLConnection delegate) {
+        this.delegate = delegate;
     }
 
-    protected Object invokeInternal(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
-        return super.invokeInternal(self, thisMethod, proceed, args); // add custom impl if/when needed
+    protected Object getDelegate() {
+        return delegate;
     }
 }

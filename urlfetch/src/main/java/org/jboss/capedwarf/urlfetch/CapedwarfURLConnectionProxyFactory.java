@@ -22,18 +22,27 @@
 
 package org.jboss.capedwarf.urlfetch;
 
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
+import java.net.URL;
+
+import javassist.util.proxy.MethodHandler;
+import org.jboss.capedwarf.common.bytecode.BytecodeUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class CapedwarfURLConnectionProxyHandler extends DefaultURLConnectionProxyHandler {
-    CapedwarfURLConnectionProxyHandler(HttpURLConnection delegate) {
-        super(delegate);
+class CapedwarfURLConnectionProxyFactory {
+    private static final Class<?>[] PARAM_TYPES = new Class[]{URL.class};
+
+    private static <T extends HttpURLConnection> T wrap(Class<T> exactType, MethodHandler handler, HttpURLConnection delegate) {
+        return BytecodeUtils.proxy(exactType, handler, PARAM_TYPES, new Object[]{delegate.getURL()});
     }
 
-    protected Object invokeInternal(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
-        return super.invokeInternal(self, thisMethod, proceed, args); // add custom impl if/when needed
+    static <T extends HttpURLConnection> T basic(Class<T> exactType, HttpURLConnection delegate) {
+        return wrap(exactType, new DefaultURLConnectionProxyHandler(delegate), delegate);
+    }
+
+    static <T extends HttpURLConnection> T streaming(Class<T> exactType, HttpURLConnection delegate) {
+        return wrap(exactType, new CapedwarfURLConnectionProxyHandler(delegate), delegate);
     }
 }
