@@ -91,7 +91,7 @@ public class TasksMessageCreator implements MessageCreator {
         addParameters(message);
 
         message.setStringProperty(QUEUE_NAME_KEY, queueName);
-        message.setStringProperty(TASK_NAME_KEY, taskOptions.getTaskName());
+        setIfNotNull(message, TASK_NAME_KEY, taskOptions.getTaskName());
         message.setIntProperty(MessageConstants.MAX_ATTEMPTS, taskOptions.getTaskRetryLimit() == null ? -1 : taskOptions.getTaskRetryLimit());
 
         Long etaMillis = taskOptions.getCalculatedEtaMillis();
@@ -139,13 +139,15 @@ public class TasksMessageCreator implements MessageCreator {
                         builder.append(TasksServletRequestCreator.DELIMITER).append(list.get(i));
                     }
                 }
-                String key = entry.getKey();
-                map.put(key, builder.toString());
+                if (builder.length() > 0) {
+                    String key = entry.getKey();
+                    map.put(key, builder.toString());
+                }
             }
         }
         map.put(QUEUE_NAME_HEADER, queueName);
-        map.put(TASK_NAME_HEADER, toStringOrNull(taskOptions.getTaskName()));
-        map.put(TASK_ETA, toStringOrNull(taskOptions.getEtaMillis()));
+        putIfNotNull(map, TASK_NAME_HEADER, taskOptions.getTaskName());
+        putIfNotNull(map, TASK_ETA, taskOptions.getEtaMillis());
         map.put(FAIL_FAST, Boolean.FALSE.toString()); // TODO?
         if (map.containsKey(CURRENT_NAMESPACE) == false) {
             String namespace = NamespaceManager.get();
@@ -166,7 +168,15 @@ public class TasksMessageCreator implements MessageCreator {
         return TasksServletRequestCreator.class;
     }
 
-    private static String toStringOrNull(Object value) {
-        return (value != null) ? value.toString() : null;
+    private static void setIfNotNull(Message msg, String key, Object value) throws JMSException {
+        if (value != null) {
+            msg.setStringProperty(key, value.toString());
+        }
+    }
+
+    private static void putIfNotNull(Map<String, String> map, String key, Object value) {
+        if (value != null) {
+            map.put(key, value.toString());
+        }
     }
 }
