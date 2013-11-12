@@ -27,8 +27,6 @@ import java.nio.ByteBuffer;
 
 import com.google.appengine.api.files.FileReadChannel;
 import org.infinispan.io.ReadableGridFileChannel;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-import org.jboss.capedwarf.common.reflection.TargetInvocation;
 
 /**
  * JBoss file read channel.
@@ -37,12 +35,6 @@ import org.jboss.capedwarf.common.reflection.TargetInvocation;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 class CapedwarfFileReadChannel implements FileReadChannel {
-    private static TargetInvocation<Long> getTotalBytesRemaining;
-
-    static {
-        getTotalBytesRemaining = ReflectionUtils.cacheInvocation(ReadableGridFileChannel.class, "getTotalBytesRemaining");
-    }
-
     private final ReadableGridFileChannel delegate;
 
     CapedwarfFileReadChannel(ReadableGridFileChannel channel) {
@@ -59,12 +51,6 @@ class CapedwarfFileReadChannel implements FileReadChannel {
     }
 
     public int read(ByteBuffer dst) throws IOException {
-        // TODO - remove this once ISPN-3332 is released
-        long tbr = getTotalBytesRemaining.invokeUnchecked(delegate);
-        if (tbr == 0) {
-            return -1;
-        }
-
         return delegate.read(dst);
     }
 
