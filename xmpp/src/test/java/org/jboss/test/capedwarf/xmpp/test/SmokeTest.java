@@ -24,9 +24,8 @@ package org.jboss.test.capedwarf.xmpp.test;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
-import org.jboss.test.capedwarf.common.test.TestBase;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -36,12 +35,11 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Category(All.class)
-public class SmokeTest extends TestBase {
+public class SmokeTest extends XMPPServiceTestBase {
 
     @Deployment
-    public static Archive getDeployment() {
-        // on purpose w/o capedwarf-web.xml
-        return getCapedwarfDeployment();
+    public static WebArchive getDeployment() {
+        return getDefaultDeployment();
     }
 
     @Test

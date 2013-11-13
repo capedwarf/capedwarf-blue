@@ -31,7 +31,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.test.capedwarf.common.support.All;
-import org.jboss.test.capedwarf.common.test.TestBase;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -41,11 +40,11 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @Category(All.class)
-public class XMPPServiceTest extends TestBase {
+public class XMPPServiceTest extends XMPPServiceTestBase {
 
     @Deployment
     public static Archive getDeployment() {
-        return getCapedwarfDeployment().addAsWebInfResource("capedwarf-web.xml");
+        return getDefaultDeployment();
     }
 
     @Test
