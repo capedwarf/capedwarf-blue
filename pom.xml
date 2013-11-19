@@ -86,7 +86,7 @@
         <version.org.apache.httpcomponents>4.2.1</version.org.apache.httpcomponents>
         <version.org.xerial.sqlite>3.7.2</version.org.xerial.sqlite>
         <version.org.codehaus.jackson>1.9.12</version.org.codehaus.jackson>
-        <version.io.undertow>1.0.0.Beta20</version.io.undertow>
+        <version.io.undertow>1.0.0.Beta24</version.io.undertow>
         <!-- DataNucleus -->
         <version.org.datanucleus>3.1.2</version.org.datanucleus>
         <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
