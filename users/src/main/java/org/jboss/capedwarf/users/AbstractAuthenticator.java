@@ -88,7 +88,7 @@ public abstract class AbstractAuthenticator implements AuthenticationMechanism {
 
     protected AuthenticationMechanismOutcome authorized(SecurityContext securityContext, final CapedwarfUserPrincipal principal) {
         Account account = new CapedwarfAccount(principal);
-        securityContext.authenticationComplete(account, "CAPEDWARF");
+        securityContext.authenticationComplete(account, "CAPEDWARF", false);
         return AuthenticationMechanismOutcome.AUTHENTICATED;
     }
 
