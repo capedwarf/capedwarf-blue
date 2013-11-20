@@ -80,7 +80,7 @@
         </version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
         <version.org.hibernate.search>4.3.0.Final</version.org.hibernate.search>
         <version.org.marshalling>1.4.2.Final</version.org.marshalling>
-        <version.org.infinispan>6.0.0.CR1</version.org.infinispan>
+        <version.org.infinispan>6.0.0.Final</version.org.infinispan>
         <version.net.jcip>1.0</version.net.jcip>
         <version.metainf>1.1</version.metainf>
         <version.org.apache.httpcomponents>4.2.1</version.org.apache.httpcomponents>
