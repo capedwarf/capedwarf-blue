@@ -28,6 +28,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.Iterator;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -45,15 +46,21 @@ import org.jboss.capedwarf.shared.compatibility.Compatibility;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class RemoteApiServlet extends HttpServlet {
-    private DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+    private DatastoreService datastoreService;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        datastoreService = DatastoreServiceFactory.getDatastoreService();
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         Compatibility.enable(Compatibility.Feature.IGNORE_LOGGING);
         try {
-            ExposedDatastoreService datastore = (ExposedDatastoreService) datastoreService;
-            DataOutputStream out = new DataOutputStream(resp.getOutputStream());
-            try {
+            final ExposedDatastoreService datastore = (ExposedDatastoreService) datastoreService;
+
+            try (DataOutputStream out = new DataOutputStream(resp.getOutputStream())) {
                 Iterator<Entity> entities = datastore.getAllEntitiesIterator();
                 while (entities.hasNext()) {
                     Entity entity = entities.next();
@@ -63,8 +70,6 @@ public class RemoteApiServlet extends HttpServlet {
                     writeArray(out, pbBytes);
                     writeArray(out, new byte[0]);   // TODO: sort_key
                 }
-            } finally {
-                out.close();
             }
         } finally {
             Compatibility.disable(Compatibility.Feature.IGNORE_LOGGING);
@@ -78,23 +83,25 @@ public class RemoteApiServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        DataInputStream in = new DataInputStream(req.getInputStream());
+        Compatibility.enable(Compatibility.Feature.IGNORE_LOGGING);
         try {
-            while (true) {
-                int arrayLength;
-                try {
-                    arrayLength = in.readInt();
-                } catch (EOFException e) {
-                    break;
-                }
-                byte[] pbBytes = new byte[arrayLength];
-                in.readFully(pbBytes, 0, arrayLength);
+            try (DataInputStream in = new DataInputStream(req.getInputStream())) {
+                while (true) {
+                    int arrayLength;
+                    try {
+                        arrayLength = in.readInt();
+                    } catch (EOFException e) {
+                        break;
+                    }
+                    byte[] pbBytes = new byte[arrayLength];
+                    in.readFully(pbBytes, 0, arrayLength);
 
-                Entity entity = EntityTranslator.createFromPbBytes(pbBytes);
-                datastoreService.put(entity);
+                    Entity entity = EntityTranslator.createFromPbBytes(pbBytes);
+                    datastoreService.put(entity);
+                }
             }
         } finally {
-            in.close();
+            Compatibility.disable(Compatibility.Feature.IGNORE_LOGGING);
         }
     }
 }
