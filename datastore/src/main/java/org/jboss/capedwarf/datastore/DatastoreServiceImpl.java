@@ -44,6 +44,8 @@ import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+import com.google.appengine.repackaged.com.google.common.base.Predicate;
+import com.google.appengine.repackaged.com.google.common.collect.Iterators;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
@@ -375,7 +377,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     }
 
     public Iterator<Entity> getAllEntitiesIterator() {
-        return store.values().iterator();   // TODO: temp impl, which only returns entities on current node
+        return Iterators.filter(store.values().iterator(), new SkipMetadataAndStatsEntities());
     }
 
     /**
@@ -400,6 +402,13 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     private static class Tuple2Key implements Function<Tuple, Key> {
         public Key apply(Tuple input) {
             return input.key;
+        }
+    }
+
+    private static class SkipMetadataAndStatsEntities implements Predicate<Entity> {
+        @Override
+        public boolean apply(Entity entity) {
+            return !KindUtils.match(entity.getKind(), KindUtils.Type.METADATA, KindUtils.Type.STATS);
         }
     }
 }
