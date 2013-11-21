@@ -377,7 +377,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     }
 
     public Iterator<Entity> getAllEntitiesIterator() {
-        return Iterators.filter(store.values().iterator(), new SkipMetadataAndStatsEntities());
+        return Iterators.filter(store.values().iterator(), SkipMetadataAndStatsEntities.INSTANCE);
     }
 
     /**
@@ -406,9 +406,10 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
     }
 
     private static class SkipMetadataAndStatsEntities implements Predicate<Entity> {
-        @Override
+        private static final Predicate<Entity> INSTANCE = new SkipMetadataAndStatsEntities();
+
         public boolean apply(Entity entity) {
-            return !KindUtils.match(entity.getKind(), KindUtils.Type.METADATA, KindUtils.Type.STATS);
+            return (KindUtils.isSpecial(entity.getKind()) == false);
         }
     }
 }
