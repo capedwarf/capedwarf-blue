@@ -55,4 +55,20 @@ public class CapedwarfOAuthService implements OAuthService {
     public String getClientId(String scope) throws OAuthRequestException {
         return null;  // TODO
     }
+
+    public User getCurrentUser(String... scopes) throws OAuthRequestException {
+        return null; // TODO
+    }
+
+    public boolean isUserAdmin(String... scopes) throws OAuthRequestException {
+        return false; // TODO
+    }
+
+    public String getClientId(String... strings) throws OAuthRequestException {
+        return null; // TODO
+    }
+
+    public String[] getAuthorizedScopes(String... strings) throws OAuthRequestException {
+        return new String[0]; // TODO
+    }
 }
