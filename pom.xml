@@ -76,8 +76,8 @@
         <version.javassist>3.18.1-GA</version.javassist>
         <version.javax.jpa2>1.0.1.Final</version.javax.jpa2>
         <version.javax.mail>1.4.4</version.javax.mail>
-        <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final
-        </version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
+        <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
+        <version.org.jboss.spec.javax.websockets>1.0.0.Final</version.org.jboss.spec.javax.websockets>
         <version.org.hibernate.search>4.3.0.Final</version.org.hibernate.search>
         <version.org.marshalling>1.4.2.Final</version.org.marshalling>
         <version.org.infinispan>6.0.0.Final</version.org.infinispan>
@@ -716,6 +716,12 @@
                 <groupId>org.jboss.spec.javax.jms</groupId>
                 <artifactId>jboss-jms-api_1.1_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.websocket</groupId>
+                <artifactId>jboss-websocket-api_1.0_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.websockets}</version>
             </dependency>
 
             <dependency>

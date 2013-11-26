@@ -25,39 +25,40 @@ package org.jboss.capedwarf.channel.manager;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-
 /**
- *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ChannelQueueManager {
+    private Map<String, ChannelQueue> queues = new HashMap<>();
 
-    private Map<String, ChannelQueue> queues = new HashMap<String, ChannelQueue>();
-
-    public static final ChannelQueueManager instance = new ChannelQueueManager(); // TODO: make this as it should be
+    private static final ChannelQueueManager instance = new ChannelQueueManager(); // TODO: make this as it should be
 
     public static ChannelQueueManager getInstance() {
         return instance;
     }
 
-    public boolean channelQueueExists(String channelToken) {
-        return queues.containsKey(channelToken);
-    }
+    public synchronized ChannelQueue getOrCreateChannelQueue(String channelToken) {
+        ChannelImpl channel = ChannelManagerImpl.getInstance().getChannelByToken(channelToken);
+        if (channel == null) {
+            return null;
+        }
 
-    public ChannelQueue getChannelQueue(String channelToken) {
         ChannelQueue queue = queues.get(channelToken);
-        return queue == null ? createChannelQueue(channelToken) : queue;
-    }
+        if (queue == null) {
+            queue = new ChannelQueue(channel);
+            queues.put(channelToken, queue);
 
-    private ChannelQueue createChannelQueue(String channelToken) {
-        Channel channel = ChannelManager.getInstance().getChannelByToken(channelToken);
-        channel.setConnectedNode(InfinispanUtils.getLocalNode(Application.getAppId()));
-
-        ChannelQueue queue = new ChannelQueue(channel);
-        queues.put(channelToken, queue);
+            channel.setNotification(MessageNotificationType.SIMPLE);
+        }
         return queue;
     }
 
+    public synchronized void removeChannelQueue(String channelToken) {
+        queues.remove(channelToken);
+    }
+
+    public synchronized ChannelQueue getChannelQueue(String channelToken) {
+        return queues.get(channelToken);
+    }
 }

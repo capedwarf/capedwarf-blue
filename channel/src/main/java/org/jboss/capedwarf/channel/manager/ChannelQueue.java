@@ -28,13 +28,11 @@ import java.util.List;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class ChannelQueue {
-
-    private final Channel channel;
-
+    private MessagesAdapter adapter;
     private boolean closed;
 
-    public ChannelQueue(Channel channel) {
-        this.channel = channel;
+    public ChannelQueue(MessagesAdapter adapter) {
+        this.adapter = adapter;
     }
 
     public void notifyMessageAvailable() {
@@ -57,7 +55,7 @@ public class ChannelQueue {
      * @throws InterruptedException
      */
     public List<Message> getPendingMessages(long timeoutMillis) throws InterruptedException {
-        List<Message> messages = channel.getPendingMessages();
+        List<Message> messages = adapter.getPendingMessages();
         if (messages.isEmpty()) {
             synchronized (this) {
                 wait(timeoutMillis);
@@ -65,12 +63,12 @@ public class ChannelQueue {
             if (closed) {
                 throw new ChannelQueueClosedException();
             }
-            messages = channel.getPendingMessages();
+            messages = adapter.getPendingMessages();
         }
         return messages;
     }
 
     public void ackMessages(List<String> messageIds) {
-        channel.ackMessages(messageIds);
+        adapter.ackMessages(messageIds);
     }
 }

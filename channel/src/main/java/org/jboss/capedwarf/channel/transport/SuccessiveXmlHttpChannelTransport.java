@@ -27,7 +27,6 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,7 +41,6 @@ import org.jboss.capedwarf.channel.manager.Message;
 public class SuccessiveXmlHttpChannelTransport extends AbstractTransport {
 
     public static final String DELIMITER = ":_:";
-    private final Logger log = Logger.getLogger(getClass().getName());
 
     public SuccessiveXmlHttpChannelTransport(HttpServletRequest req, HttpServletResponse resp, String channelToken, ChannelQueue queue) {
         super(req, resp, channelToken, queue);

@@ -23,20 +23,13 @@
 package org.jboss.capedwarf.channel.manager;
 
 /**
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CloseChannelTask extends AbstractNotificationTask<Void> {
-    public CloseChannelTask(String channelToken) {
-        super(channelToken);
+public class ChannelManagerFactory {
+    private ChannelManagerFactory() {
     }
 
-    public Void call() throws Exception {
-        final ChannelQueue channelQueue = ChannelQueueManager.getInstance().getChannelQueue(token);
-        if (channelQueue != null) {
-            getLog().info("Closing channel connection for token " + token);
-            channelQueue.close();
-        }
-        return null;
+    public static ChannelManager getChannelManager() {
+        return ChannelManagerImpl.getInstance();
     }
 }
-

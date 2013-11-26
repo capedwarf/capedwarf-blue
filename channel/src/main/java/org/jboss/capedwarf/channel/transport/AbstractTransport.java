@@ -22,15 +22,18 @@
 
 package org.jboss.capedwarf.channel.transport;
 
+import java.util.logging.Logger;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.capedwarf.channel.manager.ChannelQueue;
 
 /**
- *
+ * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public abstract class AbstractTransport implements ChannelTransport {
+    protected final Logger log = Logger.getLogger(getClass().getName());
 
     private final HttpServletRequest request;
     private final HttpServletResponse response;

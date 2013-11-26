@@ -37,7 +37,8 @@ public enum CacheName {
     TASKS("tasks"),
     SEARCH("search"),
     PROSPECTIVE_SEARCH("prospective_search"),
-    DATASTORE_VERSIONS("datastore_versions");
+    DATASTORE_VERSIONS("datastore_versions"),
+    CHANNEL("channel");
 
     private String name;
 

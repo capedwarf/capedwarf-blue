@@ -25,7 +25,6 @@ package org.jboss.capedwarf.channel.transport;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,9 +36,6 @@ import org.jboss.capedwarf.channel.manager.Message;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class LongIFrameChannelTransport extends AbstractTransport {
-
-    private final Logger log = Logger.getLogger(getClass().getName());
-
     public LongIFrameChannelTransport(HttpServletRequest req, HttpServletResponse resp, String channelToken, ChannelQueue queue) {
         super(req, resp, channelToken, queue);
     }

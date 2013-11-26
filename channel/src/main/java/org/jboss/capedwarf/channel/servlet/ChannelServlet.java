@@ -26,20 +26,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jboss.capedwarf.channel.manager.Channel;
 import org.jboss.capedwarf.channel.manager.ChannelManager;
+import org.jboss.capedwarf.channel.manager.ChannelManagerFactory;
 import org.jboss.capedwarf.channel.manager.ChannelQueue;
 import org.jboss.capedwarf.channel.manager.ChannelQueueManager;
-import org.jboss.capedwarf.channel.manager.NoSuchChannelException;
 import org.jboss.capedwarf.channel.transport.ChannelTransport;
 import org.jboss.capedwarf.channel.transport.ChannelTransportFactory;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.io.IOUtils;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -50,6 +52,14 @@ public class ChannelServlet extends HttpServlet {
     private final Logger log = Logger.getLogger(getClass().getName());
 
     public static final String SERVLET_URI = "/_ah/channel";
+
+    private ChannelManager channelManager;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        channelManager = ChannelManagerFactory.getChannelManager();
+    }
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -75,21 +85,18 @@ public class ChannelServlet extends HttpServlet {
     @SuppressWarnings("UnusedParameters")
     private void closeChannel(HttpServletRequest req, HttpServletResponse resp, String channelToken) {
         try {
-            Channel channel = ChannelManager.getInstance().getChannelByToken(channelToken);
-            channel.close();
-        } catch (NoSuchChannelException ex) {
-            log.warning("No channel for token " + channelToken);
+            channelManager.releaseChannel(channelToken);
+        } finally {
+            ChannelQueueManager.getInstance().removeChannelQueue(channelToken);
         }
     }
 
     private void serveChannelMessages(HttpServletRequest req, HttpServletResponse resp, String channelToken) throws IOException {
         log.info("Opening channel queue for token " + channelToken);
 
-        ChannelQueue queue;
-        try {
-            queue = ChannelQueueManager.getInstance().getChannelQueue(channelToken);
-        } catch (NoSuchChannelException e) {
-            log.severe("No channel for token " + channelToken);
+        final ChannelQueue queue = ChannelQueueManager.getInstance().getOrCreateChannelQueue(channelToken);
+        if (queue == null) {
+            log.severe(String.format("No channel for token: %s ", channelToken));
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
@@ -103,6 +110,10 @@ public class ChannelServlet extends HttpServlet {
     @SuppressWarnings("UnusedParameters")
     private void serveJavascript(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/javascript");
+
+        boolean wsDisabled = CompatibilityUtils.getInstance().isEnabled(Compatibility.Feature.DISABLE_WEB_SOCKETS_CHANNEL);
+        resp.getOutputStream().write(String.format("var browserSupportsWebSocket = %s;\n", wsDisabled ? false : "\"WebSocket\" in window").getBytes());
+
         includeScript(resp, "/org/jboss/capedwarf/channel/channelapi.js");
         includeScript(resp, "/org/jboss/capedwarf/channel/CapedwarfChannel.js");
         includeScript(resp, "/org/jboss/capedwarf/channel/CapedwarfChannelManager.js");

@@ -30,14 +30,15 @@ import com.google.appengine.api.channel.ChannelMessage;
 import com.google.appengine.api.channel.ChannelPresence;
 import org.jboss.capedwarf.channel.manager.Channel;
 import org.jboss.capedwarf.channel.manager.ChannelManager;
+import org.jboss.capedwarf.channel.manager.ChannelManagerFactory;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfChannelService implements ExposedChannelService {
-    private ChannelManager channelManager = new ChannelManager();
-    private IncomingChannelRequestParser parser = new IncomingChannelRequestParser();
+    private volatile ChannelManager channelManager = ChannelManagerFactory.getChannelManager();
 
     public String createChannel(String clientId) {
         final Compatibility compatibility = Compatibility.getInstance();
@@ -46,22 +47,20 @@ public class CapedwarfChannelService implements ExposedChannelService {
     }
 
     public String createChannel(String clientId, int durationMinutes) {
-        Channel channel = channelManager.createChannel(clientId, durationMinutes);
+        Channel channel = getChannelManager().createChannel(clientId, durationMinutes);
         return channel.getToken();
     }
 
     public void sendMessage(ChannelMessage message) {
-        for (Channel channel : channelManager.getChannels(message.getClientId())) {
-            channel.sendMessage(message.getMessage());
-        }
+        getChannelManager().sendMessage(message);
     }
 
     public ChannelMessage parseMessage(HttpServletRequest request) {
-        return parser.parseMessage(request);
+        return IncomingChannelRequestParser.parseMessage(request);
     }
 
     public ChannelPresence parsePresence(HttpServletRequest request) throws IOException {
-        return parser.parsePresence(request);
+        return IncomingChannelRequestParser.parsePresence(request);
     }
 
     public ChannelManager getChannelManager() {

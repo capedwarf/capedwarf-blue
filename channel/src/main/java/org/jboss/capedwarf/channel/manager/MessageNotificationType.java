@@ -22,14 +22,42 @@
 
 package org.jboss.capedwarf.channel.manager;
 
+import java.util.concurrent.Callable;
+
+import org.jboss.capedwarf.channel.util.ClusterUtils;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public interface Channel {
-    String getClientId();
-    String getToken();
-    long getExpirationTime();
+public enum  MessageNotificationType implements MessageNotification {
+    SIMPLE {
+        public void open(Channel channel) {
+        }
 
-    void sendMessage(String message);
+        public void close(Channel channel) {
+            submitTask(new CloseChannelTask(channel.getToken()));
+        }
+
+        public void notify(Channel channel, String message) {
+            MessageManagerImpl.getInstance().storeMessage(new Message(channel.getToken(), message));
+
+            submitTask(new MessageNotificationTask(channel.getToken()));
+        }
+    },
+    WEB_SOCKET {
+        public void open(Channel channel) {
+        }
+
+        public void close(Channel channel) {
+            submitTask(new WebSocketRemoveTask(channel.getToken()));
+        }
+
+        public void notify(Channel channel, String message) {
+            submitTask(new WebSocketNotificationTask(channel.getToken(), message));
+        }
+    };
+
+    static void submitTask(Callable<Void> task) {
+        ClusterUtils.executeOnAllNodes(task);
+    }
 }

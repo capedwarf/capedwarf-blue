@@ -22,28 +22,18 @@
 
 package org.jboss.capedwarf.channel.manager;
 
-import java.io.Serializable;
-import java.util.concurrent.Callable;
-import java.util.logging.Logger;
-
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
-public class MessageNotificationTask implements Callable<Void>, Serializable {
-    private final static long serialVersionUID = 1L;
-    private final static Logger log = Logger.getLogger(MessageNotificationTask.class.getName());
-
-    private String channelToken;
-
+public class MessageNotificationTask extends AbstractNotificationTask<Void> {
     public MessageNotificationTask(String channelToken) {
-        this.channelToken = channelToken;
+        super(channelToken);
     }
 
     public Void call() throws Exception {
-        if (ChannelQueueManager.getInstance().channelQueueExists(channelToken)) {
-            log.info("Obtaining channel connection for token " + channelToken);
-            ChannelQueue channelQueue = ChannelQueueManager.getInstance().getChannelQueue(channelToken);
-            log.info("Notifying listeners that a message is available");
+        final ChannelQueue channelQueue = ChannelQueueManager.getInstance().getChannelQueue(token);
+        if (channelQueue != null) {
+            getLog().fine("Notifying listeners that a message is available");
             channelQueue.notifyMessageAvailable();
         }
         return null;

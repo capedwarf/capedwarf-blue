@@ -22,11 +22,28 @@
 
 package org.jboss.capedwarf.channel.manager;
 
+import java.io.Serializable;
+import java.util.concurrent.Callable;
+import java.util.logging.Logger;
+
 /**
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class NoSuchChannelException extends RuntimeException {
-    public NoSuchChannelException(String message) {
-        super(message);
+public abstract class AbstractNotificationTask<T> implements Callable<T>, Serializable {
+    private final static long serialVersionUID = 1L;
+
+    private transient Logger log;
+    protected final String token;
+
+    public AbstractNotificationTask(String token) {
+        this.token = token;
+    }
+
+    protected synchronized Logger getLog() {
+        if (log == null) {
+            log = Logger.getLogger(getClass().getName());
+        }
+        return log;
     }
 }
+
