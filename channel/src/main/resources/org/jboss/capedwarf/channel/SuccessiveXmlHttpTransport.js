@@ -30,9 +30,9 @@ SuccessiveXmlHttpTransport.prototype.sendRequest = function(ackList) {
                 }
             }
 
-            if (socket.readyState != goog.appengine.Socket.ReadyState.CLOSED) {
+            if (t.socket.readyState != goog.appengine.Socket.ReadyState.CLOSED) {
                 setTimeout(function() {
-                    socket.transport.sendRequest(ackIds);
+                    t.socket.transport.sendRequest(ackIds);
                 }, 1);
             }
         }
