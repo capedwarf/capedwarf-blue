@@ -35,14 +35,14 @@ public class IncomingChannelRequestParser {
     public static final String CONNECTED = "connected";
     public static final String CLIENT_ID = "clientId";
 
-    ChannelMessage parseMessage(HttpServletRequest request) {
+    static ChannelMessage parseMessage(HttpServletRequest request) {
         return new ChannelMessage(
                 request.getParameter(CLIENT_ID),
                 request.getParameter("message")
         );
     }
 
-    ChannelPresence parsePresence(HttpServletRequest request) {
+    static ChannelPresence parsePresence(HttpServletRequest request) {
         boolean isConnected = Boolean.valueOf(request.getParameter(CONNECTED));
         String clientId = request.getParameter(CLIENT_ID);
         return ReflectionUtils.newInstance(ChannelPresence.class, new Class[] {boolean.class, String.class}, new Object[] {isConnected, clientId});

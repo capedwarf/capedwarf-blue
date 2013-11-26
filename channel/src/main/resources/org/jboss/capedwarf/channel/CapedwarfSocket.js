@@ -14,8 +14,8 @@ CapedwarfSocket = function (token, handler) {
         throw "document.body is not defined -- do not create socket from script in <head>.";
     }
 
-//    var transportType = browserSupportsWebSocket ? "WebSocket" : "SuccessiveXmlHttp";
-    var transportType = "SuccessiveXmlHttp";
+    var transportType = browserSupportsWebSocket ? "WebSocket" : "SuccessiveXmlHttp";
+//    var transportType = "SuccessiveXmlHttp";
 
     var socket = this;
     setTimeout(function () {

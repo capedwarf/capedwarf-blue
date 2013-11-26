@@ -33,30 +33,7 @@ import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ClusterUtils {
-
-    public static void submitToAllNodes(Callable<Void> task) {
-        if (isStandalone()) {
-            executeLocally(task);
-        } else {
-            executeOnAllNodes(task);
-        }
-    }
-
-    public static boolean isStandalone() {
-        return true;    // TODO
-    }
-
-    private static void executeLocally(Callable<Void> task) {
-        try {
-            task.call();
-        } catch (RuntimeException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private static void executeOnAllNodes(Callable<Void> task) {
+    public static void executeOnAllNodes(Callable<Void> task) {
         final String appId = Application.getAppId();
         InfinispanUtils.everywhere(appId, task);
     }

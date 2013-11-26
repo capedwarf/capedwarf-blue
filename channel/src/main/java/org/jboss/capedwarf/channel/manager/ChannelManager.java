@@ -22,83 +22,16 @@
 
 package org.jboss.capedwarf.channel.manager;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
-import com.google.appengine.api.channel.ChannelServiceFactory;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.Query;
-import org.jboss.capedwarf.channel.ExposedChannelService;
+import com.google.appengine.api.channel.ChannelMessage;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class ChannelManager {
+public interface ChannelManager {
+    Channel createChannel(String clientId, int durationMinutes);
 
-    public static final String CHANNEL_ENTITY_KIND = "Channel";
-    public static final String PROPERTY_CLIENT_ID = "clientId";
-    public static final String PROPERTY_EXPIRATION_TIME = "expirationTime";
-    public static final String PROPERTY_TOKEN = "token";
+    void sendMessage(ChannelMessage message);
 
-    private DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
-
-    public Channel createChannel(String clientId, int durationMinutes) {
-        Entity entity = new Entity(CHANNEL_ENTITY_KIND);
-        entity.setProperty(PROPERTY_CLIENT_ID, clientId);
-        entity.setProperty(PROPERTY_EXPIRATION_TIME, toExpirationTime(durationMinutes));
-        entity.setProperty(PROPERTY_TOKEN, generateToken());
-        datastoreService.put(entity);
-
-        Channel channel = entityToChannel(entity);
-        channel.open();
-        return channel;
-    }
-
-    private String generateToken() {
-        return String.valueOf(new Random().nextLong());
-    }
-
-    private long toExpirationTime(int durationMinutes) {
-        return System.currentTimeMillis() + (durationMinutes * 60 * 1000);
-    }
-
-    private Channel entityToChannel(Entity entity) {
-        return new Channel(
-                entity.getKey(),
-                (String) entity.getProperty(PROPERTY_CLIENT_ID),
-                (Long) entity.getProperty(PROPERTY_EXPIRATION_TIME),
-                (String) entity.getProperty(PROPERTY_TOKEN));
-    }
-
-    public Set<Channel> getChannels(String clientId) {
-        Query query = new Query(CHANNEL_ENTITY_KIND).setFilter(new Query.FilterPredicate(PROPERTY_CLIENT_ID, Query.FilterOperator.EQUAL, clientId));
-        List<Entity> entities = datastoreService.prepare(query).asList(FetchOptions.Builder.withDefaults());
-        Set<Channel> set = new HashSet<Channel>();
-        for (Entity entity : entities) {
-            set.add(entityToChannel(entity));
-        }
-        return set;
-    }
-
-    public Channel getChannelByToken(String token) {
-        if (token == null) {
-            throw new NullPointerException("token should not be null");
-        }
-        Query query = new Query(CHANNEL_ENTITY_KIND).setFilter(new Query.FilterPredicate(PROPERTY_TOKEN, Query.FilterOperator.EQUAL, token));
-        Entity entity = datastoreService.prepare(query).asSingleEntity();
-        if (entity == null) {
-            throw new NoSuchChannelException("No channel with token " + token);
-        }
-        return entityToChannel(entity);
-    }
-
-    public static ChannelManager getInstance() {
-        return ((ExposedChannelService) ChannelServiceFactory.getChannelService()).getChannelManager();
-    }
-
+    void releaseChannel(String token);
 }

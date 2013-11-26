@@ -23,19 +23,15 @@
 package org.jboss.capedwarf.channel.manager;
 
 /**
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CloseChannelTask extends AbstractNotificationTask<Void> {
-    public CloseChannelTask(String channelToken) {
+public class WebSocketRemoveTask extends AbstractNotificationTask<Void> {
+    public WebSocketRemoveTask(String channelToken) {
         super(channelToken);
     }
 
     public Void call() throws Exception {
-        final ChannelQueue channelQueue = ChannelQueueManager.getInstance().getChannelQueue(token);
-        if (channelQueue != null) {
-            getLog().info("Closing channel connection for token " + token);
-            channelQueue.close();
-        }
+        WebSocketsManagerImpl.getInstance().releaseChannel(token);
         return null;
     }
 }

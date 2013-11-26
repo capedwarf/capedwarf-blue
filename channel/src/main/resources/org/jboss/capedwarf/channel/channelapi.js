@@ -1,9 +1,6 @@
 var win = window;
 var undef = void 0;
 
-//    var browserSupportsWebSocket = "WebSocket" in window;
-var browserSupportsWebSocket = false;
-
 assign = function (name, value) {
     var c = name.split(".");
     if (!(c[0] in win) && win.execScript) {

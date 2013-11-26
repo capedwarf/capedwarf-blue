@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,21 +22,13 @@
 
 package org.jboss.capedwarf.channel.manager;
 
+import java.util.List;
+
 /**
- * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CloseChannelTask extends AbstractNotificationTask<Void> {
-    public CloseChannelTask(String channelToken) {
-        super(channelToken);
-    }
-
-    public Void call() throws Exception {
-        final ChannelQueue channelQueue = ChannelQueueManager.getInstance().getChannelQueue(token);
-        if (channelQueue != null) {
-            getLog().info("Closing channel connection for token " + token);
-            channelQueue.close();
-        }
-        return null;
-    }
+public abstract class MessageManager {
+    abstract String storeMessage(Message msg);
+    abstract List<Message> getPendingMessages(String token);
+    abstract void ackMessages(List<String> messageIds);
 }
-

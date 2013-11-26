@@ -22,21 +22,21 @@
 
 package org.jboss.capedwarf.channel.manager;
 
+import java.security.SecureRandom;
+import java.util.Random;
+
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CloseChannelTask extends AbstractNotificationTask<Void> {
-    public CloseChannelTask(String channelToken) {
-        super(channelToken);
+public abstract class AbstractChannelManager implements ChannelManager {
+    private static final Random RANDOM = new SecureRandom();
+
+    protected String generateToken() {
+        return String.valueOf(RANDOM.nextLong());
     }
 
-    public Void call() throws Exception {
-        final ChannelQueue channelQueue = ChannelQueueManager.getInstance().getChannelQueue(token);
-        if (channelQueue != null) {
-            getLog().info("Closing channel connection for token " + token);
-            channelQueue.close();
-        }
-        return null;
+    protected long toExpirationTime(int durationMinutes) {
+        return System.currentTimeMillis() + (durationMinutes * 60 * 1000);
     }
 }
-
