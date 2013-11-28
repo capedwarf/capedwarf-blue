@@ -24,6 +24,7 @@ package org.jboss.capedwarf.channel.manager;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
@@ -39,6 +40,7 @@ import org.hibernate.search.annotations.TermVector;
 @ProvidedId
 public class ChannelImpl implements Channel, MessagesAdapter, Serializable {
     private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(ChannelImpl.class.getName());
 
     public static final String CLIENT_ID = "clientId";
     public static final String TOKEN = "token";
@@ -90,7 +92,11 @@ public class ChannelImpl implements Channel, MessagesAdapter, Serializable {
     }
 
     public void sendMessage(String message) {
-        notification.notify(this, message);
+        if (notification != null) {
+            notification.notify(this, message);
+        } else {
+            log.severe(String.format("Missing notification instance, invalid channel callback?!"));
+        }
     }
 
     public List<Message> getPendingMessages() {

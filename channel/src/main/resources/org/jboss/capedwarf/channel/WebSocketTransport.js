@@ -7,7 +7,7 @@ WebSocketTransport = function(socket) {
 WebSocketTransport.prototype.start = function() {
     var s = this.socket;
     var loc = window.location;
-    var url = (loc.protocol === "https:" ? "wss://" : "ws://") + loc.host + ":" + loc.port + contextPath + "/_ah/channel_ws?token=" + s.token;
+    var url = (loc.protocol === "https:" ? "wss://" : "ws://") + loc.host + contextPath + "/_ah/channel_ws?token=" + s.token;
     this.webSocket = new WebSocket(url);
     this.webSocket.onopen = function() {
         s.handleOpen();
