@@ -84,11 +84,7 @@ public class ChannelServlet extends HttpServlet {
 
     @SuppressWarnings("UnusedParameters")
     private void closeChannel(HttpServletRequest req, HttpServletResponse resp, String channelToken) {
-        try {
-            channelManager.releaseChannel(channelToken);
-        } finally {
-            ChannelQueueManager.getInstance().removeChannelQueue(channelToken);
-        }
+        channelManager.releaseChannel(channelToken);
     }
 
     private void serveChannelMessages(HttpServletRequest req, HttpServletResponse resp, String channelToken) throws IOException {

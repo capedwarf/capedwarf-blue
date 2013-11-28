@@ -31,9 +31,9 @@ public class CloseChannelTask extends AbstractNotificationTask<Void> {
     }
 
     public Void call() throws Exception {
-        final ChannelQueue channelQueue = ChannelQueueManager.getInstance().getChannelQueue(token);
+        final ChannelQueue channelQueue = ChannelQueueManager.getInstance().removeChannelQueue(token);
         if (channelQueue != null) {
-            getLog().info("Closing channel connection for token " + token);
+            getLog().info(String.format("Closing channel connection for token: %s", token));
             channelQueue.close();
         }
         return null;
