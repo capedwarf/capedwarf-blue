@@ -41,7 +41,7 @@ public class LongIFrameChannelTransport extends AbstractTransport {
     }
 
     public void serveMessages() throws IOException {
-        log.info("Channel queue opened.");
+        log.fine("Channel queue opened.");
         getResponse().setContentType("text/html");
         getResponse().setHeader("Transfer-Encoding", "chunked");
 
@@ -58,10 +58,9 @@ public class LongIFrameChannelTransport extends AbstractTransport {
                 break;
             }
             try {
-                log.info("Waiting for message (for " + timeLeft + "ms)");
+                log.fine(String.format("Waiting for message (for %sms)", timeLeft));
                 List<Message> messages = getQueue().getPendingMessages(timeLeft);
                 for (Message message : messages) {
-                    log.info("Received message " + message);
                     writeMessage(writer, getChannelToken(), "message", message);
                 }
             } catch (InterruptedException e) {
@@ -73,7 +72,7 @@ public class LongIFrameChannelTransport extends AbstractTransport {
     }
 
     private void writeMessage(PrintWriter writer, String channelToken, String type, Message message) {
-        log.info("Sending message to browser: type=" + type + "; message=" + message);
+        log.fine(String.format("Sending message to browser: type=%s; message=%s", type, message));
         writer.println("<script language=\"JavaScript\" type=\"text/javascript\">");
         writer.println("parent.handleChannelMessage(\"" + channelToken + "\", \"" + type + "\", \"" + message.getId() + "\", \"" + message + "\");");
         writer.println("</script>");

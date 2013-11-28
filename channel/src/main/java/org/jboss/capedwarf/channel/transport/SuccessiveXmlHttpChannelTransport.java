@@ -47,7 +47,7 @@ public class SuccessiveXmlHttpChannelTransport extends AbstractTransport {
     }
 
     public void serveMessages() throws IOException {
-        log.info("Channel queue opened.");
+        log.fine("Channel queue opened.");
         getQueue().ackMessages(getAckMessageIds());
 
         getResponse().setContentType("text/plain");
@@ -76,7 +76,7 @@ public class SuccessiveXmlHttpChannelTransport extends AbstractTransport {
 
     private void serveMessages(PrintWriter writer) {
         try {
-            log.info("Waiting for message (for a maximum of " + MAX_CONNECTION_DURATION + "ms)");
+            log.fine(String.format("Waiting for message (for a maximum of %sms)", MAX_CONNECTION_DURATION));
             List<Message> messages = getQueue().getPendingMessages(MAX_CONNECTION_DURATION);
             writeMessages(writer, messages);
         } catch (ChannelQueueClosedException ex) {
@@ -90,7 +90,6 @@ public class SuccessiveXmlHttpChannelTransport extends AbstractTransport {
 
     private void writeMessages(PrintWriter writer, List<Message> messages) {
         for (Message message : messages) {
-            log.info("Received message " + message);
             writeMessage(writer, "message", message);
         }
     }
@@ -104,7 +103,7 @@ public class SuccessiveXmlHttpChannelTransport extends AbstractTransport {
     }
 
     private void writeMessage(PrintWriter writer, String type, Message message) {
-        log.info("Sending message to browser: type=" + type + "; message=" + message);
+        log.fine(String.format("Sending message to browser: type=%s; message=%s", type, message));
         writer.println(type + DELIMITER + message.getId() + DELIMITER + message.getMessage());
         writer.flush();
     }

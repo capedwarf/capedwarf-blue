@@ -31,17 +31,17 @@ public class ChannelQueue {
     private MessagesAdapter adapter;
     private boolean closed;
 
-    public ChannelQueue(MessagesAdapter adapter) {
+    ChannelQueue(MessagesAdapter adapter) {
         this.adapter = adapter;
     }
 
-    public void notifyMessageAvailable() {
+    void notifyMessageAvailable() {
         synchronized (this) {
             notifyAll();
         }
     }
 
-    public void close() {
+    void close() {
         this.closed = true;
         notifyMessageAvailable();   // unblock queue
     }

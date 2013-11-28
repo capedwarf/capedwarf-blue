@@ -54,11 +54,11 @@ public class ChannelQueueManager {
         return queue;
     }
 
-    public synchronized void removeChannelQueue(String channelToken) {
-        queues.remove(channelToken);
+    synchronized ChannelQueue removeChannelQueue(String channelToken) {
+        return queues.remove(channelToken);
     }
 
-    public synchronized ChannelQueue getChannelQueue(String channelToken) {
+    synchronized ChannelQueue getChannelQueue(String channelToken) {
         return queues.get(channelToken);
     }
 }
