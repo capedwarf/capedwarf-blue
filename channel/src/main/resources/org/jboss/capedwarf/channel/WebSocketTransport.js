@@ -6,16 +6,18 @@ WebSocketTransport = function(socket) {
 
 WebSocketTransport.prototype.start = function() {
     var s = this.socket;
-    this.webSocket = new WebSocket("ws://localhost:8080/_ah/channel_ws?token=" + s.token);
+    var loc = window.location;
+    var url = (loc.protocol === "https:" ? "wss://" : "ws://") + loc.host + ":" + loc.port + contextPath + "/_ah/channel_ws?token=" + s.token;
+    this.webSocket = new WebSocket(url);
     this.webSocket.onopen = function() {
         s.handleOpen();
-    }
+    };
     this.webSocket.onmessage = function(msg) {
         s.handleMessage(msg.data);
-    }
+    };
     this.webSocket.onclose = function() {
         s.handleClose();
-    }
+    };
     this.webSocket.onerror = function() {
         s.handleClose();
     }
