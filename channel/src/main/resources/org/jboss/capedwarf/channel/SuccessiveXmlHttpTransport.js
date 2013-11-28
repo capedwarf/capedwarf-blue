@@ -13,7 +13,14 @@ SuccessiveXmlHttpTransport.prototype.sendRequest = function(ackList) {
     var t = this;
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
+        const REQUEST_NOT_INITIALIZED = 0;
+        const SERVER_CONNECTION_ESTABLISHED = 1;
+        const REQUEST_RECEIVED = 2;
+        const PROCESSING_REQUEST = 3;
+        const REQUEST_FINISHED = 4;
+        const HTTP_OK = 200;
+
+        if (xhr.readyState == REQUEST_FINISHED && xhr.status == HTTP_OK) {
             var lines = xhr.responseText.split(/\r\n|\r|\n/g);
             var ackIds = "";
             for (var i=0; i<lines.length; i++) {
