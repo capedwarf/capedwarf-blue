@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -108,7 +109,9 @@ public class ChannelServlet extends HttpServlet {
         resp.setContentType("text/javascript");
 
         boolean wsDisabled = CompatibilityUtils.getInstance().isEnabled(Compatibility.Feature.DISABLE_WEB_SOCKETS_CHANNEL);
-        resp.getOutputStream().write(String.format("var browserSupportsWebSocket = %s;\n", wsDisabled ? false : "\"WebSocket\" in window").getBytes());
+        ServletOutputStream out = resp.getOutputStream();
+        out.write(String.format("var browserSupportsWebSocket = %s;\n", wsDisabled ? false : "\"WebSocket\" in window").getBytes());
+        out.write(String.format("var contextPath = \"%s\";\n", req.getContextPath()).getBytes());
 
         includeScript(resp, "/org/jboss/capedwarf/channel/channelapi.js");
         includeScript(resp, "/org/jboss/capedwarf/channel/CapedwarfChannel.js");
