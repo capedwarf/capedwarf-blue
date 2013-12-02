@@ -32,7 +32,7 @@ import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.jboss.capedwarf.common.util.Util;
+import org.jboss.capedwarf.shared.util.Utils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -71,7 +71,7 @@ class QueueUtils {
         try {
             return expectedType.cast(server.invoke(QUEUE_NAME, method, args, sig));
         } catch (Exception e) {
-            throw Util.toRuntimeException(e);
+            throw Utils.toRuntimeException(e);
         }
     }
 

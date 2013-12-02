@@ -29,7 +29,7 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.common.util.Util;
+import org.jboss.capedwarf.shared.util.Utils;
 
 /**
  * Abstract cache listener
@@ -84,7 +84,7 @@ public abstract class AbstractCacheListener {
         try {
             final Future<T> future = InfinispanUtils.fire(Application.getAppId(), CacheName.DIST, taskable.toCallable(), taskable.taskKey());
             if (taskable.block()) {
-                Util.quietGet(future);
+                Utils.quietGet(future);
             }
         } finally {
             CapedwarfEnvironment.setThreadLocalInstance(previous);

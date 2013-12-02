@@ -37,8 +37,8 @@ import com.google.appengine.api.datastore.PreQueryContext;
 import com.google.appengine.api.datastore.PutContext;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
-import org.jboss.capedwarf.common.reflection.MethodInvocation;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.MethodInvocation;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * Datastore callbacks.

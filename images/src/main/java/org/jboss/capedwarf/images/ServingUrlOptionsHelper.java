@@ -2,7 +2,7 @@ package org.jboss.capedwarf.images;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.images.ServingUrlOptions;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

@@ -23,7 +23,7 @@
 package org.jboss.capedwarf.files;
 
 import com.google.appengine.api.files.GSFileOptions;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>

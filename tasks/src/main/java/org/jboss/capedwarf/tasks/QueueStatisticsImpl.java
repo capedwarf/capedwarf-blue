@@ -27,7 +27,7 @@ import com.google.appengine.api.taskqueue.TaskQueuePb;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.infinispan.query.SearchManager;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * Default Queue stats impl.

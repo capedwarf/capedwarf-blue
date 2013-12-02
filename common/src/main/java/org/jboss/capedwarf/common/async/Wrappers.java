@@ -28,7 +28,7 @@ import java.util.concurrent.Future;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
-import org.jboss.capedwarf.common.util.Util;
+import org.jboss.capedwarf.shared.util.Utils;
 
 /**
  * Wrappers - env, CL, ApiProxy, ...
@@ -108,7 +108,7 @@ public final class Wrappers {
             try {
                 callable.call();
             } catch (Exception e) {
-                throw Util.toRuntimeException(e);
+                throw Utils.toRuntimeException(e);
             }
         }
     }

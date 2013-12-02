@@ -26,8 +26,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.FetchOptions;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-import org.jboss.capedwarf.common.reflection.TargetInvocation;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.TargetInvocation;
 
 /**
  * JBoss Cursor helper.

@@ -28,7 +28,7 @@ import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import org.jboss.capedwarf.common.util.Util;
+import org.jboss.capedwarf.shared.util.Utils;
 
 /**
  * Abstract tx callable.
@@ -63,7 +63,7 @@ public abstract class AbstractTxCallable<R> implements Callable<R> {
                 return callInTx();
             } catch (Throwable t) {
                 error = true;
-                throw Util.toRuntimeException(t);
+                throw Utils.toRuntimeException(t);
             } finally {
                 if (useNewTx || previous == null) {
                     if (error || tm.getStatus() == Status.STATUS_MARKED_ROLLBACK)

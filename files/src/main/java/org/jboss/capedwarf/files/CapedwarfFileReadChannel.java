@@ -27,8 +27,8 @@ import java.nio.ByteBuffer;
 
 import com.google.appengine.api.files.FileReadChannel;
 import org.infinispan.io.ReadableGridFileChannel;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-import org.jboss.capedwarf.common.reflection.TargetInvocation;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.TargetInvocation;
 
 /**
  * JBoss file read channel.

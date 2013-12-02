@@ -37,11 +37,11 @@ import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
-import org.jboss.capedwarf.common.util.Util;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.components.SimpleKey;
+import org.jboss.capedwarf.shared.util.Utils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -105,7 +105,7 @@ public class InfinispanUtils {
      */
     public static <R> R submit(final String appId, final CacheName template, final Callable<R> task, Object... keys) {
         final Future<R> result = distribute(appId, template, task, true, keys);
-        return Util.quietGet(result);
+        return Utils.quietGet(result);
     }
 
     /**

@@ -13,8 +13,8 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.NumericField;
 import org.hibernate.search.annotations.ProvidedId;
-import org.jboss.capedwarf.common.reflection.MethodInvocation;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.MethodInvocation;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 import org.jboss.util.Base64;
 
 /**

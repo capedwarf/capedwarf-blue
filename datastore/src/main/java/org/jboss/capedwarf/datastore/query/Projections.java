@@ -43,8 +43,8 @@ import org.apache.lucene.search.SortField;
 import org.hibernate.search.SearchException;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.ProjectionConstants;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.shared.config.IndexesXml;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * Handle query projections.
