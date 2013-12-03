@@ -49,10 +49,10 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.environment.Environment;
 import org.jboss.capedwarf.environment.EnvironmentFactory;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>

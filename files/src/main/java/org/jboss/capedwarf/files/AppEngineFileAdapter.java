@@ -24,7 +24,7 @@ package org.jboss.capedwarf.files;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.files.AppEngineFile;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>

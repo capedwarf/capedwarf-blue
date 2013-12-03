@@ -13,9 +13,9 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.repackaged.com.google.common.collect.Sets;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.datastore.KindUtils;
 import org.jboss.capedwarf.shared.config.IndexesXml;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

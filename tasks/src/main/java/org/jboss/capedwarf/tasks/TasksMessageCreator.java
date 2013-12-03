@@ -34,9 +34,9 @@ import javax.jms.Session;
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.capedwarf.common.jms.MessageCreator;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
 import org.jboss.capedwarf.shared.jms.MessageConstants;
 import org.jboss.capedwarf.shared.jms.ServletRequestCreator;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * Tasks message creator.

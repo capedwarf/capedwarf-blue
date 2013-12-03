@@ -41,7 +41,7 @@ import org.jboss.capedwarf.aspects.AspectAdapter;
 import org.jboss.capedwarf.aspects.DisableSocketsAspect;
 import org.jboss.capedwarf.aspects.GlobalTimeLimitAspect;
 import org.jboss.capedwarf.aspects.InvocationTimeLimitAspect;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>

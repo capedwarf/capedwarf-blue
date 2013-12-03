@@ -26,7 +26,7 @@ import com.google.appengine.api.capabilities.Capability;
 import com.google.appengine.api.capabilities.CapabilityState;
 import com.google.appengine.api.capabilities.CapabilityStatus;
 import com.google.appengine.api.quota.QuotaService;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * Abstract environment -- default impls.

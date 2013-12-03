@@ -29,7 +29,7 @@ import java.util.concurrent.Future;
 
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.common.util.Util;
+import org.jboss.capedwarf.shared.util.Utils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -60,7 +60,7 @@ public abstract class AbstractQueueTask implements Callable<Long>, Serializable 
         List<Future<Long>> results = InfinispanUtils.everywhere(Application.getAppId(), task);
         long count = 0;
         for (Future<Long> f : results) {
-            count += Util.quietGet(f);
+            count += Utils.quietGet(f);
         }
         return count;
     }

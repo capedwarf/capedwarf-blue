@@ -50,15 +50,15 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.common.reflection.MethodInvocation;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-import org.jboss.capedwarf.common.reflection.TargetInvocation;
 import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.MapKey;
 import org.jboss.capedwarf.shared.components.Slot;
 import org.jboss.capedwarf.shared.config.IndexesXml;
+import org.jboss.capedwarf.shared.reflection.MethodInvocation;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.TargetInvocation;
 
 /**
  * JBoss DatastoreService impl.

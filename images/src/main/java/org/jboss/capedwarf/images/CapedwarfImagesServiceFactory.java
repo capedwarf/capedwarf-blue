@@ -34,7 +34,7 @@ import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.Transform;
 import org.jboss.capedwarf.aspects.proxy.AspectFactory;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>

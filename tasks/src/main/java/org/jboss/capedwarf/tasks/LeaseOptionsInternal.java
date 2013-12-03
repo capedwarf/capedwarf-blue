@@ -25,8 +25,8 @@ package org.jboss.capedwarf.tasks;
 import java.util.concurrent.TimeUnit;
 
 import com.google.appengine.api.taskqueue.LeaseOptions;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-import org.jboss.capedwarf.common.reflection.TargetInvocation;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.TargetInvocation;
 
 /**
  * Lease options.

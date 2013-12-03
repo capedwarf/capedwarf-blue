@@ -6,8 +6,8 @@ import java.util.Map;
 
 import com.google.appengine.api.taskqueue.RetryOptions;
 import com.google.appengine.api.taskqueue.TaskOptions;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-import org.jboss.capedwarf.common.reflection.TargetInvocation;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.TargetInvocation;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

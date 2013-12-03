@@ -27,18 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
-import org.jboss.capedwarf.common.reflection.TargetInvocation;
-import org.jboss.capedwarf.datastore.ExposedDatastoreService;
-import org.jboss.test.capedwarf.common.support.JBoss;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entities;
@@ -48,6 +36,17 @@ import com.google.appengine.api.datastore.FetchOptions.Builder;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.capedwarf.datastore.ExposedDatastoreService;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.TargetInvocation;
+import org.jboss.test.capedwarf.common.support.JBoss;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 /**
  * @author <a href="mailto:matejonnet@gmail.com">Matej Lazar</a>

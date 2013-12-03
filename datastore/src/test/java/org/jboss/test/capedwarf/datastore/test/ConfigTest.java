@@ -34,7 +34,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Query;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.common.reflection.ReflectionUtils;
+import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
