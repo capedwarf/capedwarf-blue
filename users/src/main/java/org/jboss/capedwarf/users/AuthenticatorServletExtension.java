@@ -31,6 +31,7 @@ import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.server.handlers.form.FormParserFactory;
 import io.undertow.servlet.ServletExtension;
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.LoginConfig;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -41,6 +42,11 @@ public class AuthenticatorServletExtension implements ServletExtension {
     private static final String CAPEDWARF = "CAPEDWARF";
 
     public void handleDeployment(DeploymentInfo deploymentInfo, ServletContext servletContext) {
+        final LoginConfig loginConfig = deploymentInfo.getLoginConfig();
+        if (loginConfig == null) {
+            return; // looks like there is no secure resources / content
+        }
+
         final String tgt = servletContext.getInitParameter("__TGT__");
         AuthenticationMechanismFactory amf;
         if (CAPEDWARF.equals(tgt)) {
@@ -48,7 +54,7 @@ public class AuthenticatorServletExtension implements ServletExtension {
         } else {
             amf = new CapedwarfBasicAuthenticatorFactory();
         }
-        deploymentInfo.getLoginConfig().addFirstAuthMethod(CAPEDWARF);
+        loginConfig.addFirstAuthMethod(CAPEDWARF);
         deploymentInfo.addAuthenticationMechanism(CAPEDWARF, amf);
     }
 
