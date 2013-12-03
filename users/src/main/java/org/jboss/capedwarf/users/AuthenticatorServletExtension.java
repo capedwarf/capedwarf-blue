@@ -22,9 +22,13 @@
 
 package org.jboss.capedwarf.users;
 
+import java.util.Map;
+
 import javax.servlet.ServletContext;
 
 import io.undertow.security.api.AuthenticationMechanism;
+import io.undertow.security.api.AuthenticationMechanismFactory;
+import io.undertow.server.handlers.form.FormParserFactory;
 import io.undertow.servlet.ServletExtension;
 import io.undertow.servlet.api.DeploymentInfo;
 import org.kohsuke.MetaInfServices;
@@ -34,14 +38,29 @@ import org.kohsuke.MetaInfServices;
  */
 @MetaInfServices
 public class AuthenticatorServletExtension implements ServletExtension {
+    private static final String CAPEDWARF = "CAPEDWARF";
+
     public void handleDeployment(DeploymentInfo deploymentInfo, ServletContext servletContext) {
         final String tgt = servletContext.getInitParameter("__TGT__");
-        AuthenticationMechanism am;
-        if ("CAPEDWARF".equals(tgt)) {
-            am = new CapedwarfUsersAuthenticator();
+        AuthenticationMechanismFactory amf;
+        if (CAPEDWARF.equals(tgt)) {
+            amf = new CapedwarfUsersAuthenticatorFactory();
         } else {
-            am = new CapedwarfBasicAuthenticator();
+            amf = new CapedwarfBasicAuthenticatorFactory();
         }
-        deploymentInfo.addAuthenticationMechanism(am);
+        deploymentInfo.getLoginConfig().addFirstAuthMethod(CAPEDWARF);
+        deploymentInfo.addAuthenticationMechanism(CAPEDWARF, amf);
+    }
+
+    private static class CapedwarfUsersAuthenticatorFactory implements AuthenticationMechanismFactory {
+        public AuthenticationMechanism create(String mechanismName, FormParserFactory formParserFactory, Map<String, String> properties) {
+            return new CapedwarfUsersAuthenticator();
+        }
+    }
+
+    private static class CapedwarfBasicAuthenticatorFactory implements AuthenticationMechanismFactory {
+        public AuthenticationMechanism create(String mechanismName, FormParserFactory formParserFactory, Map<String, String> properties) {
+            return new CapedwarfBasicAuthenticator();
+        }
     }
 }
