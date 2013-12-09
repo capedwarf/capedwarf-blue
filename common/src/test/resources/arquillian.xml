@@ -36,7 +36,7 @@
         <container qualifier="container-1" >
             <configuration>
                 <property name="managementAddress">127.0.0.1</property>
-                <property name="managementPort">9999</property>
+                <property name="managementPort">9990</property>
             </configuration>
         </container>
 
@@ -48,7 +48,7 @@
         <container qualifier="container-2">
             <configuration>
                 <property name="managementAddress">127.0.0.1</property>
-                <property name="managementPort">10099</property>
+                <property name="managementPort">10090</property>
             </configuration>
         </container>
     </group>
