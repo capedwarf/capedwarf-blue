@@ -30,16 +30,19 @@ import javax.sql.DataSource;
 
 import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.SimpleKey;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class SqlUtils {
+    private static final Key<DataSource> DS_KEY = new SimpleKey<>(EnvAppIdFactory.INSTANCE, DataSource.class);
+
     public static DataSource getDataSource() {
         ComponentRegistry registry = ComponentRegistry.getInstance();
         DataSource ds = new JndiDataSource();
-        DataSource previous = registry.putIfAbsent(new SimpleKey<DataSource>(EnvAppIdFactory.INSTANCE, DataSource.class), ds);
+        DataSource previous = registry.putIfAbsent(DS_KEY, ds);
         return (previous != null ? previous : ds);
     }
 
