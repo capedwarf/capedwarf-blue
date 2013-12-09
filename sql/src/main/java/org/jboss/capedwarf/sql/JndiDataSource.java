@@ -22,28 +22,14 @@
 
 package org.jboss.capedwarf.sql;
 
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.sql.DataSource;
 
-import com.google.appengine.api.rdbms.AppEngineDriver;
-import com.mysql.jdbc.GoogleDriver;
 import org.jboss.capedwarf.common.jndi.JndiLookupUtils;
-import org.jboss.capedwarf.shared.components.ShutdownHook;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class JndiDataSource extends AbstractDelegateDataSource implements ShutdownHook {
-    private static final Logger log = Logger.getLogger(JndiDataSource.class.getName());
-
+class JndiDataSource extends AbstractDelegateDataSource {
     private volatile DataSource ds;
 
     protected DataSource getDelegate() {
@@ -55,24 +41,5 @@ class JndiDataSource extends AbstractDelegateDataSource implements ShutdownHook 
             }
         }
         return ds;
-    }
-
-    public void shutdown() {
-        final List<Driver> toUnregister = new ArrayList<>();
-        Enumeration<Driver> drivers = DriverManager.getDrivers();
-        while (drivers.hasMoreElements()) {
-            Driver driver = drivers.nextElement();
-            Class<? extends Driver> clazz = driver.getClass();
-            if (clazz == GoogleDriver.class || clazz == AppEngineDriver.class) {
-                toUnregister.add(driver);
-            }
-        }
-        for (Driver driver : toUnregister) {
-            try {
-                DriverManager.deregisterDriver(driver);
-            } catch (SQLException e) {
-                log.log(Level.WARNING, "Unable to deregister Driver automatically.", e);
-            }
-        }
     }
 }
