@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.appengine.api.rdbms.AppEngineDriver;
+import com.mysql.jdbc.GoogleDriver;
+
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
@@ -44,11 +47,8 @@ public class DriverCleanupHelper {
             Driver driver = drivers.nextElement();
             Class<? extends Driver> clazz = driver.getClass();
             // make sure it's from our deployment
-            if (deploymentClassLoader == clazz.getClassLoader()) {
-                String className = clazz.getName();
-                if ("com.google.appengine.api.rdbms.AppEngineDriver".equals(className) || "com.mysql.jdbc.GoogleDriver".equals(className)) {
-                    toUnregister.add(driver);
-                }
+            if (deploymentClassLoader == clazz.getClassLoader() && (AppEngineDriver.class == clazz || GoogleDriver.class == clazz)) {
+                toUnregister.add(driver);
             }
         }
         for (Driver driver : toUnregister) {
