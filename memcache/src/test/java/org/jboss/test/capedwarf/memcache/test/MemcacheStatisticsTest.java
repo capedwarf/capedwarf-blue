@@ -33,7 +33,6 @@ import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -67,7 +66,6 @@ public class MemcacheStatisticsTest extends TestBase {
     }
 
     @Test
-    @Ignore("enable JMX stats for cache")
     public void testItemCount() {
         assertEquals(0, service.getStatistics().getItemCount());
         service.put("key1", "value1");
@@ -75,7 +73,6 @@ public class MemcacheStatisticsTest extends TestBase {
     }
 
     @Test
-    @Ignore("enable JMX stats for cache")
     public void testHitAndMissCount() {
         service.put("key1", "value1");
 
