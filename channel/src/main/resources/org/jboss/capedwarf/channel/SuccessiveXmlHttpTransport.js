@@ -19,26 +19,28 @@ SuccessiveXmlHttpTransport.prototype.sendRequest = function(ackList) {
         const PROCESSING_REQUEST = 3;
         const REQUEST_FINISHED = 4;
         const HTTP_OK = 200;
+        const HTTP_NOT_FOUND = 404;
 
-        if (xhr.readyState == REQUEST_FINISHED && xhr.status == HTTP_OK) {
-            var lines = xhr.responseText.split(/\r\n|\r|\n/g);
+        if (xhr.readyState == REQUEST_FINISHED) {
             var ackIds = "";
-            for (var i=0; i<lines.length; i++) {
-                var line = lines[i];
-                var tokens = line.split(/:_:/g);
-                var type = tokens[0];
-                var messageId = tokens[1];
-                var message = tokens[2];
-                if (type != undefined) {
-                    t.socket.processMessage(type, message);
-                    if (messageId != "" && messageId != undefined) {
-                        ackIds = (ackIds == "" ? "" : (ackIds + ",")) + messageId;
+            if (xhr.status == HTTP_OK) {
+                var lines = xhr.responseText.split(/\r\n|\r|\n/g);
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    var tokens = line.split(/:_:/g);
+                    var type = tokens[0];
+                    var messageId = tokens[1];
+                    var message = tokens[2];
+                    if (type != undefined) {
+                        t.socket.processMessage(type, message);
+                        if (messageId != "" && messageId != undefined) {
+                            ackIds = (ackIds == "" ? "" : (ackIds + ",")) + messageId;
+                        }
                     }
                 }
             }
-
-            if (t.socket.readyState != goog.appengine.Socket.ReadyState.CLOSED) {
-                setTimeout(function() {
+            if (xhr.status != HTTP_NOT_FOUND && t.socket.readyState != goog.appengine.Socket.ReadyState.CLOSED) {
+                setTimeout(function () {
                     t.socket.transport.sendRequest(ackIds);
                 }, 1);
             }
