@@ -20,6 +20,10 @@
             <option value="$kind" #if($kind.equals($datastoreViewer.selectedEntityKind)) selected="selected" #end>$kind</option>
         #end
     </select>
+
+    <label for="query">Query:</label>
+    <input name="query" type="text" size="100" />
+
     <input type="submit" value="List Entities"/>
 </form>
 

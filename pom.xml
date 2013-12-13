@@ -30,6 +30,7 @@
         <module>endpoints</module>
         <module>environment</module>
         <module>files</module>
+        <module>gql4j</module>
         <module>images</module>
         <module>log</module>
         <module>mail</module>
@@ -87,6 +88,9 @@
         <version.org.xerial.sqlite>3.7.2</version.org.xerial.sqlite>
         <version.org.codehaus.jackson>1.9.12</version.org.codehaus.jackson>
         <version.io.undertow>1.0.0.Beta27</version.io.undertow>
+        <!-- Antlr -->
+        <version.antlr>3.1</version.antlr>
+        <version.antlr.plugin>3.1.3-1</version.antlr.plugin>
         <!-- DataNucleus -->
         <version.org.datanucleus>3.1.2</version.org.datanucleus>
         <version.org.datanucleus.jta>1.1.1</version.org.datanucleus.jta>
@@ -223,6 +227,20 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.antlr</groupId>
+                    <artifactId>antlr3-maven-plugin</artifactId>
+                    <version>${version.antlr.plugin}</version>
+                    <executions>
+                        <execution>
+                            <id>genantlrsrc</id>
+                            <phase>generate-sources</phase>
+                            <goals>
+                                <goal>antlr</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -351,6 +369,12 @@
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-files</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-gql4j</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -540,6 +564,14 @@
                 <groupId>com.google.appengine</groupId>
                 <artifactId>appengine-endpoints</artifactId>
                 <version>${version.com.google.gae.api}</version>
+            </dependency>
+
+            <!-- Other stuff -->
+
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr-runtime</artifactId>
+                <version>${version.antlr}</version>
             </dependency>
 
             <dependency>

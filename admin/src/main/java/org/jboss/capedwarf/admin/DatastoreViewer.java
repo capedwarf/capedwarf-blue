@@ -36,15 +36,19 @@ import javax.inject.Named;
 
 import com.google.appengine.api.NamespaceManager;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import org.jboss.capedwarf.datastore.NamespaceServiceFactory;
 import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
+import org.jboss.capedwarf.gql4j.GqlQuery;
 
 /**
  * @author Marko Luksa
+ * @author Ales Justin
  */
+@SuppressWarnings("CdiInjectionPointsInspection")
 @Named("datastoreViewer")
 @RequestScoped
 public class DatastoreViewer extends DatastoreHolder {
@@ -54,6 +58,9 @@ public class DatastoreViewer extends DatastoreHolder {
 
     @Inject @HttpParam
     private String selectedEntityKind;
+
+    @Inject @HttpParam
+    private String query;
 
     private List<String> properties = new ArrayList<String>();
     private List<Row> rows;
@@ -78,7 +85,7 @@ public class DatastoreViewer extends DatastoreHolder {
     public List<String> getEntityKinds() {
         NamespaceServiceInternal namespaceService = NamespaceServiceFactory.getNamespaceService();
         Set<String> set = namespaceService.getKindsPerNamespace(getSelectedNamespace());
-        List<String> list = new ArrayList<String>(set);
+        List<String> list = new ArrayList<>(set);
         Collections.sort(list);
         return list;
     }
@@ -105,7 +112,8 @@ public class DatastoreViewer extends DatastoreHolder {
         final String previous = NamespaceManager.get();
         NamespaceManager.set(selectedNamespace);
         try {
-            for (Entity entity : getDatastore().prepare(new Query(getSelectedEntityKind())).asIterable()) {
+            Iterable<Entity> entities = findEntities();
+            for (Entity entity : entities) {
                 propertyNameSet.addAll(entity.getProperties().keySet());
                 rows.add(new Row(entity));
             }
@@ -115,6 +123,20 @@ public class DatastoreViewer extends DatastoreHolder {
 
         properties.clear();
         properties.addAll(propertyNameSet);
+    }
+
+    private Iterable<Entity> findEntities() {
+        Query q;
+        FetchOptions options;
+        if (query != null && query.length() > 0) {
+            GqlQuery gql = new GqlQuery(query);
+            q = gql.query();
+            options = gql.fetchOptions();
+        } else {
+            q = new Query(getSelectedEntityKind());
+            options = FetchOptions.Builder.withDefaults();
+        }
+        return getDatastore().prepare(q).asIterable(options);
     }
 
     public class Row {
