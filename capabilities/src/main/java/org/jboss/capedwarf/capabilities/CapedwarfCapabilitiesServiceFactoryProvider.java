@@ -40,7 +40,7 @@ import org.kohsuke.MetaInfServices;
 public class CapedwarfCapabilitiesServiceFactoryProvider extends CapedwarfFactoryProvider<ICapabilitiesServiceFactory> {
     private final ICapabilitiesServiceFactory factory = new ICapabilitiesServiceFactory() {
         public CapabilitiesService getCapabilitiesService() {
-            return AspectFactory.createProxy(CapabilitiesService.class, new CapedwarfCapabilitiesService());
+            return AspectFactory.createProxy(ExposedCapabilitiesService.class, new CapedwarfCapabilitiesService());
         }
     };
 

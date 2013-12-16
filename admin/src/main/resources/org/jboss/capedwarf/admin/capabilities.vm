@@ -1,0 +1,41 @@
+#parse("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Capabilities Status Configuration</h2>
+
+<p>
+    With the Capabilities API, your application can detect outages and scheduled downtime for specific API capabilities.
+    With this information, you can gracefully disable functionality in your application that depends on the unavailable capability before it impacts your users.
+</p>
+<p>
+    This page allows you to disable capabilities so that you can test the behaviour of your application in a degraded environment.
+</p>
+<form action="capabilities.vm">
+    <table id="CapabilitiesTable">
+    #foreach ($capability in $capabilities.capabilities)
+        <tr>
+            <td align="right">
+                <label for="$capability.name">$capability.name</label>
+            </td>
+            <td>
+                <select name="$capability.name" id="$capability.name" onchange="document.forms[0].submit();">
+                    <option value="DISABLED" #if($capabilities.getStatus($capability.capability).name().equals("DISABLED")) selected="selected" #end>
+                        The capability is disabled.
+                    </option>
+                    <option value="ENABLED" #if($capabilities.getStatus($capability.capability).name().equals("ENABLED")) selected="selected" #end>
+                        The capability is available and no maintenance is currently planned.
+                    </option>
+                    <option value="SCHEDULED_MAINTENANCE" #if($capabilities.getStatus($capability.capability).name().equals("SCHEDULED_MAINTENANCE")) selected="selected" #end>
+                        The capability is available but scheduled for maintenance.
+                    </option>
+                    <option value="UNKNOWN" #if($capabilities.getStatus($capability.capability).name().equals("UNKNOWN")) selected="selected" #end>
+                        The status of the capability is unknown..
+                    </option>
+                </select>
+            </td>
+        </tr>
+    #end
+    </table>
+
+</form>
+
+#parse("/org/jboss/capedwarf/admin/footer.vm")

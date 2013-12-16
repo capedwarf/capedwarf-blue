@@ -24,6 +24,7 @@ package org.jboss.capedwarf.environment;
 
 import com.google.appengine.api.capabilities.Capability;
 import com.google.appengine.api.capabilities.CapabilityState;
+import com.google.appengine.api.capabilities.CapabilityStatus;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
@@ -58,6 +59,14 @@ public interface Environment {
      * @return capability's state
      */
     CapabilityState getState(Capability capability);
+
+    /**
+     * Set capability state (for DEV purposes)
+     *
+     * @param capability the capability in question
+     * @param status the new status of the capability
+     */
+    void setState(Capability capability, CapabilityStatus status);
 
     /**
      * Get quota service.
