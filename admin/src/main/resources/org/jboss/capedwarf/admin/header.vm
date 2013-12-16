@@ -253,6 +253,17 @@
                         </li>
                     </ul>
                 </li>
+                <li id="nav-heading">
+                    <span class="nav-heading-section">Dev Tools</span>
+                    <ul>
+                        <li>
+                            <a href="#">Inbound mail</a>
+                        </li>
+                        <li>
+                            <a href="capabilities.vm">Capabilities status</a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </div>
     </div>
