@@ -24,6 +24,7 @@ package org.jboss.capedwarf.openshift;
 
 import com.google.appengine.api.capabilities.Capability;
 import com.google.appengine.api.capabilities.CapabilityState;
+import com.google.appengine.api.capabilities.CapabilityStatus;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
@@ -48,6 +49,11 @@ public class OpenShiftEnvironment implements Environment {
 
     public CapabilityState getState(Capability capability) {
         return null; // TODO
+    }
+
+    @Override
+    public void setState(Capability capability, CapabilityStatus status) {
+        throw new UnsupportedOperationException();
     }
 
     public QuotaService getQuotaService() {

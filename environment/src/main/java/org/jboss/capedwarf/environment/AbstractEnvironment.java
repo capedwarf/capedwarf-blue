@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.environment;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.google.appengine.api.capabilities.Capability;
 import com.google.appengine.api.capabilities.CapabilityState;
 import com.google.appengine.api.capabilities.CapabilityStatus;
@@ -32,16 +35,25 @@ import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
  * Abstract environment -- default impls.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public abstract class AbstractEnvironment implements Environment {
     protected static final String MASTER_SERVER_PARTITION = "";
     private static final QuotaService NOOP = new NoopQuotaService();
 
+    private Map<Capability, CapabilityStatus> capabilityStatusMap = new ConcurrentHashMap<>();
+
     public CapabilityState getState(Capability capability) {
+        CapabilityStatus status = capabilityStatusMap.get(capability);
         return ReflectionUtils.newInstance(
                 CapabilityState.class,
                 new Class[]{Capability.class, CapabilityStatus.class, long.class},
-                new Object[]{capability, CapabilityStatus.ENABLED, -1});
+                new Object[]{capability, status == null ? CapabilityStatus.ENABLED : status, -1});
+    }
+
+    @Override
+    public void setState(Capability capability, CapabilityStatus status) {
+        capabilityStatusMap.put(capability, status);
     }
 
     public QuotaService getQuotaService() {
