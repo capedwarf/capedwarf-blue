@@ -117,7 +117,7 @@
         <!-- Testing Objectify -->
         <version.objectify>4.0b1</version.objectify>
         <!-- Testing REST -->
-        <version.org.jboss.resteasy>3.0.5.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.0.6.Final</version.org.jboss.resteasy>
         <!-- Build configuration -->
         <version.datanucleus.plugin>3.1.2</version.datanucleus.plugin>
         <version.dependency.plugin>2.8</version.dependency.plugin>
