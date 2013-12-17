@@ -60,6 +60,8 @@ final class CapedwarfTransaction implements Transaction {
     private final TransactionOptions options;
     private ThreadLocal<javax.transaction.Transaction> transactions = new ThreadLocal<javax.transaction.Transaction>();
 
+    private String txId;
+
     private CapedwarfTransaction(TransactionOptions options) {
         this.options = options;
     }
@@ -180,9 +182,7 @@ final class CapedwarfTransaction implements Transaction {
     static void resumeTx(javax.transaction.Transaction transaction) {
         try {
             tm.resume(transaction);
-        } catch (InvalidTransactionException e) {
-            throw new DatastoreFailureException("Cannot resume tx.", e);
-        } catch (SystemException e) {
+        } catch (InvalidTransactionException | SystemException e) {
             throw new DatastoreFailureException("Cannot resume tx.", e);
         }
     }
@@ -351,8 +351,11 @@ final class CapedwarfTransaction implements Transaction {
         return tx;
     }
 
-    public String getId() {
-        return EnvironmentFactory.getEnvironment().getTransactionId();
+    public synchronized String getId() {
+        if (txId == null) {
+            txId = EnvironmentFactory.getEnvironment().getTransactionId();
+        }
+        return txId;
     }
 
     public String getApp() {
