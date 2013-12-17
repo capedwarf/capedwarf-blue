@@ -132,6 +132,9 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
         assertNotCommited(response);
 
         BlobInfo blobInfo = getBlobInfo(blobKey);
+        if (blobInfo == null) {
+            throw new IOException(String.format("No such blob for key: %s", blobKey));
+        }
         response.setContentType(blobInfo.getContentType());
 
         ByteRange byteRange = null;
@@ -151,8 +154,8 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
                 return;
             }
 
-            if (byteRange.hasEnd() && byteRange.getEnd() >= blobInfo.getSize()) {
-                byteRange = new ByteRange(byteRange.getStart(), blobInfo.getSize()-1);
+            if ((byteRange.hasEnd() == false) || (byteRange.getEnd() >= blobInfo.getSize())) {
+                byteRange = new ByteRange(byteRange.getStart(), blobInfo.getSize() - 1);
             }
 
             response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
@@ -160,11 +163,8 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
         }
 
         try {
-            InputStream in = getStream(blobKey);
-            try {
+            try (InputStream in = getStream(blobKey)) {
                 copyStream(in, response.getOutputStream(), byteRange);
-            } finally {
-                in.close();
             }
         } catch (FileNotFoundException e) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
