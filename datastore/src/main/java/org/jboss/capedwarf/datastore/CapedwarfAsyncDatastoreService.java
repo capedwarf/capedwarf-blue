@@ -282,19 +282,19 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
 
     @Deadline
     public Future<DatastoreAttributes> getDatastoreAttributes() {
-        return wrap(new Callable<DatastoreAttributes>() {
+        return wrap(env(new Callable<DatastoreAttributes>() {
             public DatastoreAttributes call() throws Exception {
                 return getDelegate().getDatastoreAttributes();
             }
-        });
+        }));
     }
 
     @Deadline
     public Future<Map<Index, Index.IndexState>> getIndexes() {
-        return wrap(new Callable<Map<Index, Index.IndexState>>() {
+        return wrap(env(new Callable<Map<Index, Index.IndexState>>() {
             public Map<Index, Index.IndexState> call() throws Exception {
                 return getDelegate().getIndexes();
             }
-        });
+        }));
     }
 }
