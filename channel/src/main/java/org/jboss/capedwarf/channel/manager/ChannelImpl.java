@@ -45,15 +45,21 @@ public class ChannelImpl implements Channel, MessagesAdapter, Serializable {
     public static final String CLIENT_ID = "clientId";
     public static final String TOKEN = "token";
 
-    private String clientId;
-    private long expirationTime;
-    private String token;
+    private final long creationTime;
+    private final String clientId;
+    private final long expirationTime;
+    private final String token;
     private MessageNotification notification;
 
     public ChannelImpl(String clientId, long expirationTime, String token) {
+        this.creationTime = System.currentTimeMillis();
         this.clientId = clientId;
         this.expirationTime = expirationTime;
         this.token = token;
+    }
+
+    public boolean isExpired() {
+        return (creationTime + expirationTime > System.currentTimeMillis());
     }
 
     @Field(name = CLIENT_ID, analyze = Analyze.NO, norms = Norms.NO, termVector = TermVector.NO)

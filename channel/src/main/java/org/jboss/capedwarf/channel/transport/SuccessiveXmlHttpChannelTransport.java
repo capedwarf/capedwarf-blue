@@ -47,7 +47,6 @@ public class SuccessiveXmlHttpChannelTransport extends AbstractTransport {
     }
 
     public void serveMessages() throws IOException {
-        log.fine("Channel queue opened.");
         getQueue().ackMessages(getAckMessageIds());
 
         getResponse().setContentType("text/plain");
@@ -59,6 +58,10 @@ public class SuccessiveXmlHttpChannelTransport extends AbstractTransport {
         }
 
         serveMessages(writer);
+
+        if (hasChannelExpired()) {
+            writeCloseMessage(writer);
+        }
     }
 
     private List<String> getAckMessageIds() {

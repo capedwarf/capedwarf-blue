@@ -31,5 +31,7 @@ public interface Channel {
     String getToken();
     long getExpirationTime();
 
+    boolean isExpired();
+
     void sendMessage(String message);
 }

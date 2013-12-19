@@ -71,4 +71,9 @@ public class ChannelQueue {
     public void ackMessages(List<String> messageIds) {
         adapter.ackMessages(messageIds);
     }
+
+    public boolean hasChannelExpired(String token) {
+        Channel channel = ChannelManagerImpl.getInstance().getChannelByToken(token);
+        return (channel == null || channel.isExpired());
+    }
 }

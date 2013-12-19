@@ -47,6 +47,10 @@ public abstract class AbstractTransport implements ChannelTransport {
         this.queue = queue;
     }
 
+    protected boolean hasChannelExpired() {
+        return queue.hasChannelExpired(channelToken);
+    }
+
     public HttpServletRequest getRequest() {
         return request;
     }
