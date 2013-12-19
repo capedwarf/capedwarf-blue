@@ -26,8 +26,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -63,6 +65,7 @@ import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
+@SuppressWarnings("deprecation")
 public class CapedwarfFileService implements ExposedFileService {
 
     private static final String DEFAULT_MIME_TYPE = "application/octet-stream";
@@ -85,7 +88,7 @@ public class CapedwarfFileService implements ExposedFileService {
     }
 
     public FileInfo getFileInfo(BlobKey key) {
-        Entity info = getFileInfo(KeyFactory.createKey(BlobInfoFactory.KIND, key.getKeyString()));
+        Entity info = getFileInfo(getFileInfoKey(key));
         if (info != null) {
             String contentType = (String) info.getProperty(BlobInfoFactory.CONTENT_TYPE);
             Date creation = (Date) info.getProperty(BlobInfoFactory.CREATION);
@@ -106,100 +109,6 @@ public class CapedwarfFileService implements ExposedFileService {
 
     public AppEngineFile createNewBlobFile(String contentType, String uploadedFileName) throws IOException {
         return createNewBlobFile(contentType, null, uploadedFileName, AppEngineFile.FileSystem.BLOBSTORE);
-    }
-
-    private AppEngineFile createNewBlobFile(String contentType, String fileName, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException {
-        if (contentType == null || contentType.trim().isEmpty()) {
-            contentType = DEFAULT_MIME_TYPE;
-        }
-
-        AppEngineFile file;
-        if (fileName == null) {
-            fileName = generateUniqueFileName();
-            file = new AppEngineFile(fs, fileName);
-        } else {
-            file = new AppEngineFile(fileName);
-        }
-
-        storeTemporaryBlobInfo(file, contentType, new Date(), uploadedFileName);
-
-        return file;
-    }
-
-    private void storeTemporaryBlobInfo(AppEngineFile file, String contentType, Date creationTimestamp, String uploadedFileName) {
-        Entity tempBlobInfo = new Entity(getTempBlobInfoKey(file));
-        tempBlobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, contentType);
-        tempBlobInfo.setProperty(BlobInfoFactory.CREATION, creationTimestamp);
-        tempBlobInfo.setProperty(BlobInfoFactory.FILENAME, uploadedFileName);
-        datastoreService.put(tempBlobInfo);
-    }
-
-    private Key getTempBlobInfoKey(AppEngineFile file) {
-        final String origNamespace = NamespaceManager.get();
-        NamespaceManager.set("");
-        try {
-            return KeyFactory.createKey(KIND_TEMP_BLOB_INFO, file.getFullPath());
-        } finally {
-            NamespaceManager.set(origNamespace);
-        }
-    }
-
-    private Entity getTemporaryInfo(AppEngineFile file) {
-        try {
-            return datastoreService.get(getTempBlobInfoKey(file));
-        } catch (EntityNotFoundException e) {
-            throw new IllegalStateException("Cannot finalize file " + file + ". Cannot find temp blob info.");
-        }
-    }
-
-    void saveMd5(AppEngineFile file, DigestResult dg) {
-        Entity info = getTemporaryInfo(file);
-        byte[] bytes = dg.getState();
-        if (bytes != null) {
-            info.setProperty(MD5_HASH_STATE, new Blob(bytes));
-        }
-        info.setProperty(BlobInfoFactory.MD5_HASH, dg.getDigest());
-        datastoreService.put(info);
-    }
-
-    DigestResult readMd5(AppEngineFile file) {
-        Entity info = getTemporaryInfo(file);
-        Blob state = (Blob) info.getProperty(MD5_HASH_STATE);
-        String md5 = (String) info.getProperty(BlobInfoFactory.MD5_HASH);
-        return new DigestResult(state != null ? state.getBytes() : null, md5);
-    }
-
-    void finalizeFile(AppEngineFile file) {
-        Entity tempBlobInfo = getTemporaryInfo(file);
-
-        File gfsFile = getGfsFile(file);
-        if (gfsFile.exists() == false) {
-            throw new IllegalStateException("Cannot finalize file " + file + ". Cannot find file on grid filesystem.");
-        }
-
-        final String origNamespace = NamespaceManager.get();
-        NamespaceManager.set("");
-        try {
-            String blobKeyString = getBlobKey(file).getKeyString();
-            Entity blobInfo = new Entity(BlobInfoFactory.KIND, blobKeyString);
-            blobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, tempBlobInfo.getProperty(BlobInfoFactory.CONTENT_TYPE));
-            blobInfo.setProperty(BlobInfoFactory.CREATION, tempBlobInfo.getProperty(BlobInfoFactory.CREATION));
-            blobInfo.setProperty(BlobInfoFactory.FILENAME, tempBlobInfo.getProperty(BlobInfoFactory.FILENAME));
-            blobInfo.setProperty(BlobInfoFactory.MD5_HASH, tempBlobInfo.getProperty(BlobInfoFactory.MD5_HASH));
-            blobInfo.setProperty(BlobInfoFactory.SIZE, gfsFile.length());
-            datastoreService.put(blobInfo);
-        } finally {
-            NamespaceManager.set(origNamespace);
-        }
-    }
-
-    private File getGfsFile(AppEngineFile file) {
-        GridFilesystem gfs = getGridFilesystem();
-        return gfs.getFile(getFilePath(file));
-    }
-
-    private String generateUniqueFileName() {
-        return UUID.randomUUID().toString();
     }
 
     public AppEngineFile createNewGSFile(GSFileOptions options) throws IOException {
@@ -233,25 +142,6 @@ public class CapedwarfFileService implements ExposedFileService {
         return new CapedwarfFileWriteChannel(file, gfs.getWritableChannel(getFilePath(file), true), this, lock);
     }
 
-    private void throwFinalizationException() throws FinalizationException {
-        throw ReflectionUtils.newInstance(FinalizationException.class);
-    }
-
-    private boolean isFinalized(AppEngineFile file) {
-        BlobKey blobKey = getBlobKey(file);
-        BlobInfo blobInfo = getBlobInfo(blobKey);
-        return blobInfo != null;
-    }
-
-    private void createBlobstoreDirIfNeeded(AppEngineFile file) {
-        // TODO: this is temporary
-        String fullPath = file.getFullPath();
-        int p = fullPath.lastIndexOf("/");
-        String dirs = fullPath.substring(0, p);
-        //noinspection ResultOfMethodCallIgnored
-        getGridFilesystem().getFile(dirs).mkdirs();
-    }
-
     public FileReadChannel openReadChannel(AppEngineFile file, boolean lock) throws IOException {
         if (!exists(file)) {
             throw new FileNotFoundException("File " + file + " not found.");
@@ -270,22 +160,6 @@ public class CapedwarfFileService implements ExposedFileService {
     @Override
     public boolean exists(AppEngineFile file) {
         return getGfsFile(file).exists();
-    }
-
-    private String getFilePath(AppEngineFile file) {
-        return removeLeadingSeparator(file.getFullPath());
-    }
-
-    private String getFilePath(BlobKey blobKey) {
-        return getFilePath(getBlobFile(blobKey));
-    }
-
-    private String removeLeadingSeparator(String fullPath) {
-        return fullPath.startsWith("/") ? fullPath.substring(1) : fullPath; // TODO: fix grid FS and remove this method
-    }
-
-    private GridFilesystem getGridFilesystem() {
-        return InfinispanUtils.getGridFilesystem(Application.getAppId());
     }
 
     public RecordWriteChannel openRecordWriteChannel(AppEngineFile file, boolean lock) throws IOException {
@@ -311,16 +185,8 @@ public class CapedwarfFileService implements ExposedFileService {
         return new AppEngineFile(AppEngineFile.FileSystem.BLOBSTORE, blobKey.getKeyString());
     }
 
-    protected Entity getFileInfo(Key key) {
-        try {
-            return datastoreService.get(key);
-        } catch (EntityNotFoundException e) {
-            return null;
-        }
-    }
-
     public FileStat stat(AppEngineFile file) throws IOException {
-        Entity info = getFileInfo(KeyFactory.createKey(BlobInfoFactory.KIND, getBlobKey(file).getKeyString()));
+        Entity info = getFileInfo(getFileInfoKey(getBlobKey(file)));
         if (info == null) {
             info = getFileInfo(getTempBlobInfoKey(file));
             if (info == null) {
@@ -347,5 +213,177 @@ public class CapedwarfFileService implements ExposedFileService {
         }
         if (failed.isEmpty() == false)
             throw new IOException("Failed to delete files: " + failed);
+    }
+
+    private Key getTempBlobInfoKey(AppEngineFile file) {
+        final String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            return KeyFactory.createKey(KIND_TEMP_BLOB_INFO, file.getFullPath());
+        } finally {
+            NamespaceManager.set(origNamespace);
+        }
+    }
+
+    private Key getFileInfoKey(BlobKey key) {
+        final String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            return KeyFactory.createKey(BlobInfoFactory.KIND, key.getKeyString());
+        } finally {
+            NamespaceManager.set(origNamespace);
+        }
+    }
+
+    private AppEngineFile createNewBlobFile(String contentType, String fileName, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException {
+        if (contentType == null || contentType.trim().isEmpty()) {
+            contentType = DEFAULT_MIME_TYPE;
+        }
+
+        AppEngineFile file;
+        if (fileName == null) {
+            fileName = generateUniqueFileName();
+            file = new AppEngineFile(fs, fileName);
+        } else {
+            file = new AppEngineFile(fileName);
+        }
+
+        storeTemporaryBlobInfo(file, contentType, new Date(), uploadedFileName);
+
+        return file;
+    }
+
+    private void storeTemporaryBlobInfo(AppEngineFile file, String contentType, Date creationTimestamp, String uploadedFileName) {
+        final String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            Entity tempBlobInfo = new Entity(getTempBlobInfoKey(file));
+            tempBlobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, contentType);
+            tempBlobInfo.setProperty(BlobInfoFactory.CREATION, creationTimestamp);
+            tempBlobInfo.setProperty(BlobInfoFactory.FILENAME, uploadedFileName);
+            datastoreService.put(tempBlobInfo);
+        } finally {
+            NamespaceManager.set(origNamespace);
+        }
+    }
+
+    private Entity getTemporaryInfo(AppEngineFile file) {
+        final String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            return datastoreService.get(getTempBlobInfoKey(file));
+        } catch (EntityNotFoundException e) {
+            throw new IllegalStateException("Cannot finalize file " + file + ". Cannot find temp blob info.");
+        } finally {
+            NamespaceManager.set(origNamespace);
+        }
+    }
+
+    void saveMd5(AppEngineFile file, DigestResult dg) {
+        final String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            Entity info = getTemporaryInfo(file);
+            byte[] bytes = dg.getState();
+            if (bytes != null) {
+                info.setProperty(MD5_HASH_STATE, new Blob(bytes));
+            }
+            info.setProperty(BlobInfoFactory.MD5_HASH, dg.getDigest());
+            datastoreService.put(info);
+        } finally {
+            NamespaceManager.set(origNamespace);
+        }
+    }
+
+    DigestResult readMd5(AppEngineFile file) {
+        final String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            Entity info = getTemporaryInfo(file);
+            Blob state = (Blob) info.getProperty(MD5_HASH_STATE);
+            String md5 = (String) info.getProperty(BlobInfoFactory.MD5_HASH);
+            return new DigestResult(state != null ? state.getBytes() : null, md5);
+        } finally {
+            NamespaceManager.set(origNamespace);
+        }
+    }
+
+    void finalizeFile(AppEngineFile file) {
+        final String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            Entity tempBlobInfo = getTemporaryInfo(file);
+
+            File gfsFile = getGfsFile(file);
+            if (gfsFile.exists() == false) {
+                throw new IllegalStateException("Cannot finalize file " + file + ". Cannot find file on grid filesystem.");
+            }
+
+            String blobKeyString = getBlobKey(file).getKeyString();
+            Entity blobInfo = new Entity(BlobInfoFactory.KIND, blobKeyString);
+            blobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, tempBlobInfo.getProperty(BlobInfoFactory.CONTENT_TYPE));
+            blobInfo.setProperty(BlobInfoFactory.CREATION, tempBlobInfo.getProperty(BlobInfoFactory.CREATION));
+            blobInfo.setProperty(BlobInfoFactory.FILENAME, tempBlobInfo.getProperty(BlobInfoFactory.FILENAME));
+            blobInfo.setProperty(BlobInfoFactory.MD5_HASH, tempBlobInfo.getProperty(BlobInfoFactory.MD5_HASH));
+            blobInfo.setProperty(BlobInfoFactory.SIZE, gfsFile.length());
+            datastoreService.put(blobInfo);
+        } finally {
+            NamespaceManager.set(origNamespace);
+        }
+    }
+
+    private File getGfsFile(AppEngineFile file) {
+        GridFilesystem gfs = getGridFilesystem();
+        return gfs.getFile(getFilePath(file));
+    }
+
+    private String generateUniqueFileName() {
+        return UUID.randomUUID().toString();
+    }
+
+    private void throwFinalizationException() throws FinalizationException {
+        throw ReflectionUtils.newInstance(FinalizationException.class);
+    }
+
+    private boolean isFinalized(AppEngineFile file) {
+        BlobKey blobKey = getBlobKey(file);
+        BlobInfo blobInfo = getBlobInfo(blobKey);
+        return blobInfo != null;
+    }
+
+    private void createBlobstoreDirIfNeeded(AppEngineFile file) {
+        // TODO: this is temporary
+        String fullPath = file.getFullPath();
+        int p = fullPath.lastIndexOf("/");
+        String dirs = fullPath.substring(0, p);
+        //noinspection ResultOfMethodCallIgnored
+        getGridFilesystem().getFile(dirs).mkdirs();
+    }
+
+    private String getFilePath(AppEngineFile file) {
+        return removeLeadingSeparator(file.getFullPath());
+    }
+
+    private String getFilePath(BlobKey blobKey) {
+        return getFilePath(getBlobFile(blobKey));
+    }
+
+    private String removeLeadingSeparator(String fullPath) {
+        return fullPath.startsWith("/") ? fullPath.substring(1) : fullPath; // TODO: fix grid FS and remove this method
+    }
+
+    private GridFilesystem getGridFilesystem() {
+        return InfinispanUtils.getGridFilesystem(Application.getAppId());
+    }
+
+    protected Entity getFileInfo(Key key) {
+        final String origNamespace = NamespaceManager.get();
+        NamespaceManager.set("");
+        try {
+            Map<Key, Entity> map = datastoreService.get(Collections.singleton(key));
+            return (map.isEmpty() ? null : map.values().iterator().next());
+        } finally {
+            NamespaceManager.set(origNamespace);
+        }
     }
 }
