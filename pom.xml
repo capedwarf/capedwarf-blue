@@ -115,7 +115,7 @@
         <version.com.google.api-client>1.11.0-beta</version.com.google.api-client>
         <version.com.google.api-services-bigquery>v2-rev33-1.8.0-beta</version.com.google.api-services-bigquery>
         <!-- Testing Objectify -->
-        <version.objectify>4.0b1</version.objectify>
+        <version.objectify>4.0rc2</version.objectify>
         <!-- Testing REST -->
         <version.org.jboss.resteasy>3.0.6.Final</version.org.jboss.resteasy>
         <!-- Build configuration -->

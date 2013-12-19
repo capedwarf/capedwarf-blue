@@ -47,6 +47,10 @@ public class LibUtils {
         addLibrary(war, "com.googlecode.objectify:objectify");
     }
 
+    public static void addGuavaLibrary(WebArchive war) {
+        addLibrary(war, "com.google.guava:guava");
+    }
+
     public static void addLibrary(WebArchive war, String groupId, String artifactId) {
         addLibrary(war, groupId + ":" + artifactId);
     }
