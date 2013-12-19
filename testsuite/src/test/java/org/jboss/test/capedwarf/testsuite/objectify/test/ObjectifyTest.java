@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.appengine.api.NamespaceManager;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
@@ -58,6 +59,7 @@ public class ObjectifyTest extends TestsuiteTestBase {
         war.addClass(TestsuiteTestBase.class);
         war.addPackage(Car.class.getPackage());
         LibUtils.addObjectifyLibrary(war);
+        LibUtils.addGuavaLibrary(war);
         return war;
     }
 
@@ -85,7 +87,7 @@ public class ObjectifyTest extends TestsuiteTestBase {
         Assert.assertEquals(1, keys.size());
         final Key<Car> key = keys.keySet().iterator().next();
         try {
-            Car c2 = objectify.load().key(key).get();
+            Car c2 = objectify.load().key(key).now();
 
             Assert.assertEquals(c1.getMark(), c2.getMark());
             Assert.assertEquals(c1.getType(), c2.getType());
@@ -128,7 +130,7 @@ public class ObjectifyTest extends TestsuiteTestBase {
         //get and save again
         ObjectifyService.ofy().transact(new VoidWork() {
             public void vrun() {
-                TestEntity entityBack = ObjectifyService.ofy().load().type(TestEntity.class).id(entity.getId()).get();
+                TestEntity entityBack = ObjectifyService.ofy().load().type(TestEntity.class).id(entity.getId()).now();
                 ObjectifyService.ofy().save().entity(entityBack.setName("TESTING 2"));
             }
         });
@@ -152,5 +154,33 @@ public class ObjectifyTest extends TestsuiteTestBase {
         long start = System.currentTimeMillis();
         ObjectifyService.ofy().save().entities(cars).now(); //save the cars
         System.out.println("Creating " + count + " entities took " + (System.currentTimeMillis() - start) + " milliseconds");
+    }
+
+    @Test
+    public void testList() throws Exception {
+        int count = 3;
+
+        //add cars to a list
+        List<Car> cars = new ArrayList<Car>();
+        for(int i = 0; i < count; i++) {
+            Car car = new Car();
+            car.setType("Random Car " + i);
+            car.setMark(String.valueOf(i));
+
+            cars.add(car);
+        }
+
+        ObjectifyService.ofy().save().entities(cars).now(); //save the cars
+
+        List<Object> list = ObjectifyService.ofy().cache(false).load().limit(1).list();
+
+        final String previousNS = NamespaceManager.get();
+        NamespaceManager.set("QwertyNS");
+        try {
+            Assert.assertEquals(1, list.size());
+            Assert.assertNotNull(list.get(0));
+        } finally {
+            NamespaceManager.set(previousNS);
+        }
     }
 }
