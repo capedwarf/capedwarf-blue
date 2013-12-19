@@ -46,8 +46,15 @@ public class ChannelEndpoint extends Endpoint {
 
     public void onOpen(Session session, EndpointConfig endpointConfig) {
         String token = getToken(session);
+
         WebSocketsManagerImpl.getInstance().setSession(token, session);
         session.addMessageHandler(new ChannelMessageHandler(token));
+
+        ChannelImpl channel = ChannelManagerImpl.getInstance().getChannelByToken(token);
+        if (channel != null) {
+            // best we can do with web sockets?
+            session.setMaxIdleTimeout(channel.getExpirationTime());
+        }
     }
 
     @Override
