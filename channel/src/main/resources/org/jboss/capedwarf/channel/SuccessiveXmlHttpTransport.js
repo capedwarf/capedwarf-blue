@@ -46,13 +46,13 @@ SuccessiveXmlHttpTransport.prototype.sendRequest = function(ackList) {
             }
         }
     };
-    xhr.open("POST", "/_ah/channel?transport=SuccessiveXmlHttp&token=" + this.socket.token + "&requestIndex=" + reqIndex + "&ackIds=" + ackList, true);
+    xhr.open("POST", contextPath + "/_ah/channel?transport=SuccessiveXmlHttp&token=" + this.socket.token + "&requestIndex=" + reqIndex + "&ackIds=" + ackList, true);
     xhr.send();
 };
 
 SuccessiveXmlHttpTransport.prototype.close = function() {
     var request = new XMLHttpRequest();
-    request.open("POST", "/_ah/channel?action=closeChannel&token=" + this.socket.token, true);
+    request.open("POST", contextPath + "/_ah/channel?action=closeChannel&token=" + this.socket.token, true);
     request.send();
 };
 
