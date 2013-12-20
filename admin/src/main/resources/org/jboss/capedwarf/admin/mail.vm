@@ -1,0 +1,455 @@
+#parse("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Email</h2>
+
+<div id="inboundmail-feedback"></div>
+
+<script type="text/javascript" language="javascript">
+    // Copyright 2009 Google Inc.  All Rights Reserved.
+
+    function Webhook(formId) {
+        this.formId = formId;
+        this.action = null;
+        this.headers = {};
+        this.method = null;
+        this.payload = null;
+    };
+
+    Webhook.prototype.HEADER_KEY = 'header:';
+
+    Webhook.prototype.parse = function() {
+        var form = document.getElementById(this.formId);
+        if (form == null) {
+            return 'could not find form with id "' + this.formId + '"';
+        }
+        this.action = form.action;
+        this.method = form.method;
+        for (var i = 0, n = form.elements.length; i < n; i++) {
+            var currentElement = form.elements[i];
+            if (currentElement.tagName != 'INPUT' ||
+                    currentElement.type.toUpperCase() != 'HIDDEN') {
+                continue;
+            }
+            var key = currentElement.name;
+            var value = currentElement.value;
+            var headerIndex = key.indexOf(this.HEADER_KEY);
+            if (headerIndex == 0) {
+                var header = key.substr(this.HEADER_KEY.length);
+                if (this.headers[header] === undefined) {
+                    this.headers[header] = [value];
+                } else {
+                    this.headers[header].push(value);
+                }
+            } else if (key == 'payload') {
+                this.payload = value;
+            }
+        }
+
+        if (this.action == '') {
+            return 'action not found';
+        }
+        if (this.method == '') {
+            return 'method not found';
+        }
+        return '';
+    };
+
+    Webhook.prototype.send = function(callback) {
+        var req = null;
+        if (window.XMLHttpRequest) {
+            req = new XMLHttpRequest();
+        } else if (window.ActiveXObject) {
+            req = new ActiveXObject('MSXML2.XMLHTTP.3.0');
+        }
+
+        try {
+            req.open(this.method, this.action, false);
+            for (var key in this.headers) {
+                // According to the W3C, multiple calls to setRequestHeader should result
+                // in a single header with comma-seperated values being set (see
+                // http://www.w3.org/TR/2009/WD-XMLHttpRequest-20090820/). Unfortunately,
+                // both FireFox 3 and Konqueror 3.5 set the header value to the value in
+                // the last call to setRequestHeader so the joined header is generated
+                // manually. The equivalence of headers with comma-separated values and
+                // repeated headers is described here:
+                // http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
+                req.setRequestHeader(key, this.headers[key].join(', '));
+            }
+            req.send(this.payload);
+        } catch (e) {
+            callback(this, req, e);
+            return;
+        }
+
+        // If the responseText matches our <form action="/_ah/login then the
+        // user is not logged in as an Administrator so we'll fake the request.
+        if (req.responseText.match(/<form[^>]+_ah\/login/)) {
+            var fakeReq = {
+                'status': 403,
+                'responseText': 'Current logged in user is not authorized ' +
+                        'to view this page'
+            }
+            fakeReq.getAllResponseHeaders = function(){};
+            callback(this, fakeReq, null);
+        } else {
+            callback(this, req, null);
+        }
+    };
+
+    Webhook.prototype.run = function(callback) {
+        var error = this.parse();
+        if (error != '') {
+            callback(this, null, error);
+        } else {
+            this.send(callback);
+        }
+    };
+</script>
+<script type="text/javascript" language="javascript">
+    // Copyright 2009 Google Inc.  All Rights Reserved.
+
+    /**
+     * A multipart form data construction class for XHR.
+     * @see http://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
+     * @constructor
+     */
+    var MultipartFormData = function() {
+        /**
+         * @type {Array}
+         */
+        this.headers = [];
+
+        /**
+         * @type {Array}
+         */
+        this.parts = [];
+
+        /**
+         * A random string for the boundary.
+         * @type {string}
+         */
+        this.boundary = MultipartFormData.getRandomBoundary();
+    };
+
+
+    /**
+     * @type {string}
+     */
+    MultipartFormData.CRLF = '\r\n';
+
+
+    /**
+     * @type {string}
+     * @private
+     */
+    MultipartFormData.TEN_CHARS_ =
+
+
+    /**
+     * Generates a random number and some random characters from it.
+     */
+            MultipartFormData.getRandomBoundary = function() {
+                var anyTenCharacters = 'DiStRIcT10';
+                var randomNumber = Math.floor(Math.random() * 10000000);
+                var nums = randomNumber.toString().split('');
+                var randomChars = '';
+                for (var i = 0, num; num = nums[i]; i++) {
+                    randomChars += anyTenCharacters[num];
+                }
+                return randomChars + '-' + randomNumber;
+            };
+
+
+    /**
+     * @param {string} name The name for this header.
+     * @param {string} value The value for this header.
+     */
+    MultipartFormData.prototype.addHeader = function(name, value) {
+        this.headers.push({
+            'name': name,
+            'value': value
+        });
+    };
+
+
+    /**
+     * @param {?string} name The name for this part.
+     * @param {string} value The value for this part.
+     * @param {string} opt_contentType Content-type for this part.
+     * @param {string} opt_contentDisposition Content disposition for this part.
+     * @param {string} opt_filename The filename for this part
+     */
+    MultipartFormData.prototype.addPart = function(name, value, opt_contentType,
+                                                   opt_contentDisposition, opt_filename) {
+        var contentType = opt_contentType || null;
+        var contentDisposition = opt_contentDisposition || null;
+        var filename = opt_filename || null;
+        this.parts.push({
+            'name': name,
+            'value': value,
+            'contentType': contentType,
+            'contentDisposition': contentDisposition,
+            'filename': filename
+        });
+    };
+
+    /**
+     * @return {string} The string to set as a payload.
+     */
+    MultipartFormData.prototype.toString = function() {
+        var lines = [];
+
+        for (var i = 0, header; header = this.headers[i]; i++) {
+            lines.push(header['name'] + ': ' + header['value']);
+        }
+        if (this.headers.length > 0) {
+            lines.push('');
+        }
+
+        for (var i = 0, part; part = this.parts[i]; i++) {
+            lines.push('--' + this.boundary);
+
+            if (part['contentDisposition']) {
+                var contentDisposition = 'Content-Disposition: form-data; ';
+                contentDisposition += 'name="' + part['name'] + '"';
+                if (part['filename']) {
+                    contentDisposition += '; filename="' + part['filename'] + '"';
+                }
+                lines.push(contentDisposition);
+            }
+
+            if (part['contentType']) {
+                lines.push('Content-Type: ' + part['contentType']);
+            }
+
+            lines.push('');
+            lines.push(part['value']);
+        }
+
+        lines.push('--' + this.boundary + '--');
+
+        return lines.join(MultipartFormData.CRLF) + MultipartFormData.CRLF;
+    };
+</script>
+<script type="text/javascript" language="javascript">
+    // Copyright 2009 Google Inc.  All Rights Reserved.
+
+    var RFC822Date = {};
+
+    /**
+     * Return a DateTime in RFC822 format.
+     * @see http://www.w3.org/Protocols/rfc822/#z28
+     * @param {Date} date A Date object.
+     * @param {string} opt_tzo The timezone offset.
+     */
+    RFC822Date.format = function(date, opt_tzo) {
+        var tzo = opt_tzo || RFC822Date.getTZO(date.getTimezoneOffset());
+        var rfc822Date = RFC822Date.DAYS[date.getDay()] + ', ';
+        rfc822Date += RFC822Date.padZero(date.getDate()) + ' ';
+        rfc822Date += RFC822Date.MONTHS[date.getMonth()] + ' ';
+        rfc822Date += date.getFullYear() + ' ';
+        rfc822Date += RFC822Date.padZero(date.getHours()) + ':';
+        rfc822Date += RFC822Date.padZero(date.getMinutes()) + ':';
+        rfc822Date += RFC822Date.padZero(date.getSeconds()) + ' ' ;
+        rfc822Date += tzo;
+        return rfc822Date;
+    };
+
+
+    /**
+     * @type {Array}
+     */
+    RFC822Date.MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+
+    /**
+     * @type {Array}
+     */
+    RFC822Date.DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+
+    /**
+     * Pads a value with a 0 if it is less than 10;
+     * @param {number|string}
+     * @return {string}
+     */
+    RFC822Date.padZero = function(val) {
+        val = val + ''; // cast into string
+        if (val.length < 2) {
+            val = '0' + val;
+        }
+        return val;
+    };
+
+
+    /**
+     * Returns a timezone offset in the format +|-dddd.
+     * @param {String} tzo A time zone offset from GMT in minutes.
+     * @return {string} The time zone offset as a string.
+     */
+    RFC822Date.getTZO = function(tzo) {
+        var hours = Math.floor(tzo / 60);
+        var tzoFormatted = hours > 0 ? '-' : '+';
+
+        var absoluteHours = Math.abs(hours);
+        tzoFormatted += absoluteHours < 10 ? '0' : '';
+        tzoFormatted += absoluteHours;
+
+        var moduloMinutes = Math.abs(tzo % 60);
+        tzoFormatted += moduloMinutes == 0 ? '00' : moduloMinutes
+
+        return tzoFormatted;
+    };
+
+</script>
+<script type="text/javascript">
+    //<![CDATA[
+    var inboundmailFeedbackEl;
+    var inboundmailFormEl;
+    var payloadEl;
+    var fromEl;
+    var toEl;
+    var chatEl;
+    var contentLengthEl;
+    var contentTypeEl;
+
+    var sendInboundMailWebhook = function() {
+
+        if (!inboundmailFeedbackEl) {
+            inboundmailFeedbackEl = document.getElementById('inboundmail-feedback');
+            inboundmailFormEl = document.getElementById('inboundmail-form');
+            fromEl = document.getElementById('from');
+            toEl = document.getElementById('to');
+            ccEl = document.getElementById('cc');
+            subjectEl = document.getElementById('subject');
+            bodyEl = document.getElementById('body');
+            payloadEl = document.getElementById('payload');
+            contentLengthEl = document.getElementById('content-length');
+        }
+
+        var from = fromEl.value;
+        var to = toEl.value;
+        var cc = ccEl.value;
+        var subject = subjectEl.value;
+        var body = bodyEl.value;
+
+        if (!to || !from || !body) {
+            inboundmailFeedbackEl.className = 'ae-errorbox';
+            inboundmailFeedbackEl.innerHTML = 'From, To and Message body are required.';
+            return;
+        }
+
+        inboundmailFeedbackEl.className = 'ae-message';
+        inboundmailFeedbackEl.innerHTML = 'Sending mail message...';
+
+        var mpfd = new MultipartFormData();
+        mpfd.addHeader('MIME-Version', '1.0');
+        mpfd.addHeader('Date', RFC822Date.format(new Date()));
+        mpfd.addHeader('From', from);
+        mpfd.addHeader('To', to);
+        if (cc) {
+            mpfd.addHeader('Cc', cc);
+        }
+        mpfd.addHeader('Subject', subject);
+        mpfd.addHeader('Content-Type', 'multipart/alternative; ' +
+                'boundary=' + mpfd.boundary);
+        mpfd.addPart(null, body, 'text/plain; charset=UTF-8');
+        mpfd.addPart(null, body, 'text/html; charset=UTF-8');
+
+        payloadEl.value = mpfd.toString();
+
+        contentLengthEl = payloadEl.value.length;
+
+        inboundmailFormEl.action = '/_ah/mail/' + escape(to);
+
+        (new Webhook('inboundmail-form')).run(handleInboundMailResult);
+
+        // Prevents actual form posts.
+        return false;
+    };
+
+    var handleInboundMailResult = function(hook, req, error) {
+        if (error != null || req == null || req.status != 200) {
+            inboundmailFeedbackEl.className = 'ae-errorbox';
+            inboundmailFeedbackEl.innerHTML = 'Message send failure<br>' +
+                    req.responseText;
+        } else {
+            var timestamp;
+            var dateString = new Date().toString();
+            var match = dateString.match(/(\d\d:\d\d:\d\d).+\((.+)\)/);
+            if (!match || !match[0] || !match[2]) {
+                timestamp = dateString;
+            } else {
+                timestamp = match[1] + ' ' + match[2];
+            }
+
+            inboundmailFeedbackEl.className = 'ae-message';
+            inboundmailFeedbackEl.innerHTML = 'Message has been sent at ' + timestamp;
+        }
+    };
+
+    //]]>
+</script>
+
+<style type="text/css">
+    #inboundmail label {
+        display: block;
+        font-weight: bold;
+    }
+    #inboundmail legend {
+        font-weight: bold;
+    }
+    #inboundmail .radio label {
+        display: inline;
+        font-weight: normal;
+    }
+
+    #inboundmail fieldset,
+    #inboundmail .fieldset {
+        margin-bottom: 8px;
+    }
+    #inboundmail-submit {
+        margin-top: 2em;
+    }
+</style>
+<div id="inboundmail">
+<form id="inboundmail-form" action="/_ah/mail/" method="POST" onsubmit="sendInboundMailWebhook(); return false">
+
+    <input type="hidden" name="payload" id="payload">
+    <input type="hidden" id="content-type" name="header:Content-Type" value="message/rfc822">
+    <input type="hidden" id="content-length" name="header:Content-Length">
+
+    <div class="fieldset">
+        <label for="from">From:</label>
+        <input type="text" id="from" name="from" size="40">
+    </div>
+
+    <div class="fieldset">
+        <label for="to">To:</label>
+        <input type="text" id="to" name="to" size="40">
+    </div>
+
+    <div class="fieldset">
+        <label for="cc">Cc:</label>
+        <input type="text" id="cc" name="cc" size="40">
+    </div>
+
+    <div class="fieldset">
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" name="subject" size="40">
+    </div>
+
+    <div id="body-c" class="fieldset">
+        <label for="body">Message body (plain text):</label>
+        <textarea id="body" name="body" rows="10" cols="50"></textarea>
+    </div>
+
+    <div id="inboundmail-submit">
+        <input name="send-mail" type="submit" value="Send Email">
+    </div>
+
+</form>
+</div>
+
+#parse("/org/jboss/capedwarf/admin/footer.vm")
