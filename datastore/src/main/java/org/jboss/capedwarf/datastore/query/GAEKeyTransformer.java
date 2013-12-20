@@ -61,25 +61,37 @@ public class GAEKeyTransformer implements Transformer {
 
     private static Key fromInternal(String string) {
         string = removeIndexName(string);
-        String[] split = split(string);
-        if (split.length == 0) {
-            throw new IllegalArgumentException("Bad key: " + string);
+
+        String namespace = null;
+        if (string.startsWith("!")) {
+            int p = string.indexOf(':');
+            namespace = string.substring(1, p);
+            string = string.substring(p + 1);
         }
-        String namespace = parseNamespace(split[0]);
         String previousNs = NamespaceManager.get();
         NamespaceManager.set(namespace);
-        KeyFactory.Builder builder;
         try {
-            Object[] args = parseKindAndNameOrId(namespace, split[0]);
-            if (args[1] instanceof Long) {
-                builder = new KeyFactory.Builder(args[0].toString(), (Long) args[1]);
-            } else {
-                builder = new KeyFactory.Builder(args[0].toString(), args[1].toString());
+            String[] split = split(string);
+            if (split.length == 0) {
+                throw new IllegalArgumentException("Bad key: " + string);
             }
+            Key key = null;
+            for (String token : split) {
+                Object[] args = parseKindAndNameOrId(token);
+                String kind = args[0].toString();
+                Object nameOrId = args[1];
+                if (nameOrId instanceof Long) {
+                    Long id = (Long) nameOrId;
+                    key = KeyFactory.createKey(key, kind, id);
+                } else {
+                    String name = nameOrId.toString();
+                    key = KeyFactory.createKey(key, kind, name);
+                }
+            }
+            return key;
         } finally {
             NamespaceManager.set(previousNs);
         }
-        return build(builder, split);
     }
 
     private static String removeIndexName(String string) {
@@ -105,29 +117,7 @@ public class GAEKeyTransformer implements Transformer {
         return strings.toArray(new String[strings.size()]);
     }
 
-    private static Key build(KeyFactory.Builder builder, String[] tokens) {
-        for (int i = 1; i < tokens.length; i++) {
-            String namespace = parseNamespace(tokens[i]);
-            String previousNs = NamespaceManager.get();
-            NamespaceManager.set(namespace);
-            try {
-                Object[] args = parseKindAndNameOrId(namespace, tokens[i]);
-                if (args[1] instanceof Long) {
-                    builder.addChild(args[0].toString(), (Long) args[1]);
-                } else {
-                    builder.addChild(args[0].toString(), args[1].toString());
-                }
-            } finally {
-                NamespaceManager.set(previousNs);
-            }
-        }
-        return builder.getKey();
-    }
-
-    private static Object[] parseKindAndNameOrId(String namespace, String token) {
-        if (namespace != null) {
-            token = token.substring(namespace.length() + 2); // !namespace:kind(id|name)
-        }
+    private static Object[] parseKindAndNameOrId(String token) {
         int p = token.indexOf('(');
         String kind = token.substring(0, p);
         String ids = token.substring(p + 1, token.length() - 1);
@@ -141,12 +131,4 @@ public class GAEKeyTransformer implements Transformer {
         }
     }
 
-    private static String parseNamespace(String token) {
-        if (token.startsWith("!")) {
-            int p = token.indexOf(':');
-            return token.substring(1, p);
-        } else {
-            return null;
-        }
-    }
 }
