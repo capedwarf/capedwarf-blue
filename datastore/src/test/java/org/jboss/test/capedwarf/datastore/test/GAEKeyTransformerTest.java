@@ -33,6 +33,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.datastore.query.GAEKeyTransformer;
 import org.jboss.test.capedwarf.common.support.JBoss;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -51,6 +52,11 @@ public class GAEKeyTransformerTest {
     @Before
     public void setUp() throws Exception {
         ApiProxy.setEnvironmentForCurrentThread(new MockEnvironment());
+    }
+
+    @After
+    public void tearDown() {
+        NamespaceManager.set(null);
     }
 
     @Test
@@ -84,9 +90,25 @@ public class GAEKeyTransformerTest {
 
     @Test
     public void testKeyTransformerCorrectlyHandlesNamespaces() throws Exception {
-        GAEKeyTransformer transformer = new GAEKeyTransformer();
-
         NamespaceManager.set("one");
+        Key key1 = KeyFactory.createKey("Test", 1);
+        String string = transformer.toString(key1);
+
+        NamespaceManager.set("two");
+        Object transformedKey1 = transformer.fromString(string);
+
+        assertEquals(key1, transformedKey1);
+
+        Key key2 = KeyFactory.createKey("Test", 1);
+        Object transformedKey2 = transformer.fromString(transformer.toString(key2));
+
+        assertEquals(key2, transformedKey2);
+        assertFalse(key1.equals(key2));
+    }
+
+    @Test
+    public void testKeyTransformerCorrectlyHandlesNamespaces2() throws Exception {
+        NamespaceManager.set(null);
         Key key1 = KeyFactory.createKey("Test", 1);
         String string = transformer.toString(key1);
 
