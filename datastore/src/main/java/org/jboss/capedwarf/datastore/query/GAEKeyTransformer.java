@@ -66,11 +66,8 @@ public class GAEKeyTransformer implements Transformer {
             throw new IllegalArgumentException("Bad key: " + string);
         }
         String namespace = parseNamespace(split[0]);
-        String previousNs = null;
-        if (namespace != null) {
-            previousNs = NamespaceManager.get();
-            NamespaceManager.set(namespace);
-        }
+        String previousNs = NamespaceManager.get();
+        NamespaceManager.set(namespace);
         KeyFactory.Builder builder;
         try {
             Object[] args = parseKindAndNameOrId(namespace, split[0]);
@@ -80,9 +77,7 @@ public class GAEKeyTransformer implements Transformer {
                 builder = new KeyFactory.Builder(args[0].toString(), args[1].toString());
             }
         } finally {
-            if (namespace != null) {
-                NamespaceManager.set(previousNs != null ? previousNs : "");
-            }
+            NamespaceManager.set(previousNs);
         }
         return build(builder, split);
     }
@@ -113,11 +108,8 @@ public class GAEKeyTransformer implements Transformer {
     private static Key build(KeyFactory.Builder builder, String[] tokens) {
         for (int i = 1; i < tokens.length; i++) {
             String namespace = parseNamespace(tokens[i]);
-            String previousNs = null;
-            if (namespace != null) {
-                previousNs = NamespaceManager.get();
-                NamespaceManager.set(namespace);
-            }
+            String previousNs = NamespaceManager.get();
+            NamespaceManager.set(namespace);
             try {
                 Object[] args = parseKindAndNameOrId(namespace, tokens[i]);
                 if (args[1] instanceof Long) {
@@ -126,9 +118,7 @@ public class GAEKeyTransformer implements Transformer {
                     builder.addChild(args[0].toString(), args[1].toString());
                 }
             } finally {
-                if (namespace != null) {
-                    NamespaceManager.set(previousNs != null ? previousNs : "");
-                }
+                NamespaceManager.set(previousNs);
             }
         }
         return builder.getKey();
