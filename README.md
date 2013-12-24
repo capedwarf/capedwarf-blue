@@ -1,8 +1,8 @@
 JBoss CapeDwarf
 ===============
 
-JBoss CapeDwarf Blue is JBoss' attempt to implement GoogleAppEngine API on top of JBoss' technology / frameworks / libraries.
-This way making the GAE to JBossAS switch seamless.
+JBoss CapeDwarf Blue is JBoss' attempt to implement Google App Engine API on top of JBoss' technology / frameworks / libraries.
+This way making the GAE to WildFly switch seamless.
 
 At JBoss.org
 ------------
@@ -12,9 +12,11 @@ http://www.jboss.org/capedwarf
 How to build CapeDwarf environment?
 -----------------------------------
 
-(1) Build JBossAS 7.2.0.Final tag --> JBOSS_HOME
+(1) Build WildFly 8.0.0.CR1 tag --> JBOSS_HOME
 
-    https://github.com/jbossas/jboss-as/
+    https://github.com/wildfly/wildfly
+
+    mvn clean install -DskipTests -Prelease
 
 (2) Build CapeDwarf Shared
 
@@ -24,13 +26,13 @@ How to build CapeDwarf environment?
 
     https://github.com/capedwarf/capedwarf-blue
 
-(4) Build CapeDwarf AS
+(4) Build CapeDwarf WildFly
 
     https://github.com/capedwarf/capedwarf-jboss-as
 
     mvn clean install -Djboss.dir=${JBOSS_HOME} -Pupdate-as
 
-This will install CapeDwarf Subsystem into previous AS 7.2.0.Final
+This will install CapeDwarf Subsystem into previous WildFly 8.0.0.CR1
 
 (5) Start CapeDwarf
 
@@ -42,6 +44,10 @@ or the long version
 
     ./standalone.sh -c standalone-capedwarf.xml
 
+and with Modules support
+
+    ./standalone.sh -c standalone-capedwarf-modules.xml
+
 **Voila!**
 
 How to test CapeDwarf environment?
@@ -49,7 +55,7 @@ How to test CapeDwarf environment?
 
 There are multiple ways to test it:
 
-(1) Run Blue's tests against **running** CapeDwarf AS instance
+(1) Run Blue's tests against **running** CapeDwarf WildFly instance
 
 Goto CapeDwarf Blue and simply run
 
@@ -61,13 +67,9 @@ Goto CapeDwarf Blue and simply run
 
 where you then simply do
 
-    mvn clean install
+    mvn clean install -Dcapedwarf.xmpp.password=<PASSWORD> -Djboss.mail.host=<SMTP HOST>
 
-This will grab AS .zip distribution, overlay it with CapeDwarf extension, and run tests via managed Arquillian AS container.
-
-Note: you need to **first** manually build "AS 7.2.0.Final" for its .zip distribution.
-
-    Checkout JBossAS7' 7.2.0.Final tag and build it with "mvn clean install -DskipTests -Prelease".
+This will grab WildFly .zip distribution, overlay it with CapeDwarf extension, and run tests via managed Arquillian WildFly container.
 
 (3) Run different versions of GAE API jar against CapeDwarf
 
@@ -76,3 +78,9 @@ Note: you need to **first** manually build "AS 7.2.0.Final" for its .zip distrib
 (4) Run some benchmarks against CapeDwarf
 
     https://github.com/capedwarf/capedwarf-benchmark
+
+(5) Run GAE TCK against CapeDwarf
+
+    https://github.com/GoogleCloudPlatform/appengine-tck
+
+    mvn clean install -Pcapedwarf

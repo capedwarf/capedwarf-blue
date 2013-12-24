@@ -1,7 +1,7 @@
 How do we run this cluster tests?
 ---------------------------------
 
-Running this tests requires to **manually** start 2 JBossAS nodes:
+Running this tests requires to **manually** start 2 CapeDwarf WildFly nodes:
 
 ${JBOSS_HOME}/bin/standalone.sh -c standalone-capedwarf.xml -Djboss.node.name=nodeA -Djboss.server.data.dir=${JBOSS_HOME}/standalone/dataA -Djboss.server.temp.dir=${JBOSS_HOME}/standalone/tmpA
 
