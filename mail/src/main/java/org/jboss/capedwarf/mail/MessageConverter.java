@@ -1,6 +1,9 @@
 package org.jboss.capedwarf.mail;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -21,12 +24,34 @@ import com.google.appengine.api.mail.MailService;
  * Converts GAE Message to JavaMail Message
  *
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class MessageConverter {
+    private static final Set<String> INVALID_ATTACHMENT_FILE_TYPES;
 
     private MailService.Message message;
     private Collection<String> to;
     private Session session;
+
+    static {
+        INVALID_ATTACHMENT_FILE_TYPES = getInvalidAttachmentFileTypes();
+    }
+
+    protected static Set<String> getInvalidAttachmentFileTypes() {
+        String[] extensions = {"ade", "adp", "bat", "chm", "cmd", "com", "cpl", "exe",
+                "hta", "ins", "isp", "jse", "lib", "mde", "msc", "msp", "mst", "pif", "scr",
+                "sct", "shb", "sys", "vb", "vbe", "vbs", "vxd", "wsc", "wsf", "wsh"};
+        return new HashSet<>(Arrays.asList(extensions));
+    }
+
+    protected static boolean hasInvalidAttachmentFileType(String fileName) {
+        for (String ext : INVALID_ATTACHMENT_FILE_TYPES) {
+            if (fileName.endsWith("." + ext)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public MessageConverter(MailService.Message message, Session session) {
         this(message, null, session);
@@ -80,6 +105,10 @@ public class MessageConverter {
     }
 
     private MimeBodyPart createAttachmentBodyPart(MailService.Attachment attachment) throws MessagingException {
+        if (hasInvalidAttachmentFileType(attachment.getFileName())) {
+            throw new IllegalArgumentException(String.format("Invalid attachment file type: %s", attachment));
+        }
+
         DataSource source = new ByteArrayDataSource(attachment.getData(), "application/octet-stream");
 
         MimeBodyPart bodyPart = new MimeBodyPart();
