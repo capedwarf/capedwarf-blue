@@ -18,15 +18,19 @@ How to build CapeDwarf environment?
 
     mvn clean install -DskipTests -Prelease
 
-(2) Build CapeDwarf Shared
+(2) Build CapeDwarf Shared ("master" branch)
 
     https://github.com/capedwarf/capedwarf-shared
 
-(3) Build CapeDwarf Blue
+    mvn clean install
+
+(3) Build CapeDwarf Blue ("master" branch)
 
     https://github.com/capedwarf/capedwarf-blue
 
-(4) Build CapeDwarf WildFly
+    mvn clean install
+
+(4) Build CapeDwarf WildFly ("master" branch)
 
     https://github.com/capedwarf/capedwarf-jboss-as
 
@@ -61,7 +65,7 @@ Goto CapeDwarf Blue and simply run
 
     mvn clean install -Premote
 
-(2) Run tests automatically with CapeDwarf Testsuite
+(2) Run tests automatically with CapeDwarf Testsuite ("master" branch)
 
     https://github.com/capedwarf/capedwarf-testsuite
 
@@ -84,3 +88,25 @@ This will grab WildFly .zip distribution, overlay it with CapeDwarf extension, a
     https://github.com/GoogleCloudPlatform/appengine-tck
 
     mvn clean install -Pcapedwarf
+
+Any example apps I can deploy?
+------------------------------
+
+Simply start a CapeDwarf instance and drop any GAE .war into {JBOSS_HOME}/standalone/deployment or deploy the .war via WildFly's management console.
+
+    If your app requires to be accessible under "/" context root, deploy it as ROOT.war.
+    Otherwise it will be accessible under "/<app name>" context.
+
+Existing examples / demos:
+
+(1) GAE SDK comes with a bunch of examples, and we make sure they work on CapeDwarf as well. (at least the one's that are 100% portable)
+
+    https://github.com/GoogleCloudPlatform/
+
+(2) A SimpleChat app, exposing Channel API
+
+    https://github.com/alesj/simplechat
+
+(3) A ToDo list app
+
+    https://github.com/capedwarf/todolist
