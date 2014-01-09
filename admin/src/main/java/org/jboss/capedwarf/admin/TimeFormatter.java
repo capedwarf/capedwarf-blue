@@ -31,7 +31,7 @@ import java.util.Date;
 @Named
 public class TimeFormatter {
 
-    public String format(long millis) {
-        return new Date(millis).toString();
+    public String format(long usec) {
+        return new Date(usec / 1000).toString();
     }
 }
