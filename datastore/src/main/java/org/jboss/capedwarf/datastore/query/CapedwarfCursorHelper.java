@@ -38,11 +38,11 @@ import org.jboss.capedwarf.shared.reflection.TargetInvocation;
 final class CapedwarfCursorHelper {
     private static TargetInvocation<Integer> getIndex = ReflectionUtils.cacheInvocation(Cursor.class, "getIndex");
 
-    static Cursor createCursor(final AtomicInteger index) {
-        return ReflectionUtils.newInstance(Cursor.class, new Class[]{AtomicInteger.class}, new Object[]{index});
+    static Cursor createCursor(final AtomicInteger index, final LazySize size) {
+        return ReflectionUtils.newInstance(Cursor.class, new Class[]{AtomicInteger.class, LazySize.class}, new Object[]{index, size});
     }
 
-    static Cursor createListCursor(FetchOptions fetchOptions) {
+    static Cursor createListCursor(final LazySize size, final FetchOptions fetchOptions) {
         if (fetchOptions == null)
             return null;
 
@@ -62,7 +62,7 @@ final class CapedwarfCursorHelper {
                     offset = x;
                 }
             }
-            return createCursor(new AtomicInteger(offset + limit));
+            return createCursor(new AtomicInteger(offset + limit), size);
         } else {
             return null; // cannot determine cursor
         }

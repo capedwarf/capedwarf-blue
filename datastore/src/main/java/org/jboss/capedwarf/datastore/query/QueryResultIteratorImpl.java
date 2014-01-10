@@ -37,12 +37,13 @@ import com.google.appengine.api.datastore.QueryResultIterator;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class QueryResultIteratorImpl<E> implements QueryResultIterator<E> {
-
-    private Iterator<E> delegate;
+    private final Iterator<E> delegate;
+    private final LazySize size;
     private AtomicInteger current;
 
-    public QueryResultIteratorImpl(Iterator<E> iterator) {
+    public QueryResultIteratorImpl(Iterator<E> iterator, LazySize size) {
         this.delegate = iterator;
+        this.size = size;
         this.current = new AtomicInteger();
     }
 
@@ -61,7 +62,7 @@ class QueryResultIteratorImpl<E> implements QueryResultIterator<E> {
     }
 
     public synchronized Cursor getCursor() {
-        final Cursor cursor = CapedwarfCursorHelper.createCursor(current);
+        final Cursor cursor = CapedwarfCursorHelper.createCursor(current, size);
         current = new AtomicInteger(current.get());
         return cursor;
     }

@@ -34,6 +34,7 @@ import javassist.CtConstructor;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.NotFoundException;
+import org.jboss.capedwarf.datastore.query.LazySize;
 
 /**
  * Hack Cursor class.
@@ -50,8 +51,11 @@ public class CursorTransformer extends RewriteTransformer {
         CtField indexField = CtField.make("private java.util.concurrent.atomic.AtomicInteger index;", clazz);
         clazz.addField(indexField);
 
-        CtConstructor ctor = new CtConstructor(new CtClass[]{pool.get(AtomicInteger.class.getName())}, clazz);
-        ctor.setBody("{this.index = $1;}");
+        CtField sizeField = CtField.make("private org.jboss.capedwarf.datastore.query.LazySize size;", clazz);
+        clazz.addField(sizeField);
+
+        CtConstructor ctor = new CtConstructor(new CtClass[]{pool.get(AtomicInteger.class.getName()), pool.get(LazySize.class.getName())}, clazz);
+        ctor.setBody("{this.index = $1; this.size = $2;}");
         clazz.addConstructor(ctor);
 
         CtMethod getIndex = new CtMethod(intClass, "getIndex", new CtClass[]{}, clazz);
@@ -59,28 +63,40 @@ public class CursorTransformer extends RewriteTransformer {
         getIndex.setBody("{return index.get();}");
         clazz.addMethod(getIndex);
 
+        CtMethod getSize = new CtMethod(intClass, "getSize", new CtClass[]{}, clazz);
+        getSize.setModifiers(Modifier.PRIVATE);
+        getSize.setBody("{return size.getSize();}");
+        clazz.addMethod(getSize);
+
         // override other methods
 
         CtConstructor cloneCtor = clazz.getDeclaredConstructor(new CtClass[]{clazz});
-        cloneCtor.setBody("this($1.index);");
+        cloneCtor.setBody("this($1.index, $1.size);");
 
         CtMethod writeObject = clazz.getDeclaredMethod("writeObject", new CtClass[]{pool.get(ObjectOutputStream.class.getName())});
-        writeObject.setBody("$1.writeInt(getIndex());");
+        writeObject.setBody("{$1.writeInt(getIndex()); $1.writeInt(getSize());}");
 
         CtMethod readObject = clazz.getDeclaredMethod("readObject", new CtClass[]{pool.get(ObjectInputStream.class.getName())});
-        readObject.setBody("index = new java.util.concurrent.atomic.AtomicInteger($1.readInt());   ");
+        readObject.setBody("{index = new java.util.concurrent.atomic.AtomicInteger($1.readInt()); size = new org.jboss.capedwarf.datastore.query.DirectLazySize($1.readInt());}");
 
         CtMethod advance = clazz.getDeclaredMethod("advance", new CtClass[]{intClass, pool.get(PreparedQuery.class.getName())});
         advance.setBody("index.addAndGet($1);");
 
         CtMethod reverse = clazz.getDeclaredMethod("reverse");
-        reverse.setBody("return new com.google.appengine.api.datastore.Cursor(new java.util.concurrent.atomic.AtomicInteger((-1) * getIndex()));");
+        reverse.setBody("return new com.google.appengine.api.datastore.Cursor(new java.util.concurrent.atomic.AtomicInteger(getSize() - getIndex()), size);");
 
         CtMethod toWebSafeString = clazz.getDeclaredMethod("toWebSafeString");
-        toWebSafeString.setBody("return index.toString();");
+        toWebSafeString.setBody("return index + \",\" + getSize();");
 
         CtMethod fromWebSafeString = clazz.getDeclaredMethod("fromWebSafeString", new CtClass[]{pool.get(String.class.getName())});
-        fromWebSafeString.setBody("return new com.google.appengine.api.datastore.Cursor(new java.util.concurrent.atomic.AtomicInteger($1 != null && $1.length() > 0 ? Integer.parseInt($1) : 0));");
+        fromWebSafeString.setBody(
+                "{" +
+                "   String[] split = ($1 != null && $1.length() > 0) ? $1.split(\",\") : new String[0];" +
+                "   int i = (split.length > 0) ? Integer.parseInt(split[0]) : 0;" +
+                "   int s = (split.length > 0) ? Integer.parseInt(split[1]) : 0;" +
+                "   return new com.google.appengine.api.datastore.Cursor(new java.util.concurrent.atomic.AtomicInteger(i), new org.jboss.capedwarf.datastore.query.DirectLazySize(s));" +
+                "}"
+        );
 
         CtMethod fromByteArray = clazz.getDeclaredMethod("fromByteArray", new CtClass[]{pool.get(byte[].class.getName())});
         fromByteArray.setBody("return fromWebSafeString(new String($1));");
@@ -92,7 +108,7 @@ public class CursorTransformer extends RewriteTransformer {
         hashCode.setBody("return getIndex();");
 
         CtMethod toString = clazz.getDeclaredMethod("toString");
-        toString.setBody("return \"Cursor:\" + index;");
+        toString.setBody("return \"Cursor:\" + index + \",\" + getSize();");
     }
 
     protected boolean doCheck(CtClass clazz) throws NotFoundException {

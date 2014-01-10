@@ -47,8 +47,10 @@ public abstract class JavassistTransformer extends AbstractClassFileTransformer 
             CtClass clazz = pool.makeClass(new ByteArrayInputStream(classfileBuffer));
             transform(clazz);
             return clazz.toBytecode();
-        } catch (Exception e) {
-            throw new IllegalClassFormatException(e.getMessage());
+        } catch (Throwable t) {
+            IllegalClassFormatException e = new IllegalClassFormatException(String.format("Error using transformer %s: %s", this, t.getMessage()));
+            e.initCause(t);
+            throw e;
         }
     }
 
