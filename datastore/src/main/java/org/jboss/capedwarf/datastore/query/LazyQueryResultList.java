@@ -53,12 +53,7 @@ class LazyQueryResultList<E> extends LazyList<E> implements QueryResultList<E> {
                     objects = new QueryResultProcessor(holder.getQuery()).process(objects);
                     Integer chunkSize = fetchOptions.getChunkSize();
                     objects = new PostLoadList(objects, (chunkSize == null ? objects.size() : chunkSize), holder);
-                    LazySize size = new LazySize() {
-                        public int getSize() {
-                            return holder.getCacheQuery().getResultSize();
-                        }
-                    };
-                    delegate = new QueryResultListImpl<E>(objects, CapedwarfCursorHelper.createListCursor(size, fetchOptions));
+                    delegate = new QueryResultListImpl<E>(objects, CapedwarfCursorHelper.createListCursor(getLazySize(), fetchOptions));
                 }
             }
         }

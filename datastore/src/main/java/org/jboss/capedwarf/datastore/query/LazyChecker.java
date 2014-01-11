@@ -49,6 +49,14 @@ public class LazyChecker extends LazyKeyChecker {
         this.fetchOptions = fetchOptions;
     }
 
+    protected LazySize getLazySize() {
+        return new LazySize() {
+            public int getSize() {
+                return holder.getCacheQuery().getResultSize();
+            }
+        };
+    }
+
     protected void apply() {
         final CacheQuery cacheQuery = holder.getCacheQuery();
 
