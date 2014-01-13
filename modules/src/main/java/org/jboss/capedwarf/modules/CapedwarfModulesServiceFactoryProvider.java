@@ -24,17 +24,14 @@ package org.jboss.capedwarf.modules;
 
 import com.google.appengine.api.labs.modules.IModulesServiceFactory;
 import com.google.appengine.api.labs.modules.ModulesService;
-import com.google.appengine.spi.FactoryProvider;
-import com.google.appengine.spi.ServiceProvider;
 import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
-import org.kohsuke.MetaInfServices;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-@MetaInfServices(FactoryProvider.class)
-@ServiceProvider(value = IModulesServiceFactory.class, precedence = CapedwarfFactoryProvider.PRECEDENCE)
+// @MetaInfServices(FactoryProvider.class)
+// @ServiceProvider(value = IModulesServiceFactory.class, precedence = CapedwarfFactoryProvider.PRECEDENCE)
 public class CapedwarfModulesServiceFactoryProvider extends CapedwarfFactoryProvider<IModulesServiceFactory> {
     public CapedwarfModulesServiceFactoryProvider() {
         super(IModulesServiceFactory.class);
