@@ -29,9 +29,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import com.google.appengine.api.labs.modules.ModulesService;
+import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
-import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.MapKey;
 import org.jboss.capedwarf.shared.components.Slot;
@@ -141,7 +141,7 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public Future<Set<String>> getModulesAsync() {
-        return ExecutorFactory.wrap(new Callable<Set<String>>() {
+        return wrap(new Callable<Set<String>>() {
             public Set<String> call() throws Exception {
                 return getModules();
             }
@@ -149,7 +149,7 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public Future<Set<String>> getVersionsAsync(final String module) {
-        return ExecutorFactory.wrap(new Callable<Set<String>>() {
+        return wrap(new Callable<Set<String>>() {
             public Set<String> call() throws Exception {
                 return getVersions(module);
             }
@@ -157,7 +157,7 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public Future<String> getDefaultVersionAsync(final String module) {
-        return ExecutorFactory.wrap(new Callable<String>() {
+        return wrap(new Callable<String>() {
             public String call() throws Exception {
                 return getDefaultVersion(module);
             }
@@ -165,7 +165,7 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public Future<Long> getNumInstancesAsync(final String module, final String version) {
-        return ExecutorFactory.wrap(new Callable<Long>() {
+        return wrap(new Callable<Long>() {
             public Long call() throws Exception {
                 return getNumInstances(module, version);
             }
@@ -173,7 +173,7 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public Future<Void> setNumInstancesAsync(final String module, final String version, final long instances) {
-        return ExecutorFactory.wrap(new Callable<Void>() {
+        return wrap(new Callable<Void>() {
             public Void call() throws Exception {
                 setNumInstances(module, version, instances);
                 return null;
@@ -182,7 +182,7 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public Future<Void> startModuleAsync(final String module, final String version) {
-        return ExecutorFactory.wrap(new Callable<Void>() {
+        return wrap(new Callable<Void>() {
             public Void call() throws Exception {
                 startModule(module, version);
                 return null;
@@ -191,7 +191,7 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public Future<Void> stopModuleAsync(final String module, final String version) {
-        return ExecutorFactory.wrap(new Callable<Void>() {
+        return wrap(new Callable<Void>() {
             public Void call() throws Exception {
                 startModule(module, version);
                 return null;
@@ -200,7 +200,7 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public Future<String> getModuleHostnameAsync(final String module, final String version) {
-        return ExecutorFactory.wrap(new Callable<String>() {
+        return wrap(new Callable<String>() {
             public String call() throws Exception {
                 return getModuleHostname(module, version);
             }
@@ -208,10 +208,14 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public Future<String> getModuleHostnameAsync(final String module, final String version, final int instance) {
-        return ExecutorFactory.wrap(new Callable<String>() {
+        return wrap(new Callable<String>() {
             public String call() throws Exception {
                 return getModuleHostname(module, version, instance);
             }
         });
+    }
+    
+    private static <V> Future<V> wrap(Callable<V> callable) {
+        return Wrappers.future(callable);
     }
 }
