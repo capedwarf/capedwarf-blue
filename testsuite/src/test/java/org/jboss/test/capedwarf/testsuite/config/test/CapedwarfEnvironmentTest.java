@@ -23,8 +23,11 @@
 package org.jboss.test.capedwarf.testsuite.config.test;
 
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.BackendsXml;
 import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
+import org.jboss.capedwarf.shared.config.IndexesXml;
+import org.jboss.capedwarf.shared.config.QueueXml;
 import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.After;
 import org.junit.Assert;
@@ -51,21 +54,12 @@ public class CapedwarfEnvironmentTest {
     public void setUp() throws Exception {
         config = new CapedwarfConfiguration();
         env = CapedwarfEnvironment.createThreadLocalInstance();
-        env.setCapedwarfConfiguration(config);
-        env.setBackends(new BackendsXml());
+        env.setApplicationConfiguration(new ApplicationConfiguration(null, config, new QueueXml(), new BackendsXml(), new IndexesXml()));
     }
 
     @After
     public void tearDown() throws Exception {
         CapedwarfEnvironment.clearThreadLocalInstance();
-    }
-
-    @Test
-    public void getAdmins_ReturnsAdminsFromCapedwarfConfiguration() throws Exception {
-        config.addAdmin(ADMIN_EMAIL);
-
-        Assert.assertEquals(1, env.getAdmins().size());
-        assertTrue(env.getAdmins().contains(ADMIN_EMAIL));
     }
 
     @Test

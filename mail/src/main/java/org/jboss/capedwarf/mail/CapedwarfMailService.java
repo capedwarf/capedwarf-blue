@@ -60,7 +60,7 @@ public class CapedwarfMailService implements MailService {
     }
 
     private Collection<String> getAdminEmails() {
-        return CapedwarfEnvironment.getThreadLocalInstance().getAdmins();
+        return CapedwarfEnvironment.getThreadLocalInstance().getApplicationConfiguration().getCapedwarfConfiguration().getAdmins();
     }
 
     private void assertAllRecipientFieldsAreEmpty(Message message) {

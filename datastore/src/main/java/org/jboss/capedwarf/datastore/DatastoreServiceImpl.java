@@ -250,7 +250,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         if (indexes == null) {
             indexes = new HashMap<Index, Index.IndexState>();
             long id = 0;
-            IndexesXml indexesXml = CapedwarfEnvironment.getThreadLocalInstance().getIndexes();
+            IndexesXml indexesXml = CapedwarfEnvironment.getThreadLocalInstance().getApplicationConfiguration().getIndexesXml();
             for (IndexesXml.Index i : indexesXml.getIndexes().values()) {
                 List<Index.Property> properties = new ArrayList<Index.Property>();
                 for (IndexesXml.Property p : i.getProperties()) {

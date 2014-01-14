@@ -42,7 +42,7 @@ public class XMPPConnectionManager {
 
     public XMPPConnection createConnection() {
         try {
-            XmppConfiguration xmppConfig = CapedwarfEnvironment.getThreadLocalInstance().getCapedwarfConfiguration().getXmppConfiguration();
+            XmppConfiguration xmppConfig = CapedwarfEnvironment.getThreadLocalInstance().getApplicationConfiguration().getCapedwarfConfiguration().getXmppConfiguration();
 
             ConnectionConfiguration config = new ConnectionConfiguration(xmppConfig.getHost(), xmppConfig.getPort());
             XMPPConnection connection = new XMPPConnection(config);

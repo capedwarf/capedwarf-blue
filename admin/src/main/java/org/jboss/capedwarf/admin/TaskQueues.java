@@ -66,7 +66,7 @@ public class TaskQueues {
         pullQueues = new ArrayList<TaskQueue>();
 
         CapedwarfEnvironment env = (CapedwarfEnvironment) ApiProxy.getCurrentEnvironment();
-        for (QueueXml.Queue queue : env.getQueueXml().getQueues().values()) {
+        for (QueueXml.Queue queue : env.getApplicationConfiguration().getQueueXml().getQueues().values()) {
             TaskQueue taskQueue = new TaskQueue(QueueFactory.getQueue(queue.getName()));
             if (queue.getMode() == QueueXml.Mode.PUSH) {
                 pushQueues.add(taskQueue);

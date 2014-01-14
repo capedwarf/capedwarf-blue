@@ -109,7 +109,7 @@ public class CapedwarfQueue implements Queue {
             synchronized (this) {
                 if (initilized == false) {
                     CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
-                    QueueXml qx = env.getQueueXml();
+                    QueueXml qx = env.getApplicationConfiguration().getQueueXml();
                     QueueXml.Queue queue = qx.getQueues().get(queueName);
                     if (queue == null) {
                         throw new IllegalStateException("No such queue " + queueName + " in queue.xml!");

@@ -47,7 +47,7 @@ public class CapedwarfModulesService implements ModulesService {
     private AppEngineWebXml appEngineWebXml;
 
     public CapedwarfModulesService() {
-        appEngineWebXml = CapedwarfEnvironment.getThreadLocalInstance().getAppEngineWebXml();
+        appEngineWebXml = CapedwarfEnvironment.getThreadLocalInstance().getApplicationConfiguration().getAppEngineWebXml();
     }
 
     private static Map<String, ModuleInfo> getModulesInfos() {

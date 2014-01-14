@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -40,11 +39,8 @@ import com.google.apphosting.api.ApiProxy;
 import com.google.common.base.Function;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
-import org.jboss.capedwarf.shared.config.AppEngineWebXml;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.BackendsXml;
-import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
-import org.jboss.capedwarf.shared.config.IndexesXml;
-import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -87,11 +83,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private boolean isAdmin;
     private String authDomain;
 
-    private CapedwarfConfiguration capedwarfConfiguration;
-    private AppEngineWebXml appEngineWebXml;
-    private QueueXml queueXml;
-    private BackendsXml backends;
-    private IndexesXml indexes;
+    private ApplicationConfiguration applicationConfiguration;
 
     private String baseApplicationUrl;
     private String secureBaseApplicationUrl;
@@ -137,25 +129,17 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     @Override
     public String getAppId() {
-        assertInitialized();
-        return appEngineWebXml.getApplication();
+        return getApplicationConfiguration().getAppEngineWebXml().getApplication();
     }
 
     @Override
     public String getVersionId() {
-        assertInitialized();
-        return appEngineWebXml.getVersion() + ".1"; // TODO?
+        return getApplicationConfiguration().getAppEngineWebXml().getVersion() + ".1"; // TODO?
     }
 
     @Override
     public String getModuleId() {
-        assertInitialized();
-        return appEngineWebXml.getModule();
-    }
-
-    private void assertInitialized() {
-        if (appEngineWebXml == null)
-            throw new IllegalStateException("Application data has not been initialized. Was this method called AFTER GAEFilter did its job?");
+        return getApplicationConfiguration().getAppEngineWebXml().getModule();
     }
 
     @Override
@@ -205,54 +189,14 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
         this.authDomain = authDomain;
     }
 
-    public void setCapedwarfConfiguration(CapedwarfConfiguration capedwarfConfiguration) {
-        this.capedwarfConfiguration = capedwarfConfiguration;
+
+    public void setApplicationConfiguration(ApplicationConfiguration applicationConfiguration) {
+        this.applicationConfiguration = applicationConfiguration;
     }
 
-    public CapedwarfConfiguration getCapedwarfConfiguration() {
-        return capedwarfConfiguration;
+    public ApplicationConfiguration getApplicationConfiguration() {
+        return applicationConfiguration;
     }
-
-    public void setAppEngineWebXml(AppEngineWebXml appEngineWebXml) {
-        this.appEngineWebXml = appEngineWebXml;
-    }
-
-    public AppEngineWebXml getAppEngineWebXml() {
-        return appEngineWebXml;
-    }
-
-    public QueueXml getQueueXml() {
-        return queueXml;
-    }
-
-    public void setQueueXml(QueueXml queueXml) {
-        this.queueXml = queueXml;
-    }
-
-    public BackendsXml getBackends() {
-        return backends;
-    }
-
-    public void setBackends(BackendsXml backends) {
-        this.backends = backends;
-    }
-
-    public IndexesXml getIndexes() {
-        return indexes;
-    }
-
-    public void setIndexes(IndexesXml indexes) {
-        this.indexes = indexes;
-    }
-
-    public Collection<String> getAdmins() {
-        return capedwarfConfiguration.getAdmins();
-    }
-
-    public boolean isAdmin(String email) {
-        return capedwarfConfiguration.isAdmin(email);
-    }
-
     public void setBaseApplicationUrl(String scheme, String serverName, int port, String context) {
         String sPort = (port == DEFAULT_HTTP_PORT) ? "" : ":" + port;
         defaultVersionHostname = serverName + sPort + context;
@@ -357,6 +301,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
      * Mark env as initialized.
      */
     public void initialized() {
+        BackendsXml backends = getApplicationConfiguration().getBackendsXml();
         if (backends != null) {
             // TODO -- move this to CD_JBossAS
             attributes.put(BackendService.DEVAPPSERVER_PORTMAPPING_KEY, backends.getAddresses(ADDRESS_FN));

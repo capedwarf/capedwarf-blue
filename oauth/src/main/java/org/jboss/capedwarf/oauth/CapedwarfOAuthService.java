@@ -113,7 +113,7 @@ public class CapedwarfOAuthService implements OAuthService {
         }
 
         CapedwarfEnvironment environment = (CapedwarfEnvironment) ApiProxy.getCurrentEnvironment();
-        return environment.getCapedwarfConfiguration().isAdmin(currentUser.getEmail());
+        return environment.getApplicationConfiguration().getCapedwarfConfiguration().isAdmin(currentUser.getEmail());
     }
 
     public String getOAuthConsumerKey() throws OAuthRequestException {

@@ -26,7 +26,7 @@ public class Indexes {
     private static final Set<String> KEY_RESERVED_PROPERTY_AS_SET = Collections.singleton(Entity.KEY_RESERVED_PROPERTY);
 
     public static IndexesXml.Index getIndex(Query query) {
-        for (IndexesXml.Index index : CapedwarfEnvironment.getThreadLocalInstance().getIndexes().getIndexes().values()) {
+        for (IndexesXml.Index index : CapedwarfEnvironment.getThreadLocalInstance().getApplicationConfiguration().getIndexesXml().getIndexes().values()) {
             if (indexMatches(index, query)) {
                 return index;
             }
@@ -41,7 +41,7 @@ public class Indexes {
     }
 
     private static boolean needsExplicitlyDefinedIndex(Query query) {
-        if (Application.isDevelopmentEnv() && CapedwarfEnvironment.getThreadLocalInstance().getIndexes().isAutoGenerate()) {
+        if (Application.isDevelopmentEnv() && CapedwarfEnvironment.getThreadLocalInstance().getApplicationConfiguration().getIndexesXml().isAutoGenerate()) {
             return false;
         }
 
