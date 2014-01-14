@@ -26,8 +26,8 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import org.jboss.capedwarf.channel.IncomingChannelRequestParser;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.InboundServices;
 import org.jboss.capedwarf.shared.config.QueueXml;
 
@@ -36,9 +36,8 @@ import org.jboss.capedwarf.shared.config.QueueXml;
  */
 class ChannelNotifications {
     private static boolean enabled() {
-        AppEngineWebXml config = CapedwarfEnvironment.getThreadLocalInstance().getAppEngineWebXml();
-        InboundServices services = config.getInboundServices();
-        return (services != null && services.getServices().contains(InboundServices.Service.channel_presence));
+        AppEngineWebXml config = ApplicationConfiguration.getInstance().getAppEngineWebXml();
+        return config.isInboundServiceEnabled(InboundServices.Service.channel_presence);
     }
 
     private static void submit(String url, String clientId, boolean connected) {

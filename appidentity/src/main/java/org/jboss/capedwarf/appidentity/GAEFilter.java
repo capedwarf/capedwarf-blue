@@ -68,7 +68,7 @@ public class GAEFilter implements Filter {
     }
 
     private boolean isStaticFile(HttpServletRequest request) {
-        AppEngineWebXml appEngineWebXml = CapedwarfEnvironment.getThreadLocalInstance().getAppEngineWebXml();
+        AppEngineWebXml appEngineWebXml = CapedwarfEnvironment.getThreadLocalInstance().getApplicationConfiguration().getAppEngineWebXml();
         return matches(request.getRequestURI(), appEngineWebXml.getStaticFileIncludes()) && !matches(request.getRequestURI(), appEngineWebXml.getStaticFileExcludes());
     }
 

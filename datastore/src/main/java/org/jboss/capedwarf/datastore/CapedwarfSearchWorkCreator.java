@@ -51,7 +51,7 @@ public class CapedwarfSearchWorkCreator extends DefaultSearchWorkCreator<Object>
 
         Entity entity = (Entity) value;
         List<Work<Object>> works = new ArrayList<>(super.createPerEntityWorks(value, id, workType));
-        for (IndexesXml.Index index : CapedwarfEnvironment.getThreadLocalInstance().getIndexes().getIndexes().values()) {
+        for (IndexesXml.Index index : CapedwarfEnvironment.getThreadLocalInstance().getApplicationConfiguration().getIndexesXml().getIndexes().values()) {
             if (index.getKind().equals(entity.getKind())) {
                 int i = 0;
                 for (Entity explodedEntity : explodeEntity(entity, index)) {

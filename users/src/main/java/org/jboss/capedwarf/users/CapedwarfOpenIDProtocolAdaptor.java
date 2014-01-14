@@ -78,7 +78,7 @@ class CapedwarfOpenIDProtocolAdaptor implements OpenIDProtocolAdapter, OpenIDLif
             String userId = request.getParameter("openid.claimed_id");
             String email = request.getParameter("openid.ext1.value.email");
             String authDomain = "gmail.com";    // TODO?
-            boolean isAdmin = CapedwarfEnvironment.getThreadLocalInstance().isAdmin(email);
+            boolean isAdmin = CapedwarfEnvironment.getThreadLocalInstance().getApplicationConfiguration().getCapedwarfConfiguration().isAdmin(email);
             request.getSession().setAttribute(
                     CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY,
                     new CapedwarfUserPrincipal(userId, email, authDomain, isAdmin));
