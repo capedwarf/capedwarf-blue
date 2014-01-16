@@ -24,6 +24,7 @@ package org.jboss.capedwarf.common.app;
 
 import com.google.appengine.api.utils.SystemProperty;
 import com.google.apphosting.api.ApiProxy;
+import org.jboss.capedwarf.shared.servlet.CapedwarfApiProxy;
 import org.jboss.capedwarf.shared.util.Utils;
 
 /**
@@ -40,7 +41,7 @@ public final class Application {
      * @return the app id
      */
     public static String getAppId() {
-        return getJBossEnvironment().getAppId();
+        return CapedwarfApiProxy.getAppId();
     }
 
     private static ApiProxy.Environment getJBossEnvironment() {

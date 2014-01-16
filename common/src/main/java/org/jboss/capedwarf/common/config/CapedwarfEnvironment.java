@@ -39,6 +39,7 @@ import com.google.apphosting.api.ApiProxy;
 import com.google.common.base.Function;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.BackendsXml;
 
@@ -129,17 +130,21 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     @Override
     public String getAppId() {
-        return getApplicationConfiguration().getAppEngineWebXml().getApplication();
+        return getAppEngineWebXml().getApplication();
     }
 
     @Override
     public String getVersionId() {
-        return getApplicationConfiguration().getAppEngineWebXml().getVersion() + ".1"; // TODO?
+        return getAppEngineWebXml().getVersion() + ".1"; // TODO?
     }
 
     @Override
     public String getModuleId() {
-        return getApplicationConfiguration().getAppEngineWebXml().getModule();
+        return getAppEngineWebXml().getModule();
+    }
+
+    private AppEngineWebXml getAppEngineWebXml() {
+        return getApplicationConfiguration().getAppEngineWebXml();
     }
 
     @Override
@@ -197,6 +202,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     public ApplicationConfiguration getApplicationConfiguration() {
         return applicationConfiguration;
     }
+
     public void setBaseApplicationUrl(String scheme, String serverName, int port, String context) {
         String sPort = (port == DEFAULT_HTTP_PORT) ? "" : ":" + port;
         defaultVersionHostname = serverName + sPort + context;

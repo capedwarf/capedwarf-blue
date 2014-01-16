@@ -66,6 +66,7 @@ import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
@@ -108,8 +109,7 @@ public class CapedwarfQueue implements Queue {
         if (initilized == false) {
             synchronized (this) {
                 if (initilized == false) {
-                    CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
-                    QueueXml qx = env.getApplicationConfiguration().getQueueXml();
+                    QueueXml qx = ApplicationConfiguration.getInstance().getQueueXml();
                     QueueXml.Queue queue = qx.getQueues().get(queueName);
                     if (queue == null) {
                         throw new IllegalStateException("No such queue " + queueName + " in queue.xml!");
