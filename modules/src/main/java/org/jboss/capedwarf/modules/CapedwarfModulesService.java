@@ -214,7 +214,48 @@ public class CapedwarfModulesService implements ModulesService {
             }
         });
     }
-    
+
+    public void startVersion(String module, String version) {
+        startModule(module, version);
+    }
+
+    public Future<Void> startVersionAsync(String module, String version) {
+        return startModuleAsync(module, version);
+    }
+
+    public void stopVersion(String module, String version) {
+        stopModule(module, version);
+    }
+
+    public Future<Void> stopVersionAsync(String module, String version) {
+        return stopModuleAsync(module, version);
+    }
+
+    public String getVersionHostname(String module, String version) {
+        return getModuleHostname(module, version);
+    }
+
+    public String getInstanceHostname(String module, String version, String instance) {
+        if (isCurrentVersion(module, version) == false) {
+            return null;
+        }
+
+        ModuleInfo moduleInfo = getModuleInfo(module);
+        return moduleInfo.getInstance(instance).getHostname();
+    }
+
+    public Future<String> getVersionHostnameAsync(String module, String version) {
+        return getModuleHostnameAsync(module, version);
+    }
+
+    public Future<String> getInstanceHostnameAsync(final String module, final String version, final String instance) {
+        return wrap(new Callable<String>() {
+            public String call() throws Exception {
+                return getInstanceHostname(module, version, instance);
+            }
+        });
+    }
+
     private static <V> Future<V> wrap(Callable<V> callable) {
         return Wrappers.future(callable);
     }
