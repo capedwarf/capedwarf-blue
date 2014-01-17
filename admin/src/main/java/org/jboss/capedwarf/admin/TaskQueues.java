@@ -32,8 +32,7 @@ import javax.inject.Named;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.QueueStatistics;
-import com.google.apphosting.api.ApiProxy;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
@@ -65,8 +64,7 @@ public class TaskQueues {
         pushQueues = new ArrayList<TaskQueue>();
         pullQueues = new ArrayList<TaskQueue>();
 
-        CapedwarfEnvironment env = (CapedwarfEnvironment) ApiProxy.getCurrentEnvironment();
-        for (QueueXml.Queue queue : env.getQueueXml().getQueues().values()) {
+        for (QueueXml.Queue queue : ApplicationConfiguration.getInstance().getQueueXml().getQueues().values()) {
             TaskQueue taskQueue = new TaskQueue(QueueFactory.getQueue(queue.getName()));
             if (queue.getMode() == QueueXml.Mode.PUSH) {
                 pushQueues.add(taskQueue);

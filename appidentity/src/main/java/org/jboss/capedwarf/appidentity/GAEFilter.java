@@ -40,8 +40,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import org.jboss.capedwarf.blobstore.ExposedBlobstoreService;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.FilePattern;
 
 /**
@@ -68,7 +68,7 @@ public class GAEFilter implements Filter {
     }
 
     private boolean isStaticFile(HttpServletRequest request) {
-        AppEngineWebXml appEngineWebXml = CapedwarfEnvironment.getThreadLocalInstance().getAppEngineWebXml();
+        AppEngineWebXml appEngineWebXml = ApplicationConfiguration.getInstance().getAppEngineWebXml();
         return matches(request.getRequestURI(), appEngineWebXml.getStaticFileIncludes()) && !matches(request.getRequestURI(), appEngineWebXml.getStaticFileExcludes());
     }
 

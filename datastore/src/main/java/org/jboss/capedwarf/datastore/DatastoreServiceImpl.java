@@ -49,12 +49,12 @@ import com.google.appengine.repackaged.com.google.common.collect.Iterators;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.MapKey;
 import org.jboss.capedwarf.shared.components.Slot;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.IndexesXml;
 import org.jboss.capedwarf.shared.reflection.MethodInvocation;
 import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
@@ -250,7 +250,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         if (indexes == null) {
             indexes = new HashMap<Index, Index.IndexState>();
             long id = 0;
-            IndexesXml indexesXml = CapedwarfEnvironment.getThreadLocalInstance().getIndexes();
+            IndexesXml indexesXml = ApplicationConfiguration.getInstance().getIndexesXml();
             for (IndexesXml.Index i : indexesXml.getIndexes().values()) {
                 List<Index.Property> properties = new ArrayList<Index.Property>();
                 for (IndexesXml.Property p : i.getProperties()) {

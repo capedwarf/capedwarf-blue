@@ -30,9 +30,9 @@ import javax.mail.Session;
 import javax.mail.Transport;
 
 import com.google.appengine.api.mail.MailService;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Keys;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -60,7 +60,7 @@ public class CapedwarfMailService implements MailService {
     }
 
     private Collection<String> getAdminEmails() {
-        return CapedwarfEnvironment.getThreadLocalInstance().getAdmins();
+        return ApplicationConfiguration.getInstance().getCapedwarfConfiguration().getAdmins();
     }
 
     private void assertAllRecipientFieldsAreEmpty(Message message) {

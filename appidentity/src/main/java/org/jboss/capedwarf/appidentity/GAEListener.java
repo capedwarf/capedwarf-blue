@@ -39,12 +39,8 @@ import org.jboss.capedwarf.common.security.PrincipalInfo;
 import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.log.ExposedLogService;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
-import org.jboss.capedwarf.shared.config.AppEngineWebXml;
-import org.jboss.capedwarf.shared.config.BackendsXml;
-import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.ConfigurationAware;
-import org.jboss.capedwarf.shared.config.IndexesXml;
-import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
  * Env setup is done in AS' CapedwarfSetupAction.
@@ -58,7 +54,7 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
     // Invoked from CapedwarfSetupAction -- do not change signatures; reflection usage!
 
     public static void setup() {
-        setupInternal(appEngineWebXmlTL.get(), capedwarfConfigurationTL.get(), queueXmlTL.get(), backendsTL.get(), indexesTL.get());
+        setupInternal(applicationConfigurationTL.get());
     }
 
     public static boolean isSetup() {
@@ -74,13 +70,9 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         }
     }
 
-    protected static void setupInternal(AppEngineWebXml appEngineWebXml, CapedwarfConfiguration capedwarfConfiguration, QueueXml queueXml, BackendsXml backends, IndexesXml indexes) {
+    protected static void setupInternal(ApplicationConfiguration applicationConfiguration) {
         CapedwarfEnvironment environment = CapedwarfEnvironment.createThreadLocalInstance();
-        environment.setAppEngineWebXml(appEngineWebXml);
-        environment.setCapedwarfConfiguration(capedwarfConfiguration);
-        environment.setQueueXml(queueXml);
-        environment.setBackends(backends);
-        environment.setIndexes(indexes);
+        environment.setApplicationConfiguration(applicationConfiguration);
     }
 
     // Servlet / Request event handling
@@ -88,7 +80,7 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
     public void contextInitialized(ServletContextEvent sce) {
         initialize();
 
-        final String appId = appEngineWebXml.getApplication();
+        final String appId = applicationConfiguration.getAppEngineWebXml().getApplication();
 
         ServletContext servletContext = sce.getServletContext();
         servletContext.setAttribute("org.jboss.capedwarf.appId", appId);

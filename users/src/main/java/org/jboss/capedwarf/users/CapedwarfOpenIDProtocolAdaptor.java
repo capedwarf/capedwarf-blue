@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.picketlink.social.standalone.openid.api.OpenIDAttributeMap;
 import org.picketlink.social.standalone.openid.api.OpenIDLifecycle;
 import org.picketlink.social.standalone.openid.api.OpenIDLifecycleEvent;
@@ -78,7 +78,7 @@ class CapedwarfOpenIDProtocolAdaptor implements OpenIDProtocolAdapter, OpenIDLif
             String userId = request.getParameter("openid.claimed_id");
             String email = request.getParameter("openid.ext1.value.email");
             String authDomain = "gmail.com";    // TODO?
-            boolean isAdmin = CapedwarfEnvironment.getThreadLocalInstance().isAdmin(email);
+            boolean isAdmin = ApplicationConfiguration.getInstance().getCapedwarfConfiguration().isAdmin(email);
             request.getSession().setAttribute(
                     CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY,
                     new CapedwarfUserPrincipal(userId, email, authDomain, isAdmin));

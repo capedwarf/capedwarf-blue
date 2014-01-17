@@ -34,7 +34,7 @@ import com.google.appengine.api.datastore.Entity;
 import org.hibernate.search.backend.spi.Work;
 import org.hibernate.search.backend.spi.WorkType;
 import org.infinispan.query.impl.DefaultSearchWorkCreator;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.IndexesXml;
 import org.jboss.capedwarf.shared.datastore.DatastoreConstants;
 
@@ -51,7 +51,7 @@ public class CapedwarfSearchWorkCreator extends DefaultSearchWorkCreator<Object>
 
         Entity entity = (Entity) value;
         List<Work<Object>> works = new ArrayList<>(super.createPerEntityWorks(value, id, workType));
-        for (IndexesXml.Index index : CapedwarfEnvironment.getThreadLocalInstance().getIndexes().getIndexes().values()) {
+        for (IndexesXml.Index index : ApplicationConfiguration.getInstance().getIndexesXml().getIndexes().values()) {
             if (index.getKind().equals(entity.getKind())) {
                 int i = 0;
                 for (Entity explodedEntity : explodeEntity(entity, index)) {

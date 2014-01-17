@@ -12,8 +12,8 @@ import com.google.appengine.api.datastore.Projection;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.repackaged.com.google.common.collect.Sets;
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.datastore.KindUtils;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.IndexesXml;
 import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
@@ -26,7 +26,7 @@ public class Indexes {
     private static final Set<String> KEY_RESERVED_PROPERTY_AS_SET = Collections.singleton(Entity.KEY_RESERVED_PROPERTY);
 
     public static IndexesXml.Index getIndex(Query query) {
-        for (IndexesXml.Index index : CapedwarfEnvironment.getThreadLocalInstance().getIndexes().getIndexes().values()) {
+        for (IndexesXml.Index index : ApplicationConfiguration.getInstance().getIndexesXml().getIndexes().values()) {
             if (indexMatches(index, query)) {
                 return index;
             }
@@ -41,7 +41,7 @@ public class Indexes {
     }
 
     private static boolean needsExplicitlyDefinedIndex(Query query) {
-        if (Application.isDevelopmentEnv() && CapedwarfEnvironment.getThreadLocalInstance().getIndexes().isAutoGenerate()) {
+        if (Application.isDevelopmentEnv() && ApplicationConfiguration.getInstance().getIndexesXml().isAutoGenerate()) {
             return false;
         }
 

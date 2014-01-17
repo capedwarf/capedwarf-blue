@@ -27,9 +27,8 @@ import com.google.appengine.api.oauth.InvalidOAuthTokenException;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.oauth.OAuthService;
 import com.google.appengine.api.users.User;
-import com.google.apphosting.api.ApiProxy;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -112,8 +111,7 @@ public class CapedwarfOAuthService implements OAuthService {
             throw new IllegalStateException("There is no current user.");
         }
 
-        CapedwarfEnvironment environment = (CapedwarfEnvironment) ApiProxy.getCurrentEnvironment();
-        return environment.getCapedwarfConfiguration().isAdmin(currentUser.getEmail());
+        return ApplicationConfiguration.getInstance().getCapedwarfConfiguration().isAdmin(currentUser.getEmail());
     }
 
     public String getOAuthConsumerKey() throws OAuthRequestException {
