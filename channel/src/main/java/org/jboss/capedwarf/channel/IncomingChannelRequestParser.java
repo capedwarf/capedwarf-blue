@@ -32,13 +32,16 @@ import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class IncomingChannelRequestParser {
+    public static final String KEY = "key";
+    public static final String MSG = "msg";
+
     public static final String CONNECTED = "connected";
     public static final String CLIENT_ID = "clientId";
 
     static ChannelMessage parseMessage(HttpServletRequest request) {
         return new ChannelMessage(
-                request.getParameter(CLIENT_ID),
-                request.getParameter("message")
+                request.getParameter(KEY),
+                request.getParameter(MSG)
         );
     }
 
