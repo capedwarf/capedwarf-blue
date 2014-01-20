@@ -36,7 +36,7 @@ import com.google.appengine.api.log.LogServiceFactory;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.security.PrincipalInfo;
-import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
+import org.jboss.capedwarf.common.shared.SimpleAppIdFactory;
 import org.jboss.capedwarf.log.ExposedLogService;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
@@ -50,6 +50,7 @@ import org.jboss.capedwarf.shared.config.ConfigurationAware;
  */
 public class GAEListener extends ConfigurationAware implements ServletContextListener, ServletRequestListener {
     private volatile ExposedLogService logService;
+    private AppIdFactory appIdFactory;
 
     // Invoked from CapedwarfSetupAction -- do not change signatures; reflection usage!
 
@@ -62,15 +63,21 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
     }
 
     public static void teardown() {
-        final CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
         try {
-            env.checkGlobalTimeLimit();
+            final CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
+            try {
+                env.checkGlobalTimeLimit();
+            } finally {
+                CapedwarfEnvironment.clearThreadLocalInstance();
+            }
         } finally {
-            CapedwarfEnvironment.clearThreadLocalInstance();
+            AppIdFactory.resetCurrentFactory();
         }
     }
 
     protected static void setupInternal(ApplicationConfiguration applicationConfiguration) {
+        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(applicationConfiguration.getAppEngineWebXml().getApplication()));
+
         CapedwarfEnvironment environment = CapedwarfEnvironment.createThreadLocalInstance();
         environment.setApplicationConfiguration(applicationConfiguration);
     }
@@ -84,6 +91,8 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
 
         ServletContext servletContext = sce.getServletContext();
         servletContext.setAttribute("org.jboss.capedwarf.appId", appId);
+
+        appIdFactory = new SimpleAppIdFactory(appId);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
@@ -94,14 +103,14 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
     }
 
     public void requestInitialized(ServletRequestEvent sre) {
+        AppIdFactory.setCurrentFactory(appIdFactory);
+
         long requestStartMillis = System.currentTimeMillis();
 
         final ServletRequest req = sre.getServletRequest();
         if (req instanceof HttpServletRequest) {
             initJBossEnvironment((HttpServletRequest) req);
         }
-
-        AppIdFactory.setCurrentFactory(EnvAppIdFactory.INSTANCE);
 
         CapedwarfDelegate.INSTANCE.addRequest(req);
 

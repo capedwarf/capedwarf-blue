@@ -27,7 +27,7 @@ import java.util.Set;
 
 import org.infinispan.notifications.Listenable;
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
+import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.SetKey;
@@ -37,20 +37,19 @@ import org.jboss.capedwarf.shared.components.Slot;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CacheListenerRegistry {
-    private static final Key<Set<CacheListenerHandle>> KEY = new SetKey<CacheListenerHandle>(EnvAppIdFactory.INSTANCE, Slot.CACHE_LISTENERS);
-
     /**
      * Register listener at runtime.
      *
      * @param handle the cache handle
      */
     public static synchronized void registerListener(Listenable listenable, CacheListenerHandle handle) {
+        final Key<Set<CacheListenerHandle>> key = new SetKey<CacheListenerHandle>(AppIdFactory.getAppId(), Slot.CACHE_LISTENERS);
         ComponentRegistry registry = ComponentRegistry.getInstance();
-        Set<CacheListenerHandle> handles = registry.getComponent(KEY);
+        Set<CacheListenerHandle> handles = registry.getComponent(key);
         if (handles == null || handles.contains(handle) == false) {
             if (handles == null) {
                 handles = new HashSet<CacheListenerHandle>();
-                registry.setComponent(KEY, handles);
+                registry.setComponent(key, handles);
             }
             handles.add(handle);
 

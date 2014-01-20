@@ -44,14 +44,6 @@ public final class Application {
         return CapedwarfApiProxy.getAppId();
     }
 
-    private static ApiProxy.Environment getJBossEnvironment() {
-        ApiProxy.Environment environment = ApiProxy.getCurrentEnvironment();
-        if (environment == null) {
-            throw new NullPointerException("No API environment is registered for this thread.");
-        }
-        return environment;
-    }
-
     /**
      * Get app's classloader.
      *

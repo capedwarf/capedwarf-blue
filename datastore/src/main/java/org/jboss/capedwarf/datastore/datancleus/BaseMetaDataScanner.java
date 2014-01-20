@@ -25,7 +25,7 @@ package org.jboss.capedwarf.datastore.datancleus;
 import java.util.Set;
 
 import org.datanucleus.metadata.PersistenceUnitMetaData;
-import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
+import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.SetKey;
@@ -48,7 +48,7 @@ public class BaseMetaDataScanner extends AbstractMetaDataScanner {
 
     public synchronized Set<String> scanForPersistableClasses(PersistenceUnitMetaData pumd) {
         if (entities == null) {
-            Key<Set<String>> key = new SetKey<String>(EnvAppIdFactory.INSTANCE, Slot.METADATA_SCANNER);
+            Key<Set<String>> key = new SetKey<String>(AppIdFactory.getAppId(), Slot.METADATA_SCANNER);
             entities = ComponentRegistry.getInstance().getComponent(key);
         }
         return entities;

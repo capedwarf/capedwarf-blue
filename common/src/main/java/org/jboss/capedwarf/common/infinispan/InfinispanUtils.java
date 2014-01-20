@@ -36,6 +36,7 @@ import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
@@ -87,7 +88,7 @@ public class InfinispanUtils {
     }
 
     private static <R> Callable<R> toTCCL(Callable<R> callable) {
-        return new TCCLCallable<R>(callable);
+        return new TCCLCallable<R>(Wrappers.distribute(callable));
     }
 
     /**

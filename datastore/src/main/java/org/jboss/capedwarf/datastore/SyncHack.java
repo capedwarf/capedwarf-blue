@@ -25,9 +25,8 @@ package org.jboss.capedwarf.datastore;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
+import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
-import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.SetKey;
 import org.jboss.capedwarf.shared.components.Slot;
 
@@ -39,14 +38,9 @@ import org.jboss.capedwarf.shared.components.Slot;
  */
 final class SyncHack {
     private static final Logger log = Logger.getLogger(SyncHack.class.getName());
-    private static final Key<Set<String>> KEY;
-
-    static {
-        KEY = new SetKey<String>(EnvAppIdFactory.INSTANCE, Slot.SYNC_HACK);
-    }
 
     static boolean forceSync() {
-        Set<String> callers = ComponentRegistry.getInstance().getComponent(KEY);
+        Set<String> callers = ComponentRegistry.getInstance().getComponent(new SetKey<String>(AppIdFactory.getAppId(), Slot.SYNC_HACK));
         if (callers == null || callers.isEmpty())
             return false;
 

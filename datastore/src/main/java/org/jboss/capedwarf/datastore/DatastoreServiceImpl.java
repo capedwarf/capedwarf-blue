@@ -49,8 +49,8 @@ import com.google.appengine.repackaged.com.google.common.collect.Iterators;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
-import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.MapKey;
 import org.jboss.capedwarf.shared.components.Slot;
@@ -114,7 +114,7 @@ class DatastoreServiceImpl extends BaseDatastoreServiceImpl implements Datastore
         if (allocationsMap == null) {
             synchronized (this) {
                 if (allocationsMap == null) {
-                    MapKey<String, Integer> key = new MapKey<String, Integer>(EnvAppIdFactory.INSTANCE, Slot.ALLOCATIONS_MAP);
+                    MapKey<String, Integer> key = new MapKey<String, Integer>(AppIdFactory.getAppId(), Slot.ALLOCATIONS_MAP);
                     allocationsMap = ComponentRegistry.getInstance().getComponent(key);
                 }
             }

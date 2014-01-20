@@ -25,10 +25,11 @@ package org.jboss.capedwarf.datastore.notifications;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.shared.SimpleAppIdFactory;
+import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.util.Utils;
 
 /**
@@ -80,14 +81,20 @@ public abstract class AbstractCacheListener {
      * @param taskable the taskable
      */
     protected <T> void executeCallable(Taskable<T> taskable) {
-        final CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
+        final String appId = env.getAppId();
+        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(appId));
         try {
-            final Future<T> future = InfinispanUtils.fire(Application.getAppId(), CacheName.DIST, taskable.toCallable(), taskable.taskKey());
-            if (taskable.block()) {
-                Utils.quietGet(future);
+            final CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
+            try {
+                final Future<T> future = InfinispanUtils.fire(appId, CacheName.DIST, taskable.toCallable(), taskable.taskKey());
+                if (taskable.block()) {
+                    Utils.quietGet(future);
+                }
+            } finally {
+                CapedwarfEnvironment.setThreadLocalInstance(previous);
             }
         } finally {
-            CapedwarfEnvironment.setThreadLocalInstance(previous);
+            AppIdFactory.resetCurrentFactory();
         }
     }
 }

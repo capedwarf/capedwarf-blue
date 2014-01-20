@@ -26,7 +26,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.shared.util.Utils;
 
@@ -44,6 +43,17 @@ public final class Wrappers {
      */
     public static <T> Callable<T> wrap(final Callable<T> callable) {
         return new CallableWrapper<T>(callable);
+    }
+
+    /**
+     * Distributable callable.
+     * Can be shared accross the wire.
+     *
+     * @param callable the callable
+     * @return wrapped callable in future
+     */
+    public static <T> Callable<T> distribute(final Callable<T> callable) {
+        return new DistributableWrapper<>(callable);
     }
 
     /**
@@ -66,26 +76,18 @@ public final class Wrappers {
         return new RunnableWrapper(runnable);
     }
 
-    private static class CallableWrapper<V> implements Callable<V> {
+    private static class CallableWrapper<V> extends DistributableWrapper<V> {
         private final ClassLoader appCL;
-        private final CapedwarfEnvironment env;
-        private final Callable<V> callable;
 
         private CallableWrapper(Callable<V> callable) {
+            super(callable);
             this.appCL = Application.getAppClassLoader();
-            this.env = CapedwarfEnvironment.getThreadLocalInstance();
-            this.callable = callable;
         }
 
         public V call() throws Exception {
             final ClassLoader old = SecurityActions.setThreadContextClassLoader(appCL);
             try {
-                final CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
-                try {
-                    return callable.call();
-                } finally {
-                    CapedwarfEnvironment.setThreadLocalInstance(previous);
-                }
+                return super.call();
             } finally {
                 SecurityActions.setThreadContextClassLoader(old);
             }

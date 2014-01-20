@@ -25,7 +25,6 @@ package org.jboss.capedwarf.log;
 import java.util.logging.LogRecord;
 
 import com.google.appengine.api.log.LogServiceFactory;
-import org.jboss.capedwarf.common.shared.EnvAppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.SimpleKey;
@@ -37,12 +36,11 @@ import org.jboss.capedwarf.shared.components.SimpleKey;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class Logger {
-    private static final Key<Logable> KEY = new SimpleKey<Logable>(EnvAppIdFactory.INSTANCE, Logable.class);
-
     public static void publish(LogRecord record) {
+        final Key<Logable> key = new SimpleKey<Logable>(Logable.class);
         ComponentRegistry registry = ComponentRegistry.getInstance();
         LoggerLogable logable = new LoggerLogable();
-        Logable previous = registry.putIfAbsent(KEY, logable);
+        Logable previous = registry.putIfAbsent(key, logable);
         if (previous == null) {
             logable.log(record);
         } else {

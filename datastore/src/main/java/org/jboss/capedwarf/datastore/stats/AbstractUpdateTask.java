@@ -31,7 +31,6 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import org.infinispan.AdvancedCache;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.BaseTxTask;
 
 /**
@@ -41,24 +40,13 @@ import org.jboss.capedwarf.common.infinispan.BaseTxTask;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public abstract class AbstractUpdateTask<V> extends BaseTxTask<String, V, Entity> {
-    private final CapedwarfEnvironment env;
     private final Update update;
 
     public AbstractUpdateTask(Update update) {
-        this.env = CapedwarfEnvironment.getThreadLocalInstance();
         this.update = update;
     }
 
     protected Entity callInTx() throws Exception {
-        final CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
-        try {
-            return callInTxInternal();
-        } finally {
-            CapedwarfEnvironment.setThreadLocalInstance(previous);
-        }
-    }
-
-    private Entity callInTxInternal() throws Exception {
         final DatastoreService service = DatastoreServiceFactory.getDatastoreService();
 
         final String cacheKey = update.statsKind() + update.statsNamespace();
