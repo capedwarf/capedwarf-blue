@@ -34,4 +34,23 @@
         <servlet-name>RetryTestServlet</servlet-name>
         <url-pattern>/_ah/retryTest</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>SecureServlet</servlet-name>
+        <servlet-class>org.jboss.test.capedwarf.tasks.support.SecureServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SecureServlet</servlet-name>
+        <url-pattern>/secure/*</url-pattern>
+    </servlet-mapping>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Secure Tasks</web-resource-name>
+            <url-pattern>/secure/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>admin</role-name>
+        </auth-constraint>
+    </security-constraint>
 </web>

@@ -28,6 +28,7 @@ import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -43,8 +44,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.NamespaceManager;
+import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
+import org.jboss.capedwarf.common.shared.SimpleAppIdFactory;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.config.QueueXml;
 import org.jboss.capedwarf.shared.jms.AbstractServletRequestCreator;
 import org.jboss.capedwarf.shared.jms.MessageConstants;
@@ -97,13 +102,37 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
     }
 
     public void prepare(HttpServletRequest request, String appId) {
-        CapedwarfEnvironment.createThreadLocalInstance();
-        String namespace = request.getHeader(TasksMessageCreator.CURRENT_NAMESPACE);
-        NamespaceManager.set(namespace);
+        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(appId));
+        try {
+            CapedwarfEnvironment.createThreadLocalInstance();
+            try {
+                String namespace = request.getHeader(TasksMessageCreator.CURRENT_NAMESPACE);
+                NamespaceManager.set(namespace);
+
+                handleRoles();
+            } catch (Throwable t) {
+                CapedwarfEnvironment.clearThreadLocalInstance();
+            }
+        } catch (Throwable t) {
+            AppIdFactory.resetCurrentFactory();
+        }
     }
 
     public void finish() {
-        CapedwarfEnvironment.clearThreadLocalInstance();
+        try {
+            try {
+                removeAllRoles();
+            } finally {
+                CapedwarfEnvironment.clearThreadLocalInstance();
+            }
+        } finally {
+            AppIdFactory.resetCurrentFactory();
+        }
+    }
+
+    private void handleRoles() {
+        String roles = (String) CompatibilityUtils.getInstance().toObject(Compatibility.Feature.TASKQUEUE_ROLES);
+        addAllRoles(new HashSet<String>(Arrays.asList(roles.split(","))));
     }
 
     @Override
