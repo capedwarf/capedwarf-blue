@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.security.api.AuthenticationMechanismFactory;
@@ -41,7 +42,7 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.api.SingleConstraintMatch;
 import io.undertow.servlet.handlers.ServletRequestContext;
-import org.jboss.capedwarf.shared.jms.RolesHolder;
+import org.jboss.capedwarf.shared.servlet.Mock;
 import org.kohsuke.MetaInfServices;
 
 /**
@@ -69,14 +70,14 @@ public class TasksServletExtension implements ServletExtension {
 
     private static class RolesAuthenticator implements AuthenticationMechanism {
         public AuthenticationMechanismOutcome authenticate(HttpServerExchange exchange, SecurityContext securityContext) {
-            final Set<String> roles = RolesHolder.getRoles();
-            if (roles == null) {
-                return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
-            }
-
             final ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
             final List<SingleConstraintMatch> constraints = servletRequestContext.getRequiredConstrains();
             if (constraints == null || constraints.isEmpty()) {
+                return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
+            }
+
+            final HttpServletRequest request = (HttpServletRequest) servletRequestContext.getServletRequest();
+            if (request instanceof Mock == false) {
                 return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
             }
 
@@ -85,12 +86,14 @@ public class TasksServletExtension implements ServletExtension {
                 requiredRoles.addAll(sc.getRequiredRoles());
             }
 
-            if (roles.containsAll(requiredRoles)) {
-                securityContext.authenticationComplete(new RolesAccount(roles), ROLES, false);
-                return AuthenticationMechanismOutcome.AUTHENTICATED;
-            } else {
-                return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+            for (String role : requiredRoles) {
+                if (request.isUserInRole(role) == false) {
+                    return AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+                }
             }
+
+            securityContext.authenticationComplete(new RolesAccount(requiredRoles, request.getUserPrincipal()), ROLES, false);
+            return AuthenticationMechanismOutcome.AUTHENTICATED;
         }
 
         public ChallengeResult sendChallenge(HttpServerExchange exchange, SecurityContext securityContext) {
@@ -102,13 +105,9 @@ public class TasksServletExtension implements ServletExtension {
         private final Set<String> roles;
         private final Principal principal;
 
-        private RolesAccount(Set<String> roles) {
+        private RolesAccount(Set<String> roles, Principal principal) {
             this.roles = roles;
-            this.principal = new Principal() {
-                public String getName() {
-                    return "Tasks";
-                }
-            };
+            this.principal = principal;
         }
 
         public Principal getPrincipal() {

@@ -28,7 +28,6 @@ import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -44,12 +43,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.NamespaceManager;
-import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
 import org.jboss.capedwarf.common.shared.SimpleAppIdFactory;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
+import org.jboss.capedwarf.shared.components.SimpleKey;
 import org.jboss.capedwarf.shared.config.QueueXml;
 import org.jboss.capedwarf.shared.jms.AbstractServletRequestCreator;
 import org.jboss.capedwarf.shared.jms.MessageConstants;
@@ -74,7 +73,7 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
     private static final String REGEX_SAFE_DELIMITER = Pattern.quote(DELIMITER);
 
     public HttpServletRequest createServletRequest(ServletContext context, Message message) throws Exception {
-        AbstractHttpServletRequest request;
+        final RolesHttpServletRequest request;
         if (message instanceof BytesMessage) {
             request = new BytesServletRequest(context, (BytesMessage) message);
         } else {
@@ -109,30 +108,23 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
                 String namespace = request.getHeader(TasksMessageCreator.CURRENT_NAMESPACE);
                 NamespaceManager.set(namespace);
 
-                handleRoles();
+                handleRoles(request, appId);
             } catch (Throwable t) {
                 CapedwarfEnvironment.clearThreadLocalInstance();
+                throw t;
             }
         } catch (Throwable t) {
             AppIdFactory.resetCurrentFactory();
+            throw new RuntimeException(t);
         }
     }
 
     public void finish() {
         try {
-            try {
-                removeAllRoles();
-            } finally {
-                CapedwarfEnvironment.clearThreadLocalInstance();
-            }
+            CapedwarfEnvironment.clearThreadLocalInstance();
         } finally {
             AppIdFactory.resetCurrentFactory();
         }
-    }
-
-    private void handleRoles() {
-        String roles = (String) CompatibilityUtils.getInstance().toObject(Compatibility.Feature.TASKQUEUE_ROLES);
-        addAllRoles(new HashSet<String>(Arrays.asList(roles.split(","))));
     }
 
     @Override
@@ -145,13 +137,32 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
         return result;
     }
 
-    private static class TasksServletRequest extends AbstractHttpServletRequest {
+    private void handleRoles(HttpServletRequest request, String appId) {
+        RolesHttpServletRequest rhsr = RolesHttpServletRequest.class.cast(request);
+        Compatibility instance = Compatibility.getInstance(new SimpleKey<Compatibility>(appId, Compatibility.class));
+        String roles = (String) instance.toObject(Compatibility.Feature.TASKQUEUE_ROLES);
+        for (String role : roles.split(",")) {
+            rhsr.doAddRole(role);
+        }
+    }
+
+    private static class RolesHttpServletRequest extends AbstractHttpServletRequest {
+        private RolesHttpServletRequest(ServletContext context) {
+            super(context);
+        }
+
+        protected void doAddRole(String role) {
+            addRole(role);
+        }
+    }
+
+    private static class TasksServletRequest extends RolesHttpServletRequest {
         private TasksServletRequest(ServletContext context) {
             super(context);
         }
     }
 
-    private static class BytesServletRequest extends AbstractHttpServletRequest {
+    private static class BytesServletRequest extends RolesHttpServletRequest {
         private final BytesMessage msg;
         private final byte[] buf = new byte[1];
 
