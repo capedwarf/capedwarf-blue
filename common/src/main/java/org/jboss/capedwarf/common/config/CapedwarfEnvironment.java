@@ -105,7 +105,9 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     private boolean doCheckGlobalTimeLimit() {
         if (checkGlobalTimeLimit == null) {
-            checkGlobalTimeLimit = Compatibility.getInstance().isEnabled(Compatibility.Feature.ENABLE_GLOBAL_TIME_LIMIT);
+            Compatibility instance = Compatibility.getInstance();
+            // we could be in the middle of undeploy?
+            checkGlobalTimeLimit = instance != null && instance.isEnabled(Compatibility.Feature.ENABLE_GLOBAL_TIME_LIMIT);
         }
         return checkGlobalTimeLimit;
     }
