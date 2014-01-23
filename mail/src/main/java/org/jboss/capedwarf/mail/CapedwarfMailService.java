@@ -24,14 +24,13 @@ package org.jboss.capedwarf.mail;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Properties;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 
 import com.google.appengine.api.mail.MailService;
-import org.jboss.capedwarf.shared.components.ComponentRegistry;
-import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 
 /**
@@ -81,9 +80,17 @@ public class CapedwarfMailService implements MailService {
 
     private Session getSession() {
         if (session == null)
-            session = ComponentRegistry.getInstance().getComponent(Keys.MAIL_SESSION);
+            session = createSession();
 
         return session;
+    }
+
+    private Session createSession() {
+        return Session.getInstance(getMailProperties());
+    }
+
+    private Properties getMailProperties() {
+        return ApplicationConfiguration.getInstance().getCapedwarfConfiguration().getMailProperties();
     }
 
     private javax.mail.Message convertToJavaMail(Message message) throws MessagingException {
@@ -107,7 +114,9 @@ public class CapedwarfMailService implements MailService {
 
     private Transport openTransport() throws MessagingException {
         Transport transport = getSession().getTransport();
-        transport.connect();
+        transport.connect(
+            getMailProperties().getProperty("mail.smtp.user"),
+            getMailProperties().getProperty("mail.smtp.password"));
         return transport;
     }
 }
