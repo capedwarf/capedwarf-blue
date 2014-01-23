@@ -40,7 +40,6 @@ import org.jboss.capedwarf.channel.manager.ChannelQueue;
 import org.jboss.capedwarf.channel.manager.ChannelQueueManager;
 import org.jboss.capedwarf.channel.transport.ChannelTransport;
 import org.jboss.capedwarf.channel.transport.ChannelTransportFactory;
-import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
@@ -108,7 +107,7 @@ public class ChannelServlet extends HttpServlet {
     private void serveJavascript(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/javascript");
 
-        boolean wsDisabled = CompatibilityUtils.getInstance().isEnabled(Compatibility.Feature.DISABLE_WEB_SOCKETS_CHANNEL);
+        boolean wsDisabled = Compatibility.getInstance().isEnabled(Compatibility.Feature.DISABLE_WEB_SOCKETS_CHANNEL);
         ServletOutputStream out = resp.getOutputStream();
         out.write(String.format("var browserSupportsWebSocket = %s;\n", wsDisabled ? false : "\"WebSocket\" in window").getBytes());
         out.write(String.format("var contextPath = \"%s\";\n", req.getContextPath()).getBytes());

@@ -49,7 +49,6 @@ import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.infinispan.query.spi.SearchManagerImplementor;
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.datastore.query.Indexes;
@@ -112,7 +111,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         // we don't expect "put", "remove" to return anything
         ignoreReturnStore = store.withFlags(Flag.IGNORE_RETURN_VALUES);
 
-        Compatibility c = CompatibilityUtils.getInstance();
+        Compatibility c = Compatibility.getInstance();
         boolean useMetadata = (c.isEnabled(Compatibility.Feature.DISABLE_METADATA) == false);
         if (useMetadata) {
             entityGroupMetadataStore = InfinispanUtils.<Key, EntityGroupMetadata>getCache(appId, CacheName.DATASTORE_VERSIONS)

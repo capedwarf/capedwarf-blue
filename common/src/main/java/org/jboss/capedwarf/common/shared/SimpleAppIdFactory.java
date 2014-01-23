@@ -23,18 +23,30 @@
 package org.jboss.capedwarf.common.shared;
 
 import org.jboss.capedwarf.shared.components.AppIdFactory;
+import org.jboss.capedwarf.shared.servlet.CapedwarfApiProxy;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class SimpleAppIdFactory extends AppIdFactory {
-    private String appId;
+    private final String appId;
+    private final String module;
 
-    public SimpleAppIdFactory(String appId) {
+    public static AppIdFactory getInstance() {
+        CapedwarfApiProxy.Info info = CapedwarfApiProxy.getInfo();
+        return new SimpleAppIdFactory(info.getAppId(), info.getModule());
+    }
+
+    public SimpleAppIdFactory(String appId, String module) {
         this.appId = appId;
+        this.module = module;
     }
 
     public String appId() {
         return appId;
+    }
+
+    public String module() {
+        return module;
     }
 }

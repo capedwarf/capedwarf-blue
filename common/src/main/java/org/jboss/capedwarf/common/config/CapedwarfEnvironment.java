@@ -37,7 +37,6 @@ import com.google.appengine.api.backends.BackendService;
 import com.google.appengine.api.utils.SystemProperty;
 import com.google.apphosting.api.ApiProxy;
 import com.google.common.base.Function;
-import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
@@ -106,7 +105,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     private boolean doCheckGlobalTimeLimit() {
         if (checkGlobalTimeLimit == null) {
-            checkGlobalTimeLimit = CompatibilityUtils.getInstance().isEnabled(Compatibility.Feature.ENABLE_GLOBAL_TIME_LIMIT);
+            checkGlobalTimeLimit = Compatibility.getInstance().isEnabled(Compatibility.Feature.ENABLE_GLOBAL_TIME_LIMIT);
         }
         return checkGlobalTimeLimit;
     }

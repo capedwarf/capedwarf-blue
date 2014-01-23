@@ -42,17 +42,19 @@ class DistributableWrapper<V> implements DistributedCallable<Object, Object, V>,
     private static final long serialVersionUID = 1L;
 
     private final String appId;
+    private final String module;
     private final CapedwarfEnvironment env;
     private final Callable<V> callable;
 
     DistributableWrapper(Callable<V> callable) {
         this.appId = AppIdFactory.getAppId();
+        this.module = AppIdFactory.getModule();
         this.env = CapedwarfEnvironment.getThreadLocalInstance();
         this.callable = callable;
     }
 
     public V call() throws Exception {
-        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(appId));
+        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(appId, module));
         try {
             final CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
             try {

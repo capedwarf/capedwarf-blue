@@ -57,6 +57,7 @@ public class ServletExecutorProducer extends JmsAdapter {
 
         setString(message, MessageConstants.MODULE, getModuleName());
         setString(message, MessageConstants.APP_ID, Application.getAppId());
+        setString(message, MessageConstants.MODULE_ID, Application.getModule());
         setString(message, MessageConstants.PATH, creator.getPath());
         setString(message, MessageConstants.FACTORY, creator.getServletRequestCreator().getName());
 

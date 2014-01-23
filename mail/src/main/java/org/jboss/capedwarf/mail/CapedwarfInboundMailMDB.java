@@ -33,7 +33,6 @@ import javax.mail.MessagingException;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
-import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.shared.SimpleAppIdFactory;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
@@ -58,7 +57,7 @@ public class CapedwarfInboundMailMDB implements MailListener {
 
     @Override
     public void onMessage(Message msg) {
-        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(Application.getAppId()));
+        AppIdFactory.setCurrentFactory(SimpleAppIdFactory.getInstance());
         try {
             CapedwarfEnvironment.createThreadLocalInstance();
             try {

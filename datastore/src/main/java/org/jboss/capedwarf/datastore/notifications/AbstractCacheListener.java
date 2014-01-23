@@ -82,7 +82,8 @@ public abstract class AbstractCacheListener {
      */
     protected <T> void executeCallable(Taskable<T> taskable) {
         final String appId = env.getAppId();
-        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(appId));
+        final String module = env.getModuleId();
+        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(appId, module));
         try {
             final CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
             try {

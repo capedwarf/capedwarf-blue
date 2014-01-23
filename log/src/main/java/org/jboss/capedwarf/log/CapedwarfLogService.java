@@ -53,7 +53,6 @@ import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
@@ -84,7 +83,7 @@ public class CapedwarfLogService implements ExposedLogService {
             .withFlags(Flag.IGNORE_RETURN_VALUES);
         this.searchManager = Search.getSearchManager(store);
 
-        Compatibility instance = CompatibilityUtils.getInstance();
+        Compatibility instance = Compatibility.getInstance();
         logToFile = instance.getValue(Compatibility.Feature.LOG_TO_FILE);
         ignoreLogging = instance.isEnabled(Compatibility.Feature.IGNORE_LOGGING);
         if (instance.isEnabled(Compatibility.Feature.ASYNC_LOGGING)) {

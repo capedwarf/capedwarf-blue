@@ -31,9 +31,6 @@ import java.util.concurrent.Future;
 import com.google.appengine.api.labs.modules.ModulesService;
 import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
-import org.jboss.capedwarf.shared.components.ComponentRegistry;
-import org.jboss.capedwarf.shared.components.MapKey;
-import org.jboss.capedwarf.shared.components.Slot;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.ManualScaling;
@@ -51,7 +48,7 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     private static Map<String, ModuleInfo> getModulesInfos() {
-        return ComponentRegistry.getInstance().getComponent(new MapKey<String, ModuleInfo>(AppIdFactory.getAppId(), Slot.MODULES));
+        return ModuleInfo.getModules(AppIdFactory.getAppId());
     }
 
     private static ModuleInfo getModuleInfo(String module) {

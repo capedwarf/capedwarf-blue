@@ -16,4 +16,8 @@ public class EnvAppIdFactory extends AppIdFactory {
     public String appId() {
         return Application.getAppId();
     }
+
+    public String module() {
+        return Application.getModule();
+    }
 }

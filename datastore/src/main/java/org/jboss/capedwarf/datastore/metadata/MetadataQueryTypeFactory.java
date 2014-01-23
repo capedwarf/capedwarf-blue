@@ -31,7 +31,6 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Transaction;
 import org.infinispan.Cache;
-import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.datastore.notifications.CacheListenerHandle;
 import org.jboss.capedwarf.datastore.notifications.CacheListenerRegistry;
 import org.jboss.capedwarf.datastore.query.QueryHandle;
@@ -73,7 +72,7 @@ public class MetadataQueryTypeFactory implements QueryTypeFactory {
     }
 
     public void initialize(QueryHandleService service) {
-        if (CompatibilityUtils.getInstance().isEnabled(Compatibility.Feature.DISABLE_METADATA) == false) {
+        if (Compatibility.getInstance().isEnabled(Compatibility.Feature.DISABLE_METADATA) == false) {
             Cache<Key, Entity> cache = service.getCache();
             // register namespaces listener
             CacheListenerRegistry.registerListener(cache, METADATA);

@@ -39,6 +39,7 @@ import org.jboss.capedwarf.common.security.PrincipalInfo;
 import org.jboss.capedwarf.common.shared.SimpleAppIdFactory;
 import org.jboss.capedwarf.log.ExposedLogService;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
+import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.ConfigurationAware;
 
@@ -76,7 +77,8 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
     }
 
     protected static void setupInternal(ApplicationConfiguration applicationConfiguration) {
-        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(applicationConfiguration.getAppEngineWebXml().getApplication()));
+        AppEngineWebXml appEngineWebXml = applicationConfiguration.getAppEngineWebXml();
+        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(appEngineWebXml.getApplication(), appEngineWebXml.getModule()));
 
         CapedwarfEnvironment environment = CapedwarfEnvironment.createThreadLocalInstance();
         environment.setApplicationConfiguration(applicationConfiguration);
@@ -88,11 +90,13 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         initialize();
 
         final String appId = applicationConfiguration.getAppEngineWebXml().getApplication();
+        final String module = applicationConfiguration.getAppEngineWebXml().getModule();
 
         ServletContext servletContext = sce.getServletContext();
         servletContext.setAttribute("org.jboss.capedwarf.appId", appId);
+        servletContext.setAttribute("org.jboss.capedwarf.module", module);
 
-        appIdFactory = new SimpleAppIdFactory(appId);
+        appIdFactory = new SimpleAppIdFactory(appId, module);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {

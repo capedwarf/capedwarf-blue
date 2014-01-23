@@ -100,15 +100,15 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
         return request;
     }
 
-    public void prepare(HttpServletRequest request, String appId) {
-        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(appId));
+    public void prepare(HttpServletRequest request, String appId, String module) {
+        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(appId, module));
         try {
             CapedwarfEnvironment.createThreadLocalInstance();
             try {
                 String namespace = request.getHeader(TasksMessageCreator.CURRENT_NAMESPACE);
                 NamespaceManager.set(namespace);
 
-                handleRoles(request, appId);
+                handleRoles(request, appId, module);
             } catch (Throwable t) {
                 CapedwarfEnvironment.clearThreadLocalInstance();
                 throw t;
@@ -137,9 +137,9 @@ public class TasksServletRequestCreator extends AbstractServletRequestCreator {
         return result;
     }
 
-    private void handleRoles(HttpServletRequest request, String appId) {
+    private void handleRoles(HttpServletRequest request, String appId, String module) {
         RolesHttpServletRequest rhsr = RolesHttpServletRequest.class.cast(request);
-        Compatibility instance = Compatibility.getInstance(new SimpleKey<Compatibility>(appId, Compatibility.class));
+        Compatibility instance = Compatibility.getInstance(new SimpleKey<Compatibility>(appId, module, Compatibility.class));
         String roles = (String) instance.toObject(Compatibility.Feature.TASKQUEUE_ROLES);
         for (String role : roles.split(",")) {
             rhsr.doAddRole(role);

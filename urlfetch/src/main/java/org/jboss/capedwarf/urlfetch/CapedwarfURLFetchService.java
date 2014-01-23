@@ -49,9 +49,9 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
-import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
@@ -77,24 +77,12 @@ public class CapedwarfURLFetchService implements URLFetchService {
 
     public Future<HTTPResponse> fetchAsync(final HTTPRequest httpRequest) {
         final HttpUriRequest request = toHttpUriRequest(httpRequest);
-
-        final String appId = AppIdFactory.getAppId();
-        final AppIdFactory appIdFactory = new AppIdFactory() {
-            public String appId() {
-                return appId;
-            }
-        };
-
-        return ExecutorFactory.wrap(new Callable<HTTPResponse>() {
+        final Callable<HTTPResponse> callable = Wrappers.wrap(new Callable<HTTPResponse>() {
             public HTTPResponse call() throws Exception {
-                AppIdFactory.setCurrentFactory(appIdFactory);
-                try {
                     return fetch(request);
-                } finally {
-                    AppIdFactory.resetCurrentFactory();
-                }
             }
         });
+        return ExecutorFactory.wrap(callable);
     }
 
     protected HttpUriRequest toHttpUriRequest(final HTTPRequest request) {

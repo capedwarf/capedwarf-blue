@@ -31,7 +31,6 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
 import com.google.appengine.api.datastore.Key;
-import org.jboss.capedwarf.common.compatibility.CompatibilityUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
@@ -96,7 +95,7 @@ class EntityGroupTracker implements Synchronization {
     }
 
     private static boolean ignoreTracking() {
-        Compatibility instance = CompatibilityUtils.getInstance();
+        Compatibility instance = Compatibility.getInstance();
         return instance.isEnabled(Compatibility.Feature.DISABLE_ENTITY_GROUPS);
     }
 
