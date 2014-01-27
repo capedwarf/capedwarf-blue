@@ -55,7 +55,7 @@ public class GAEFilter implements Filter {
 
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         if (isStaticFile((HttpServletRequest) req)) {
-            serveStaticFile((HttpServletRequest)req, (HttpServletResponse)res);
+            serveStaticFile((HttpServletRequest) req, (HttpServletResponse) res);
             return;
         }
 
@@ -68,7 +68,12 @@ public class GAEFilter implements Filter {
     }
 
     private boolean isStaticFile(HttpServletRequest request) {
-        AppEngineWebXml appEngineWebXml = ApplicationConfiguration.getInstance().getAppEngineWebXml();
+        final ApplicationConfiguration appConfig = ApplicationConfiguration.getInstance();
+        if (appConfig == null) {
+            return false; // handle undeploy
+        }
+
+        AppEngineWebXml appEngineWebXml = appConfig.getAppEngineWebXml();
         return matches(request.getRequestURI(), appEngineWebXml.getStaticFileIncludes()) && !matches(request.getRequestURI(), appEngineWebXml.getStaticFileExcludes());
     }
 
