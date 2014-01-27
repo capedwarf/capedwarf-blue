@@ -83,13 +83,19 @@ public class CapedwarfLogService implements ExposedLogService {
             .withFlags(Flag.IGNORE_RETURN_VALUES);
         this.searchManager = Search.getSearchManager(store);
 
-        Compatibility instance = Compatibility.getInstance();
-        logToFile = instance.getValue(Compatibility.Feature.LOG_TO_FILE);
-        ignoreLogging = instance.isEnabled(Compatibility.Feature.IGNORE_LOGGING);
-        if (instance.isEnabled(Compatibility.Feature.ASYNC_LOGGING)) {
-            logWriter = new AsyncLogWriter();
+        final Compatibility instance = Compatibility.getInstance();
+        if (instance != null) {
+            logToFile = instance.getValue(Compatibility.Feature.LOG_TO_FILE);
+            ignoreLogging = instance.isEnabled(Compatibility.Feature.IGNORE_LOGGING);
+            if (instance.isEnabled(Compatibility.Feature.ASYNC_LOGGING)) {
+                logWriter = new AsyncLogWriter();
+            } else {
+                logWriter = new SyncLogWriter();
+            }
         } else {
-            logWriter = new SyncLogWriter();
+            logToFile = null;
+            ignoreLogging = true;
+            logWriter = NoopLogWriter.INSTANCE;
         }
     }
 
@@ -99,7 +105,7 @@ public class CapedwarfLogService implements ExposedLogService {
     }
 
     public Iterable<RequestLogs> fetch(LogQuery logQuery) {
-        List<RequestLogs> list = new ArrayList<RequestLogs>();
+        List<RequestLogs> list = new ArrayList<>();
         for (CapedwarfRequestLogs capedwarfRequestLogs : fetchCapedwarfRequestLogs(logQuery)) {
             RequestLogs requestLogs = capedwarfRequestLogs.getRequestLogs();
             if (logQuery.getIncludeAppLogs()) {
@@ -214,11 +220,8 @@ public class CapedwarfLogService implements ExposedLogService {
 
     private synchronized void logToFile(LogRecord record) {
         try {
-            PrintWriter out = new PrintWriter(new FileWriter(logToFile, true));
-            try {
+            try (PrintWriter out = new PrintWriter(new FileWriter(logToFile, true))) {
                 out.println(record.getMillis() + " " + getLogLevel(record) + " " + record.getLoggerName() + ": " + getFormattedMessage(record));
-            } finally {
-                out.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -387,6 +390,16 @@ public class CapedwarfLogService implements ExposedLogService {
         @Override
         public void put(CapedwarfRequestLogs requestLogs) {
             store.put(requestLogs.getRequestLogs().getRequestId(), requestLogs);
+        }
+    }
+
+    private static class NoopLogWriter implements LogWriter {
+        private static final LogWriter INSTANCE = new NoopLogWriter();
+
+        public void put(CapedwarfAppLogLine logLine) {
+        }
+
+        public void put(CapedwarfRequestLogs requestLogs) {
         }
     }
 }
