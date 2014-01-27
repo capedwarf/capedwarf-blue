@@ -90,12 +90,12 @@ public class MessageConverter {
         if (hasAttachments || hasHtmlBody) {
             MimeMultipart mimeMultipart = new MimeMultipart();
 
-            if (hasHtmlBody) {
-                mimeMultipart.addBodyPart(createHtmlBodyPart(message.getHtmlBody()));
-            }
-
             if (hasTextBody) {
                 mimeMultipart.addBodyPart(createTextBodyPart(message.getTextBody()));
+            }
+
+            if (hasHtmlBody) {
+                mimeMultipart.addBodyPart(createHtmlBodyPart(message.getHtmlBody()));
             }
 
             if (hasAttachments) {
