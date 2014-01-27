@@ -77,31 +77,36 @@ public class MessageConverter {
             }
         }
 
-        msg.setContent(createMimeMultiPart());
+        addContentTo(msg);
 
         return msg;
     }
 
-    private MimeMultipart createMimeMultiPart() throws MessagingException {
-        MimeMultipart mimeMultipart = new MimeMultipart();
+    private void addContentTo(MimeMessage msg) throws MessagingException {
+        boolean hasAttachments = message.getAttachments() != null;
+        boolean hasTextBody = message.getTextBody() != null;
+        boolean hasHtmlBody = message.getHtmlBody() != null;
 
-        String htmlBody = message.getHtmlBody();
-        if (htmlBody != null) {
-            mimeMultipart.addBodyPart(createHtmlBodyPart(htmlBody));
-        }
+        if (hasAttachments || hasHtmlBody) {
+            MimeMultipart mimeMultipart = new MimeMultipart();
 
-        String textBody = message.getTextBody();
-        if (textBody != null) {
-            mimeMultipart.addBodyPart(createTextBodyPart(textBody));
-        }
-
-        if (message.getAttachments() != null) {
-            for (MailService.Attachment attachment : message.getAttachments()) {
-                mimeMultipart.addBodyPart(createAttachmentBodyPart(attachment));
+            if (hasHtmlBody) {
+                mimeMultipart.addBodyPart(createHtmlBodyPart(message.getHtmlBody()));
             }
-        }
 
-        return mimeMultipart;
+            if (hasTextBody) {
+                mimeMultipart.addBodyPart(createTextBodyPart(message.getTextBody()));
+            }
+
+            if (hasAttachments) {
+                for (MailService.Attachment attachment : message.getAttachments()) {
+                    mimeMultipart.addBodyPart(createAttachmentBodyPart(attachment));
+                }
+            }
+            msg.setContent(mimeMultipart);
+        } else {
+            msg.setContent(message.getTextBody(), "text/plain");
+        }
     }
 
     private MimeBodyPart createAttachmentBodyPart(MailService.Attachment attachment) throws MessagingException {
