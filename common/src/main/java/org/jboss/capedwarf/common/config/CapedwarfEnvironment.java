@@ -41,6 +41,8 @@ import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.BackendsXml;
+import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
+import org.jboss.capedwarf.shared.config.CheckType;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -105,9 +107,20 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     private boolean doCheckGlobalTimeLimit() {
         if (checkGlobalTimeLimit == null) {
-            Compatibility instance = Compatibility.getInstance();
-            // we could be in the middle of undeploy?
-            checkGlobalTimeLimit = instance != null && instance.isEnabled(Compatibility.Feature.ENABLE_GLOBAL_TIME_LIMIT);
+            if (applicationConfiguration == null ||
+                    applicationConfiguration.getCapedwarfConfiguration() == null ||
+                    applicationConfiguration.getCapedwarfConfiguration().getCheckGlobalTimeLimit() == CheckType.NO) {
+                checkGlobalTimeLimit = false;
+            } else {
+                CapedwarfConfiguration cc = applicationConfiguration.getCapedwarfConfiguration();
+                if (cc.getCheckGlobalTimeLimit() == CheckType.DYNAMIC) {
+                    Compatibility instance = Compatibility.getInstance();
+                    // we could be in the middle of undeploy?
+                    checkGlobalTimeLimit = instance != null && instance.isEnabled(Compatibility.Feature.ENABLE_GLOBAL_TIME_LIMIT);
+                } else {
+                    checkGlobalTimeLimit = true;
+                }
+            }
         }
         return checkGlobalTimeLimit;
     }
