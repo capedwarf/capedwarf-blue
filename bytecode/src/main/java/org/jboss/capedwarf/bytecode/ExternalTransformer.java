@@ -34,6 +34,7 @@ public final class ExternalTransformer extends MultipleTransformer {
 
     public ExternalTransformer() {
         // GAE MapReduce
+        register("com.google.appengine.tools.mapreduce.impl.util.FileUtil", new FileUtilTransformer());
         register("com.google.appengine.tools.mapreduce.impl.ShuffleServiceImpl", new ShuffleServiceTransformer());
         register("com.google.appengine.tools.mapreduce.impl.ShuffleJob", new ShuffleJobTransformer());
         // GAE DN plugin

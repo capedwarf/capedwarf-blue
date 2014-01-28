@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.blobstore.UploadOptions;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.url.URLUtils;
@@ -39,20 +40,24 @@ import org.jboss.capedwarf.common.url.URLUtils;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class UploadServlet extends HttpServlet {
-    private CapedwarfBlobstoreService service;
+    private ExposedBlobstoreService service;
 
     public static final String URI = "/_ah/blobstore/upload";
     private static final String SUCCESS_PATH_PARAM = "successPath";
 
+    protected static final String MAX_PER_BLOB = "maxPerBlob";
+    protected static final String MAX_ALL = "maxAll";
+    protected static final String BUCKET_NAME = "bucketName";
+
     @Override
     public void init() throws ServletException {
         super.init();
-        service = new CapedwarfBlobstoreService();
+        service = (ExposedBlobstoreService) BlobstoreServiceFactory.getBlobstoreService();
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        service.storeUploadedBlobs(request);
+        service.storeUploadedBlobs(request, response);
         request.getRequestDispatcher(getSuccessPath(request)).forward(request, response);
     }
 
@@ -60,8 +65,23 @@ public class UploadServlet extends HttpServlet {
         return request.getParameter(SUCCESS_PATH_PARAM);
     }
 
-    public static String createUploadUrl(String successPath, UploadOptions uploadOptions) {
-        return getServletUrl() + "?" + SUCCESS_PATH_PARAM + "=" + URLUtils.encode(successPath);   // TODO enforce uploadOptions
+    public static String createUploadUrl(String successPath, UploadOptions options) {
+        StringBuilder sb = new StringBuilder(getServletUrl());
+        sb.append("?");
+        sb.append(SUCCESS_PATH_PARAM).append("=").append(URLUtils.encode(successPath));
+        if (options != null) {
+            UploadOptionsAdapter adapter = new UploadOptionsAdapter(options);
+            if (adapter.hasMaxUploadSizeBytesPerBlob()) {
+                sb.append("&").append(MAX_PER_BLOB).append("=").append(adapter.getMaxUploadSizeBytesPerBlob());
+            }
+            if (adapter.hasMaxUploadSizeBytes()) {
+                sb.append("&").append(MAX_ALL).append("=").append(adapter.getMaxUploadSizeBytes());
+            }
+            if (adapter.hasGoogleStorageBucketName()) {
+                sb.append("&").append(BUCKET_NAME).append("=").append(URLUtils.encode(adapter.getGoogleStorageBucketName()));
+            }
+        }
+        return sb.toString();
     }
 
     private static String getServletUrl() {

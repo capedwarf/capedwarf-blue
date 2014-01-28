@@ -96,7 +96,7 @@ public class CapedwarfFileService implements ExposedFileService {
             Object sp = info.getProperty(BlobInfoFactory.SIZE);
             long size = (sp != null ? (Long) sp : -1);
             String md5Hash = (String) info.getProperty(BlobInfoFactory.MD5_HASH);
-            String gsObjectName = null; // TODO
+            String gsObjectName = key.getKeyString(); // atm this is equal
             return new FileInfo(contentType, creation, filename, size, md5Hash, gsObjectName);
         } else {
             return null;
@@ -182,7 +182,9 @@ public class CapedwarfFileService implements ExposedFileService {
     }
 
     public AppEngineFile getBlobFile(BlobKey blobKey) {
-        return new AppEngineFile(AppEngineFile.FileSystem.BLOBSTORE, blobKey.getKeyString());
+        AppEngineFile file = new AppEngineFile("/" + blobKey.getKeyString());
+        AppEngineFileAdapter.setCachedBlobKey(file, blobKey);
+        return file;
     }
 
     public FileStat stat(AppEngineFile file) throws IOException {
@@ -235,6 +237,10 @@ public class CapedwarfFileService implements ExposedFileService {
         }
     }
 
+    public AppEngineFile createNewBlobFile(String contentType, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException {
+        return createNewBlobFile(contentType, null, uploadedFileName, fs);
+    }
+
     private AppEngineFile createNewBlobFile(String contentType, String fileName, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException {
         if (contentType == null || contentType.trim().isEmpty()) {
             contentType = DEFAULT_MIME_TYPE;
@@ -245,6 +251,7 @@ public class CapedwarfFileService implements ExposedFileService {
             fileName = generateUniqueFileName();
             file = new AppEngineFile(fs, fileName);
         } else {
+            // this is already a proper full file name
             file = new AppEngineFile(fileName);
         }
 
@@ -361,15 +368,11 @@ public class CapedwarfFileService implements ExposedFileService {
     }
 
     private String getFilePath(AppEngineFile file) {
-        return removeLeadingSeparator(file.getFullPath());
+        return AppEngineFileAdapter.getFilePath(file);
     }
 
     private String getFilePath(BlobKey blobKey) {
-        return getFilePath(getBlobFile(blobKey));
-    }
-
-    private String removeLeadingSeparator(String fullPath) {
-        return fullPath.startsWith("/") ? fullPath.substring(1) : fullPath; // TODO: fix grid FS and remove this method
+        return blobKey.getKeyString();
     }
 
     private GridFilesystem getGridFilesystem() {

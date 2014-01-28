@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -62,6 +63,8 @@ import org.jboss.capedwarf.files.ExposedFileService;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
+    private static final Logger log = Logger.getLogger(CapedwarfBlobstoreService.class.getName());
+
     private static final String UPLOADED_BLOBKEY_ATTR = "com.google.appengine.api.blobstore.upload.blobkeys";
     private static final String UPLOADED_BLOBKEY_LIST_ATTR = "com.google.appengine.api.blobstore.upload.blobkeylists";
 
@@ -233,12 +236,37 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
         return ByteRange.parse(rangeHeader);
     }
 
-    public void storeUploadedBlobs(HttpServletRequest request) throws IOException, ServletException {
+    public void storeUploadedBlobs(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Map<String, BlobKey> map = new HashMap<String, BlobKey>();
         Map<String, List<BlobKey>> map2 = new HashMap<String, List<BlobKey>>();
+
+        String perBlob = request.getParameter(UploadServlet.MAX_PER_BLOB);
+        String all = request.getParameter(UploadServlet.MAX_ALL);
+        long maxPerBlob = (perBlob != null) ? Long.parseLong(perBlob) : -1;
+        long maxAll = (all != null) ? Long.parseLong(all) : -1;
+
+        long total = 0;
         for (Part part : request.getParts()) {
             if (ServletUtils.isFile(part)) {
-                BlobKey blobKey = storeUploadedBlob(part);
+
+                long size = part.getSize();
+                if (size >= 0) {
+                    if (maxPerBlob >= 0 && size > maxPerBlob) {
+                        response.sendError(413, "Your client issued a request that was too large. Maximum upload size per blob limit exceeded.");
+                        return;
+                    }
+
+                    total += size;
+
+                    if (maxAll >= 0 && total > maxAll) {
+                        response.sendError(413, "Your client issued a request that was too large. Maximum total upload size limit exceeded.");
+                        return;
+                    }
+                } else {
+                    log.warning("Unable to determine size of upload part named " + ServletUtils.getFileName(part) + ". Upload limit checks may not be accurate.");
+                }
+
+                BlobKey blobKey = storeUploadedBlob(part, request);
                 String name = part.getName();
                 map.put(name, blobKey);
                 List<BlobKey> list = map2.get(name);
@@ -254,20 +282,27 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
         request.setAttribute(UPLOADED_BLOBKEY_LIST_ATTR, map2);
     }
 
-    private BlobKey storeUploadedBlob(Part part) throws IOException {
+    private BlobKey storeUploadedBlob(Part part, HttpServletRequest request) throws IOException {
         ExposedFileService fileService = getFileService();
-        AppEngineFile file = fileService.createNewBlobFile(part.getContentType(), ServletUtils.getFileName(part));
 
-        ReadableByteChannel in = Channels.newChannel(part.getInputStream());
-        try {
+        String contentType = part.getContentType();
+        String fileName = ServletUtils.getFileName(part);
+        String bucketName = request.getParameter(UploadServlet.BUCKET_NAME);
+
+        AppEngineFile file;
+        if (bucketName == null) {
+            file = fileService.createNewBlobFile(contentType, fileName);
+        } else {
+            file = fileService.createNewBlobFile(contentType, fileName, AppEngineFile.FileSystem.GS);
+        }
+
+        try (ReadableByteChannel in = Channels.newChannel(part.getInputStream())) {
             FileWriteChannel out = fileService.openWriteChannel(file, true);
             try {
                 IOUtils.copy(in, out);
             } finally {
                 out.closeFinally();
             }
-        } finally {
-            in.close();
         }
 
         return fileService.getBlobKey(file);
@@ -295,8 +330,11 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
         return getFileService().getStream(blobKey);
     }
 
-    public BlobKey createGsBlobKey(String name) {
-        return null; // TODO
+    public BlobKey createGsBlobKey(String filename) {
+        if (filename.startsWith("/gs/") == false) {
+            throw new IllegalArgumentException("Google storage filenames must be prefixed with /gs/");
+        }
+        return getFileService().getBlobKey(new AppEngineFile(filename));
     }
 
     public Map<String, List<BlobInfo>> getBlobInfos(HttpServletRequest httpServletRequest) {

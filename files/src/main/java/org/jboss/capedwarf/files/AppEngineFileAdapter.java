@@ -24,12 +24,15 @@ package org.jboss.capedwarf.files;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.files.AppEngineFile;
+import org.jboss.capedwarf.shared.reflection.MethodInvocation;
 import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 class AppEngineFileAdapter {
+    private final static MethodInvocation<BlobKey> getCachedBlobKey = ReflectionUtils.cacheMethod(AppEngineFile.class, "getCachedBlobKey");
+    private final static MethodInvocation<Void> setCachedBlobKey = ReflectionUtils.cacheMethod(AppEngineFile.class, "setCachedBlobKey", BlobKey.class);
 
     private AppEngineFile file;
 
@@ -55,15 +58,28 @@ class AppEngineFileAdapter {
             return cached;
         }
 
-        return new BlobKey(file.getNamePart());
+        cached = new BlobKey(getFilePath(file));
+        setCachedBlobKey(cached);
+        return cached;
     }
 
-    public BlobKey getCachedBlobKey() {
-        return (BlobKey) ReflectionUtils.invokeInstanceMethod(file, "getCachedBlobKey");
+    BlobKey getCachedBlobKey() {
+        return getCachedBlobKey.invokeWithTarget(file);
     }
 
-    public void setCachedBlobKey(BlobKey blobKey) {
-        ReflectionUtils.invokeInstanceMethod(file, "setCachedBlobKey", BlobKey.class, blobKey);
+    void setCachedBlobKey(BlobKey blobKey) {
+        setCachedBlobKey(file, blobKey);
     }
 
+    static void setCachedBlobKey(AppEngineFile file, BlobKey blobKey) {
+        setCachedBlobKey.invokeWithTarget(file, blobKey);
+    }
+
+    static String getFilePath(AppEngineFile file) {
+        return removeLeadingSeparator(file.getFullPath());
+    }
+
+    private static String removeLeadingSeparator(String fullPath) {
+        return fullPath.startsWith("/") ? fullPath.substring(1) : fullPath; // TODO: fix grid FS and remove this method
+    }
 }

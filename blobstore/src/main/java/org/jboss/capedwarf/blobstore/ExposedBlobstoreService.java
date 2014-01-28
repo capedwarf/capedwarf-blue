@@ -24,6 +24,8 @@ package org.jboss.capedwarf.blobstore;
 
 import java.io.IOException;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.blobstore.BlobKey;
@@ -37,4 +39,5 @@ public interface ExposedBlobstoreService extends BlobstoreService {
     public static final String BLOB_RANGE_HEADER = "X-AppEngine-BlobRange";
 
     void serveBlob(BlobKey blobKey, String byteRangeStr, HttpServletResponse response) throws IOException;
+    void storeUploadedBlobs(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException;
 }

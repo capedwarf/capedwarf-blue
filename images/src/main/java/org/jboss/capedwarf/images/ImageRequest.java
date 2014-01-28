@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class ImageRequest {
 
@@ -42,7 +43,7 @@ public class ImageRequest {
 
     public ImageRequest(String pathInfo) {
         StringTokenizer tokenizer = new StringTokenizer(pathInfo, "/");
-        blobKey = new BlobKey(tokenizer.nextToken());
+        blobKey = new BlobKey(tokenizer.nextToken() + "/" + tokenizer.nextToken());
         if (tokenizer.hasMoreTokens()) {
             parseSizeAndCrop(tokenizer.nextToken());
         }
