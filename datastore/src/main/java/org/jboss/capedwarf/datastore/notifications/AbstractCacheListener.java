@@ -28,8 +28,8 @@ import java.util.concurrent.Future;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.common.shared.SimpleAppIdFactory;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
+import org.jboss.capedwarf.shared.components.SimpleAppIdFactory;
 import org.jboss.capedwarf.shared.util.Utils;
 
 /**

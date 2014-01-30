@@ -40,5 +40,6 @@ public class MyEntityCreator extends Mapper<Long, Void, Void> {
         Entity e = new Entity(kind, name);
         e.setProperty("payload", new Text(payloads.get((int)(index % payloads.size()))));
         pool.put(e);
+        pool.flush();
     }
 }
