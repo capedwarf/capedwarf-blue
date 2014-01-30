@@ -83,7 +83,7 @@ public class CapedwarfLogService implements ExposedLogService {
             .withFlags(Flag.IGNORE_RETURN_VALUES);
         this.searchManager = Search.getSearchManager(store);
 
-        final Compatibility instance = Compatibility.getInstance();
+        final Compatibility instance = Compatibility.getRawInstance();
         if (instance != null) {
             logToFile = instance.getValue(Compatibility.Feature.LOG_TO_FILE);
             ignoreLogging = instance.isEnabled(Compatibility.Feature.IGNORE_LOGGING);

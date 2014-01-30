@@ -114,7 +114,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
             } else {
                 CapedwarfConfiguration cc = applicationConfiguration.getCapedwarfConfiguration();
                 if (cc.getCheckGlobalTimeLimit() == CheckType.DYNAMIC) {
-                    Compatibility instance = Compatibility.getInstance();
+                    Compatibility instance = Compatibility.getRawInstance();
                     // we could be in the middle of undeploy?
                     checkGlobalTimeLimit = instance != null && instance.isEnabled(Compatibility.Feature.ENABLE_GLOBAL_TIME_LIMIT);
                 } else {
