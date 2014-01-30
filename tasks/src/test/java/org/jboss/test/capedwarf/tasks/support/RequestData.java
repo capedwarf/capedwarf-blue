@@ -25,8 +25,8 @@ package org.jboss.test.capedwarf.tasks.support;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -38,9 +38,8 @@ import org.jboss.capedwarf.common.io.IOUtils;
 * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
 */
 public class RequestData {
-
     private byte[] body;
-    private Map<String, String> headers = new HashMap<String, String>();
+    private Map<String, String> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     public RequestData(HttpServletRequest req) throws IOException {
         storeHeaders(req);
@@ -56,13 +55,10 @@ public class RequestData {
     }
 
     private void storeBody(HttpServletRequest req) throws IOException {
-        ServletInputStream in = req.getInputStream();
-        try {
+        try (ServletInputStream in = req.getInputStream()) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             IOUtils.copyStream(in, baos);
             body = baos.toByteArray();
-        } finally {
-            in.close();
         }
     }
 

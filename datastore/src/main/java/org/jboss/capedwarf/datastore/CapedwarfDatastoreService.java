@@ -80,9 +80,7 @@ public class CapedwarfDatastoreService extends AbstractDatastoreService implemen
     protected <T> T unwrap(Future<T> future) {
         try {
             return future.get();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
     }
