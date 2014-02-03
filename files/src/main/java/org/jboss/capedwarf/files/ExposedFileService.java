@@ -44,5 +44,5 @@ public interface ExposedFileService extends FileService {
     BlobInfo getBlobInfo(BlobKey key);
     FileInfo getFileInfo(BlobKey key);
     // names
-    AppEngineFile createNewBlobFile(String contentType, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException;
+    AppEngineFile createNewBlobFile(String contentType, String bucketName, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException;
 }

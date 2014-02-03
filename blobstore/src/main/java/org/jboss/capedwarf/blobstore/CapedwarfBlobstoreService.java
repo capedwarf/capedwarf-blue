@@ -295,7 +295,7 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
         if (bucketName == null) {
             file = fileService.createNewBlobFile(contentType, fileName);
         } else {
-            file = fileService.createNewBlobFile(contentType, fileName, AppEngineFile.FileSystem.GS);
+            file = fileService.createNewBlobFile(contentType, bucketName, fileName, AppEngineFile.FileSystem.GS);
         }
 
         try (ReadableByteChannel in = Channels.newChannel(part.getInputStream())) {

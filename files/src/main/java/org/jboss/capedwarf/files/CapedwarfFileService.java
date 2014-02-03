@@ -114,7 +114,7 @@ public class CapedwarfFileService implements ExposedFileService {
     public AppEngineFile createNewGSFile(GSFileOptions options) throws IOException {
         final GSFileOptionsAdapter adapter = new GSFileOptionsAdapter(options);
         final String fileName = adapter.getFileName();
-        return createNewBlobFile(adapter.getMimeType(), fileName, fileName, AppEngineFile.FileSystem.GS);
+        return createNewBlobFile(adapter.getMimeType(), fileName, null, fileName, AppEngineFile.FileSystem.GS);
     }
 
     public void delete(BlobKey... blobKeys) {
@@ -237,11 +237,11 @@ public class CapedwarfFileService implements ExposedFileService {
         }
     }
 
-    public AppEngineFile createNewBlobFile(String contentType, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException {
-        return createNewBlobFile(contentType, null, uploadedFileName, fs);
+    public AppEngineFile createNewBlobFile(String contentType, String bucketName, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException {
+        return createNewBlobFile(contentType, null, bucketName, uploadedFileName, fs);
     }
 
-    private AppEngineFile createNewBlobFile(String contentType, String fileName, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException {
+    private AppEngineFile createNewBlobFile(String contentType, String fileName, String bucketName, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException {
         if (contentType == null || contentType.trim().isEmpty()) {
             contentType = DEFAULT_MIME_TYPE;
         }
@@ -249,6 +249,9 @@ public class CapedwarfFileService implements ExposedFileService {
         AppEngineFile file;
         if (fileName == null) {
             fileName = generateUniqueFileName();
+            if (bucketName != null) {
+                fileName = String.format("%s/%s", bucketName, fileName);
+            }
             file = new AppEngineFile(fs, fileName);
         } else {
             // this is already a proper full file name
