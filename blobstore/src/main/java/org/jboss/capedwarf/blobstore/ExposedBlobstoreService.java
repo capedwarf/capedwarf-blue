@@ -39,5 +39,9 @@ public interface ExposedBlobstoreService extends BlobstoreService {
     public static final String BLOB_RANGE_HEADER = "X-AppEngine-BlobRange";
 
     void serveBlob(BlobKey blobKey, String byteRangeStr, HttpServletResponse response) throws IOException;
-    void storeUploadedBlobs(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException;
+
+    /**
+     * Return true if blobs are stored, else false.
+     */
+    boolean storeUploadedBlobs(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException;
 }

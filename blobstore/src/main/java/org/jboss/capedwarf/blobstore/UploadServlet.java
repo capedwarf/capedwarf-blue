@@ -57,8 +57,9 @@ public class UploadServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        service.storeUploadedBlobs(request, response);
-        request.getRequestDispatcher(getSuccessPath(request)).forward(request, response);
+        if (service.storeUploadedBlobs(request, response)) {
+            request.getRequestDispatcher(getSuccessPath(request)).forward(request, response);
+        }
     }
 
     private String getSuccessPath(HttpServletRequest request) {

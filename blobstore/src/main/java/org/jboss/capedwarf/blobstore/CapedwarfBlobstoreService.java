@@ -236,7 +236,7 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
         return ByteRange.parse(rangeHeader);
     }
 
-    public void storeUploadedBlobs(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public boolean storeUploadedBlobs(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Map<String, BlobKey> map = new HashMap<String, BlobKey>();
         Map<String, List<BlobKey>> map2 = new HashMap<String, List<BlobKey>>();
 
@@ -252,15 +252,15 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
                 long size = part.getSize();
                 if (size >= 0) {
                     if (maxPerBlob >= 0 && size > maxPerBlob) {
-                        response.sendError(413, "Your client issued a request that was too large. Maximum upload size per blob limit exceeded.");
-                        return;
+                        response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Your client issued a request that was too large. Maximum upload size per blob limit exceeded.");
+                        return false;
                     }
 
                     total += size;
 
                     if (maxAll >= 0 && total > maxAll) {
-                        response.sendError(413, "Your client issued a request that was too large. Maximum total upload size limit exceeded.");
-                        return;
+                        response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "Your client issued a request that was too large. Maximum total upload size limit exceeded.");
+                        return false;
                     }
                 } else {
                     log.warning("Unable to determine size of upload part named " + ServletUtils.getFileName(part) + ". Upload limit checks may not be accurate.");
@@ -280,6 +280,8 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
 
         request.setAttribute(UPLOADED_BLOBKEY_ATTR, map);
         request.setAttribute(UPLOADED_BLOBKEY_LIST_ATTR, map2);
+
+        return true;
     }
 
     private BlobKey storeUploadedBlob(Part part, HttpServletRequest request) throws IOException {
