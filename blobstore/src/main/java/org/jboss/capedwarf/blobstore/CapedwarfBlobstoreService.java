@@ -26,8 +26,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -49,14 +47,11 @@ import com.google.appengine.api.blobstore.RangeFormatException;
 import com.google.appengine.api.blobstore.UnsupportedRangeFormatException;
 import com.google.appengine.api.blobstore.UploadOptions;
 import com.google.appengine.api.files.AppEngineFile;
-import com.google.appengine.api.files.FileServiceFactory;
-import com.google.appengine.api.files.FileWriteChannel;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.capedwarf.common.servlet.ServletUtils;
-import org.jboss.capedwarf.files.ExposedFileService;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -88,17 +83,17 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
 
     private Function<BlobKey, FileInfo> FILE_KEY_TO_INFO_FN = new Function<BlobKey, FileInfo>() {
         public FileInfo apply(BlobKey input) {
-            return getFileService().getFileInfo(input);
+            return getStorage().getFileInfo(input);
         }
     };
 
-    private ExposedFileService fileService;
+    private Storage storage;
 
-    private synchronized ExposedFileService getFileService() {
-        if (fileService == null) {
-            fileService = (ExposedFileService) FileServiceFactory.getFileService();
+    private synchronized Storage getStorage() {
+        if (storage == null) {
+            storage = StorageFactory.getStorage();
         }
-        return fileService;
+        return storage;
     }
 
     public String createUploadUrl(String successPath) {
@@ -110,7 +105,7 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
     }
 
     public void delete(BlobKey... blobKeys) {
-        getFileService().delete(blobKeys);
+        getStorage().delete(blobKeys);
     }
 
     public void serve(BlobKey blobKey, HttpServletResponse response) throws IOException {
@@ -175,7 +170,7 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
     }
 
     private BlobInfo getBlobInfo(BlobKey blobKey) {
-        return getFileService().getBlobInfo(blobKey);
+        return getStorage().getBlobInfo(blobKey);
     }
 
     private void assertNotCommited(HttpServletResponse response) {
@@ -284,30 +279,16 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
         return true;
     }
 
-    private BlobKey storeUploadedBlob(Part part, HttpServletRequest request) throws IOException {
-        ExposedFileService fileService = getFileService();
-
+    private BlobKey storeUploadedBlob(final Part part, HttpServletRequest request) throws IOException {
         String contentType = part.getContentType();
         String fileName = ServletUtils.getFileName(part);
         String bucketName = request.getParameter(UploadServlet.BUCKET_NAME);
 
-        AppEngineFile file;
-        if (bucketName == null) {
-            file = fileService.createNewBlobFile(contentType, fileName);
-        } else {
-            file = fileService.createNewBlobFile(contentType, bucketName, fileName, AppEngineFile.FileSystem.GS);
-        }
-
-        try (ReadableByteChannel in = Channels.newChannel(part.getInputStream())) {
-            FileWriteChannel out = fileService.openWriteChannel(file, true);
-            try {
-                IOUtils.copy(in, out);
-            } finally {
-                out.closeFinally();
+        return getStorage().store(new Storage.StreamProvider() {
+            public InputStream get() throws IOException {
+                return part.getInputStream();
             }
-        }
-
-        return fileService.getBlobKey(file);
+        }, fileName, contentType, bucketName);
     }
 
     @SuppressWarnings("unchecked")
@@ -328,15 +309,16 @@ public class CapedwarfBlobstoreService implements ExposedBlobstoreService {
         return map;
     }
 
-    public InputStream getStream(BlobKey blobKey) throws FileNotFoundException {
-        return getFileService().getStream(blobKey);
+    protected InputStream getStream(BlobKey blobKey) throws IOException {
+        return getStorage().getStream(blobKey);
     }
 
     public BlobKey createGsBlobKey(String filename) {
         if (filename.startsWith("/gs/") == false) {
             throw new IllegalArgumentException("Google storage filenames must be prefixed with /gs/");
         }
-        return getFileService().getBlobKey(new AppEngineFile(filename));
+        //noinspection deprecation
+        return getStorage().getBlobKey(new AppEngineFile(filename));
     }
 
     public Map<String, List<BlobInfo>> getBlobInfos(HttpServletRequest httpServletRequest) {

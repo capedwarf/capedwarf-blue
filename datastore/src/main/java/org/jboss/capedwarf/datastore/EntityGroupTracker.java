@@ -106,9 +106,7 @@ class EntityGroupTracker implements Synchronization {
     private void registerSynchronization(Transaction tx) {
         try {
             tx.registerSynchronization(this);
-        } catch (RollbackException e) {
-            throw new RuntimeException(e);
-        } catch (SystemException e) {
+        } catch (RollbackException | SystemException e) {
             throw new RuntimeException(e);
         }
     }
