@@ -12,7 +12,7 @@ http://www.jboss.org/capedwarf
 How to build CapeDwarf environment?
 -----------------------------------
 
-(1) Build WildFly 8.0.0.CR1 tag --> JBOSS_HOME
+(1) Build WildFly 8.0.0.Final-SNAPSHOT from master branch --> JBOSS_HOME
 
     https://github.com/wildfly/wildfly
 
