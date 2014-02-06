@@ -63,7 +63,7 @@ public class CapedwarfModulesService implements ModulesService {
         return getModuleInfo(module).getConfig();
     }
 
-    private static boolean isCurrentVersion(String module, String version) {
+    private static boolean isExistingInstance(String module, String version) {
         final AppEngineWebXml appEngineWebXml = getAppEngineWebXml(module);
         return appEngineWebXml.getVersion().equals(version);
     }
@@ -77,7 +77,8 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public String getCurrentInstanceId() {
-        return appEngineWebXml.getApplication();
+        // TODO -- fix this for MANUAL, once we support it
+        return getModuleInfo(getCurrentModule()).getInstance(0).getId();
     }
 
     public Set<String> getModules() {
@@ -113,13 +114,13 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public void startModule(String module, String version) {
-        if (isCurrentVersion(module, version)) {
+        if (isExistingInstance(module, version)) {
             // DMR?
         }
     }
 
     public void stopModule(String module, String version) {
-        if (isCurrentVersion(module, version)) {
+        if (isExistingInstance(module, version)) {
             // DMR?
         }
     }
@@ -129,7 +130,7 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public String getModuleHostname(String module, String version, int instance) {
-        if (isCurrentVersion(module, version) == false) {
+        if (isExistingInstance(module, version) == false) {
             return null;
         }
 
@@ -233,7 +234,7 @@ public class CapedwarfModulesService implements ModulesService {
     }
 
     public String getInstanceHostname(String module, String version, String instance) {
-        if (isCurrentVersion(module, version) == false) {
+        if (isExistingInstance(module, version) == false) {
             return null;
         }
 
