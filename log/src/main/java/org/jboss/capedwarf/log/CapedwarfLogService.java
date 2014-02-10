@@ -301,6 +301,8 @@ public class CapedwarfLogService implements ExposedLogService {
 
         requestLogs.setHttpVersion(servletRequest.getProtocol());
 
+        requestLogs.setModuleId(environment.getModuleId());
+
         requestLogs.setInstanceKey("");     // TODO
         requestLogs.setReplicaIndex(-1);    // TODO
 

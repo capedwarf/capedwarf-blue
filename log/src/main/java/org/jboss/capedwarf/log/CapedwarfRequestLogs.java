@@ -28,7 +28,7 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
     public static final String MAX_LOG_LEVEL = "maxLogLevel";
     public static final String FINISHED = "finished";
 
-    private static final int EXTERNALIZER_VERSION = 2;
+    private static final int EXTERNALIZER_VERSION = 3;
 
     private static MethodInvocation<String> getAppEngineRelease = ReflectionUtils.optionalMethod(RequestLogs.class, "getAppEngineRelease");
     private static MethodInvocation<Void> setAppEngineRelease = ReflectionUtils.optionalMethod(RequestLogs.class, "setAppEngineRelease", String.class);
@@ -91,6 +91,7 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
         out.writeLong(requestLogs.getLatencyUsec());
         out.writeLong(requestLogs.getMcycles());
         writeUTF(out, requestLogs.getMethod());
+        writeUTF(out, requestLogs.getModuleId());
         writeUTF(out, requestLogs.getResource());
         writeUTF(out, requestLogs.getHttpVersion());
         out.writeInt(requestLogs.getStatus());
@@ -128,6 +129,7 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
             requestLogs.setLatency(in.readLong());
             requestLogs.setMcycles(in.readLong());
             requestLogs.setMethod(readUTF(in));
+            requestLogs.setModuleId(readUTF(in));
             requestLogs.setResource(readUTF(in));
             requestLogs.setHttpVersion(readUTF(in));
             requestLogs.setStatus(in.readInt());
