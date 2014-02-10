@@ -187,7 +187,7 @@
                             <a href="#">Dashboard</a>
                         </li>
                         <li>
-                            <a href="#">Instances</a>
+                            <a href="modules.vm" alt="Modules">Instances</a>
                         </li>
                         <li>
                             <a href="logs.vm">Logs</a>

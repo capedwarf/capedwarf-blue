@@ -1,0 +1,26 @@
+#parse("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Modules</h2>
+    <table width="100%">
+        <tr>
+            <th>Name</th>
+            <th>State</th>
+            <th>Version</th>
+            <th>Hostname</th>
+            <th>Scaling Type</th>
+            <th>Instances</th>
+        </tr>
+
+        #foreach ($m in $modules.rows)
+            <tr>
+                <td>$m.name</td>
+                <td>$m.state</td>
+                <td>$m.version</td>
+                <td><a href="$m.hostname">$m.hostname</a></td>
+                <td>$m.scaling</td>
+                <td>$m.instances</td>
+            </tr>
+        #end
+    </table>
+
+#parse("/org/jboss/capedwarf/admin/footer.vm")

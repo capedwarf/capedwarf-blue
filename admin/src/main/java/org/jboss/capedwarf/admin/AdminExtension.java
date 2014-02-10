@@ -25,6 +25,7 @@ public class AdminExtension implements Extension {
         addAnnotatedType(bbd, bm, DatastoreEntityViewer.class);
         addAnnotatedType(bbd, bm, DatastoreViewer.class);
         addAnnotatedType(bbd, bm, DatastoreStatistics.class);
+        addAnnotatedType(bbd, bm, Modules.class);
         addAnnotatedType(bbd, bm, Search.class);
         addAnnotatedType(bbd, bm, SearchDocument.class);
         addAnnotatedType(bbd, bm, SearchIndex.class);
