@@ -285,8 +285,8 @@ public class CapedwarfLogService implements ExposedLogService {
         requestLogs.setEndTimeUsec(startTimeUsec);
         requestLogs.setFinished(false);
 
-
         requestLogs.setAppId(environment.getAppId());
+        requestLogs.setModuleId(environment.getModuleId());
         requestLogs.setVersionId(environment.getVersionId());
 
         if (servletRequest instanceof HttpServletRequest) {
