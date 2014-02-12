@@ -1,5 +1,6 @@
 package org.jboss.capedwarf.oauth;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
@@ -7,6 +8,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
  *
  * Represents data returned by https://www.googleapis.com/oauth2/v1/userinfo
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserInfoResponse {
 
     private String id;
