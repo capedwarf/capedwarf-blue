@@ -55,7 +55,7 @@ public class EntityCreator extends Mapper<Long, Void, Void> {
 
     @Override
     public void beginShard() {
-        pool = DatastoreMutationPool.forManualFlushing();
+        pool = DatastoreMutationPool.create();
     }
 
     public void map(Long index) {

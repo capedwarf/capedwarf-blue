@@ -30,7 +30,7 @@ public class MyEntityCreator extends Mapper<Long, Void, Void> {
 
     @Override
     public void beginShard() {
-        pool = DatastoreMutationPool.forManualFlushing();
+        pool = DatastoreMutationPool.create();
     }
 
     @Override
