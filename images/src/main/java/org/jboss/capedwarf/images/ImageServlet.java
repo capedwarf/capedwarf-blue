@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
@@ -49,6 +50,14 @@ import org.jboss.capedwarf.common.io.IOUtils;
 @WebServlet(urlPatterns = ImageServlet.SERVLET_URI)
 public class ImageServlet extends HttpServlet {
     public static final String SERVLET_URI = "/_ah/image";
+
+    private BlobstoreService blobstoreService;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
@@ -71,7 +80,8 @@ public class ImageServlet extends HttpServlet {
     }
 
     private Image loadImage(BlobKey blobKey) {
-        return ImagesServiceFactory.makeImageFromBlob(blobKey);
+        byte[] imageData = blobstoreService.fetchData(blobKey, 0, BlobstoreService.MAX_BLOB_FETCH_SIZE - 1);
+        return ImagesServiceFactory.makeImage(imageData);
     }
 
     private Image transform(Image image, int imageSize, boolean crop) {
