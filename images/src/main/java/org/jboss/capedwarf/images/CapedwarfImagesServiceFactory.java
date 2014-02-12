@@ -25,8 +25,6 @@ package org.jboss.capedwarf.images;
 import java.util.Collection;
 
 import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.blobstore.BlobstoreService;
-import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.appengine.api.images.Composite;
 import com.google.appengine.api.images.CompositeTransform;
 import com.google.appengine.api.images.IImagesServiceFactory;
@@ -59,8 +57,7 @@ class CapedwarfImagesServiceFactory implements IImagesServiceFactory {
     }
 
     public Image makeImageFromBlob(BlobKey blobKey) {
-        byte[] bytes = BlobstoreServiceFactory.getBlobstoreService().fetchData(blobKey, 0, BlobstoreService.MAX_BLOB_FETCH_SIZE - 1);
-        return makeImage(bytes);
+        return getDelegate().makeImageFromBlob(blobKey);
     }
 
     public Image makeImageFromFilename(String filename) {

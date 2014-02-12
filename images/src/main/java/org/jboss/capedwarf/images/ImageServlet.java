@@ -80,12 +80,9 @@ public class ImageServlet extends HttpServlet {
     }
 
     private void serve(Image image, HttpServletResponse response) throws IOException {
-        InputStream in = new ByteArrayInputStream(image.getImageData());
-        try {
+        try (InputStream in = new ByteArrayInputStream(image.getImageData())) {
             response.setStatus(HttpServletResponse.SC_OK);
             IOUtils.copyStream(in, response.getOutputStream());
-        } finally {
-            in.close();
         }
     }
 
@@ -97,8 +94,9 @@ public class ImageServlet extends HttpServlet {
     }
 
     public static String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
-        if (blobKey == null)
+        if (blobKey == null) {
             throw new IllegalArgumentException("Null blob key!");
+        }
 
         StringBuilder builder = new StringBuilder(getServletUrl(secureUrl));
         builder.append("/");
