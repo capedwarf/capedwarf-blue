@@ -170,7 +170,7 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
 
     public List<Subscription> listSubscriptions(String topic, String subIdStart, int maxResults, long expiresBefore) {
         Query luceneQuery = newQueryBuilder().keyword().onField("topic").matching(topic).createQuery();
-        CacheQuery query = getCacheQuery(luceneQuery);
+        CacheQuery query = getCacheQuery(luceneQuery).maxResults(maxResults);
         List<Object> results = query.list();
         List<Subscription> list = new ArrayList<Subscription>(results.size());
         for (Object o : results) {
