@@ -45,6 +45,10 @@ public class DevelopmentAuthHandler extends AuthHandler {
         }
 
         PrintWriter out = response.getWriter();
+        String destinationUrl = request.getParameter(AuthServlet.DESTINATION_URL_PARAM);
+        if (destinationUrl == null) {
+            destinationUrl = request.getContextPath();
+        }
         out.print("<html>\n" +
             "<body>\n" +
             "<form method=\"post\" style=\"text-align:center; font-family: Arial, sans-serif; font-size: 14px;\">\n" +
@@ -58,7 +62,7 @@ public class DevelopmentAuthHandler extends AuthHandler {
             "            <input type=\"checkbox\" name=\"isAdmin\" id=\"isAdmin\" value=\"true\">\n" +
             "            <label for=\"isAdmin\">Sign in as Administrator</label>\n" +
             "        </p>\n" +
-            "        <input type=\"hidden\" name=\"" + AuthServlet.DESTINATION_URL_PARAM + "\" value=\"" + request.getParameter(AuthServlet.DESTINATION_URL_PARAM).replace("\"", "\\\"") + "\">\n" +
+            "        <input type=\"hidden\" name=\"" + AuthServlet.DESTINATION_URL_PARAM + "\" value=\"" + destinationUrl.replace("\"", "\\\"") + "\">\n" +
             "        <p style=\"margin-left: 3em\">\n" +
             "            <input name=\"action\" type=\"submit\" value=\"Log in\" style=\"padding: 6px 10px\">\n" +
             "        </p>\n" +
