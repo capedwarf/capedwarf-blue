@@ -77,9 +77,8 @@ public abstract class AbstractAuthenticator implements AuthenticationMechanism {
     protected abstract AuthenticationMechanismOutcome authenticateAdmin(SecurityContext securityContext, HttpServletRequest request, HttpServletResponse response, LoginConfig config);
 
     protected boolean isAdminConsoleURI(HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        // any better way?
-        return (requestURI != null && requestURI.contains("_ah/admin"));
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        return path.startsWith("/_ah/admin");
     }
 
     protected final AuthenticationMechanismOutcome notAttempted() {

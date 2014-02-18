@@ -36,7 +36,8 @@ public class SingleThreadFilter implements Filter {
 
     private boolean isChannelRequest(ServletRequest servletRequest) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-        return request.getRequestURI().startsWith("/_ah/channel");
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        return path.startsWith("/_ah/channel");
     }
 
     private void doFilterWithSemaphore(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
