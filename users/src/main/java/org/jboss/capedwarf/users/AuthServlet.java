@@ -101,12 +101,12 @@ public class AuthServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String uri = request.getRequestURI();
-        if (uri.startsWith(LOGIN_PATH)) {
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        if (path.startsWith(LOGIN_PATH)) {
             authHandler.handleLoginRequest(request, response);
-        } else if (uri.startsWith(LOGOUT_PATH)) {
+        } else if (path.startsWith(LOGOUT_PATH)) {
             authHandler.handleLogoutRequest(request, response);
-        } else if (uri.startsWith(CALLBACK_PATH)) {
+        } else if (path.startsWith(CALLBACK_PATH)) {
             authHandler.handleOpenIDCallBackRequest(request, response);
         } else {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
