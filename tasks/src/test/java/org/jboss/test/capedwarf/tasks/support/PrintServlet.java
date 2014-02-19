@@ -28,8 +28,9 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -48,9 +49,10 @@ public class PrintServlet extends HttpServlet {
     private Logger log = Logger.getLogger(PrintServlet.class.getName());
 
     private static RequestHandler requestHandler;
-    private static ServletRequest lastRequest;
+    private static HttpServletRequest lastRequest;
 
-    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         log.info("Ping - " + req);
 
         if (requestHandler != null) {
@@ -81,7 +83,7 @@ public class PrintServlet extends HttpServlet {
         }
     }
 
-    public static ServletRequest getLastRequest(final boolean reset) {
+    public static HttpServletRequest getLastRequest(final boolean reset) {
         try {
             return lastRequest;
         } finally {
@@ -90,7 +92,7 @@ public class PrintServlet extends HttpServlet {
         }
     }
 
-    public static ServletRequest getLastRequest() {
+    public static HttpServletRequest getLastRequest() {
         return getLastRequest(true);
     }
 

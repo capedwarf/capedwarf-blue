@@ -100,6 +100,24 @@ public class TasksTest extends TasksTestBase {
     }
 
     @Test
+    public void testRequestGetters() throws Exception {
+        final Queue queue = QueueFactory.getQueue("tasks-queue");
+        queue.add(withMethod(GET).url(URL + "/additional_path_info?foo=bar"));
+        sync();
+
+        HttpServletRequest request = PrintServlet.getLastRequest();
+        assertEquals(getContextPath(), request.getContextPath());
+        assertEquals(getContextPath() + URL + "/additional_path_info", request.getRequestURI());
+        assertEquals(URL, request.getServletPath());
+        assertEquals("/additional_path_info", request.getPathInfo());
+        assertEquals("foo=bar", request.getQueryString());
+    }
+
+    private String getContextPath() {
+        return "/capedwarf-tests";   // TODO: obtain actual context path somehow
+    }
+
+    @Test
     public void testTaskWithoutUrlIsSubmittedToDefaultUrl() throws Exception {
         Queue defaultQueue = QueueFactory.getDefaultQueue();
         defaultQueue.add(withMethod(POST));
