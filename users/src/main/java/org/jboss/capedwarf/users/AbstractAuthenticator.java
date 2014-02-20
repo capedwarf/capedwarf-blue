@@ -35,6 +35,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -77,7 +78,7 @@ public abstract class AbstractAuthenticator implements AuthenticationMechanism {
     protected abstract AuthenticationMechanismOutcome authenticateAdmin(SecurityContext securityContext, HttpServletRequest request, HttpServletResponse response, LoginConfig config);
 
     protected boolean isAdminConsoleURI(HttpServletRequest request) {
-        String path = request.getRequestURI().substring(request.getContextPath().length());
+        String path = ServletUtils.getRequestURIWithoutContextPath(request);
         return path.startsWith("/_ah/admin");
     }
 

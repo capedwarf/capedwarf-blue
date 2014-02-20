@@ -24,6 +24,7 @@
 
 package org.jboss.capedwarf.common.servlet;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
@@ -75,5 +76,9 @@ public class ServletUtils {
         if (length != null) {
             response.setContentLength(length);
         }
+    }
+
+    public static String getRequestURIWithoutContextPath(HttpServletRequest request) {
+        return request.getRequestURI().substring(request.getContextPath().length());
     }
 }
