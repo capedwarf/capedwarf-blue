@@ -1,0 +1,28 @@
+#parse("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Datastore entity: ${datastoreEdit.readableKey}</h2>
+
+Key: ${datastoreEdit.key} (String properties only)
+
+<form method="POST" action="datastoreEntity.vm?action=save&key=${datastoreEdit.key}">
+<table>
+    <thead>
+    <tr>
+        <th>Property</th>
+        <th>Value</th>
+    </tr>
+    </thead>
+    <tbody>
+        #foreach($property in $datastoreEdit.properties)
+        <tr>
+            <td>#if($property.key) $esc.html($property.key) #end</td>
+            <td><input name="__edit__$property.key" value="$property.value" /></td>
+        </tr>
+        #end
+    </tbody>
+</table>
+<p/>
+<input type="submit" value="Save"/>
+</form>
+
+#parse("/org/jboss/capedwarf/admin/footer.vm")

@@ -54,4 +54,8 @@
     </table>
 #end
 
+#if($datastoreViewer.key)
+Deleted entity: $datastoreViewer.key .
+#end
+
 #parse("/org/jboss/capedwarf/admin/footer.vm")

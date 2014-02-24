@@ -62,6 +62,9 @@ public class DatastoreViewer extends DatastoreHolder {
     @Inject @HttpParam
     private String query;
 
+    @Inject @HttpParam
+    private String key;
+
     private List<String> properties = new ArrayList<String>();
     private List<Row> rows;
 
@@ -75,6 +78,10 @@ public class DatastoreViewer extends DatastoreHolder {
 
     public void setSelectedEntityKind(String selectedEntityKind) {
         this.selectedEntityKind = selectedEntityKind;
+    }
+
+    public Key getKey() {
+        return (key != null) ? KeyFactory.stringToKey(key) : null;
     }
 
     public Set<String> getNamespaces() {
@@ -106,6 +113,10 @@ public class DatastoreViewer extends DatastoreHolder {
 
     @PostConstruct
     private void loadEntities() {
+        if (key != null) {
+            getDatastore().delete(KeyFactory.stringToKey(key));
+        }
+
         rows = new ArrayList<Row>();
         SortedSet<String> propertyNameSet = new TreeSet<String>();
 

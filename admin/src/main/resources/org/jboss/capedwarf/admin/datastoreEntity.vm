@@ -20,5 +20,9 @@ Key: ${datastoreEntity.key}
         #end
     </tbody>
 </table>
+<p/>
+<a href="datastore.vm?key=${datastoreEntity.key}">Delete<a/>
+<p/>
+<a href="datastoreEdit.vm?key=${datastoreEntity.key}">Edit<a/>
 
 #parse("/org/jboss/capedwarf/admin/footer.vm")

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,50 +24,31 @@ package org.jboss.capedwarf.admin;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
-import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 
 /**
- * @author Marko Luksa
  * @author Ales Justin
  */
-@Named("datastoreEntity")
+@Named("datastoreEdit")
 @RequestScoped
-public class DatastoreEntityViewer extends DatastoreEntityHolder {
-    @Inject @HttpParam
-    private String action;
-
-    @PostConstruct
-    public void init() {
-        if ("save".equals(action)) {
-            Entity entity = getEntityUnchecked();
-            HttpServletRequest request = CapedwarfVelocityContext.getInstance().getRequest();
-            Enumeration<String> keys = request.getParameterNames();
-            while (keys.hasMoreElements()) {
-                String key = keys.nextElement();
-                if (key.startsWith("__edit__")) {
-                    String name = key.substring(8);
-                    entity.setProperty(name, request.getParameter(key));
-                }
-            }
-            getDatastore().put(entity);
-        }
-    }
-
+public class DatastoreEditViewer extends DatastoreEntityHolder {
     public List<Map.Entry<String, Object>> getProperties() {
         try {
             Entity entity = getEntity();
-            return new ArrayList<Map.Entry<String, Object>>(entity.getProperties().entrySet());
+            List<Map.Entry<String, Object>> results = new ArrayList<>();
+            for (Map.Entry<String, Object> entry : entity.getProperties().entrySet()) {
+                if (entry.getValue() instanceof String) {
+                    results.add(entry); // String values only
+                }
+            }
+            return results;
         } catch (EntityNotFoundException e) {
             return Collections.emptyList();
         }
