@@ -39,18 +39,43 @@ import com.google.appengine.api.datastore.EntityNotFoundException;
 @Named("datastoreEdit")
 @RequestScoped
 public class DatastoreEditViewer extends DatastoreEntityHolder {
-    public List<Map.Entry<String, Object>> getProperties() {
+    public List<Property> getProperties() {
         try {
             Entity entity = getEntity();
-            List<Map.Entry<String, Object>> results = new ArrayList<>();
+            List<Property> results = new ArrayList<>();
             for (Map.Entry<String, Object> entry : entity.getProperties().entrySet()) {
-                if (entry.getValue() instanceof String) {
-                    results.add(entry); // String values only
+                Object value = entry.getValue();
+                if (hasPropertyEditor(value)) {
+                    results.add(new Property(entry.getKey(), value, value != null ? value.getClass().getName() : "NULL"));
                 }
             }
             return results;
         } catch (EntityNotFoundException e) {
             return Collections.emptyList();
+        }
+    }
+
+    public static class Property {
+        private String key;
+        private Object value;
+        private String type;
+
+        public Property(String key, Object value, String type) {
+            this.key = key;
+            this.value = value;
+            this.type = type;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public String getType() {
+            return type;
         }
     }
 }

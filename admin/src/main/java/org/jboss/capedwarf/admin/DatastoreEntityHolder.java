@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.admin;
 
+import java.beans.PropertyEditor;
+
 import javax.inject.Inject;
 
 import com.google.appengine.api.datastore.Entity;
@@ -29,12 +31,29 @@ import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import org.jboss.capedwarf.shared.util.Utils;
+import org.jboss.util.propertyeditor.PropertyEditors;
 
 /**
  * @author Marko Luksa
  * @author Ales Justin
  */
-public class DatastoreEntityHolder extends DatastoreHolder {
+public abstract class DatastoreEntityHolder extends DatastoreHolder {
+    static {
+        PropertyEditors.init();
+    }
+
+    static boolean hasPropertyEditor(Object value) {
+        if (value == null) {
+            return false;
+        }
+        try {
+            PropertyEditor pe = PropertyEditors.findEditor(value.getClass());
+            return (pe != null);
+        } catch (Throwable ignored) {
+            return false;
+        }
+    }
+
     @Inject @HttpParam
     private String key;
 

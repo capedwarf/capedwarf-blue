@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.admin;
 
+import java.beans.PropertyEditor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -36,6 +37,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.util.propertyeditor.PropertyEditors;
 
 /**
  * @author Marko Luksa
@@ -57,10 +60,27 @@ public class DatastoreEntityViewer extends DatastoreEntityHolder {
                 String key = keys.nextElement();
                 if (key.startsWith("__edit__")) {
                     String name = key.substring(8);
-                    entity.setProperty(name, request.getParameter(key));
+                    String value = request.getParameter(key);
+                    String type = request.getParameter("__type__" + name);
+                    Object result = null;
+                    if ("NULL".equals(type) == false) {
+                        Class<?> clazz = loadClass(type);
+                        PropertyEditor pe = PropertyEditors.findEditor(clazz);
+                        pe.setAsText(value);
+                        result = pe.getValue();
+                    }
+                    entity.setProperty(name, result);
                 }
             }
             getDatastore().put(entity);
+        }
+    }
+
+    private Class<?> loadClass(final String type) {
+        try {
+            return Application.getAppClassLoader().loadClass(type);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -2,7 +2,7 @@
 
 <h2>Datastore entity: ${datastoreEdit.readableKey}</h2>
 
-Key: ${datastoreEdit.key} (String properties only)
+Key: ${datastoreEdit.key}
 
 <form method="POST" action="datastoreEntity.vm?action=save&key=${datastoreEdit.key}">
 <table>
@@ -16,7 +16,7 @@ Key: ${datastoreEdit.key} (String properties only)
         #foreach($property in $datastoreEdit.properties)
         <tr>
             <td>#if($property.key) $esc.html($property.key) #end</td>
-            <td><input name="__edit__$property.key" value="$property.value" /></td>
+            <td><input name="__edit__$property.key" value="$property.value" /><input name="__type__$property.key" type="hidden" value="$property.type"/></td>
         </tr>
         #end
     </tbody>
