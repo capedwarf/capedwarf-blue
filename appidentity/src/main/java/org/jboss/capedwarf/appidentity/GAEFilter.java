@@ -25,13 +25,11 @@
 package org.jboss.capedwarf.appidentity;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -41,26 +39,20 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import org.jboss.capedwarf.blobstore.ExposedBlobstoreService;
-import org.jboss.capedwarf.common.servlet.ServletUtils;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class GAEFilter implements Filter {
-
-    private ServletContext servletContext;
-
     public void init(FilterConfig filterConfig) throws ServletException {
-        servletContext = filterConfig.getServletContext();
     }
 
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) req;
         HttpServletResponse httpResponse = (HttpServletResponse) res;
 
-        if (StaticServlet.isStaticFile(httpRequest) && fileExists(httpRequest)) {
-            serveStaticFile((HttpServletRequest) req, (HttpServletResponse) res);
+        if (StaticServlet.doServeStaticFile(httpRequest, httpResponse)) {
             return;
         }
 
@@ -70,16 +62,6 @@ public class GAEFilter implements Filter {
         chain.doFilter(request, response);
 
         serveBlobIfNecessary(response);
-    }
-
-    private boolean fileExists(HttpServletRequest request) throws MalformedURLException {
-        String uri = ServletUtils.getRequestURIWithoutContextPath(request);
-        return servletContext.getResource(uri) != null;
-    }
-
-    private void serveStaticFile(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        RequestDispatcher dispatcher = request.getServletContext().getNamedDispatcher("default");
-        dispatcher.forward(request, response);
     }
 
     private void serveBlobIfNecessary(CapedwarfHttpServletResponseWrapper response) throws IOException {

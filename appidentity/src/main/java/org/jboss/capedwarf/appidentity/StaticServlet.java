@@ -23,13 +23,18 @@
 package org.jboss.capedwarf.appidentity;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.undertow.servlet.handlers.DefaultServlet;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.FilePattern;
@@ -39,7 +44,15 @@ import org.jboss.capedwarf.shared.config.FilePattern;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class StaticServlet extends DefaultServlet {
-    static boolean isStaticFile(HttpServletRequest request) {
+    static boolean doServeStaticFile(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        boolean doServe = (isStaticFile(request) && fileExists(request));
+        if (doServe) {
+            serveStaticFile(request, response);
+        }
+        return doServe;
+    }
+
+    private static boolean isStaticFile(HttpServletRequest request) {
         final ApplicationConfiguration appConfig = ApplicationConfiguration.getInstance();
         if (appConfig == null) {
             return false; // handle undeploy
@@ -49,6 +62,13 @@ public class StaticServlet extends DefaultServlet {
         return matches(request.getRequestURI(), appEngineWebXml.getStaticFileIncludes()) && !matches(request.getRequestURI(), appEngineWebXml.getStaticFileExcludes());
     }
 
+    private static boolean fileExists(HttpServletRequest request) throws MalformedURLException {
+        String uri = ServletUtils.getRequestURIWithoutContextPath(request);
+        ServletContext servletContext = request.getServletContext();
+        URL resource = servletContext.getResource(uri);
+        return (resource != null);
+    }
+
     private static boolean matches(String uri, List<? extends FilePattern> patterns) {
         for (FilePattern pattern : patterns) {
             if (pattern.matches(uri)) {
@@ -56,6 +76,11 @@ public class StaticServlet extends DefaultServlet {
             }
         }
         return false;
+    }
+
+    private static void serveStaticFile(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        RequestDispatcher dispatcher = request.getServletContext().getNamedDispatcher("default");
+        dispatcher.forward(request, response);
     }
 
     @Override
