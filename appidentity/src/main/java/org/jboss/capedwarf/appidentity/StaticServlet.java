@@ -31,6 +31,7 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import io.undertow.servlet.handlers.DefaultServlet;
@@ -84,9 +85,15 @@ public class StaticServlet extends DefaultServlet {
     }
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         if (isStaticFile(req)) {
-            super.service(req, resp);
+            HttpServletRequest delegate = new HttpServletRequestWrapper(req) {
+                @Override
+                public String getPathInfo() {
+                    return req.getRequestURI(); // return full file path
+                }
+            };
+            super.service(delegate, resp);
         } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
