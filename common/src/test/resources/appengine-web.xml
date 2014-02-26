@@ -26,4 +26,8 @@
     <application>capedwarf-test</application>
     <version>1</version>
     <threadsafe>true</threadsafe>
+
+    <static-files>
+        <include path="**" />
+    </static-files>
 </appengine-web-app>
