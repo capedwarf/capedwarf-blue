@@ -11,6 +11,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import org.jboss.capedwarf.common.servlet.ServletUtils;
+
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -36,7 +38,7 @@ public class SingleThreadFilter implements Filter {
 
     private boolean isChannelRequest(ServletRequest servletRequest) {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
-        String path = request.getRequestURI().substring(request.getContextPath().length());
+        String path = ServletUtils.getRequestURIWithoutContextPath(request);
         return path.startsWith("/_ah/channel");
     }
 

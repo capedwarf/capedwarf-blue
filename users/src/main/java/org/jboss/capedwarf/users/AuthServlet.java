@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.utils.SystemProperty;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.common.url.URLUtils;
 
 import static com.google.appengine.api.utils.SystemProperty.Environment.Value.Development;
@@ -101,7 +102,7 @@ public class AuthServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String path = request.getRequestURI().substring(request.getContextPath().length());
+        String path = ServletUtils.getRequestURIWithoutContextPath(request);
         if (path.startsWith(LOGIN_PATH)) {
             authHandler.handleLoginRequest(request, response);
         } else if (path.startsWith(LOGOUT_PATH)) {
