@@ -90,7 +90,7 @@ public class StaticServlet extends DefaultServlet {
             HttpServletRequest delegate = new HttpServletRequestWrapper(req) {
                 @Override
                 public String getPathInfo() {
-                    return req.getRequestURI(); // return full file path
+                    return ServletUtils.getRequestURIWithoutContextPath(req); // return full file path
                 }
             };
             super.service(delegate, resp);
