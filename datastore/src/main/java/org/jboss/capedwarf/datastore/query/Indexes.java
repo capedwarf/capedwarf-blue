@@ -13,6 +13,7 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.repackaged.com.google.common.collect.Sets;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.datastore.KindUtils;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.IndexesXml;
 import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
@@ -41,8 +42,14 @@ public class Indexes {
     }
 
     private static boolean needsExplicitlyDefinedIndex(Query query) {
-        if (Application.isDevelopmentEnv() && ApplicationConfiguration.getInstance().getIndexesXml().isAutoGenerate()) {
-            return false;
+        if (Application.isDevelopmentEnv()) {
+            if (ApplicationConfiguration.getInstance().getIndexesXml().isAutoGenerate()) {
+                return false;
+            }
+        } else {
+            if (Compatibility.getInstance().isEnabled(Compatibility.Feature.DISABLE_INDEX_CHECK_IN_PRODUCTION)) {
+                return false;
+            }
         }
 
         if (isStatsQuery(query)) {
