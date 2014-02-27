@@ -60,7 +60,8 @@ public class StaticServlet extends DefaultServlet {
         }
 
         AppEngineWebXml appEngineWebXml = appConfig.getAppEngineWebXml();
-        return matches(request.getRequestURI(), appEngineWebXml.getStaticFileIncludes()) && !matches(request.getRequestURI(), appEngineWebXml.getStaticFileExcludes());
+        String path = ServletUtils.getRequestURIWithoutContextPath(request);
+        return matches(path, appEngineWebXml.getStaticFileIncludes()) && !matches(path, appEngineWebXml.getStaticFileExcludes());
     }
 
     private static boolean fileExists(HttpServletRequest request) throws MalformedURLException {
