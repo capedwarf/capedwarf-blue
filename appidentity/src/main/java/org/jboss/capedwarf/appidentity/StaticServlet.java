@@ -46,14 +46,14 @@ import org.jboss.capedwarf.shared.config.FilePattern;
  */
 public class StaticServlet extends DefaultServlet {
     static boolean doServeStaticFile(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        boolean doServe = (isStaticFile(request) && fileExists(request));
+        boolean doServe = matchesStaticFilePath(request) && fileExists(request);
         if (doServe) {
             serveStaticFile(request, response);
         }
         return doServe;
     }
 
-    private static boolean isStaticFile(HttpServletRequest request) {
+    private static boolean matchesStaticFilePath(HttpServletRequest request) {
         final ApplicationConfiguration appConfig = ApplicationConfiguration.getInstance();
         if (appConfig == null) {
             return false; // handle undeploy
@@ -86,7 +86,7 @@ public class StaticServlet extends DefaultServlet {
 
     @Override
     protected void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-        if (isStaticFile(req)) {
+        if (matchesStaticFilePath(req)) {
             HttpServletRequest delegate = new HttpServletRequestWrapper(req) {
                 @Override
                 public String getPathInfo() {
