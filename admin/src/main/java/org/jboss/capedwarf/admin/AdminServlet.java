@@ -24,7 +24,6 @@ package org.jboss.capedwarf.admin;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -79,11 +78,8 @@ public class AdminServlet extends HttpServlet {
     }
 
     private void serveResource(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        InputStream in = getClass().getResourceAsStream("/org/jboss/capedwarf/admin" + req.getPathInfo());
-        try {
+        try (InputStream in = getClass().getResourceAsStream("/org/jboss/capedwarf/admin" + req.getPathInfo())) {
             IOUtils.copyStream(in, resp.getOutputStream());
-        } finally {
-            IOUtils.safeClose(in);
         }
     }
 
@@ -98,9 +94,7 @@ public class AdminServlet extends HttpServlet {
             ServletUtils.handleResponse(resp, "iso-8859-1", null); // same as in header.vm
 
             Template template = velocity.getTemplate(getTemplatePath(req));
-            OutputStreamWriter writer = new OutputStreamWriter(resp.getOutputStream());
-            template.merge(context, writer);
-            writer.flush();
+            template.merge(context, resp.getWriter());
         } finally {
             CapedwarfVelocityContext.clearThreadLocalInstance();
         }
