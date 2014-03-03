@@ -26,37 +26,17 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import io.undertow.security.api.SecurityContext;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.handlers.ServletRequestContext;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfUsersAuthenticator extends AbstractAuthenticator {
-    protected AuthenticationMechanismOutcome authenticateAdmin(SecurityContext securityContext, HttpServletRequest request, HttpServletResponse response, LoginConfig config) {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            return notAttempted();
-        }
-
-        CapedwarfUserPrincipal principal = getPrincipal(session);
-        if (principal != null) {
-            if (principal.isAdmin()) {
-                return authorized(securityContext, principal);
-            } else {
-                return unauthorized(response);
-            }
-        } else {
-            return notAttempted();
-        }
-    }
-
     public ChallengeResult sendChallenge(HttpServerExchange exchange, SecurityContext securityContext) {
         final ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
         final HttpServletRequest request = (HttpServletRequest) servletRequestContext.getServletRequest();

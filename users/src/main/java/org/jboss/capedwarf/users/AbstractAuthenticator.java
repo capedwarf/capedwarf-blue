@@ -47,18 +47,19 @@ public abstract class AbstractAuthenticator implements AuthenticationMechanism {
         final ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
         final HttpServletRequest request = (HttpServletRequest) servletRequestContext.getServletRequest();
         final HttpServletResponse response = (HttpServletResponse) servletRequestContext.getServletResponse();
-        final LoginConfig config = servletRequestContext.getDeployment().getDeploymentInfo().getLoginConfig();
 
-        if (isAdminConsoleAccess(request, config)) {
-            return authenticateAdmin(securityContext, request, response, config);
-        }
-
-        HttpSession session = request.getSession(false);
+        final HttpSession session = request.getSession(false);
         if (session == null) {
             return notAttempted();
         }
 
-        CapedwarfUserPrincipal principal = getPrincipal(session);
+        final LoginConfig config = servletRequestContext.getDeployment().getDeploymentInfo().getLoginConfig();
+        final CapedwarfUserPrincipal principal = getPrincipal(session);
+
+        if (isAdminConsoleAccess(request, config)) {
+            return authenticateAdmin(securityContext, request, response, config, principal);
+        }
+
         if (principal != null) {
             return authorized(securityContext, principal);
         } else {
@@ -66,16 +67,23 @@ public abstract class AbstractAuthenticator implements AuthenticationMechanism {
         }
     }
 
-    public ChallengeResult sendChallenge(HttpServerExchange exchange, SecurityContext securityContext) {
-        return new ChallengeResult(false);
-    }
-
     protected boolean isAdminConsoleAccess(HttpServletRequest request, LoginConfig config) {
         // if config exists, it means we want to check for auth
         return (config != null && isAdminConsoleURI(request));
     }
 
-    protected abstract AuthenticationMechanismOutcome authenticateAdmin(SecurityContext securityContext, HttpServletRequest request, HttpServletResponse response, LoginConfig config);
+    @SuppressWarnings("UnusedParameters")
+    protected AuthenticationMechanismOutcome authenticateAdmin(SecurityContext securityContext, HttpServletRequest request, HttpServletResponse response, LoginConfig config, CapedwarfUserPrincipal principal) {
+        if (principal != null) {
+            if (principal.isAdmin()) {
+                return authorized(securityContext, principal);
+            } else {
+                return unauthorized(response);
+            }
+        } else {
+            return notAttempted();
+        }
+    }
 
     protected boolean isAdminConsoleURI(HttpServletRequest request) {
         String path = ServletUtils.getRequestURIWithoutContextPath(request);
