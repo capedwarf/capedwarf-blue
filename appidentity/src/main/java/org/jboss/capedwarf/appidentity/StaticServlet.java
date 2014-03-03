@@ -42,6 +42,7 @@ import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.FilePattern;
+import org.jboss.capedwarf.shared.config.StaticFileHttpHeader;
 import org.jboss.capedwarf.shared.config.StaticFileInclude;
 
 /**
@@ -142,6 +143,9 @@ public class StaticServlet extends DefaultServlet {
                     return ServletUtils.getRequestURIWithoutContextPath(req); // return full file path
                 }
             };
+            for (StaticFileHttpHeader header : include.getHeaders()) {
+                resp.addHeader(header.getHeaderName(), header.getHeaderValue());
+            }
             super.service(delegate, resp);
         } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
