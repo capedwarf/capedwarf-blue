@@ -140,7 +140,17 @@ public class StaticServlet extends DefaultServlet {
             HttpServletRequest delegate = new HttpServletRequestWrapper(req) {
                 @Override
                 public String getPathInfo() {
-                    return ServletUtils.getRequestURIWithoutContextPath(req); // return full file path
+                    return getPublicRoot() + ServletUtils.getRequestURIWithoutContextPath(req); // return full file path
+                }
+
+                private String getPublicRoot() {
+                    final ApplicationConfiguration appConfig = ApplicationConfiguration.getInstance();
+                    if (appConfig == null) {
+                        return ""; // handle undeploy
+                    }
+
+                    String publicRoot = appConfig.getAppEngineWebXml().getPublicRoot();
+                    return publicRoot == null ? "" : publicRoot;
                 }
             };
             for (StaticFileHttpHeader header : include.getHeaders()) {
