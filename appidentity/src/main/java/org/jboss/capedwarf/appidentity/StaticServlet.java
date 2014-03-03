@@ -51,7 +51,8 @@ import org.jboss.capedwarf.shared.config.StaticFileInclude;
  */
 public class StaticServlet extends DefaultServlet {
 
-    public static final StaticFileInclude DEFAULT_INCLUDE = new StaticFileInclude("**");
+    public static final StaticFileInclude DEFAULT_INCLUDE = new StaticFileInclude("**", null);
+    private static final long DEFAULT_EXPIRATION_SECONDS = 600; // 10 minutes
 
     static boolean doServeStaticFile(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         boolean doServe = matchesStaticFilePath(request) && fileExists(request) && !isJsp(request);
@@ -156,9 +157,18 @@ public class StaticServlet extends DefaultServlet {
             for (StaticFileHttpHeader header : include.getHeaders()) {
                 resp.addHeader(header.getHeaderName(), header.getHeaderValue());
             }
+            addCacheHeaders(resp, include);
             super.service(delegate, resp);
         } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
+    }
+
+    private void addCacheHeaders(HttpServletResponse resp, StaticFileInclude include) {
+        long now = System.currentTimeMillis();
+        long expirationSeconds = include.getExpirationSeconds() == null ? DEFAULT_EXPIRATION_SECONDS : include.getExpirationSeconds();
+        resp.setDateHeader("Date", now);
+        resp.setDateHeader("Expires", now + expirationSeconds * 1000);
+        resp.setHeader("Cache-Control", "public, max-age=" + expirationSeconds);
     }
 }
