@@ -42,6 +42,7 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.api.SingleConstraintMatch;
 import io.undertow.servlet.handlers.ServletRequestContext;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.shared.servlet.Mock;
 import org.kohsuke.MetaInfServices;
 
@@ -55,7 +56,7 @@ public class TasksServletExtension implements ServletExtension {
     public void handleDeployment(DeploymentInfo deploymentInfo, ServletContext servletContext) {
         LoginConfig loginConfig = deploymentInfo.getLoginConfig();
         if (loginConfig == null) {
-            loginConfig = new LoginConfig("CAPEDWARF");
+            loginConfig = new LoginConfig(ServletUtils.CAPEDWARF_REALM);
             deploymentInfo.setLoginConfig(loginConfig);
         }
         loginConfig.addLastAuthMethod(ROLES);
