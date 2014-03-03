@@ -42,12 +42,16 @@ import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.FilePattern;
+import org.jboss.capedwarf.shared.config.StaticFileInclude;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 public class StaticServlet extends DefaultServlet {
+
+    public static final StaticFileInclude DEFAULT_INCLUDE = new StaticFileInclude("**");
+
     static boolean doServeStaticFile(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         boolean doServe = matchesStaticFilePath(request) && fileExists(request) && !isJsp(request);
         if (doServe) {
@@ -81,14 +85,26 @@ public class StaticServlet extends DefaultServlet {
     }
 
     private static boolean matchesStaticFilePath(HttpServletRequest request) {
+        return getMatchedStaticFileInclude(request) != null;
+    }
+
+    private static StaticFileInclude getMatchedStaticFileInclude(HttpServletRequest request) {
         final ApplicationConfiguration appConfig = ApplicationConfiguration.getInstance();
         if (appConfig == null) {
-            return false; // handle undeploy
+            return null; // handle undeploy
         }
 
         AppEngineWebXml appEngineWebXml = appConfig.getAppEngineWebXml();
         String path = ServletUtils.getRequestURIWithoutContextPath(request);
-        return (appEngineWebXml.getStaticFileIncludes().isEmpty() || matches(path, appEngineWebXml.getStaticFileIncludes())) && !matches(path, appEngineWebXml.getStaticFileExcludes());
+        if (!matches(path, appEngineWebXml.getStaticFileExcludes())) {
+            List<StaticFileInclude> includes = appEngineWebXml.getStaticFileIncludes();
+            if (includes.isEmpty()) {
+                return DEFAULT_INCLUDE;
+            } else {
+                return getMatchedFilePattern(path, includes);
+            }
+        }
+        return null;
     }
 
     private static boolean fileExists(HttpServletRequest request) throws MalformedURLException {
@@ -99,12 +115,16 @@ public class StaticServlet extends DefaultServlet {
     }
 
     private static boolean matches(String uri, List<? extends FilePattern> patterns) {
-        for (FilePattern pattern : patterns) {
+        return getMatchedFilePattern(uri, patterns) != null;
+    }
+
+    private static <E extends FilePattern> E getMatchedFilePattern(String uri, List<E> patterns) {
+        for (E pattern : patterns) {
             if (pattern.matches(uri)) {
-                return true;
+                return pattern;
             }
         }
-        return false;
+        return null;
     }
 
     private static void serveStaticFile(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -114,7 +134,8 @@ public class StaticServlet extends DefaultServlet {
 
     @Override
     protected void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-        if (matchesStaticFilePath(req)) {
+        StaticFileInclude include = getMatchedStaticFileInclude(req);
+        if (include != null) {
             HttpServletRequest delegate = new HttpServletRequestWrapper(req) {
                 @Override
                 public String getPathInfo() {
