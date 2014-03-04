@@ -143,16 +143,6 @@ public class StaticServlet extends DefaultServlet {
                 public String getPathInfo() {
                     return getPublicRoot() + ServletUtils.getRequestURIWithoutContextPath(req); // return full file path
                 }
-
-                private String getPublicRoot() {
-                    final ApplicationConfiguration appConfig = ApplicationConfiguration.getInstance();
-                    if (appConfig == null) {
-                        return ""; // handle undeploy
-                    }
-
-                    String publicRoot = appConfig.getAppEngineWebXml().getPublicRoot();
-                    return publicRoot == null ? "" : publicRoot;
-                }
             };
             for (StaticFileHttpHeader header : include.getHeaders()) {
                 resp.addHeader(header.getHeaderName(), header.getHeaderValue());
@@ -162,6 +152,16 @@ public class StaticServlet extends DefaultServlet {
         } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
+    }
+
+    private String getPublicRoot() {
+        final ApplicationConfiguration appConfig = ApplicationConfiguration.getInstance();
+        if (appConfig == null) {
+            return ""; // handle undeploy
+        }
+
+        String publicRoot = appConfig.getAppEngineWebXml().getPublicRoot();
+        return publicRoot == null ? "" : publicRoot;
     }
 
     private void addCacheHeaders(HttpServletResponse resp, StaticFileInclude include) {
