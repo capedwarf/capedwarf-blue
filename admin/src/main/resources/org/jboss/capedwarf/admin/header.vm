@@ -264,6 +264,18 @@
                         </li>
                     </ul>
                 </li>
+                #if($adminConsolePages.size() > 0)
+                    <li id="nav-heading">
+                        <span class="nav-heading-section">Custom</span>
+                        <ul>
+                            #foreach($page in $adminConsolePages)
+                                <li>
+                                    <a href="customAdminPage.vm?name=$esc.html($page.name)&url=$page.url">$page.name</a>
+                                </li>
+                            #end
+                        </ul>
+                    </li>
+                #end
             </ul>
         </div>
     </div>
