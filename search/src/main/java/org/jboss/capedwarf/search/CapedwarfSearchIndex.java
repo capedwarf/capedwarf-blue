@@ -99,6 +99,14 @@ public class CapedwarfSearchIndex implements Index {
         return namespace;
     }
 
+    public long getStorageUsage() {
+        return -1; // TODO?
+    }
+
+    public long getStorageLimit() {
+        return -1; // TODO?
+    }
+
     public Future<Void> removeAsync(String... documentIds) {
         return removeAsync(Arrays.asList(documentIds));
     }

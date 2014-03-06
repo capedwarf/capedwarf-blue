@@ -22,8 +22,8 @@
 
 package org.jboss.test.capedwarf.modules.test;
 
-import com.google.appengine.api.labs.modules.ModulesService;
-import com.google.appengine.api.labs.modules.ModulesServiceFactory;
+import com.google.appengine.api.modules.ModulesService;
+import com.google.appengine.api.modules.ModulesServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;

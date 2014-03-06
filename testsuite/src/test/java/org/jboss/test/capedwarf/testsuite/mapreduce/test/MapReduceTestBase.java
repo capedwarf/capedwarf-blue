@@ -58,7 +58,6 @@ public abstract class MapReduceTestBase extends TestsuiteTestBase {
         LibUtils.addLibrary(war, "com.google.appengine.tools", "appengine-mapreduce");
         LibUtils.addLibrary(war, "com.google.appengine.tools", "appengine-pipeline");
         LibUtils.addLibrary(war, "com.google.appengine.tools", "appengine-gcs-client");
-        LibUtils.addLibrary(war, "com.google.appengine", "appengine-api-labs");
         LibUtils.addLibrary(war, "com.google.guava", "guava");
         LibUtils.addLibrary(war, "it.unimi.dsi", "fastutil");
         LibUtils.addLibrary(war, "com.googlecode.charts4j", "charts4j");

@@ -22,8 +22,8 @@
 
 package org.jboss.capedwarf.modules;
 
-import com.google.appengine.api.labs.modules.IModulesServiceFactory;
-import com.google.appengine.api.labs.modules.ModulesService;
+import com.google.appengine.api.modules.IModulesServiceFactory;
+import com.google.appengine.api.modules.ModulesService;
 import org.jboss.capedwarf.aspects.proxy.AspectFactory;
 import org.jboss.capedwarf.common.spi.CapedwarfFactoryProvider;
 

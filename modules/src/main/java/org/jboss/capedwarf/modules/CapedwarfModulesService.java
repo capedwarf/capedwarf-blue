@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import com.google.appengine.api.labs.modules.ModulesService;
+import com.google.appengine.api.modules.ModulesService;
 import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
@@ -93,7 +93,7 @@ public class CapedwarfModulesService implements ModulesService {
         return getVersions(module).iterator().next();
     }
 
-    public long getNumInstances(String module, String version) {
+    public int getNumInstances(String module, String version) {
         final AppEngineWebXml appEngineWebXml = getAppEngineWebXml(module);
         if (appEngineWebXml.getVersion().equals(version)) {
             final Scaling scaling = appEngineWebXml.getScaling();
@@ -162,9 +162,9 @@ public class CapedwarfModulesService implements ModulesService {
         });
     }
 
-    public Future<Long> getNumInstancesAsync(final String module, final String version) {
-        return wrap(new Callable<Long>() {
-            public Long call() throws Exception {
+    public Future<Integer> getNumInstancesAsync(final String module, final String version) {
+        return wrap(new Callable<Integer>() {
+            public Integer call() throws Exception {
                 return getNumInstances(module, version);
             }
         });

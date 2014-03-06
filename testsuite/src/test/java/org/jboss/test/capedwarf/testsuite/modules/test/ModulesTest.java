@@ -22,8 +22,8 @@
 
 package org.jboss.test.capedwarf.testsuite.modules.test;
 
-import com.google.appengine.api.labs.modules.ModulesService;
-import com.google.appengine.api.labs.modules.ModulesServiceFactory;
+import com.google.appengine.api.modules.ModulesService;
+import com.google.appengine.api.modules.ModulesServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -42,7 +42,6 @@ public class ModulesTest extends TestBase {
     public static WebArchive getDeployment() {
         WebArchive war = getCapedwarfDeployment();
         LibUtils.addGaeAsLibrary(war);
-        LibUtils.addLibrary(war, "com.google.appengine", "appengine-api-labs");
         return war;
     }
 
