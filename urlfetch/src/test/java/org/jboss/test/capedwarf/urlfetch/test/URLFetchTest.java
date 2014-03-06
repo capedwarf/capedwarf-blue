@@ -29,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +41,6 @@ import com.google.appengine.api.urlfetch.HTTPResponse;
 import com.google.appengine.api.urlfetch.URLFetchService;
 import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 import com.google.apphosting.api.ApiProxy;
-import com.google.common.base.Charsets;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -61,6 +61,7 @@ import org.junit.runner.RunWith;
 @Category(All.class)
 public class URLFetchTest extends TestBase {
     static final String[] URLS = {"http://localhost:8080/_ah/admin", "http://capedwarf-test.appspot.com/index.html"};
+    static Charset UTF_8 = Charset.forName("UTF-8");
 
     @Deployment
     public static Archive getDeployment() {
@@ -150,7 +151,7 @@ public class URLFetchTest extends TestBase {
 
         HTTPRequest req = new HTTPRequest(url, HTTPMethod.POST);
         req.setHeader(new HTTPHeader("Content-Type", "application/octet-stream"));
-        req.setPayload("Tralala".getBytes(Charsets.UTF_8));
+        req.setPayload("Tralala".getBytes(UTF_8));
 
         HTTPResponse response = service.fetch(req);
         String content = new String(response.getContent());
