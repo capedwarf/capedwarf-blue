@@ -10,7 +10,7 @@ import com.google.appengine.api.datastore.DatastoreNeedIndexException;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Projection;
 import com.google.appengine.api.datastore.Query;
-import com.google.appengine.repackaged.com.google.common.collect.Sets;
+import com.google.common.collect.Sets;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.datastore.KindUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
@@ -75,11 +75,15 @@ public class Indexes {
             set.add(predicate.getPropertyName());
         }
 
-        Set<String> nonKeyInequalityFilters = Sets.difference(inequalityFilters, KEY_RESERVED_PROPERTY_AS_SET);
         Set<String> nonKeySortOrders = Sets.difference(sortOrders, KEY_RESERVED_PROPERTY_AS_SET);
-
         Set<String> otherNonKeySortOrders = Sets.difference(nonKeySortOrders, equalityFilters);
         if (has(equalityFilters) && has(otherNonKeySortOrders)) {
+            return true;
+        }
+
+        Set<String> nonKeyEqualityFilters = Sets.difference(equalityFilters, KEY_RESERVED_PROPERTY_AS_SET);
+        Set<String> nonKeyInequalityFilters = Sets.difference(inequalityFilters, KEY_RESERVED_PROPERTY_AS_SET);
+        if (has(nonKeyEqualityFilters) && has(nonKeyInequalityFilters)) {
             return true;
         }
 

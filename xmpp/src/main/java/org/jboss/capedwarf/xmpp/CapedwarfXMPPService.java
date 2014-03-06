@@ -36,9 +36,9 @@ import com.google.appengine.api.xmpp.PresenceType;
 import com.google.appengine.api.xmpp.SendResponse;
 import com.google.appengine.api.xmpp.Subscription;
 import com.google.appengine.api.xmpp.XMPPService;
-import com.google.appengine.repackaged.com.google.common.base.Function;
-import com.google.appengine.repackaged.com.google.common.collect.Iterators;
-import com.google.appengine.repackaged.com.google.common.collect.Lists;
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 

@@ -41,8 +41,6 @@ import com.google.appengine.api.prospectivesearch.Subscription;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.repackaged.com.google.common.util.Base64;
-import com.google.appengine.repackaged.com.google.common.util.Base64DecoderException;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.query.dsl.QueryBuilder;
@@ -54,6 +52,7 @@ import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.io.Base64Utils;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -203,13 +202,13 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
     }
 
     private String encodeDocument(Entity document) {
-        return Base64.encodeWebSafe(EntityTranslator.convertToPb(document).toByteArray(), false);
+        return Base64Utils.encodeWebSafe(EntityTranslator.convertToPb(document).toByteArray(), false);
     }
 
     private Entity decodeDocument(String encodedDocument) {
         try {
-            return EntityTranslator.createFromPbBytes(Base64.decodeWebSafe(encodedDocument));
-        } catch (Base64DecoderException e) {
+            return EntityTranslator.createFromPbBytes(Base64Utils.decodeWebSafe(encodedDocument));
+        } catch (Exception e) {
             log.log(Level.WARNING, "Could not decode document: " + encodedDocument, e);
             return null;
         }

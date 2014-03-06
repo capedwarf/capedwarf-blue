@@ -36,8 +36,7 @@ import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.EntityTranslator;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.repackaged.com.google.common.util.Base64;
-import com.google.appengine.repackaged.com.google.common.util.Base64DecoderException;
+import org.jboss.capedwarf.common.io.Base64Utils;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -92,7 +91,7 @@ public class ProspectiveSearchMatchResponseServlet extends HttpServlet {
         return KeyFactory.createKey("pst", 1);
     }
 
-    public static InvocationData getInvocationData(DatastoreService service) throws EntityNotFoundException, Base64DecoderException {
+    public static InvocationData getInvocationData(DatastoreService service) throws EntityNotFoundException {
         InvocationData invocationData = new InvocationData();
 
         Entity entity = service.get(createEntityKey());
@@ -110,8 +109,8 @@ public class ProspectiveSearchMatchResponseServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     }
 
-    private static Entity decodeDocument(String encodedDocument) throws Base64DecoderException {
-        return EntityTranslator.createFromPbBytes(Base64.decodeWebSafe(encodedDocument));
+    private static Entity decodeDocument(String encodedDocument) {
+        return EntityTranslator.createFromPbBytes(Base64Utils.decodeWebSafe(encodedDocument));
     }
 
     public static class InvocationData {

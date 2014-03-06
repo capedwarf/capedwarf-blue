@@ -35,9 +35,9 @@ import java.util.Collection;
 import com.google.appengine.api.appidentity.AppIdentityService;
 import com.google.appengine.api.appidentity.AppIdentityServiceFactory;
 import com.google.appengine.api.appidentity.PublicCertificate;
-import com.google.appengine.repackaged.com.google.common.util.Base64;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.capedwarf.common.io.Base64Utils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
@@ -140,7 +140,7 @@ public class AppIdentityTest extends TestBase {
                         throw new IOException(endMarker + " not found");
                     }
 
-                    return Base64.decode(buf.toString());
+                    return Base64Utils.decode(buf.toString());
                 }
             }
 
