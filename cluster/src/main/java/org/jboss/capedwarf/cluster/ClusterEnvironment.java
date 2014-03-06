@@ -45,7 +45,7 @@ public class ClusterEnvironment extends AbstractEnvironment {
     }
 
     public String getDomain() {
-        return "cluster-mode"; // TODO - per node?
+        return "capedwarf.org"; // TODO - per node?
     }
 
     public Long getRange(String appId, Key parent, String sequenceName, long num) {
