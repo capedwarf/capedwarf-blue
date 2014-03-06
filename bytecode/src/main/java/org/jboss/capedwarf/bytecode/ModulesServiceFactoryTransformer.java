@@ -33,6 +33,6 @@ import javassist.CtMethod;
 public class ModulesServiceFactoryTransformer extends JavassistTransformer {
     protected void transform(CtClass clazz) throws Exception {
         CtMethod method = clazz.getDeclaredMethod("getModulesService");
-        method.setBody(toProxy("com.google.appengine.api.labs.modules.ModulesService", "new org.jboss.capedwarf.modules.CapedwarfModulesService()"));
+        method.setBody(toProxy("com.google.appengine.api.modules.ModulesService", "new org.jboss.capedwarf.modules.CapedwarfModulesService()"));
     }
 }
