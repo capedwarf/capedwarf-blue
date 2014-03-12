@@ -55,7 +55,7 @@ public class StaticServlet extends DefaultServlet {
     private static final long DEFAULT_EXPIRATION_SECONDS = 600; // 10 minutes
 
     static boolean doServeStaticFile(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        boolean doServe = matchesStaticFilePath(request) && fileExists(request) && !isJsp(request);
+        boolean doServe = matchesStaticFilePath(request) && fileExists(request) && !isJsp(request) && !isDir(request);
         if (doServe) {
             serveStaticFile(request, response);
         }
@@ -80,6 +80,11 @@ public class StaticServlet extends DefaultServlet {
             }
         }
         return false;
+    }
+
+    private static boolean isDir(HttpServletRequest request) {
+        String uri = ServletUtils.getRequestURIWithoutContextPath(request);
+        return uri.endsWith("/");
     }
 
     private static boolean matches(String path, String pattern) {
