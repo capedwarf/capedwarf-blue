@@ -22,8 +22,10 @@
 
 package org.jboss.capedwarf.appidentity;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -82,9 +84,15 @@ public class StaticServlet extends DefaultServlet {
         return false;
     }
 
-    private static boolean isDir(HttpServletRequest request) {
-        String uri = ServletUtils.getRequestURIWithoutContextPath(request);
-        return uri.endsWith("/");
+    private static boolean isDir(HttpServletRequest request) throws MalformedURLException, ServletException {
+        try {
+            String uri = ServletUtils.getRequestURIWithoutContextPath(request);
+            ServletContext servletContext = request.getServletContext();
+            URL resource = servletContext.getResource(uri);
+            return new File(resource.toURI()).isDirectory();
+        } catch (URISyntaxException e) {
+            throw new ServletException(e);
+        }
     }
 
     private static boolean matches(String path, String pattern) {
