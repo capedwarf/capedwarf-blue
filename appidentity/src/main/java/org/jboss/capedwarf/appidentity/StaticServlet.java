@@ -22,8 +22,10 @@
 
 package org.jboss.capedwarf.appidentity;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -55,7 +57,7 @@ public class StaticServlet extends DefaultServlet {
     private static final long DEFAULT_EXPIRATION_SECONDS = 600; // 10 minutes
 
     static boolean doServeStaticFile(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        boolean doServe = matchesStaticFilePath(request) && fileExists(request) && !isJsp(request);
+        boolean doServe = matchesStaticFilePath(request) && fileExists(request) && !isJsp(request) && !isDir(request);
         if (doServe) {
             serveStaticFile(request, response);
         }
@@ -80,6 +82,17 @@ public class StaticServlet extends DefaultServlet {
             }
         }
         return false;
+    }
+
+    private static boolean isDir(HttpServletRequest request) throws MalformedURLException, ServletException {
+        try {
+            String uri = ServletUtils.getRequestURIWithoutContextPath(request);
+            ServletContext servletContext = request.getServletContext();
+            URL resource = servletContext.getResource(uri);
+            return new File(resource.toURI()).isDirectory();
+        } catch (URISyntaxException e) {
+            throw new ServletException(e);
+        }
     }
 
     private static boolean matches(String path, String pattern) {
