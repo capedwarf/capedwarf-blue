@@ -24,8 +24,9 @@
     <label for="query">Query:</label>
     <input name="query" type="text" size="100" />
 
+    <input type="hidden" name="page" value="1" id="pageField"/>
+
     <input type="submit" value="List Entities"/>
-</form>
 
 <br/><br/>
 
@@ -52,7 +53,24 @@
             </tr>
         #end
     </table>
+
+    #if($datastoreViewer.numberOfPages > 1)
+        <div class="pagination">
+            #foreach ($page in [1..$datastoreViewer.numberOfPages])
+                <a href="javascript:void(0)" onclick="showPage($page)" #if($page == $datastoreViewer.currentPage) class="active" #end">$page</a>
+            #end
+        </div>
+    #end
+
+    <script type="application/javascript">
+        function showPage(page) {
+            document.getElementById("pageField").value = page;
+            document.forms[0].submit();
+        }
+    </script>
 #end
+
+</form>
 
 #if($datastoreViewer.key)
 Deleted entity: $datastoreViewer.key .
