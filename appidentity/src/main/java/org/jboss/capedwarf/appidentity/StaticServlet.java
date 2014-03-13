@@ -58,21 +58,24 @@ public class StaticServlet extends DefaultServlet {
     private static final long DEFAULT_EXPIRATION_SECONDS = 600; // 10 minutes
 
     static boolean doServeStaticFile(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        boolean doServe = matchesStaticFilePath(request) && fileExists(request) && !isJsp(request) && !isDir(request);
+        String path = ServletUtils.getRequestURIWithoutContextPath(request);
+        ServletContext servletContext = request.getServletContext();
+        URL resource = servletContext.getResource(path);
+
+        boolean doServe = matchesStaticFilePath(path) && fileExists(resource) && !isJsp(servletContext, path) && !isDir(resource);
         if (doServe) {
             serveStaticFile(request, response);
         }
         return doServe;
     }
 
-    private static boolean isJsp(HttpServletRequest request) {
-        String path = ServletUtils.getRequestURIWithoutContextPath(request);
-        for (String pattern : request.getServletContext().getServletRegistrations().get("Default JSP Servlet").getMappings()) {
+    private static boolean isJsp(ServletContext servletContext, String path) {
+        for (String pattern : servletContext.getServletRegistrations().get("Default JSP Servlet").getMappings()) {
             if (matches(path, pattern)) {
                 return true;
             }
         }
-        JspConfigDescriptor jspConfigDescriptor = request.getServletContext().getJspConfigDescriptor();
+        JspConfigDescriptor jspConfigDescriptor = servletContext.getJspConfigDescriptor();
         if (jspConfigDescriptor != null) {
             for (JspPropertyGroupDescriptor groupDescriptor : jspConfigDescriptor.getJspPropertyGroups()) {
                 for (String pattern : groupDescriptor.getUrlPatterns()) {
@@ -85,11 +88,8 @@ public class StaticServlet extends DefaultServlet {
         return false;
     }
 
-    private static boolean isDir(HttpServletRequest request) throws MalformedURLException, ServletException {
+    private static boolean isDir(URL resource) throws MalformedURLException, ServletException {
         try {
-            String uri = ServletUtils.getRequestURIWithoutContextPath(request);
-            ServletContext servletContext = request.getServletContext();
-            URL resource = servletContext.getResource(uri);
             return Files.isDirectory(Paths.get(resource.toURI()));
         } catch (URISyntaxException e) {
             throw new ServletException(e);
@@ -100,18 +100,17 @@ public class StaticServlet extends DefaultServlet {
         return Pattern.compile(pattern.replaceAll("\\*", ".*")).matcher(path).matches();
     }
 
-    private static boolean matchesStaticFilePath(HttpServletRequest request) {
-        return getMatchedStaticFileInclude(request) != null;
+    private static boolean matchesStaticFilePath(String path) {
+        return getMatchedStaticFileInclude(path) != null;
     }
 
-    private static StaticFileInclude getMatchedStaticFileInclude(HttpServletRequest request) {
+    private static StaticFileInclude getMatchedStaticFileInclude(String path) {
         final ApplicationConfiguration appConfig = ApplicationConfiguration.getInstance();
         if (appConfig == null) {
             return null; // handle undeploy
         }
 
         AppEngineWebXml appEngineWebXml = appConfig.getAppEngineWebXml();
-        String path = ServletUtils.getRequestURIWithoutContextPath(request);
         if (!matches(path, appEngineWebXml.getStaticFileExcludes())) {
             List<StaticFileInclude> includes = appEngineWebXml.getStaticFileIncludes();
             if (includes.isEmpty()) {
@@ -123,10 +122,7 @@ public class StaticServlet extends DefaultServlet {
         return null;
     }
 
-    private static boolean fileExists(HttpServletRequest request) throws MalformedURLException {
-        String uri = ServletUtils.getRequestURIWithoutContextPath(request);
-        ServletContext servletContext = request.getServletContext();
-        URL resource = servletContext.getResource(uri);
+    private static boolean fileExists(URL resource) throws MalformedURLException {
         return (resource != null);
     }
 
@@ -150,12 +146,13 @@ public class StaticServlet extends DefaultServlet {
 
     @Override
     protected void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-        StaticFileInclude include = getMatchedStaticFileInclude(req);
+        final String path = ServletUtils.getRequestURIWithoutContextPath(req);
+        StaticFileInclude include = getMatchedStaticFileInclude(path);
         if (include != null) {
             HttpServletRequest delegate = new HttpServletRequestWrapper(req) {
                 @Override
                 public String getPathInfo() {
-                    return getPublicRoot() + ServletUtils.getRequestURIWithoutContextPath(req); // return full file path
+                    return getPublicRoot() + path; // return full file path
                 }
             };
             for (StaticFileHttpHeader header : include.getHeaders()) {
