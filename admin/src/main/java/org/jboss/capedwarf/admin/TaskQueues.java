@@ -65,15 +65,17 @@ public class TaskQueues {
         pullQueues = new ArrayList<TaskQueue>();
 
         for (QueueXml.Queue queue : ApplicationConfiguration.getInstance().getQueueXml().getQueues().values()) {
-            TaskQueue taskQueue = new TaskQueue(QueueFactory.getQueue(queue.getName()));
-            if (queue.getMode() == QueueXml.Mode.PUSH) {
-                pushQueues.add(taskQueue);
-            } else if (queue.getMode() == QueueXml.Mode.PULL) {
-                pullQueues.add(taskQueue);
+            String name = queue.getName();
+            if (QueueXml.INTERNAL.equals(name) == false) {
+                TaskQueue taskQueue = new TaskQueue(QueueFactory.getQueue(name));
+                if (queue.getMode() == QueueXml.Mode.PUSH) {
+                    pushQueues.add(taskQueue);
+                } else if (queue.getMode() == QueueXml.Mode.PULL) {
+                    pullQueues.add(taskQueue);
+                }
             }
         }
     }
-
 
     public class TaskQueue {
 
