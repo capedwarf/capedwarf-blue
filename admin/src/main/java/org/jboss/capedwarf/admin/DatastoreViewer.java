@@ -24,6 +24,7 @@ package org.jboss.capedwarf.admin;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -39,6 +40,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import org.jboss.capedwarf.datastore.NamespaceServiceFactory;
 import org.jboss.capedwarf.datastore.NamespaceServiceInternal;
@@ -53,6 +55,8 @@ import org.jboss.capedwarf.gql4j.GqlQuery;
 @RequestScoped
 public class DatastoreViewer extends DatastoreHolder {
 
+    private static final int DEFAULT_ROWS_PER_PAGE = 20;
+
     @Inject @HttpParam
     private String selectedNamespace = "";
 
@@ -65,8 +69,13 @@ public class DatastoreViewer extends DatastoreHolder {
     @Inject @HttpParam
     private String key;
 
+    @Inject @HttpParam
+    private String page;
+
     private List<String> properties = new ArrayList<String>();
     private List<Row> rows;
+
+    private int resultCount;
 
     public String getSelectedEntityKind() {
         return selectedEntityKind;
@@ -147,7 +156,27 @@ public class DatastoreViewer extends DatastoreHolder {
             q = new Query(getSelectedEntityKind());
             options = FetchOptions.Builder.withDefaults();
         }
-        return getDatastore().prepare(q).asIterable(options);
+        options = options.offset(getOffset()).limit(getLimit());
+
+        PreparedQuery preparedQuery = getDatastore().prepare(q);
+        resultCount = preparedQuery.countEntities(FetchOptions.Builder.withDefaults());
+        return preparedQuery.asIterable(options);
+    }
+
+    public int getOffset() {
+        return (getCurrentPage()-1) * DEFAULT_ROWS_PER_PAGE;
+    }
+
+    public int getLimit() {
+        return DEFAULT_ROWS_PER_PAGE;
+    }
+
+    public int getNumberOfPages() {
+        return ((resultCount - 1) / DEFAULT_ROWS_PER_PAGE) + 1;
+    }
+
+    public int getCurrentPage() {
+        return page == null ? 1 : Integer.parseInt(page);
     }
 
     public class Row {

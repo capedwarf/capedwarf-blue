@@ -168,6 +168,15 @@
             background-color: #F22;
         }
 
+        .pagination > a {
+            padding: 3px;
+        }
+
+        .pagination > a.active {
+            font-weight: bold;
+            color: black;
+        }
+
     </style>
 </head>
 <body>
