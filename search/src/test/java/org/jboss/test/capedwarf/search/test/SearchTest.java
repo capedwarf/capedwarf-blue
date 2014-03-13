@@ -26,10 +26,20 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.google.appengine.api.NamespaceManager;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.search.Document;
+import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.GeoPoint;
 import com.google.appengine.api.search.Index;
+import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.PutResponse;
 import com.google.appengine.api.search.ScoredDocument;
+import com.google.appengine.api.search.SearchService;
+import com.google.appengine.api.search.SearchServiceConfig;
+import com.google.appengine.api.search.SearchServiceFactory;
 import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -257,6 +267,35 @@ public class SearchTest extends SearchTestBase {
         barIndex.put(newDocument("bar", newField("foo").setText("aaa")));
 
         assertSearchYields(fooIndex, "foo:aaa", "foo");
+    }
+
+    /**
+     * see https://issues.jboss.org/browse/CAPEDWARF-232
+     */
+    @Test
+    public void testCD232Bug() {
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        for (int i = 0; i < 10; i++) {
+            createDataInNamespace(datastore, "namespace" + i, "index");
+        }
+
+        SearchService search = SearchServiceFactory.getSearchService(SearchServiceConfig.newBuilder().setNamespace("").build());
+        Index index = search.getIndex(IndexSpec.newBuilder().setName("index"));
+        assertSearchYields(index, "");
+    }
+
+    private void createDataInNamespace(DatastoreService datastore, String namespace, String indexName) {
+        NamespaceManager.set(namespace);
+
+        Entity entity = new Entity("kind", 1);
+        entity.setProperty("foo", 1);
+        datastore.put(entity);
+
+        SearchService search = SearchServiceFactory.getSearchService();
+        Index index = search.getIndex(IndexSpec.newBuilder().setName(indexName));
+        index.put(Document.newBuilder()
+            .addField(Field.newBuilder().setName("info").setText("index: " + indexName + " ns: " + namespace))
+            .build());
     }
 
     @Test

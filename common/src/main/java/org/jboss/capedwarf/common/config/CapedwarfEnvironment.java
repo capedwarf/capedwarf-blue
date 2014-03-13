@@ -48,7 +48,7 @@ import org.jboss.capedwarf.shared.config.CheckType;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable {
+public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable, Cloneable {
     private static final long serialVersionUID = 1L;
 
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
@@ -70,7 +70,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
     private static final long GLOBAL_TIME_LIMIT = Long.parseLong(System.getProperty("jboss.capedwarf.globalTimeLimit", "60000"));
 
     private final long requestStart;
-    private final Map<String, Object> attributes;
+    private Map<String, Object> attributes;
 
     private final transient Function<BackendsXml.Backend, String> ADDRESS_FN = new Function<BackendsXml.Backend, String>() {
         @Override
@@ -330,6 +330,20 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable 
 
     public void setUserId(String userId) {
         getAttributes().put(USER_ID_KEY, userId);
+    }
+
+    @Override
+    public CapedwarfEnvironment clone() {
+        CapedwarfEnvironment clone;
+        try {
+            clone = (CapedwarfEnvironment) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+
+        clone.attributes = new ConcurrentHashMap<>(attributes);
+
+        return clone;
     }
 }
 

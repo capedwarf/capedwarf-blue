@@ -36,9 +36,10 @@ import org.jboss.capedwarf.shared.util.Utils;
  * Abstract cache listener
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public abstract class AbstractCacheListener {
-    private final CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance();
+    private final CapedwarfEnvironment env = CapedwarfEnvironment.getThreadLocalInstance().clone();
 
     /**
      * Execute callable on distributed framework.
