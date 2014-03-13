@@ -265,6 +265,10 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
         return environment;
     }
 
+    public static CapedwarfEnvironment cloneThreadLocalInstance() {
+        return getThreadLocalInstance().clone();
+    }
+
     /**
      * Check if env already exists.
      *
@@ -332,8 +336,9 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
         getAttributes().put(USER_ID_KEY, userId);
     }
 
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     @Override
-    public CapedwarfEnvironment clone() {
+    protected CapedwarfEnvironment clone() {
         CapedwarfEnvironment clone;
         try {
             clone = (CapedwarfEnvironment) super.clone();

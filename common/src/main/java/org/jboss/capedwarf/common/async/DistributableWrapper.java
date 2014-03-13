@@ -50,7 +50,7 @@ class DistributableWrapper<V> implements DistributedCallable<Object, Object, V>,
     DistributableWrapper(Callable<V> callable) {
         this.appId = AppIdFactory.getAppId();
         this.module = AppIdFactory.getModule();
-        this.env = CapedwarfEnvironment.getThreadLocalInstance().clone();
+        this.env = CapedwarfEnvironment.cloneThreadLocalInstance();
         this.callable = callable;
     }
 
