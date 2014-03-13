@@ -41,6 +41,7 @@ import com.google.appengine.api.search.QueryOptions;
 import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchService;
+import com.google.appengine.api.search.SearchServiceConfig;
 import com.google.appengine.api.search.SearchServiceFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -70,8 +71,8 @@ public abstract class SearchTestBase extends TestBase {
 
     protected void clear() {
         removeAllDocumentsFrom(service);
-        removeAllDocumentsFrom(SearchServiceFactory.getSearchService(FOO_NAMESPACE));
-        removeAllDocumentsFrom(SearchServiceFactory.getSearchService(BAR_NAMESPACE));
+        removeAllDocumentsFrom(getSearchService(FOO_NAMESPACE));
+        removeAllDocumentsFrom(getSearchService(BAR_NAMESPACE));
     }
 
     private void removeAllDocumentsFrom(SearchService service) {
@@ -164,7 +165,7 @@ public abstract class SearchTestBase extends TestBase {
 
     protected Index getIndexInNamespace(String name, String namespace) {
         IndexSpec indexSpec = getIndexSpec(name);
-        return SearchServiceFactory.getSearchService(namespace).getIndex(indexSpec);
+        return getSearchService(namespace).getIndex(indexSpec);
     }
 
     protected Index getIndex(String name) {
@@ -257,5 +258,9 @@ public abstract class SearchTestBase extends TestBase {
     protected Results<ScoredDocument> getResults(Index index, String queryString, QueryOptions options) {
         Query query = Query.newBuilder().setOptions(options).build(queryString);
         return index.search(query);
+    }
+
+    protected SearchService getSearchService(String namespace) {
+        return SearchServiceFactory.getSearchService(SearchServiceConfig.newBuilder().setNamespace(namespace).build());
     }
 }

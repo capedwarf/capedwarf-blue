@@ -37,6 +37,7 @@ import org.jboss.capedwarf.shared.components.SimpleAppIdFactory;
  * Can be shared accross the wire.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
+ * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 class DistributableWrapper<V> implements DistributedCallable<Object, Object, V>, Serializable {
     private static final long serialVersionUID = 1L;
@@ -49,7 +50,7 @@ class DistributableWrapper<V> implements DistributedCallable<Object, Object, V>,
     DistributableWrapper(Callable<V> callable) {
         this.appId = AppIdFactory.getAppId();
         this.module = AppIdFactory.getModule();
-        this.env = CapedwarfEnvironment.getThreadLocalInstance();
+        this.env = CapedwarfEnvironment.getThreadLocalInstance().clone();
         this.callable = callable;
     }
 
