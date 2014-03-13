@@ -36,7 +36,6 @@ import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
 import com.google.appengine.api.search.PutResponse;
 import com.google.appengine.api.search.SearchService;
-import com.google.appengine.api.search.SearchServiceFactory;
 import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -55,13 +54,13 @@ public class BasicTest extends SearchTestBase {
 
     @Test
     public void testGetSearchServiceWithNamespace() {
-        SearchService service = SearchServiceFactory.getSearchService("foo");
+        SearchService service = getSearchService("foo");
         assertEquals("foo", service.getNamespace());
     }
 
     @Test
     public void testIndexInheritsNamespaceFromSearchService() {
-        SearchService service = SearchServiceFactory.getSearchService("foo");
+        SearchService service = getSearchService("foo");
         Index index = service.getIndex(IndexSpec.newBuilder().build());
         assertEquals("foo", index.getNamespace());
     }
@@ -154,8 +153,8 @@ public class BasicTest extends SearchTestBase {
 
     @Test
     public void testAddedDocumentIsStoredInCorrectNamespace() {
-        SearchService fooService = SearchServiceFactory.getSearchService(FOO_NAMESPACE);
-        SearchService barService = SearchServiceFactory.getSearchService(BAR_NAMESPACE);
+        SearchService fooService = getSearchService(FOO_NAMESPACE);
+        SearchService barService = getSearchService(BAR_NAMESPACE);
 
         Index fooNamespaceIndex = fooService.getIndex(getIndexSpec("index"));
         Index barNamespaceIndex = barService.getIndex(getIndexSpec("index"));

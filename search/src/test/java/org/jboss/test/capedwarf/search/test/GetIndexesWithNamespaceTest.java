@@ -28,7 +28,6 @@ import com.google.appengine.api.search.GetIndexesRequest;
 import com.google.appengine.api.search.GetResponse;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.SearchService;
-import com.google.appengine.api.search.SearchServiceFactory;
 import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,7 +47,7 @@ public class GetIndexesWithNamespaceTest extends SearchTestBase {
         createIndexInNamespace("a", BAR_NAMESPACE);
         createIndexInNamespace("b", BAR_NAMESPACE);
 
-        SearchService fooSearchService = SearchServiceFactory.getSearchService(FOO_NAMESPACE);
+        SearchService fooSearchService = getSearchService(FOO_NAMESPACE);
 
         GetResponse<Index> response = fooSearchService.getIndexes(GetIndexesRequest.newBuilder());
         assertEquals(Arrays.asList(fooAIndex, fooBIndex), response.getResults());

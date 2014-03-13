@@ -30,7 +30,6 @@ import com.google.appengine.api.search.GeoPoint;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.PutResponse;
 import com.google.appengine.api.search.ScoredDocument;
-import com.google.appengine.api.search.SearchServiceFactory;
 import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -251,10 +250,10 @@ public class SearchTest extends SearchTestBase {
 
     @Test
     public void testSearchReturnsDocumentsInCorrectNamespace() {
-        Index fooIndex = SearchServiceFactory.getSearchService(FOO_NAMESPACE).getIndex(getIndexSpec("index"));
+        Index fooIndex = getSearchService(FOO_NAMESPACE).getIndex(getIndexSpec("index"));
         fooIndex.put(newDocument("foo", newField("foo").setText("aaa")));
 
-        Index barIndex = SearchServiceFactory.getSearchService(BAR_NAMESPACE).getIndex(getIndexSpec("index"));
+        Index barIndex = getSearchService(BAR_NAMESPACE).getIndex(getIndexSpec("index"));
         barIndex.put(newDocument("bar", newField("foo").setText("aaa")));
 
         assertSearchYields(fooIndex, "foo:aaa", "foo");
