@@ -1,0 +1,193 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2014, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+/* GENERAL */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #000;
+    padding-top: 15px;
+}
+
+#container {
+    width: auto;
+    margin: 0 10px;
+}
+
+#header {
+    width: 100%;
+    margin: 0 0 25px 0;
+    border-bottom: 1px solid #4a5d75;
+    height: 55px;
+    background-image: url(capedwarf_logo_200px.gif);
+    background-repeat: no-repeat;
+}
+
+#sidebar {
+    float: left;
+    clear: left;
+    width: 170px;
+    border-right: 2px solid #C6CCD4;
+    color: #4a5d75
+}
+
+#content {
+    width: auto;
+    float: none;
+    margin: 0 0 0 170px;
+    padding-left: 15px;
+}
+
+p {
+    padding: 5px 0;
+}
+
+.blue {
+    color: #4a5d75;
+}
+
+.green {
+    color: #4a5d75;
+}
+
+a {
+    color: #4a5d75;
+}
+
+/* NAVIGATION */
+
+#nav li {
+    list-style-type: none;
+}
+
+#nav ul {
+    padding-left: 15px;
+}
+
+#nav>ul {
+    padding-left: 5px;
+}
+
+#nav>ul>li {
+    color: #000;
+    padding: 3px 0;
+    margin: 0 0 10px 0;
+}
+
+#nav ul li ul li {
+    padding: 3px 2px;
+}
+
+li.active {
+    background-color: #C6CCD4;
+    font-weight: bold;
+    color: #000;
+}
+
+/* TABLES */
+table tr td, table tr th {
+    border: 1px solid #4a5d75;
+    border-collapse: collapse;
+    padding: 2px;
+    border-left: none;
+    border-right: none;
+}
+
+table {
+    border-collapse: collapse;
+    margin: 15px 0;
+    border: 1px solid #4a5d75;
+}
+
+table tr.odd {
+    background-color: #FFF;
+}
+
+table tr.even {
+    background-color: #e2e5e9;
+}
+
+table th {
+    background-color: #c6ccd4;
+    text-align: left;
+    color: #000;
+}
+
+/* HEADINGS */
+
+h1 {
+    font-size: 18px;
+    font-weight: bold;
+    padding-bottom: 12px;
+}
+
+h2 {
+    font-size: 16px;
+    font-weight: bold;
+    padding-bottom: 10px;
+}
+
+.ae-log-severity {
+    display: block;
+    height: 1.2em;
+    width: 1.2em;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: capitalize;
+    font-weight: bold;
+    border-radius: 2px;
+}
+
+.ae-log-severity-D {
+    background-color: #09F;
+}
+
+.ae-log-severity-I {
+    background-color: #3C0;
+}
+
+.ae-log-severity-W {
+    background-color: #FD0;
+}
+
+.ae-log-severity-E {
+    background-color: #F90;
+}
+
+.ae-log-severity-F {
+    background-color: #F22;
+}
+
+.pagination > a {
+    padding: 3px;
+}
+
+.pagination > a.active {
+    font-weight: bold;
+    color: black;
+}
+
