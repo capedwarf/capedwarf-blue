@@ -22,11 +22,12 @@
 
 package org.jboss.capedwarf.appidentity;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -89,7 +90,7 @@ public class StaticServlet extends DefaultServlet {
             String uri = ServletUtils.getRequestURIWithoutContextPath(request);
             ServletContext servletContext = request.getServletContext();
             URL resource = servletContext.getResource(uri);
-            return new File(resource.toURI()).isDirectory();
+            return Files.isDirectory(Paths.get(resource.toURI()));
         } catch (URISyntaxException e) {
             throw new ServletException(e);
         }
