@@ -26,15 +26,16 @@ import com.google.appengine.api.log.LogQuery;
 import com.google.appengine.api.log.LogService;
 import com.google.appengine.api.log.LogServiceFactory;
 import com.google.appengine.api.log.RequestLogs;
+import org.jboss.capedwarf.log.CapedwarfLogQuery;
+import org.jboss.capedwarf.log.CapedwarfLogQueryResult;
+import org.jboss.capedwarf.log.ExposedLogService;
+import org.jboss.capedwarf.log.LogQueryOptions;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -43,11 +44,18 @@ import java.util.TreeSet;
 @RequestScoped
 public class LogViewer {
 
+    private static final int DEFAULT_ROWS_PER_PAGE = 20;
+
     @Inject @HttpParam
     private String show;
 
     @Inject @HttpParam
     private String severity;
+
+    @Inject @HttpParam
+    private String page;
+
+    private long resultCount;
 
     public boolean isShowAll() {
         return show == null || show.equals("all");
@@ -75,7 +83,31 @@ public class LogViewer {
             logQuery = logQuery.minLogLevel(LogService.LogLevel.valueOf(severity));
         }
         // TODO: add other fields to filter
-        return LogServiceFactory.getLogService().fetch(logQuery);
+        LogQueryOptions options = new LogQueryOptions(getOffset(), getLimit());
+        CapedwarfLogQuery query = new CapedwarfLogQuery(logQuery, options);
+        CapedwarfLogQueryResult result = getLogService().fetch(query);
+        resultCount = result.getResultCount();
+        return result;
+    }
+
+    private ExposedLogService getLogService() {
+        return (ExposedLogService)LogServiceFactory.getLogService();
+    }
+
+    public int getOffset() {
+        return (getCurrentPage()-1) * DEFAULT_ROWS_PER_PAGE;
+    }
+
+    public int getLimit() {
+        return DEFAULT_ROWS_PER_PAGE;
+    }
+
+    public long getNumberOfPages() {
+        return ((resultCount - 1) / DEFAULT_ROWS_PER_PAGE) + 1;
+    }
+
+    public int getCurrentPage() {
+        return page == null ? 1 : Integer.parseInt(page);
     }
 
 }

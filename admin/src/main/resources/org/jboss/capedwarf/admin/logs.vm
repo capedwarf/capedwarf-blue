@@ -14,6 +14,7 @@
             <option value="$severity" #if($severity.equals($logViewer.severity)) selected="selected" #end>$severity</option>
         #end
     </select>
+    <input type="hidden" name="page" value="1" id="pageField"/>
     <input type="submit" value="Search"/>
 </form>
 
@@ -40,6 +41,25 @@
         #end
     #end
 </table>
+
+
+
+#if($logViewer.numberOfPages > 1)
+    <div class="pagination">
+        #foreach ($page in [1..$logViewer.numberOfPages])
+                <a href="javascript:void(0)" onclick="showPage($page)" #if($page == $logViewer.currentPage) class="active" #end">$page</a>
+        #end
+    </div>
+
+    <script type="application/javascript">
+        function showPage(page) {
+            document.getElementById("pageField").value = page;
+            document.forms[0].submit();
+        }
+    </script>
+#end
+
+
 
 <div class="ae-log-legend">
     <strong>Legend:</strong>
