@@ -151,8 +151,23 @@ h2 {
     padding-bottom: 10px;
 }
 
+.ae-log-legend {
+    margin: 1em 0;
+}
+.ae-log-legend ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.ae-log-legend li, .ae-log-legend strong {
+    float: left;
+    margin: 0 1em 0 0;
+}
+
 .ae-log-severity {
     display: block;
+    float: left;
     height: 1.2em;
     width: 1.2em;
     line-height: 1.2;
@@ -160,6 +175,7 @@ h2 {
     text-transform: capitalize;
     font-weight: bold;
     border-radius: 2px;
+    margin-right: 0.3em;
 }
 
 .ae-log-severity-D {

@@ -63,12 +63,14 @@
 
 <div class="ae-log-legend">
     <strong>Legend:</strong>
+    <ul>
     #foreach($severity in $logViewer.severities)
-        <span>
+        <li>
             <span class="ae-log-severity ae-log-severity-$severity.charAt(0)">$severity.charAt(0)</span>
             $severity
-        </span>
+        </li>
     #end
+    </ul>
 </div>
 
 #parse("/org/jboss/capedwarf/admin/footer.vm")
