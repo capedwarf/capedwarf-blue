@@ -160,7 +160,7 @@ public class CapedwarfLogService implements ExposedLogService {
 
         Query luceneQuery = getQuery(queryBuilder, queries);
         CacheQuery cacheQuery = searchManager.getQuery(luceneQuery, CapedwarfRequestLogs.class);
-        cacheQuery.sort(new Sort(new SortField(CapedwarfRequestLogs.END_TIME_USEC, SortField.LONG)));
+        cacheQuery.sort(new Sort(new SortField(CapedwarfRequestLogs.END_TIME_USEC, SortField.LONG, true)));
         cacheQuery.firstResult(logQuery.getOptions().getOffset());
         if (logQuery.getOptions().getLimit() != null) {
             cacheQuery.maxResults(logQuery.getOptions().getLimit());
