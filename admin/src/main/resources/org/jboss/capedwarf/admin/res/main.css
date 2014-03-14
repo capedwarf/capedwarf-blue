@@ -151,6 +151,47 @@ h2 {
     padding-bottom: 10px;
 }
 
+ul.ae-logs {
+    list-style: none;
+}
+
+.ae-log:nth-child(odd) {
+    background-color: #eee;
+}
+
+.ae-log {
+    padding: 0.5em 0 0.5em 1em;
+}
+
+.ae-log span {
+    margin: 0 .3em;
+}
+
+.ae-log .file {
+    font-weight: bold;
+}
+
+.ae-log-line {
+    margin: 0 0 0 3em;
+}
+
+.ae-log-lines {
+    margin: 0.5em 0 0 0;
+    list-style: none;
+}
+
+.ae-log-lines li {
+    height: 1.6em;
+}
+
+.ae-log-lines span {
+    margin-right: 1em;
+}
+
+.ae-log-lines .snippet {
+    color: #666;
+}
+
 .ae-log-legend {
     margin: 1em 0;
 }
