@@ -56,6 +56,7 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
@@ -212,20 +213,21 @@ public class CapedwarfLogService implements ExposedLogService {
             logToFile(record);
         }
 
-        // did we disable logging
         if (ignoreLogging)
             return;
 
-        CapedwarfAppLogLine capedwarfAppLogLine = new CapedwarfAppLogLine(getCurrentRequestId(), record.getSequenceNumber());
-        AppLogLine appLogLine = capedwarfAppLogLine.getAppLogLine();
-        appLogLine.setLogLevel(getLogLevel(record));
-        appLogLine.setLogMessage(getFormattedMessage(record));
-        appLogLine.setTimeUsec(record.getMillis() * 1000);
-        logWriter.put(capedwarfAppLogLine);
-
         CapedwarfRequestLogs requestLogs = getCurrentRequestLogs();
-        requestLogs.logLineAdded(appLogLine);
-        logWriter.put(requestLogs);
+        if (requestLogs != null) {
+            CapedwarfAppLogLine capedwarfAppLogLine = new CapedwarfAppLogLine(getCurrentRequestId(), record.getSequenceNumber());
+            AppLogLine appLogLine = capedwarfAppLogLine.getAppLogLine();
+            appLogLine.setLogLevel(getLogLevel(record));
+            appLogLine.setLogMessage(getFormattedMessage(record));
+            appLogLine.setTimeUsec(record.getMillis() * 1000);
+            logWriter.put(capedwarfAppLogLine);
+
+            requestLogs.logLineAdded(appLogLine);
+            logWriter.put(requestLogs);
+        }
     }
 
     private synchronized void logToFile(LogRecord record) {
@@ -272,7 +274,7 @@ public class CapedwarfLogService implements ExposedLogService {
     }
 
     public void requestStarted(ServletRequest servletRequest, long startTimeMillis) {
-        if (ignoreLogging) {
+        if (ignoreLogging || !isLoggable(servletRequest)) {
             return;
         }
 
@@ -283,6 +285,15 @@ public class CapedwarfLogService implements ExposedLogService {
         servletRequest.setAttribute(REQUEST_LOGS_REQUEST_ATTRIBUTE, capedwarfRequestLogs);
         environment.getAttributes().put(REQUEST_LOGS_ENV_ATTRIBUTE, capedwarfRequestLogs);
         environment.getAttributes().put(REQUEST_LOG_ID, capedwarfRequestLogs.getRequestLogs().getRequestId());
+    }
+
+    private boolean isLoggable(ServletRequest servletRequest) {
+        if (servletRequest instanceof HttpServletRequest) {
+            HttpServletRequest request = (HttpServletRequest) servletRequest;
+            return !ServletUtils.getRequestURIWithoutContextPath(request).startsWith("/_ah/admin");
+        } else {
+            return true;
+        }
     }
 
     private CapedwarfRequestLogs createCapedwarfRequestLogs(ServletRequest servletRequest, long startTimeMillis, CapedwarfEnvironment environment) {
