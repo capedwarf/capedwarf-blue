@@ -60,14 +60,14 @@
                 <a href="javascript:void(0)" onclick="showPage($page)" #if($page == $datastoreViewer.currentPage) class="active" #end">$page</a>
             #end
         </div>
-    #end
 
-    <script type="application/javascript">
-        function showPage(page) {
-            document.getElementById("pageField").value = page;
-            document.forms[0].submit();
-        }
-    </script>
+        <script type="application/javascript">
+            function showPage(page) {
+                document.getElementById("pageField").value = page;
+                document.forms[0].submit();
+            }
+        </script>
+    #end
 #end
 
 </form>
