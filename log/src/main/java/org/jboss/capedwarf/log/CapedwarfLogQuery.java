@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,30 @@
 
 package org.jboss.capedwarf.log;
 
-import javax.servlet.ServletRequest;
-
-import com.google.appengine.api.log.LogService;
+import com.google.appengine.api.log.LogQuery;
 
 /**
- * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public interface ExposedLogService extends LogService, Logable {
-    CapedwarfLogQueryResult fetch(CapedwarfLogQuery logQuery);
+public class CapedwarfLogQuery {
 
-    void requestStarted(ServletRequest req, long requestStartMillis);
-    void requestFinished(ServletRequest req, int status, int contentLength);
+    private LogQuery query;
+    private LogQueryOptions options;
 
-    void clearLog();
+    public CapedwarfLogQuery(LogQuery logQuery) {
+        this(logQuery, LogQueryOptions.DEFAULT);
+    }
+
+    public CapedwarfLogQuery(LogQuery query, LogQueryOptions options) {
+        this.query = query;
+        this.options = options;
+    }
+
+    public LogQuery getQuery() {
+        return query;
+    }
+
+    public LogQueryOptions getOptions() {
+        return options;
+    }
 }

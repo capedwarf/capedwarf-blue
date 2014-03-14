@@ -14,41 +14,65 @@
             <option value="$severity" #if($severity.equals($logViewer.severity)) selected="selected" #end>$severity</option>
         #end
     </select>
+    <input type="hidden" name="page" value="1" id="pageField"/>
     <input type="submit" value="Search"/>
 </form>
 
 <br/><br/>
 
-<table width="100%">
+<ul class="ae-logs">
     #foreach ($requestLog in $logViewer.requestLogs)
-        <tr>
-            <td colspan="3">
-                $timeFormatter.format($requestLog.endTimeUsec)
-                <strong>$esc.html($requestLog.resource)</strong>
-                $requestLog.status
-                ${requestLog.pendingTimeUsec}ms
-                $sizeFormatter.format($requestLog.responseSize)
-                $requestLog.userAgent
-            </td>
-        </tr>
-        #foreach ($appLogLine in $requestLog.appLogLines)
-            <tr>
-                <td><span class="ae-log-severity ae-log-severity-$appLogLine.logLevel.name().charAt(0)">$appLogLine.logLevel.name().charAt(0)</span></td>
-                <td>$timeFormatter.format($appLogLine.timeUsec)</td>
-                <td>$appLogLine.logMessage</td>
-            </tr>
-        #end
+        <li class="ae-log">
+            <span class="time">$timeFormatter.format($requestLog.endTimeUsec)</span>
+            <span class="file">$esc.html($requestLog.resource)</span>
+            <span class="snippet" title="Status">$requestLog.status</span>
+            <span class="snippet" title="Request time/Latency">${requestLog.pendingTimeUsec}ms</span>
+            <span class="snippet" title="Response size">$sizeFormatter.format($requestLog.responseSize)</span>
+            <span class="snippet" title="User Agent">$requestLog.userAgent</span>
+            #if($requestLog.appLogLines.size() > 0)
+                <ul class="ae-log-lines">
+                #foreach ($appLogLine in $requestLog.appLogLines)
+                    <li>
+                        <span class="ae-log-severity ae-log-severity-$appLogLine.logLevel.name().charAt(0)">$appLogLine.logLevel.name().charAt(0)</span>
+                        <span>$timeFormatter.format($appLogLine.timeUsec)</span>
+                        <span class="snippet">$appLogLine.logMessage</span>
+                    </li>
+                #end
+                </ul>
+            #end
+        </li>
     #end
-</table>
+</ul>
+
+
+
+#if($logViewer.numberOfPages > 1)
+    <div class="pagination">
+        #foreach ($page in [1..$logViewer.numberOfPages])
+                <a href="javascript:void(0)" onclick="showPage($page)" #if($page == $logViewer.currentPage) class="active" #end">$page</a>
+        #end
+    </div>
+
+    <script type="application/javascript">
+        function showPage(page) {
+            document.getElementById("pageField").value = page;
+            document.forms[0].submit();
+        }
+    </script>
+#end
+
+
 
 <div class="ae-log-legend">
     <strong>Legend:</strong>
+    <ul>
     #foreach($severity in $logViewer.severities)
-        <span>
+        <li>
             <span class="ae-log-severity ae-log-severity-$severity.charAt(0)">$severity.charAt(0)</span>
             $severity
-        </span>
+        </li>
     #end
+    </ul>
 </div>
 
 #parse("/org/jboss/capedwarf/admin/footer.vm")

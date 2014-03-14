@@ -56,6 +56,7 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
@@ -105,55 +106,65 @@ public class CapedwarfLogService implements ExposedLogService {
     }
 
     public Iterable<RequestLogs> fetch(LogQuery logQuery) {
-        List<RequestLogs> list = new ArrayList<>();
-        for (CapedwarfRequestLogs capedwarfRequestLogs : fetchCapedwarfRequestLogs(logQuery)) {
-            RequestLogs requestLogs = capedwarfRequestLogs.getRequestLogs();
-            if (logQuery.getIncludeAppLogs()) {
-                fetchAppLogLines(requestLogs, logQuery);
+        return fetch(new CapedwarfLogQuery(logQuery));
+    }
+
+    @Override
+    public CapedwarfLogQueryResult fetch(CapedwarfLogQuery logQuery) {
+        CapedwarfLogQueryResult result = fetchCapedwarfRequestLogs(logQuery);
+        for (CapedwarfRequestLogs capedwarfRequestLogs : result.getCapedwarfRequestLogs()) {
+            if (logQuery.getQuery().getIncludeAppLogs()) {
+                fetchAppLogLines(capedwarfRequestLogs.getRequestLogs(), logQuery);
             }
-            list.add(requestLogs);
         }
-        return list;
+        return result;
     }
 
     @SuppressWarnings("unchecked")
-    private List<CapedwarfRequestLogs> fetchCapedwarfRequestLogs(LogQuery logQuery) {
-        if (logQuery.getRequestIds().isEmpty()) {
+    private CapedwarfLogQueryResult fetchCapedwarfRequestLogs(CapedwarfLogQuery logQuery) {
+        List<String> requestIds = logQuery.getQuery().getRequestIds();
+        if (requestIds.isEmpty()) {
             CacheQuery cacheQuery = createRequestLogsQuery(logQuery);
-            return (List<CapedwarfRequestLogs>) (List) cacheQuery.list();
+            List<CapedwarfRequestLogs> list = (List<CapedwarfRequestLogs>) (List) cacheQuery.list();
+            return new CapedwarfLogQueryResult(list, cacheQuery.getResultSize());
         } else {
-            List<CapedwarfRequestLogs> list = new ArrayList<CapedwarfRequestLogs>(logQuery.getRequestIds().size());
-            for (String requestId : logQuery.getRequestIds()) {
+            List<CapedwarfRequestLogs> list = new ArrayList<>(requestIds.size());
+            for (String requestId : requestIds) {
                 CapedwarfRequestLogs requestLogs = (CapedwarfRequestLogs) store.get(requestId);
                 if (requestLogs != null) {
                     list.add(requestLogs);
                 }
             }
-            return list;
+            return new CapedwarfLogQueryResult(list, list.size());
         }
     }
 
-    private CacheQuery createRequestLogsQuery(LogQuery logQuery) {
+    private CacheQuery createRequestLogsQuery(CapedwarfLogQuery logQuery) {
+        LogQuery query = logQuery.getQuery();
         QueryBuilder queryBuilder = searchManager.buildQueryBuilderForClass(CapedwarfRequestLogs.class).get();
         List<Query> queries = new ArrayList<Query>();
-        if (logQuery.getStartTimeUsec() != null) {
-            queries.add(queryBuilder.range().onField(CapedwarfRequestLogs.END_TIME_USEC).above(logQuery.getStartTimeUsec()).createQuery());
+        if (query.getStartTimeUsec() != null) {
+            queries.add(queryBuilder.range().onField(CapedwarfRequestLogs.END_TIME_USEC).above(query.getStartTimeUsec()).createQuery());
         }
-        if (logQuery.getEndTimeUsec() != null) {
-            queries.add(queryBuilder.range().onField(CapedwarfRequestLogs.END_TIME_USEC).below(logQuery.getEndTimeUsec()).createQuery());
+        if (query.getEndTimeUsec() != null) {
+            queries.add(queryBuilder.range().onField(CapedwarfRequestLogs.END_TIME_USEC).below(query.getEndTimeUsec()).createQuery());
         }
-        if (logQuery.getMinLogLevel() != null) {
-            queries.add(queryBuilder.range().onField(CapedwarfRequestLogs.MAX_LOG_LEVEL).above(logQuery.getMinLogLevel().ordinal()).createQuery());
+        if (query.getMinLogLevel() != null) {
+            queries.add(queryBuilder.range().onField(CapedwarfRequestLogs.MAX_LOG_LEVEL).above(query.getMinLogLevel().ordinal()).createQuery());
         }
 
-        boolean onlyCompleteRequests = !Boolean.TRUE.equals(logQuery.getIncludeIncomplete());
+        boolean onlyCompleteRequests = !Boolean.TRUE.equals(query.getIncludeIncomplete());
         if (onlyCompleteRequests) {
             queries.add(queryBuilder.keyword().onField(CapedwarfRequestLogs.FINISHED).matching(Boolean.TRUE).createQuery());
         }
 
-        Query query = getQuery(queryBuilder, queries);
-        CacheQuery cacheQuery = searchManager.getQuery(query, CapedwarfRequestLogs.class);
-        cacheQuery.sort(new Sort(new SortField(CapedwarfRequestLogs.END_TIME_USEC, SortField.LONG)));
+        Query luceneQuery = getQuery(queryBuilder, queries);
+        CacheQuery cacheQuery = searchManager.getQuery(luceneQuery, CapedwarfRequestLogs.class);
+        cacheQuery.sort(new Sort(new SortField(CapedwarfRequestLogs.END_TIME_USEC, SortField.LONG, true)));
+        cacheQuery.firstResult(logQuery.getOptions().getOffset());
+        if (logQuery.getOptions().getLimit() != null) {
+            cacheQuery.maxResults(logQuery.getOptions().getLimit());
+        }
         return cacheQuery;
     }
 
@@ -170,7 +181,7 @@ public class CapedwarfLogService implements ExposedLogService {
     }
 
     @SuppressWarnings("unchecked")
-    private void fetchAppLogLines(RequestLogs requestLogs, LogQuery logQuery) {
+    private void fetchAppLogLines(RequestLogs requestLogs, CapedwarfLogQuery logQuery) {
         CacheQuery query = createAppLogLinesQuery(requestLogs);
 //        FetchOptions fetchOptions = createAppLogFetchOptions(logQuery);
 
@@ -202,20 +213,21 @@ public class CapedwarfLogService implements ExposedLogService {
             logToFile(record);
         }
 
-        // did we disable logging
         if (ignoreLogging)
             return;
 
-        CapedwarfAppLogLine capedwarfAppLogLine = new CapedwarfAppLogLine(getCurrentRequestId(), record.getSequenceNumber());
-        AppLogLine appLogLine = capedwarfAppLogLine.getAppLogLine();
-        appLogLine.setLogLevel(getLogLevel(record));
-        appLogLine.setLogMessage(getFormattedMessage(record));
-        appLogLine.setTimeUsec(record.getMillis() * 1000);
-        logWriter.put(capedwarfAppLogLine);
-
         CapedwarfRequestLogs requestLogs = getCurrentRequestLogs();
-        requestLogs.logLineAdded(appLogLine);
-        logWriter.put(requestLogs);
+        if (requestLogs != null) {
+            CapedwarfAppLogLine capedwarfAppLogLine = new CapedwarfAppLogLine(getCurrentRequestId(), record.getSequenceNumber());
+            AppLogLine appLogLine = capedwarfAppLogLine.getAppLogLine();
+            appLogLine.setLogLevel(getLogLevel(record));
+            appLogLine.setLogMessage(getFormattedMessage(record));
+            appLogLine.setTimeUsec(record.getMillis() * 1000);
+            logWriter.put(capedwarfAppLogLine);
+
+            requestLogs.logLineAdded(appLogLine);
+            logWriter.put(requestLogs);
+        }
     }
 
     private synchronized void logToFile(LogRecord record) {
@@ -262,7 +274,7 @@ public class CapedwarfLogService implements ExposedLogService {
     }
 
     public void requestStarted(ServletRequest servletRequest, long startTimeMillis) {
-        if (ignoreLogging) {
+        if (ignoreLogging || !isLoggable(servletRequest)) {
             return;
         }
 
@@ -273,6 +285,15 @@ public class CapedwarfLogService implements ExposedLogService {
         servletRequest.setAttribute(REQUEST_LOGS_REQUEST_ATTRIBUTE, capedwarfRequestLogs);
         environment.getAttributes().put(REQUEST_LOGS_ENV_ATTRIBUTE, capedwarfRequestLogs);
         environment.getAttributes().put(REQUEST_LOG_ID, capedwarfRequestLogs.getRequestLogs().getRequestId());
+    }
+
+    private boolean isLoggable(ServletRequest servletRequest) {
+        if (servletRequest instanceof HttpServletRequest) {
+            HttpServletRequest request = (HttpServletRequest) servletRequest;
+            return !ServletUtils.getRequestURIWithoutContextPath(request).startsWith("/_ah/admin");
+        } else {
+            return true;
+        }
     }
 
     private CapedwarfRequestLogs createCapedwarfRequestLogs(ServletRequest servletRequest, long startTimeMillis, CapedwarfEnvironment environment) {
