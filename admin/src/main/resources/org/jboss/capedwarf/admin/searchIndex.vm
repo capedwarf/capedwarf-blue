@@ -15,6 +15,7 @@
 
     <br/>
     <br/>
+    <input type="hidden" name="page" value="1" id="pageField"/>
 
     <input type="submit" value="Run Query"/>
 </form>
@@ -49,6 +50,23 @@
                 </tr>
             #end
         </table>
+
+
+        #if($searchIndex.numberOfPages > 1)
+            <div class="pagination">
+                #foreach ($page in [1..$searchIndex.numberOfPages])
+                        <a href="javascript:void(0)" onclick="showPage($page)" #if($page == $searchIndex.currentPage) class="active" #end">$page</a>
+                #end
+            </div>
+
+            <script type="application/javascript">
+                function showPage(page) {
+                    document.getElementById("pageField").value = page;
+                    document.forms[0].submit();
+                }
+            </script>
+        #end
+
     #end
 #end
 

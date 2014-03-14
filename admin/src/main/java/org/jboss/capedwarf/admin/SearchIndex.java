@@ -37,6 +37,8 @@ import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
+import com.google.appengine.api.search.Query;
+import com.google.appengine.api.search.QueryOptions;
 import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchService;
@@ -48,6 +50,8 @@ import com.google.appengine.api.search.SearchServiceFactory;
 @Named("searchIndex")
 @RequestScoped
 public class SearchIndex {
+
+    private static final int DEFAULT_ROWS_PER_PAGE = 20;
 
     @Inject
     @HttpParam
@@ -61,11 +65,15 @@ public class SearchIndex {
     @HttpParam
     private String query;
 
+    @Inject @HttpParam
+    private String page;
+
     private String errorMessage;
 
     private List<String> fieldNames = new ArrayList<String>();
     private List<Row> rows;
 
+    private long resultCount;
 
     public String getNamespace() {
         return namespace == null ? "" : namespace;
@@ -118,11 +126,14 @@ public class SearchIndex {
                 try {
                     SearchService search = SearchServiceFactory.getSearchService(namespace);
                     Index index = search.getIndex(IndexSpec.newBuilder().setName(indexName));
+
+                    Query query = Query.newBuilder().setOptions(QueryOptions.newBuilder().setOffset(getOffset()).setLimit(getLimit())).build(this.query);
                     Results<ScoredDocument> results = index.search(query);
                     for (Document document : results) {
                         fieldNameSet.addAll(document.getFieldNames());
                         rows.add(new Row(document));
                     }
+                    resultCount = results.getNumberFound();
                 } finally {
                     NamespaceManager.set("");
                 }
@@ -133,6 +144,23 @@ public class SearchIndex {
             }
         }
     }
+
+    public int getOffset() {
+        return (getCurrentPage()-1) * DEFAULT_ROWS_PER_PAGE;
+    }
+
+    public int getLimit() {
+        return DEFAULT_ROWS_PER_PAGE;
+    }
+
+    public long getNumberOfPages() {
+        return ((resultCount - 1) / DEFAULT_ROWS_PER_PAGE) + 1;
+    }
+
+    public int getCurrentPage() {
+        return page == null ? 1 : Integer.parseInt(page);
+    }
+
 
     public class Row {
         private Document document;
