@@ -34,7 +34,6 @@ import com.google.appengine.api.capabilities.CapabilityState;
 import com.google.appengine.api.capabilities.CapabilityStatus;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.capedwarf.capabilities.ExposedCapabilitiesService;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.TestBase;
@@ -69,19 +68,6 @@ public class CapabilitiesServiceTest extends TestBase {
             assertEquals(capability, status.getCapability());
             assertNull(status.getScheduledDate());
             assertEquals(CapabilityStatus.ENABLED, status.getStatus());
-        }
-    }
-
-    @Test
-    public void testCapabilityStatusCanBeSet() {
-        ExposedCapabilitiesService service = (ExposedCapabilitiesService) CapabilitiesServiceFactory.getCapabilitiesService();
-        try {
-            service.setCapabilityStatus(Capability.BLOBSTORE, CapabilityStatus.SCHEDULED_MAINTENANCE);
-            CapabilityState state = service.getStatus(Capability.BLOBSTORE);
-
-            assertEquals(CapabilityStatus.SCHEDULED_MAINTENANCE, state.getStatus());
-        } finally {
-            service.setCapabilityStatus(Capability.BLOBSTORE, CapabilityStatus.ENABLED);
         }
     }
 }
