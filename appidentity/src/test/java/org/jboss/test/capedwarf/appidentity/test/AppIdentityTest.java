@@ -40,7 +40,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.capedwarf.common.io.Base64Utils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.test.capedwarf.common.support.All;
+import org.jboss.test.capedwarf.common.support.JBoss;
 import org.jboss.test.capedwarf.common.test.TestBase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,7 +51,7 @@ import org.junit.runner.RunWith;
  * @author Marko Luksa
  */
 @RunWith(Arquillian.class)
-@Category(All.class)
+@Category(JBoss.class)
 public class AppIdentityTest extends TestBase {
 
     @Deployment
