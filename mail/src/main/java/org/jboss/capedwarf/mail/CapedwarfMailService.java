@@ -31,6 +31,8 @@ import javax.mail.Session;
 import javax.mail.Transport;
 
 import com.google.appengine.api.mail.MailService;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 
 /**
@@ -86,7 +88,12 @@ public class CapedwarfMailService implements MailService {
     }
 
     private Session createSession() {
-        return Session.getInstance(getMailProperties());
+        Properties mailProperties = getMailProperties();
+        if (mailProperties.isEmpty()) {
+            return ComponentRegistry.getInstance().getComponent(Keys.MAIL_SESSION);
+        } else {
+            return Session.getInstance(mailProperties);
+        }
     }
 
     private Properties getMailProperties() {
@@ -114,9 +121,15 @@ public class CapedwarfMailService implements MailService {
 
     private Transport openTransport() throws MessagingException {
         Transport transport = getSession().getTransport();
-        transport.connect(
-            getMailProperties().getProperty("mail.smtp.user"),
-            getMailProperties().getProperty("mail.smtp.password"));
+        Properties mailProperties = getMailProperties();
+        if (mailProperties.isEmpty()) {
+            transport.connect();
+        } else {
+            transport.connect(
+                mailProperties.getProperty("mail.smtp.user"),
+                mailProperties.getProperty("mail.smtp.password")
+            );
+        }
         return transport;
     }
 }
