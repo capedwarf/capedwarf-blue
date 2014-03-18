@@ -33,6 +33,7 @@ import javax.servlet.http.HttpSession;
 
 import com.google.appengine.api.LifecycleManager;
 import com.google.appengine.api.log.LogServiceFactory;
+import com.google.appengine.api.modules.ModulesServiceFactory;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.security.PrincipalInfo;
@@ -141,9 +142,14 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
 
     private void initJBossEnvironment(HttpServletRequest request) {
         CapedwarfEnvironment environment = CapedwarfEnvironment.getThreadLocalInstance();
+        initServerData(environment);
         initRequestData(environment, request);
         initUserData(environment, request);
         environment.initialized();
+    }
+
+    private void initServerData(CapedwarfEnvironment environment) {
+        environment.getAttributes().put(CapedwarfEnvironment.INSTANCE_ID, ModulesServiceFactory.getModulesService().getCurrentInstanceId());
     }
 
     private void initRequestData(CapedwarfEnvironment environment, HttpServletRequest request) {
