@@ -52,6 +52,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
     private static final long serialVersionUID = 1L;
 
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
+    public static final String INSTANCE_ID = "com.google.appengine.instance.id";
 
     public static final String USER_ID_KEY = "com.google.appengine.api.users.UserService.user_id_key";
     public static final String IS_FEDERATED_USER_KEY = "com.google.appengine.api.users.UserService.is_federated_user";

@@ -25,6 +25,7 @@ package org.jboss.test.capedwarf.appidentity.test;
 import java.util.Arrays;
 
 import com.google.appengine.api.utils.SystemProperty;
+import com.google.apphosting.api.ApiProxy;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -80,4 +81,9 @@ public class EnvironmentTest extends TestBase {
         assertRegexpMatches("1\\.[0-9]+", System.getProperty(SystemProperty.applicationVersion.key()));
     }
 
+    @Test
+    public void testInstanceIdIsSet() {
+        String instanceId = (String) ApiProxy.getCurrentEnvironment().getAttributes().get("com.google.appengine.instance.id");
+        assertNotNull(instanceId);
+    }
 }
