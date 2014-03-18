@@ -221,7 +221,7 @@ public class CapedwarfLogService implements ExposedLogService {
             CapedwarfAppLogLine capedwarfAppLogLine = new CapedwarfAppLogLine(getCurrentRequestId(), record.getSequenceNumber());
             AppLogLine appLogLine = capedwarfAppLogLine.getAppLogLine();
             appLogLine.setLogLevel(getLogLevel(record));
-            appLogLine.setLogMessage(getFormattedMessage(record));
+            appLogLine.setLogMessage(record.getSourceClassName() + " " + record.getSourceMethodName() + ": " + getFormattedMessage(record) + "\n");
             appLogLine.setTimeUsec(record.getMillis() * 1000);
             logWriter.put(capedwarfAppLogLine);
 
