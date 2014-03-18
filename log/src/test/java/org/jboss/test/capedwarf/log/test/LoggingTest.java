@@ -96,7 +96,7 @@ public class LoggingTest extends LoggingTestBase {
 
         AppLogLine logLine = findLogLineContaining("Parameterized message with params");
         assertNotNull("log should contain 'Parameterized message with params param1 and 222', but it does not", logLine);
-        assertEquals("Parameterized message with params param1 and 222", logLine.getLogMessage());
+        assertEquals("org.jboss.test.capedwarf.log.test.LoggingTest testLogMessageIsFormatted: Parameterized message with params param1 and 222\n", logLine.getLogMessage());
     }
 
 }

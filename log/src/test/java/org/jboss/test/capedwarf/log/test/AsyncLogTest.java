@@ -84,7 +84,7 @@ public class AsyncLogTest extends LoggingTestBase {
         List<AppLogLine> appLogLines = requestLogs.getAppLogLines();
         assertEquals("number of logged lines", NUMBER_OF_LINES, appLogLines.size());
         for (int i=0; i< NUMBER_OF_LINES; i++) {
-            assertEquals("line " + i, appLogLines.get(i).getLogMessage());
+            assertEquals("org.jboss.test.capedwarf.log.test.AsyncLogTest testLogLinesAreReturnedInSameOrderAsTheyWereLogged: line " + i + "\n", appLogLines.get(i).getLogMessage());
         }
     }
 
