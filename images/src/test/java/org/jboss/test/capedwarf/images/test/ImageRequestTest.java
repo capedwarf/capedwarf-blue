@@ -24,7 +24,7 @@
 
 package org.jboss.test.capedwarf.images.test;
 
-import com.google.appengine.api.blobstore.BlobKey;
+import org.jboss.capedwarf.images.ImageId;
 import org.jboss.capedwarf.images.ImageRequest;
 import org.jboss.test.capedwarf.common.support.JBoss;
 import org.junit.Test;
@@ -42,15 +42,15 @@ public class ImageRequestTest {
 
     @Test
     public void blobKeyOnly() throws Exception {
-        ImageRequest request = new ImageRequest("/gs/blobkey123/");
-        assertEquals(new BlobKey("gs/blobkey123"), request.getBlobKey());
+        ImageRequest request = new ImageRequest("/imageId123/");
+        assertEquals(new ImageId("imageId123"), request.getImageId());
         assertFalse(request.isTransformationRequested());
     }
 
     @Test
     public void blobKeyAndImageSize() throws Exception {
-        ImageRequest request = new ImageRequest("/gs/blobkey123/=s32");
-        assertEquals(new BlobKey("gs/blobkey123"), request.getBlobKey());
+        ImageRequest request = new ImageRequest("/imageId123/=s32");
+        assertEquals(new ImageId("imageId123"), request.getImageId());
         assertTrue(request.isTransformationRequested());
         assertEquals(32, request.getImageSize());
         assertFalse(request.isCrop());
@@ -58,8 +58,8 @@ public class ImageRequestTest {
 
     @Test
     public void blobKeyAndImageSizeAndCrop() throws Exception {
-        ImageRequest request = new ImageRequest("/blobstore/blobkey123/=s32-c");
-        assertEquals(new BlobKey("blobstore/blobkey123"), request.getBlobKey());
+        ImageRequest request = new ImageRequest("/imageId123/=s32-c");
+        assertEquals(new ImageId("imageId123"), request.getImageId());
         assertTrue(request.isTransformationRequested());
         assertEquals(32, request.getImageSize());
         assertTrue(request.isCrop());

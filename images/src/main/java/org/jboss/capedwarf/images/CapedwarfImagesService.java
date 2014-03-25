@@ -32,12 +32,15 @@ import com.google.appengine.api.files.AppEngineFile;
 import com.google.appengine.api.files.FileServiceFactory;
 import com.google.appengine.api.images.Composite;
 import com.google.appengine.api.images.Image;
-import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.InputSettings;
 import com.google.appengine.api.images.OutputSettings;
 import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.images.Transform;
+import org.infinispan.AdvancedCache;
+import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.infinispan.CacheName;
+import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.files.ExposedFileService;
 import org.jboss.capedwarf.images.transform.CapedwarfTransform;
@@ -48,9 +51,17 @@ import org.jboss.capedwarf.images.util.ImageUtils;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfImagesService implements ImagesService {
+public class CapedwarfImagesService implements ExposedImagesService {
 
+    private final AdvancedCache<ImageId, BlobKey> imageIdStore;
+    private final AdvancedCache<BlobKey, ImageId> blobKeyStore;
     private ExposedFileService fileService = (ExposedFileService) FileServiceFactory.getFileService();
+
+    public CapedwarfImagesService() {
+        String appId = Application.getAppId();
+        imageIdStore = InfinispanUtils.<ImageId, BlobKey>getCache(appId, CacheName.DIST).getAdvancedCache();
+        blobKeyStore = InfinispanUtils.<BlobKey, ImageId>getCache(appId, CacheName.DIST).getAdvancedCache();
+    }
 
     public Image applyTransform(Transform transform, Image image) {
         return applyTransform(transform, image, OutputEncoding.PNG);
@@ -146,15 +157,27 @@ public class CapedwarfImagesService implements ImagesService {
     }
 
     public String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
-        AppEngineFile file = fileService.getBlobFile(blobKey);
-        if (!fileService.exists(file)) {
-            throw new IllegalArgumentException("Could not read blob");
+        if (blobKey == null) {
+            throw new IllegalArgumentException("Null blob key!");
         }
-        return ImageServlet.getServingUrl(blobKey, imageSize, crop, secureUrl);
+        ImageId imageId = getImageId(blobKey);
+        if (imageId == null) {
+            AppEngineFile file = fileService.getBlobFile(blobKey);
+            if (!fileService.exists(file)) {
+                throw new IllegalArgumentException("Could not read blob");
+            }
+            imageId = ImageId.newRandomImageId();
+            imageIdStore.put(imageId, blobKey);
+            blobKeyStore.put(blobKey, imageId);
+        }
+        return ImageServlet.getServingUrl(imageId, imageSize, crop, secureUrl);
     }
 
     public void deleteServingUrl(BlobKey blobKey) {
-        ImageServlet.deleteServingUrl(blobKey);
+        ImageId imageId = blobKeyStore.remove(blobKey);
+        if (imageId != null) {
+            imageIdStore.remove(imageId);
+        }
     }
 
     private byte[] getByteArray(BufferedImage bufferedImage, OutputSettings outputSettings) {
@@ -176,4 +199,13 @@ public class CapedwarfImagesService implements ImagesService {
         }
     }
 
+    @Override
+    public BlobKey getBlobKey(ImageId imageId) {
+        return imageIdStore.get(imageId);
+    }
+
+    @Override
+    public ImageId getImageId(BlobKey blobKey) {
+        return blobKeyStore.get(blobKey);
+    }
 }
