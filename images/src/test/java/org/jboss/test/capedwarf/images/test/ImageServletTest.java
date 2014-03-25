@@ -34,6 +34,7 @@ import javax.imageio.ImageIO;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.capedwarf.common.io.IOUtils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -48,6 +49,8 @@ import org.junit.runner.RunWith;
 
 import static org.jboss.test.capedwarf.images.support.ImageUtils.assertImagesEqual;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
@@ -69,6 +72,7 @@ public class ImageServletTest extends TestBase {
 
     @Test
     @RunAsClient
+    @InSequence(10)
     public void testServletServesCorrectImage(@ArquillianResource URL url) throws Exception {
         BufferedImage servedImage = getServedImage(getImageUrl(url, "basic"));
         BufferedImage storedImage = getCapedwarfPngImage();
@@ -77,6 +81,7 @@ public class ImageServletTest extends TestBase {
 
     @Test
     @RunAsClient
+    @InSequence(10)
     public void testServletServesResizedImage(@ArquillianResource URL url) throws Exception {
         BufferedImage servedImage = getServedImage(getImageUrl(url, "resized"));
         assertEquals(100, servedImage.getWidth());
@@ -85,6 +90,7 @@ public class ImageServletTest extends TestBase {
 
     @Test
     @RunAsClient
+    @InSequence(10)
     public void testServletServesCroppedImage(@ArquillianResource URL url) throws Exception {
         BufferedImage servedImage = getServedImage(getImageUrl(url, "cropped"));
         assertEquals(100, servedImage.getWidth());
@@ -92,14 +98,27 @@ public class ImageServletTest extends TestBase {
     }
 
 
+    @Test
+    @RunAsClient
+    @InSequence(20)
+    public void testDeleteServingUrl(@ArquillianResource URL url) throws Exception {
+        URL imageUrl = getImageUrl(url, "basic");
+        BufferedImage servedImage = getServedImage(imageUrl);
+        assertNotNull(servedImage);
+        deleteServingUrl(url);
+        try {
+            getServedImage(imageUrl);
+            fail("Expected IOException");
+        } catch (IOException e) {
+            // pass
+        }
+    }
+
     private BufferedImage getServedImage(URL imageUrl) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
         try {
-            InputStream stream = connection.getInputStream();
-            try {
+            try (InputStream stream = connection.getInputStream()) {
                 return ImageIO.read(stream);
-            } finally {
-                stream.close();
             }
         } finally {
             connection.disconnect();
@@ -112,12 +131,19 @@ public class ImageServletTest extends TestBase {
     }
 
     private URL getImageUrl(URL contextUrl, String image) throws IOException {
-        URL url = new URL(contextUrl, "getImageUrl?image=" + image);
+        return new URL(getResponse(contextUrl, "getImageUrl?image=" + image));
+    }
+
+    private void deleteServingUrl(URL contextUrl) throws IOException {
+        getResponse(contextUrl, "deleteServingUrl");
+    }
+
+    private String getResponse(URL contextUrl, String uri) throws IOException {
+        URL url = new URL(contextUrl, uri);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         try {
             byte[] bytes = IOUtils.toBytes(connection.getInputStream(), true);
-            String response = new String(bytes, "UTF-8");
-            return new URL(response);
+            return new String(bytes, "UTF-8");
         } finally {
             connection.disconnect();
         }

@@ -27,12 +27,16 @@
          metadata-complete="false">
 
     <servlet>
-        <servlet-name>imageUrl</servlet-name>
+        <servlet-name>UrlServingServlet</servlet-name>
         <servlet-class>org.jboss.test.capedwarf.images.support.UrlServingServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>imageUrl</servlet-name>
+        <servlet-name>UrlServingServlet</servlet-name>
         <url-pattern>/getImageUrl</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UrlServingServlet</servlet-name>
+        <url-pattern>/deleteServingUrl</url-pattern>
     </servlet-mapping>
 
 </web-app>

@@ -78,17 +78,23 @@ public class UrlServingServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String number = req.getParameter("image");
+        if (req.getRequestURI().endsWith("getImageUrl")) {
+            String number = req.getParameter("image");
 
-        String url = null;
-        ServingUrlOptions options = ServingUrlOptions.Builder.withBlobKey(blobKey);
-        if ("basic".equals(number)) {
-            url = imagesService.getServingUrl(options);
-        } else if ("resized".equals(number)) {
-            url = imagesService.getServingUrl(options.imageSize(100));
-        } else if ("cropped".equals(number)) {
-            url = imagesService.getServingUrl(options.imageSize(100).crop(true));
+            String url = null;
+            ServingUrlOptions options = ServingUrlOptions.Builder.withBlobKey(blobKey);
+            if ("basic".equals(number)) {
+                url = imagesService.getServingUrl(options);
+            } else if ("resized".equals(number)) {
+                url = imagesService.getServingUrl(options.imageSize(100));
+            } else if ("cropped".equals(number)) {
+                url = imagesService.getServingUrl(options.imageSize(100).crop(true));
+            }
+            resp.getWriter().print(url);
+        } else if (req.getRequestURI().endsWith("deleteServingUrl")) {
+            imagesService.deleteServingUrl(blobKey);
+        } else {
+            throw new RuntimeException("Don't know what to do");
         }
-        resp.getWriter().print(url);
     }
 }
