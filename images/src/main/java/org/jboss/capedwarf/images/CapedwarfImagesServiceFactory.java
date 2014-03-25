@@ -49,7 +49,7 @@ class CapedwarfImagesServiceFactory implements IImagesServiceFactory {
     }
 
     public ImagesService getImagesService() {
-        return AspectFactory.createProxy(ImagesService.class, new CapedwarfImagesService());
+        return AspectFactory.createProxy(ExposedImagesService.class, new CapedwarfImagesService());
     }
 
     public Image makeImage(byte[] imageData) {

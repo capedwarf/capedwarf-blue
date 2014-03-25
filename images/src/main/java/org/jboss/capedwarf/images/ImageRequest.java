@@ -37,13 +37,13 @@ public class ImageRequest {
     public static final String SIZE_TOKEN = "=s";
     public static final String CROP_TOKEN = "-c";
 
-    private BlobKey blobKey;
+    private ImageId imageId;
     private Integer imageSize;
     private boolean crop;
 
     public ImageRequest(String pathInfo) {
         StringTokenizer tokenizer = new StringTokenizer(pathInfo, "/");
-        blobKey = new BlobKey(tokenizer.nextToken() + "/" + tokenizer.nextToken());
+        imageId = new ImageId(tokenizer.nextToken());
         if (tokenizer.hasMoreTokens()) {
             parseSizeAndCrop(tokenizer.nextToken());
         }
@@ -60,8 +60,8 @@ public class ImageRequest {
         }
     }
 
-    public BlobKey getBlobKey() {
-        return blobKey;
+    public ImageId getImageId() {
+        return imageId;
     }
 
     public boolean isTransformationRequested() {

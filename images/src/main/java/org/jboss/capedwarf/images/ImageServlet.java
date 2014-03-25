@@ -52,11 +52,13 @@ public class ImageServlet extends HttpServlet {
     public static final String SERVLET_URI = "/_ah/image";
 
     private BlobstoreService blobstoreService;
+    private ExposedImagesService imagesService;
 
     @Override
     public void init() throws ServletException {
         super.init();
         blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
+        imagesService = (ExposedImagesService) ImagesServiceFactory.getImagesService();
     }
 
     @Override
@@ -70,13 +72,17 @@ public class ImageServlet extends HttpServlet {
     }
 
     private void serveUntransformedImage(ImageRequest imageRequest, HttpServletResponse response) throws IOException {
-        BlobstoreServiceFactory.getBlobstoreService().serve(imageRequest.getBlobKey(), response);
+        BlobstoreServiceFactory.getBlobstoreService().serve(getBlobKey(imageRequest), response);
     }
 
     private void serveTransformedImage(ImageRequest imageRequest, HttpServletResponse response) throws IOException {
-        Image image = loadImage(imageRequest.getBlobKey());
+        Image image = loadImage(getBlobKey(imageRequest));
         Image transformedImage = transform(image, imageRequest.getImageSize(), imageRequest.isCrop());
         serve(transformedImage, response);
+    }
+
+    private BlobKey getBlobKey(ImageRequest imageRequest) {
+        return imagesService.getBlobKey(imageRequest.getImageId());
     }
 
     private Image loadImage(BlobKey blobKey) {
@@ -103,25 +109,16 @@ public class ImageServlet extends HttpServlet {
             return ImagesServiceFactory.makeResize(imageSize, imageSize);
     }
 
-    public static String getServingUrl(BlobKey blobKey, int imageSize, boolean crop, boolean secureUrl) {
-        if (blobKey == null) {
-            throw new IllegalArgumentException("Null blob key!");
-        }
-
+    public static String getServingUrl(ImageId imageId, int imageSize, boolean crop, boolean secureUrl) {
         StringBuilder builder = new StringBuilder(getServletUrl(secureUrl));
         builder.append("/");
-        builder.append(blobKey.getKeyString());
+        builder.append(imageId);
         builder.append("/");
         if (imageSize > 0)
             builder.append(ImageRequest.SIZE_TOKEN).append(imageSize);
         if (crop)
             builder.append(ImageRequest.CROP_TOKEN);
         return builder.toString();
-    }
-
-    @SuppressWarnings("UnusedParameters")
-    public static void deleteServingUrl(BlobKey blobKey) {
-        // no-op atm
     }
 
     private static String getServletUrl(boolean secureUrl) {
