@@ -64,6 +64,10 @@ public class ImageServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException {
         ImageRequest imageRequest = new ImageRequest(req.getPathInfo());
+        if (getBlobKey(imageRequest) == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
         if (imageRequest.isTransformationRequested()) {
             serveTransformedImage(imageRequest, response);
         } else {
