@@ -24,6 +24,7 @@ package org.jboss.test.capedwarf.images.test;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -108,8 +109,8 @@ public class ImageServletTest extends TestBase {
         deleteServingUrl(url);
         try {
             getServedImage(imageUrl);
-            fail("Expected IOException");
-        } catch (IOException e) {
+            fail("Expected servlet to return 404, but it did not");
+        } catch (FileNotFoundException e) { // thrown when servlet returns 404
             // pass
         }
     }
