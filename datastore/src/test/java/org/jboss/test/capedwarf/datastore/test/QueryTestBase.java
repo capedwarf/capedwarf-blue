@@ -80,11 +80,11 @@ public abstract class QueryTestBase extends DatastoreTestBase {
         }
     }
 
-    protected void assertSet(Set<Entity> expected, Set<Entity> actual) {
-        assertSet(null, expected, actual);
+    protected void assertSet(Set<Entity> actual, Set<Entity> expected) {
+        assertSet(null, actual, expected);
     }
 
-    protected void assertSet(String message, Set<Entity> expected, Set<Entity> actual) {
+    protected void assertSet(String message, Set<Entity> actual, Set<Entity> expected) {
         Assert.assertNotNull(message, actual);
         Assert.assertEquals(message, expected.size(), actual.size());
         Set<Entity> copy = new HashSet<Entity>(expected);
