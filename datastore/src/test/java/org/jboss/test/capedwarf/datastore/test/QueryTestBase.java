@@ -147,6 +147,10 @@ public abstract class QueryTestBase extends DatastoreTestBase {
         return queryReturns();
     }
 
+    protected Set<Entity> queryReturns(Set<Entity> entities) {
+        return entities;
+    }
+
     protected Set<Entity> queryReturns(Entity... entities) {
         return new HashSet<Entity>(Arrays.asList(entities));
     }
