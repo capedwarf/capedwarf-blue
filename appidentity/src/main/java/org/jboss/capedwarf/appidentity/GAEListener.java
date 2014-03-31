@@ -37,6 +37,7 @@ import com.google.appengine.api.modules.ModulesServiceFactory;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.security.PrincipalInfo;
+import org.jboss.capedwarf.cron.CapewarfCron;
 import org.jboss.capedwarf.log.ExposedLogService;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.components.SimpleAppIdFactory;
@@ -98,9 +99,13 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         servletContext.setAttribute("org.jboss.capedwarf.module", module);
 
         appIdFactory = new SimpleAppIdFactory(appId, module);
+
+        CapewarfCron.getInstance().start(applicationConfiguration.getCronXml());
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
+        CapewarfCron.getInstance().stop();
+
         ServletContext servletContext = sce.getServletContext();
         String deadlineParameter = servletContext.getInitParameter("lifecycle-manager-deadline");
         long deadline = Long.parseLong((deadlineParameter != null) ? deadlineParameter : "0");

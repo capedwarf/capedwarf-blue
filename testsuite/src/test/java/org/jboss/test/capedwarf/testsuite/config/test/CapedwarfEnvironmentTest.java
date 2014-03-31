@@ -26,6 +26,7 @@ import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.BackendsXml;
 import org.jboss.capedwarf.shared.config.CapedwarfConfiguration;
+import org.jboss.capedwarf.shared.config.CronXml;
 import org.jboss.capedwarf.shared.config.IndexesXml;
 import org.jboss.capedwarf.shared.config.QueueXml;
 import org.jboss.test.capedwarf.common.support.JBoss;
@@ -54,7 +55,7 @@ public class CapedwarfEnvironmentTest {
     public void setUp() throws Exception {
         config = new CapedwarfConfiguration();
         env = CapedwarfEnvironment.createThreadLocalInstance();
-        env.setApplicationConfiguration(new ApplicationConfiguration(null, config, new QueueXml(), new BackendsXml(), new IndexesXml()));
+        env.setApplicationConfiguration(new ApplicationConfiguration(null, config, new QueueXml(), new BackendsXml(), new IndexesXml(), new CronXml()));
     }
 
     @After

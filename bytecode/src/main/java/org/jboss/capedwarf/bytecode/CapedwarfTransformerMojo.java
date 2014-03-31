@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.TimeZone;
 import java.util.logging.Logger;
 
 import org.jboss.maven.plugins.transformer.TransformerUtils;
@@ -39,6 +40,11 @@ import org.jboss.maven.plugins.transformer.TransformerUtils;
 public class CapedwarfTransformerMojo {
 
     public static void main(String[] args) {
+        TimeZone tz = TimeZone.getTimeZone("GMTq");
+        System.out.println("tz = " + tz);
+    }
+
+    public static void mainx(String[] args) {
         Logger.getLogger(CapedwarfTransformerMojo.class.getName()).info("Args: " + Arrays.asList(args));
 
         for (String pathToJar : args) {

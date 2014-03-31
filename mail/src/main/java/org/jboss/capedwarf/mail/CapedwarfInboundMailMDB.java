@@ -124,9 +124,7 @@ public class CapedwarfInboundMailMDB implements MailListener {
         mimeMultipart.updateHeaders();
 
         Queue queue = QueueFactory.getQueue(QueueXml.INTERNAL);
-        queue.add(
-            withUrl(BOUNCE_URL)
-                .payload(toBytes(mimeMultipart), mimeMultipart.getContentType()));
+        queue.add(withUrl(BOUNCE_URL).payload(toBytes(mimeMultipart), mimeMultipart.getContentType()));
     }
 
     private MimeBodyPart createFormDataPart(String name, String content) throws MessagingException {
@@ -142,9 +140,7 @@ public class CapedwarfInboundMailMDB implements MailListener {
         Address[] recipients = message.getRecipients(Message.RecipientType.TO);
         for (Address recipient : recipients) {
             if (isLocalRecipient(recipient)) {
-                queue.add(
-                    withUrl(MAIL_URL_PREFIX + recipient)
-                        .payload(toBytes(message), message.getContentType()));
+                queue.add(withUrl(MAIL_URL_PREFIX + recipient).payload(toBytes(message), message.getContentType()));
             }
         }
     }

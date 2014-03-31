@@ -26,6 +26,7 @@
         <module>channel</module>
         <module>cluster</module>
         <module>cluster-tests</module>
+        <module>cron</module>
         <module>datastore</module>
         <module>endpoints</module>
         <module>environment</module>
@@ -58,6 +59,7 @@
         <!-- External -->
         <version.cdi.api>1.0-SP4</version.cdi.api>
         <version.com.google.gae.api>1.9.1</version.com.google.gae.api>
+        <version.com.google.gae.tools>1.9.1</version.com.google.gae.tools>
         <!-- We do not use 16.0.1, due to MapReduce, which needs 15.x -->
         <version.com.google.guava>15.0</version.com.google.guava>
         <version.org.apache.commons-collections>3.2.1</version.org.apache.commons-collections>
@@ -91,6 +93,7 @@
         <version.org.xerial.sqlite>3.7.2</version.org.xerial.sqlite>
         <version.org.codehaus.jackson>1.9.12</version.org.codehaus.jackson>
         <version.io.undertow>1.0.0.Final</version.io.undertow>
+        <version.org.quartz>2.2.1</version.org.quartz>
         <!-- Antlr -->
         <version.antlr>3.1</version.antlr>
         <version.antlr.plugin>3.1.3-1</version.antlr.plugin>
@@ -101,7 +104,7 @@
         <version.org.datanucleus.jdo>3.0.1</version.org.datanucleus.jdo>
         <!-- Testing -->
         <version.junit>4.11</version.junit>
-        <version.arquillian>1.1.1.Final</version.arquillian>
+        <version.arquillian>1.1.4.Final</version.arquillian>
         <version.jboss.wildfly>8.0.0.Final</version.jboss.wildfly>
         <version.org.jboss.xnio>3.2.0.Final</version.org.jboss.xnio>
         <version.arquillian.gae>1.0.0.Beta7</version.arquillian.gae>
@@ -354,6 +357,12 @@
 
             <dependency>
                 <groupId>org.jboss.capedwarf.blue</groupId>
+                <artifactId>capedwarf-cron</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.blue</groupId>
                 <artifactId>capedwarf-datastore</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -556,6 +565,12 @@
                 <groupId>com.google.appengine</groupId>
                 <artifactId>appengine-api-1.0-sdk</artifactId>
                 <version>${version.com.google.gae.api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.appengine</groupId>
+                <artifactId>appengine-tools-sdk</artifactId>
+                <version>${version.com.google.gae.tools}</version>
             </dependency>
 
             <dependency>
@@ -834,6 +849,12 @@
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpmime</artifactId>
                 <version>${version.org.apache.httpcomponents}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.quartz-scheduler</groupId>
+                <artifactId>quartz</artifactId>
+                <version>${version.org.quartz}</version>
             </dependency>
 
             <!-- Testing -->

@@ -20,32 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.async;
+package org.jboss.capedwarf.cron;
 
-import java.util.Set;
+import java.io.Serializable;
 import java.util.concurrent.Callable;
 
-import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
+import org.jboss.capedwarf.shared.config.QueueXml;
 
 /**
- * Distributable callable.
- * Can be shared accross the wire.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-class DistributableWrapper<V> extends WireWrapper<V> implements DistributedCallable<Object, Object, V> {
-    private static final long serialVersionUID = 1L;
+public class CronCallable implements Callable<Void>, Serializable {
+    private final String url;
 
-    DistributableWrapper(Callable<V> callable) {
-        super(callable);
+    public CronCallable(String url) {
+        this.url = url;
     }
 
-    @SuppressWarnings("unchecked")
-    public void setEnvironment(Cache<Object, Object> cache, Set<Object> inputKeys) {
-        if (callable instanceof DistributedCallable) {
-            DistributedCallable.class.cast(callable).setEnvironment(cache, inputKeys);
-        }
+    public Void call() throws Exception {
+        Queue queue = QueueFactory.getQueue(QueueXml.INTERNAL);
+        queue.add(TaskOptions.Builder.withUrl(url));
+        return null;
     }
 }

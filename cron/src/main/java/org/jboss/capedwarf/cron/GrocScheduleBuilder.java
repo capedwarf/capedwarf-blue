@@ -20,32 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.async;
+package org.jboss.capedwarf.cron;
 
-import java.util.Set;
-import java.util.concurrent.Callable;
-
-import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
+import org.quartz.ScheduleBuilder;
+import org.quartz.spi.MutableTrigger;
 
 /**
- * Distributable callable.
- * Can be shared accross the wire.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-class DistributableWrapper<V> extends WireWrapper<V> implements DistributedCallable<Object, Object, V> {
-    private static final long serialVersionUID = 1L;
+public class GrocScheduleBuilder extends ScheduleBuilder {
+    private GrocAdapter grocAdapter;
 
-    DistributableWrapper(Callable<V> callable) {
-        super(callable);
+    public GrocScheduleBuilder(GrocAdapter grocAdapter) {
+        this.grocAdapter = grocAdapter;
     }
 
-    @SuppressWarnings("unchecked")
-    public void setEnvironment(Cache<Object, Object> cache, Set<Object> inputKeys) {
-        if (callable instanceof DistributedCallable) {
-            DistributedCallable.class.cast(callable).setEnvironment(cache, inputKeys);
-        }
+    protected MutableTrigger build() {
+        return new GrocTrigger(grocAdapter);
     }
 }

@@ -22,20 +22,21 @@
 
 package org.jboss.capedwarf.appidentity;
 
+import java.util.logging.Logger;
+
 import javax.enterprise.inject.spi.BeanManager;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CDIListener implements ServletContextListener {
-
     private static Logger log = Logger.getLogger(CDIListener.class.getName());
+
     /**
      * The impl detail
      */
@@ -62,8 +63,9 @@ public class CDIListener implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent sce) {
         final BeanManager manager = getBeanManager();
-        if (manager != null)
+        if (manager != null) {
             sce.getServletContext().setAttribute(BM_KEY, manager);
+        }
     }
 
     public void contextDestroyed(ServletContextEvent sce) {

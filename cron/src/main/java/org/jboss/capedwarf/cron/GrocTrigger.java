@@ -20,32 +20,46 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.async;
+package org.jboss.capedwarf.cron;
 
-import java.util.Set;
-import java.util.concurrent.Callable;
+import java.util.Date;
 
-import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
+import org.quartz.ScheduleBuilder;
+import org.quartz.impl.triggers.SimpleTriggerImpl;
 
 /**
- * Distributable callable.
- * Can be shared accross the wire.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-class DistributableWrapper<V> extends WireWrapper<V> implements DistributedCallable<Object, Object, V> {
-    private static final long serialVersionUID = 1L;
+public class GrocTrigger extends SimpleTriggerImpl {
+    private GrocAdapter grocAdapter;
 
-    DistributableWrapper(Callable<V> callable) {
-        super(callable);
+    GrocTrigger(GrocAdapter grocAdapter) {
+        this.grocAdapter = grocAdapter;
+        setStartTime(grocAdapter.getStartDate());
+    }
+
+    @Override
+    public Date getFireTimeAfter(Date afterTime) {
+        if (afterTime == null) {
+            afterTime = new Date();
+        }
+        return grocAdapter.getFireTimeAfter(afterTime);
+    }
+
+    @Override
+    public int computeNumTimesFiredBetween(Date start, Date end) {
+        return grocAdapter.computeNumTimesFiredBetween(start, end);
+    }
+
+    @Override
+    public Date getFinalFireTime() {
+        return grocAdapter.getFinalFireTime();
     }
 
     @SuppressWarnings("unchecked")
-    public void setEnvironment(Cache<Object, Object> cache, Set<Object> inputKeys) {
-        if (callable instanceof DistributedCallable) {
-            DistributedCallable.class.cast(callable).setEnvironment(cache, inputKeys);
-        }
+    @Override
+    public ScheduleBuilder getScheduleBuilder() {
+        return new GrocScheduleBuilder(grocAdapter);
     }
 }
+

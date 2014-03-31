@@ -20,32 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.common.async;
+package org.jboss.capedwarf.cron;
 
-import java.util.Set;
-import java.util.concurrent.Callable;
-
-import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
- * Distributable callable.
- * Can be shared accross the wire.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-class DistributableWrapper<V> extends WireWrapper<V> implements DistributedCallable<Object, Object, V> {
-    private static final long serialVersionUID = 1L;
+public abstract class GrocAdapter implements Serializable {
+    private String schedule;
+    private TimeZone timeZone;
 
-    DistributableWrapper(Callable<V> callable) {
-        super(callable);
+    protected GrocAdapter(String schedule, TimeZone timeZone) {
+        this.schedule = schedule;
+        this.timeZone = timeZone;
     }
 
-    @SuppressWarnings("unchecked")
-    public void setEnvironment(Cache<Object, Object> cache, Set<Object> inputKeys) {
-        if (callable instanceof DistributedCallable) {
-            DistributedCallable.class.cast(callable).setEnvironment(cache, inputKeys);
-        }
+    public String getSchedule() {
+        return schedule;
     }
+
+    public TimeZone getTimeZone() {
+        return timeZone;
+    }
+
+    abstract Date getStartDate();
+    abstract Date getFireTimeAfter(Date afterTime);
+    abstract int computeNumTimesFiredBetween(Date start, Date end);
+    abstract Date getFinalFireTime();
 }

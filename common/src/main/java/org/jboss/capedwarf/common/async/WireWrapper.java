@@ -22,11 +22,15 @@
 
 package org.jboss.capedwarf.common.async;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.infinispan.Cache;
 import org.infinispan.distexec.DistributedCallable;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
+import org.jboss.capedwarf.shared.components.AppIdFactory;
+import org.jboss.capedwarf.shared.components.SimpleAppIdFactory;
 
 /**
  * Distributable callable.
@@ -35,17 +39,32 @@ import org.infinispan.distexec.DistributedCallable;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-class DistributableWrapper<V> extends WireWrapper<V> implements DistributedCallable<Object, Object, V> {
+public class WireWrapper<V> implements Callable<V>, Serializable {
     private static final long serialVersionUID = 1L;
 
-    DistributableWrapper(Callable<V> callable) {
-        super(callable);
+    private final String appId;
+    private final String module;
+    private final CapedwarfEnvironment env;
+    protected final Callable<V> callable;
+
+    public WireWrapper(Callable<V> callable) {
+        this.appId = AppIdFactory.getAppId();
+        this.module = AppIdFactory.getModule();
+        this.env = CapedwarfEnvironment.cloneThreadLocalInstance();
+        this.callable = callable;
     }
 
-    @SuppressWarnings("unchecked")
-    public void setEnvironment(Cache<Object, Object> cache, Set<Object> inputKeys) {
-        if (callable instanceof DistributedCallable) {
-            DistributedCallable.class.cast(callable).setEnvironment(cache, inputKeys);
+    public V call() throws Exception {
+        AppIdFactory.setCurrentFactory(new SimpleAppIdFactory(appId, module));
+        try {
+            final CapedwarfEnvironment previous = CapedwarfEnvironment.setThreadLocalInstance(env);
+            try {
+                return callable.call();
+            } finally {
+                CapedwarfEnvironment.setThreadLocalInstance(previous);
+            }
+        } finally {
+            AppIdFactory.resetCurrentFactory();
         }
     }
 }
