@@ -52,9 +52,7 @@ import com.google.appengine.api.users.User;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.test.capedwarf.common.support.All;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import static com.google.appengine.api.datastore.Query.FilterOperator.GREATER_THAN;
@@ -73,10 +71,6 @@ import static org.junit.Assert.fail;
 @RunWith(Arquillian.class)
 @org.junit.experimental.categories.Category(All.class)
 public class QueryOptimizationsTest extends QueryTestBase {
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
     @Test
     public void testKeysOnly() throws Exception {
         Entity john = createEntity("Person", 1)
@@ -429,7 +423,7 @@ public class QueryOptimizationsTest extends QueryTestBase {
         }
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testProjectionTypeMismatch() throws Exception {
         Entity e = createEntity("foo", 1)
             .withProperty("stringProperty", "foo")
@@ -439,8 +433,6 @@ public class QueryOptimizationsTest extends QueryTestBase {
             .addProjection(new PropertyProjection("stringProperty", Integer.class));
 
         PreparedQuery preparedQuery = service.prepare(query);
-
-        thrown.expect(IllegalArgumentException.class);
         preparedQuery.asSingleEntity();
     }
 
