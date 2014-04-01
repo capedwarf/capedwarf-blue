@@ -74,7 +74,7 @@ public class AuthServlet extends HttpServlet {
 
         SystemProperty.Environment.Value environment = SystemProperty.environment.value();
         if (environment == Production) {
-            authHandler = new ProductionAuthHandler();
+            authHandler = new OpenIdProductionAuthHandler();
         } else if (environment == Development) {
             authHandler = new DevelopmentAuthHandler();
         } else {
