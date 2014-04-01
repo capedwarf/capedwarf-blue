@@ -54,6 +54,7 @@ import org.jboss.capedwarf.shared.config.ConfigurationAware;
 public class GAEListener extends ConfigurationAware implements ServletContextListener, ServletRequestListener {
     private volatile ExposedLogService logService;
     private AppIdFactory appIdFactory;
+    private CapewarfCron cron;
 
     // Invoked from CapedwarfSetupAction -- do not change signatures; reflection usage!
 
@@ -99,12 +100,11 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         servletContext.setAttribute("org.jboss.capedwarf.module", module);
 
         appIdFactory = new SimpleAppIdFactory(appId, module);
-
-        CapewarfCron.getInstance().start(applicationConfiguration.getCronXml());
+        cron = CapewarfCron.create(applicationConfiguration);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
-        CapewarfCron.getInstance().stop();
+        cron.destroy();
 
         ServletContext servletContext = sce.getServletContext();
         String deadlineParameter = servletContext.getInitParameter("lifecycle-manager-deadline");

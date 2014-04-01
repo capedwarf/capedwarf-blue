@@ -22,12 +22,14 @@
 
 package org.jboss.capedwarf.cron;
 
+import java.util.Properties;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.capedwarf.common.async.WireWrapper;
+import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.CronEntry;
 import org.jboss.capedwarf.shared.config.CronXml;
 import org.jboss.capedwarf.shared.util.Utils;
@@ -47,24 +49,32 @@ import org.quartz.impl.StdSchedulerFactory;
  */
 public class CapewarfCron {
     private static final Logger log = Logger.getLogger(CapewarfCron.class.getName());
-    private static final CapewarfCron INSTANCE = new CapewarfCron();
-
     private Scheduler scheduler;
 
     private CapewarfCron() {
     }
 
-    public static CapewarfCron getInstance() {
-        return INSTANCE;
+    public static CapewarfCron create(ApplicationConfiguration configuration) {
+        CapewarfCron cron = new CapewarfCron();
+        cron.start(configuration);
+        return cron;
     }
 
-    public void start(CronXml cronXml) {
+    private void start(final ApplicationConfiguration configuration) {
         try {
-            SchedulerFactory factory = new StdSchedulerFactory();
+            SchedulerFactory factory = new StdSchedulerFactory() {
+                @Override
+                public void initialize(Properties props) throws SchedulerException {
+                    String appId = configuration.getAppEngineWebXml().getApplication();
+                    String module = configuration.getAppEngineWebXml().getModule();
+                    props.put(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, String.format("%s.%s", appId, module));
+                    super.initialize(props);
+                }
+            };
             scheduler = factory.getScheduler();
             scheduler.start();
 
-            applyCrons(cronXml);
+            applyCrons(configuration.getCronXml());
         } catch (SchedulerException e) {
             throw Utils.toRuntimeException(e);
         }
@@ -87,7 +97,7 @@ public class CapewarfCron {
         }
     }
 
-    public void stop() {
+    public void destroy() {
         try {
             try {
                 scheduler.clear();
@@ -95,7 +105,7 @@ public class CapewarfCron {
                 scheduler.shutdown();
             }
         } catch (SchedulerException e) {
-            log.log(Level.WARNING, String.format("Error during cron stop."), e);
+            log.log(Level.WARNING, String.format("Error during cron destroy."), e);
         }
     }
 }
