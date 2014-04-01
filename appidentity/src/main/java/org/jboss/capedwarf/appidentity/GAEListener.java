@@ -128,8 +128,8 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
     }
 
     public void requestDestroyed(ServletRequestEvent sre) {
-        final ServletRequest req = sre.getServletRequest();
         try {
+            final ServletRequest req = sre.getServletRequest();
             try {
                 CapedwarfHttpServletResponseWrapper response = (CapedwarfHttpServletResponseWrapper) req.getAttribute(CapedwarfHttpServletResponseWrapper.class.getName());
                 if (response != null) {

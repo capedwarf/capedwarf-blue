@@ -60,13 +60,20 @@ public class CapewarfCron {
         return cron;
     }
 
-    private void start(final ApplicationConfiguration configuration) {
+    private void start(ApplicationConfiguration configuration) {
+        final String appId = configuration.getAppEngineWebXml().getApplication();
+        final String module = configuration.getAppEngineWebXml().getModule();
+
+        final CronXml cronXml = configuration.getCronXml();
+        if (cronXml.getEntries().isEmpty()) {
+            log.info(String.format("No cron jobs: %s/%s", appId, module));
+            return;
+        }
+
         try {
             SchedulerFactory factory = new StdSchedulerFactory() {
                 @Override
                 public void initialize(Properties props) throws SchedulerException {
-                    String appId = configuration.getAppEngineWebXml().getApplication();
-                    String module = configuration.getAppEngineWebXml().getModule();
                     props.put(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, String.format("%s.%s", appId, module));
                     super.initialize(props);
                 }
@@ -74,7 +81,7 @@ public class CapewarfCron {
             scheduler = factory.getScheduler();
             scheduler.start();
 
-            applyCrons(configuration.getCronXml());
+            applyCrons(cronXml);
         } catch (SchedulerException e) {
             throw Utils.toRuntimeException(e);
         }
@@ -98,14 +105,16 @@ public class CapewarfCron {
     }
 
     public void destroy() {
-        try {
+        if (scheduler != null) {
             try {
-                scheduler.clear();
-            } finally {
-                scheduler.shutdown();
+                try {
+                    scheduler.clear();
+                } finally {
+                    scheduler.shutdown();
+                }
+            } catch (SchedulerException e) {
+                log.log(Level.WARNING, String.format("Error during cron destroy."), e);
             }
-        } catch (SchedulerException e) {
-            log.log(Level.WARNING, String.format("Error during cron destroy."), e);
         }
     }
 }
