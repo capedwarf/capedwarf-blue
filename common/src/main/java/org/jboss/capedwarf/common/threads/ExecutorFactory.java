@@ -38,8 +38,6 @@ import org.jboss.capedwarf.shared.components.Keys;
 public class ExecutorFactory {
     private static volatile ExecutorService direct = new WithinThreadExecutor();
 
-    private static int refCount = 0;
-
     /**
      * Get Executor instance.
      * First lookup JNDI, then use default if none found.

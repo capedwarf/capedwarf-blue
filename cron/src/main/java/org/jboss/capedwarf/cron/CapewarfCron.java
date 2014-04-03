@@ -22,6 +22,9 @@
 
 package org.jboss.capedwarf.cron;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
@@ -49,6 +52,20 @@ import org.quartz.impl.StdSchedulerFactory;
  */
 public class CapewarfCron {
     private static final Logger log = Logger.getLogger(CapewarfCron.class.getName());
+    private static final Properties DEFAULT_PROPERTIES;
+
+    static {
+        DEFAULT_PROPERTIES = new Properties();
+        URL cronProperties = CapewarfCron.class.getResource("cron.properties");
+        try {
+            try (InputStream stream = cronProperties.openStream()) {
+                DEFAULT_PROPERTIES.load(stream);
+            }
+        } catch (IOException e) {
+            throw Utils.toRuntimeException(e);
+        }
+    }
+
     private Scheduler scheduler;
 
     private CapewarfCron() {
@@ -71,10 +88,11 @@ public class CapewarfCron {
         }
 
         try {
-            SchedulerFactory factory = new StdSchedulerFactory() {
+            SchedulerFactory factory = new StdSchedulerFactory(DEFAULT_PROPERTIES) {
                 @Override
                 public void initialize(Properties props) throws SchedulerException {
                     props.put(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, String.format("%s.%s", appId, module));
+                    props.put("org.quartz.threadPool.module", String.format("%s", Utils.toModule().getIdentifier()));
                     super.initialize(props);
                 }
             };
