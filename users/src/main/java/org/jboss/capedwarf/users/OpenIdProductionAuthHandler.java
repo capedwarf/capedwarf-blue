@@ -20,7 +20,7 @@ import org.picketlink.social.standalone.openid.api.exceptions.OpenIDGeneralExcep
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class ProductionAuthHandler extends AuthHandler {
+public class OpenIdProductionAuthHandler extends AuthHandler {
 
     private final Logger log = Logger.getLogger(getClass().getName());
 

@@ -31,6 +31,16 @@
             <artifactId>capedwarf-common</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>jose-jwt</artifactId>
+        </dependency>
+
         <!-- TODO: clean this up -->
         <!-- this dep is needed by AuthServlet -->
         <dependency>
