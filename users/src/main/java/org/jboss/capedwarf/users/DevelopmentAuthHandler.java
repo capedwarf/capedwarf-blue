@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
 import org.jboss.capedwarf.common.servlet.ServletUtils;
 
 /**
@@ -30,9 +29,7 @@ public class DevelopmentAuthHandler extends AuthHandler {
             String authDomain = "gmail.com";    // TODO?
             boolean isAdmin = Boolean.valueOf(request.getParameter("isAdmin"));
 
-            request.getSession().setAttribute(
-                CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY,
-                new CapedwarfUserPrincipal(userId, email, authDomain, isAdmin));
+            setupUserPrincipal(request, email, userId, authDomain, isAdmin);
 
             response.sendRedirect(request.getParameter(AuthServlet.DESTINATION_URL_PARAM));
         }

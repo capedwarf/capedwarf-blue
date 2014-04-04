@@ -31,4 +31,10 @@ public abstract class AuthHandler {
     public void handleOpenIDCallBackRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
+
+    protected void setupUserPrincipal(HttpServletRequest request, String email, String userId, String authDomain, boolean isAdmin) {
+        request.getSession().setAttribute(
+            CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY,
+            new CapedwarfUserPrincipal(userId, email, authDomain, isAdmin));
+    }
 }
