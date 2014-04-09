@@ -50,7 +50,6 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.jboss.capedwarf.common.async.Wrappers;
-import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Keys;
@@ -77,12 +76,11 @@ public class CapedwarfURLFetchService implements URLFetchService {
 
     public Future<HTTPResponse> fetchAsync(final HTTPRequest httpRequest) {
         final HttpUriRequest request = toHttpUriRequest(httpRequest);
-        final Callable<HTTPResponse> callable = Wrappers.wrap(new Callable<HTTPResponse>() {
+        return Wrappers.future(new Callable<HTTPResponse>() {
             public HTTPResponse call() throws Exception {
-                    return fetch(request);
+                return fetch(request);
             }
         });
-        return ExecutorFactory.wrap(callable);
     }
 
     protected HttpUriRequest toHttpUriRequest(final HTTPRequest request) {

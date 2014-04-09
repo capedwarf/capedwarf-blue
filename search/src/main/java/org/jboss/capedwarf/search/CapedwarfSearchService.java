@@ -35,9 +35,9 @@ import com.google.appengine.api.search.SearchServiceConfig;
 import org.infinispan.Cache;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -109,7 +109,7 @@ public class CapedwarfSearchService implements SearchService {
     }
 
     public Future<GetResponse<Index>> getIndexesAsync(final GetIndexesRequest getIndexesRequest) {
-        return ExecutorFactory.wrap(new Callable<GetResponse<Index>>() {
+        return Wrappers.future(new Callable<GetResponse<Index>>() {
             public GetResponse<Index> call() throws Exception {
                 return getIndexes(getIndexesRequest);
             }
@@ -117,7 +117,7 @@ public class CapedwarfSearchService implements SearchService {
     }
 
     public Future<GetResponse<Index>> getIndexesAsync(final GetIndexesRequest.Builder builder) {
-        return ExecutorFactory.wrap(new Callable<GetResponse<Index>>() {
+        return Wrappers.future(new Callable<GetResponse<Index>>() {
             public GetResponse<Index> call() throws Exception {
                 return getIndexes(builder);
             }

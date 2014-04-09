@@ -39,9 +39,9 @@ import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.images.Transform;
 import org.infinispan.AdvancedCache;
 import org.jboss.capedwarf.common.app.Application;
+import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
-import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.files.ExposedFileService;
 import org.jboss.capedwarf.images.transform.CapedwarfTransform;
 import org.jboss.capedwarf.images.transform.CapedwarfTransformFactory;
@@ -109,7 +109,7 @@ public class CapedwarfImagesService implements ExposedImagesService {
     }
 
     public Future<Image> applyTransformAsync(final Transform transform, final Image image, final InputSettings inputSettings, final OutputSettings outputSettings) {
-        return ExecutorFactory.wrap(new Callable<Image>() {
+        return Wrappers.future(new Callable<Image>() {
             public Image call() throws Exception {
                 return applyTransform(transform, image, inputSettings, outputSettings);
             }

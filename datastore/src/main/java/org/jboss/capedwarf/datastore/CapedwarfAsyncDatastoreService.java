@@ -44,7 +44,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.common.threads.DirectFuture;
-import org.jboss.capedwarf.common.threads.ExecutorFactory;
 
 /**
  * JBoss async DatastoreService impl.
@@ -62,7 +61,7 @@ public class CapedwarfAsyncDatastoreService extends AbstractDatastoreService imp
     }
 
     protected static <T> Future<T> wrap(final Callable<T> callable) {
-        return ExecutorFactory.wrap(callable);
+        return Wrappers.future(callable);
     }
 
     protected <T> Future<T> tx(final Callable<T> callable) {

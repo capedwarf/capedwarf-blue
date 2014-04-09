@@ -60,12 +60,10 @@ import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.async.Wrappers;
-import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
-import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.QueueXml;
 
@@ -502,7 +500,7 @@ public class CapedwarfQueue implements Queue {
     }
 
     protected <V> Future<V> wrap(Callable<V> callable) {
-        return ExecutorFactory.wrap(Wrappers.wrap(callable));
+        return Wrappers.future(Wrappers.wrap(callable));
     }
     
     public Future<TaskHandle> addAsync() {

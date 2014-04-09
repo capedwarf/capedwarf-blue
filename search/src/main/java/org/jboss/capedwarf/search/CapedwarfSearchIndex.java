@@ -55,7 +55,7 @@ import org.infinispan.Cache;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
-import org.jboss.capedwarf.common.threads.ExecutorFactory;
+import org.jboss.capedwarf.common.async.Wrappers;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -112,7 +112,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public Future<Void> removeAsync(final Iterable<String> documentIds) {
-        return ExecutorFactory.wrap(new Callable<Void>() {
+        return Wrappers.future(new Callable<Void>() {
             public Void call() throws Exception {
                 remove(documentIds);
                 return null;
@@ -125,7 +125,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public Future<Results<ScoredDocument>> searchAsync(final Query query) {
-        return ExecutorFactory.wrap(new Callable<Results<ScoredDocument>>() {
+        return Wrappers.future(new Callable<Results<ScoredDocument>>() {
             public Results<ScoredDocument> call() throws Exception {
                 return search(query);
             }
@@ -273,7 +273,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public Future<Void> deleteSchemaAsync() {
-        return ExecutorFactory.wrap(new Callable<Void>() {
+        return Wrappers.future(new Callable<Void>() {
             public Void call() throws Exception {
                 deleteSchema();
                 return null;
@@ -290,7 +290,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public Future<Void> deleteAsync(final Iterable<String> strings) {
-        return ExecutorFactory.wrap(new Callable<Void>() {
+        return Wrappers.future(new Callable<Void>() {
             public Void call() throws Exception {
                 delete(strings);
                 return null;
@@ -303,7 +303,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public Future<PutResponse> putAsync(final Document.Builder... builders) {
-        return ExecutorFactory.wrap(new Callable<PutResponse>() {
+        return Wrappers.future(new Callable<PutResponse>() {
             public PutResponse call() throws Exception {
                 return put(builders);
             }
@@ -311,7 +311,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public Future<PutResponse> putAsync(final Iterable<Document> documents) {
-        return ExecutorFactory.wrap(new Callable<PutResponse>() {
+        return Wrappers.future(new Callable<PutResponse>() {
             public PutResponse call() throws Exception {
                 return put(documents);
             }
@@ -319,7 +319,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public Future<GetResponse<Document>> getRangeAsync(final GetRequest getRequest) {
-        return ExecutorFactory.wrap(new Callable<GetResponse<Document>>() {
+        return Wrappers.future(new Callable<GetResponse<Document>>() {
             public GetResponse<Document> call() throws Exception {
                 return getRange(getRequest);
             }
@@ -327,7 +327,7 @@ public class CapedwarfSearchIndex implements Index {
     }
 
     public Future<GetResponse<Document>> getRangeAsync(final GetRequest.Builder builder) {
-        return ExecutorFactory.wrap(new Callable<GetResponse<Document>>() {
+        return Wrappers.future(new Callable<GetResponse<Document>>() {
             public GetResponse<Document> call() throws Exception {
                 return getRange(builder);
             }
