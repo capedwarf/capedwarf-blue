@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.capedwarf.common.async.WireWrapper;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.CronEntry;
 import org.jboss.capedwarf.shared.config.CronXml;
@@ -88,7 +89,10 @@ public class CapewarfCron {
         }
 
         try {
-            SchedulerFactory factory = new StdSchedulerFactory(DEFAULT_PROPERTIES) {
+            final Properties config = new Properties(DEFAULT_PROPERTIES);
+            config.putAll(Compatibility.getInstance().asProperties());
+
+            SchedulerFactory factory = new StdSchedulerFactory(config) {
                 @Override
                 public void initialize(Properties props) throws SchedulerException {
                     props.put(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, String.format("%s.%s", appId, module));
