@@ -33,6 +33,7 @@ import javax.servlet.ServletResponse;
 
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.google.apphosting.api.ApiProxy;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -44,7 +45,12 @@ public class InitTestFilter implements Filter {
     }
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        filterChain.doFilter(servletRequest, servletResponse);
+        try {
+            filterChain.doFilter(servletRequest, servletResponse);
+        } catch (ApiProxy.OverQuotaException e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public void destroy() {
