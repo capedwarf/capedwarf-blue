@@ -70,7 +70,7 @@ public class StaticServlet extends DefaultServlet {
     }
 
     private static boolean isJsp(ServletContext servletContext, String path) {
-        for (String pattern : servletContext.getServletRegistrations().get("Default JSP Servlet").getMappings()) {
+        for (String pattern : servletContext.getServletRegistrations().get("jsp").getMappings()) {
             if (matches(path, pattern)) {
                 return true;
             }
