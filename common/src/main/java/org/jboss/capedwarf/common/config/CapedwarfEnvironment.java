@@ -48,7 +48,7 @@ import org.jboss.capedwarf.shared.config.CheckType;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable, Cloneable {
+public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable, Cloneable, Function<BackendsXml.Backend, String> {
     private static final long serialVersionUID = 1L;
 
     public static final String DEFAULT_VERSION_HOSTNAME = "com.google.appengine.runtime.default_version_hostname";
@@ -72,13 +72,6 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
 
     private final long requestStart;
     private Map<String, Object> attributes;
-
-    private final transient Function<BackendsXml.Backend, String> ADDRESS_FN = new Function<BackendsXml.Backend, String>() {
-        @Override
-        public String apply(BackendsXml.Backend input) {
-            return getDefaultVersionHostname();
-        }
-    };
 
     private volatile Boolean checkGlobalTimeLimit;
 
@@ -104,6 +97,10 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
         // add thread factory
         attributes.put(REQUEST_THREAD_FACTORY_ATTR, LazyThreadFactory.INSTANCE);
         attributes.put(BACKGROUND_THREAD_FACTORY_ATTR, LazyThreadFactory.INSTANCE);
+    }
+
+    public String apply(BackendsXml.Backend input) {
+        return getDefaultVersionHostname();
     }
 
     private boolean doCheckGlobalTimeLimit() {
@@ -329,7 +326,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
         BackendsXml backends = getApplicationConfiguration().getBackendsXml();
         if (backends != null) {
             // TODO -- move this to CD_JBossAS
-            attributes.put(BackendService.DEVAPPSERVER_PORTMAPPING_KEY, backends.getAddresses(ADDRESS_FN));
+            attributes.put(BackendService.DEVAPPSERVER_PORTMAPPING_KEY, backends.getAddresses(this));
         }
     }
 
