@@ -1,15 +1,13 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>10</version>
+        <version>14</version>
     </parent>
     <groupId>org.jboss.capedwarf.blue</groupId>
     <artifactId>capedwarf-build</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>CapeDwarf Blue</name>
     <url>http://www.jboss.org/capedwarf</url>
@@ -55,9 +53,8 @@
 
     <properties>
         <!-- Shared -->
-        <version.org.jboss.capedwarf.shared>1.0.0-SNAPSHOT</version.org.jboss.capedwarf.shared>
+        <version.org.jboss.capedwarf.shared>2.0.0-SNAPSHOT</version.org.jboss.capedwarf.shared>
         <!-- External -->
-        <version.cdi.api>1.0-SP4</version.cdi.api>
         <version.com.google.gae.api>1.9.3</version.com.google.gae.api>
         <version.com.google.gae.tools>1.9.3</version.com.google.gae.tools>
         <!-- We do not use 16.0.1, due to MapReduce, which needs 15.x -->
@@ -68,20 +65,22 @@
         <version.org.apache.lucene>3.6.2</version.org.apache.lucene>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
         <version.org.apache.velocity-tool>2.0</version.org.apache.velocity-tool>
-        <version.org.bouncycastle>1.47</version.org.bouncycastle>
+        <version.org.bouncycastle>1.50</version.org.bouncycastle>
         <version.org.jboss.logging>3.1.4.GA</version.org.jboss.logging>
         <version.org.jboss.modules.jboss-modules>1.3.3.Final</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.vfs>3.2.4.Final</version.org.jboss.vfs>
         <version.org.jboss.jboss-common-core>2.2.22.GA</version.org.jboss.jboss-common-core>
-        <version.org.jboss.spec.javax.servlet.api>1.0.0.Final</version.org.jboss.spec.javax.servlet.api>
+
         <version.org.jivesoftware.smack>3.1.0</version.org.jivesoftware.smack>
         <version.org.picketlink>2.1.10.Final</version.org.picketlink>
         <version.org.picketlink.social>2.5.2.Final</version.org.picketlink.social>
         <version.javassist>3.18.1-GA</version.javassist>
         <version.javax.jpa2>1.0.1.Final</version.javax.jpa2>
-        <version.javax.mail>1.4.4</version.javax.mail>
-        <version.org.jboss.spec.javax.ejb>1.0.2.Final</version.org.jboss.spec.javax.ejb>
-        <version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec>
+        <version.javax.mail>1.5.1</version.javax.mail>
+        <version.javax.enterprise>1.1</version.javax.enterprise>
+        <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
+        <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
+        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.websockets>1.0.0.Final</version.org.jboss.spec.javax.websockets>
         <version.org.hibernate.search>4.5.1.Final</version.org.hibernate.search>
         <version.org.marshalling>1.4.5.Final</version.org.marshalling>
@@ -89,10 +88,10 @@
         <version.org.wildfly.mail-ra>1.0.0.Alpha2</version.org.wildfly.mail-ra>
         <version.net.jcip>1.0</version.net.jcip>
         <version.metainf>1.1</version.metainf>
-        <version.org.apache.httpcomponents>4.2.1</version.org.apache.httpcomponents>
+        <version.org.apache.httpcomponents>4.2.5</version.org.apache.httpcomponents>
         <version.org.xerial.sqlite>3.7.2</version.org.xerial.sqlite>
         <version.org.codehaus.jackson>1.9.13</version.org.codehaus.jackson>
-        <version.io.undertow>1.0.5.Final</version.io.undertow>
+        <version.io.undertow>1.0.6.Final</version.io.undertow>
         <version.org.quartz>2.2.1</version.org.quartz>
         <!-- Antlr -->
         <version.antlr>3.1</version.antlr>
@@ -127,29 +126,11 @@
         <version.org.jboss.resteasy>3.0.8.Final</version.org.jboss.resteasy>
         <!-- Build configuration -->
         <version.datanucleus.plugin>3.1.2</version.datanucleus.plugin>
-        <version.dependency.plugin>2.8</version.dependency.plugin>
-        <version.shade.plugin>2.1</version.shade.plugin>
         <version.surefire.plugin>2.12.4</version.surefire.plugin>
-        <!-- Compiler configuration -->
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <showDeprecation>true</showDeprecation>
-                    <showWarnings>true</showWarnings>
-                    <encoding>UTF8</encoding>
-                    <compilerArguments>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.target}</target>
-                    </compilerArguments>
-                </configuration>
-            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -210,7 +191,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute/>
+                                        <execute />
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -523,6 +504,7 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${version.com.google.guava}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -571,6 +553,7 @@
                 <groupId>com.google.appengine</groupId>
                 <artifactId>appengine-tools-sdk</artifactId>
                 <version>${version.com.google.gae.tools}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -603,13 +586,6 @@
                 <groupId>jivesoftware</groupId>
                 <artifactId>smack</artifactId>
                 <version>${version.org.jivesoftware.smack}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet</groupId>
-                <artifactId>jboss-servlet-api_3.1_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.servlet.api}</version>
-                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -743,6 +719,7 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-engine</artifactId>
                 <version>${version.org.hibernate.search}</version>
+                <scope>provided</scope>
                 <exclusions>
                     <exclusion>
                         <groupId>org.apache.solr</groupId>
@@ -758,9 +735,10 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>mail</artifactId>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>javax.mail</artifactId>
                 <version>${version.javax.mail}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -771,28 +749,31 @@
 
             <dependency>
                 <groupId>org.jboss.spec.javax.ejb</groupId>
-                <artifactId>jboss-ejb-api_3.1_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.ejb}</version>
+                <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec}</version>
                 <scope>provided</scope>
             </dependency>
 
 
             <dependency>
                 <groupId>org.jboss.spec.javax.jms</groupId>
-                <artifactId>jboss-jms-api_1.1_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.jms.jboss-jms-api_1.1_spec}</version>
+                <artifactId>jboss-jms-api_2.0_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.spec.javax.websocket</groupId>
                 <artifactId>jboss-websocket-api_1.0_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.websockets}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.modules</groupId>
                 <artifactId>jboss-modules</artifactId>
                 <version>${version.org.jboss.modules.jboss-modules}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -818,7 +799,7 @@
             <dependency>
                 <groupId>javax.enterprise</groupId>
                 <artifactId>cdi-api</artifactId>
-                <version>${version.cdi.api}</version>
+                <version>${version.javax.enterprise}</version>
             </dependency>
 
             <dependency>
@@ -850,6 +831,15 @@
                 <artifactId>httpmime</artifactId>
                 <version>${version.org.apache.httpcomponents}</version>
             </dependency>
+
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.servlet</groupId>
+                <artifactId>jboss-servlet-api_3.1_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec}</version>
+                <scope>provided</scope>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>
