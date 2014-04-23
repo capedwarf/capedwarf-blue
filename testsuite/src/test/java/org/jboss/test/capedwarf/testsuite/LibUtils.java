@@ -40,7 +40,7 @@ public class LibUtils {
     }
 
     public static void addJpaSpecLibrary(WebArchive war) {
-        addLibrary(war, "org.hibernate.javax.persistence:hibernate-jpa-2.0-api");
+        addLibrary(war, "org.hibernate.javax.persistence:hibernate-jpa-2.1-api");
     }
 
     public static void addObjectifyLibrary(WebArchive war) {
