@@ -23,11 +23,8 @@
 package org.jboss.capedwarf.common.async;
 
 import java.io.Serializable;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.infinispan.Cache;
-import org.infinispan.distexec.DistributedCallable;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.components.SimpleAppIdFactory;
