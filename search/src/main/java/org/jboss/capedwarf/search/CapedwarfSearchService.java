@@ -36,8 +36,8 @@ import org.infinispan.Cache;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.async.Wrappers;
-import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
+import org.jboss.capedwarf.shared.config.CacheName;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>

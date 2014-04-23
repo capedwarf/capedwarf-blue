@@ -43,6 +43,7 @@ import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Key;
 import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.components.SimpleKey;
+import org.jboss.capedwarf.shared.config.CacheName;
 import org.jboss.capedwarf.shared.util.Utils;
 
 /**

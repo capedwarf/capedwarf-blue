@@ -40,12 +40,12 @@ import com.google.appengine.api.images.Transform;
 import org.infinispan.AdvancedCache;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.async.Wrappers;
-import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.files.ExposedFileService;
 import org.jboss.capedwarf.images.transform.CapedwarfTransform;
 import org.jboss.capedwarf.images.transform.CapedwarfTransformFactory;
 import org.jboss.capedwarf.images.util.ImageUtils;
+import org.jboss.capedwarf.shared.config.CacheName;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>

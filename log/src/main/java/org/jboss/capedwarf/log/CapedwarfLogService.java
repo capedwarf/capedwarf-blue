@@ -54,10 +54,10 @@ import org.infinispan.query.SearchManager;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
-import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.config.CacheName;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>

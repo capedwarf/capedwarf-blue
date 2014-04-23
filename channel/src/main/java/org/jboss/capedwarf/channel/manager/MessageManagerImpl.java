@@ -26,9 +26,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.infinispan.Cache;
-import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
+import org.jboss.capedwarf.shared.config.CacheName;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>

@@ -27,10 +27,10 @@ import java.util.UUID;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
-import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.environment.AbstractEnvironment;
 import org.jboss.capedwarf.environment.Environment;
+import org.jboss.capedwarf.shared.config.CacheName;
 import org.kohsuke.MetaInfServices;
 
 /**

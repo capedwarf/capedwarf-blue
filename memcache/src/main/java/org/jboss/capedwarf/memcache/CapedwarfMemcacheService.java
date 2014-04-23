@@ -43,9 +43,9 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.jboss.capedwarf.common.app.Application;
-import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.infinispan.WrapperTxCallable;
+import org.jboss.capedwarf.shared.config.CacheName;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>

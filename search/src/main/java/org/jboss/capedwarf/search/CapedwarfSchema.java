@@ -28,9 +28,9 @@ import java.util.Set;
 import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.Schema;
 import com.google.common.collect.SetMultimap;
-import org.jboss.capedwarf.common.infinispan.CacheName;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
+import org.jboss.capedwarf.shared.config.CacheName;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
