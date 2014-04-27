@@ -25,6 +25,8 @@ package org.jboss.capedwarf.cron;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
@@ -37,6 +39,7 @@ import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.CronEntry;
 import org.jboss.capedwarf.shared.config.CronXml;
 import org.jboss.capedwarf.shared.util.Utils;
+import org.jboss.modules.ModuleIdentifier;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -67,49 +70,32 @@ public class CapewarfCron {
         }
     }
 
+    private final ApplicationConfiguration configuration;
+    private final ModuleIdentifier mi;
+
+    private List<JobDetail> details;
+    private List<Trigger> triggers;
+
     private Scheduler scheduler;
 
-    private CapewarfCron() {
+    CapewarfCron(ApplicationConfiguration configuration) {
+        this.configuration = configuration;
+        this.mi = Utils.toModule().getIdentifier();
     }
 
-    public static CapewarfCron create(ApplicationConfiguration configuration) {
-        CapewarfCron cron = new CapewarfCron();
-        cron.start(configuration);
-        return cron;
-    }
-
-    private void start(ApplicationConfiguration configuration) {
-        final String appId = configuration.getAppEngineWebXml().getApplication();
-        final String module = configuration.getAppEngineWebXml().getModule();
-
+    boolean prepare() {
         final CronXml cronXml = configuration.getCronXml();
+
         if (cronXml.getEntries().isEmpty()) {
+            final String appId = configuration.getAppEngineWebXml().getApplication();
+            final String module = configuration.getAppEngineWebXml().getModule();
             log.info(String.format("No cron jobs: %s/%s", appId, module));
-            return;
+            return false;
         }
 
-        try {
-            final Properties config = new Properties(DEFAULT_PROPERTIES);
-            config.putAll(Compatibility.getInstance().asProperties());
+        details = new ArrayList<>();
+        triggers = new ArrayList<>();
 
-            SchedulerFactory factory = new StdSchedulerFactory(config) {
-                @Override
-                public void initialize(Properties props) throws SchedulerException {
-                    props.put(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, String.format("%s.%s", appId, module));
-                    props.put("org.quartz.threadPool.module", String.format("%s", Utils.toModule().getIdentifier()));
-                    super.initialize(props);
-                }
-            };
-            scheduler = factory.getScheduler();
-            scheduler.start();
-
-            applyCrons(cronXml);
-        } catch (SchedulerException e) {
-            throw Utils.toRuntimeException(e);
-        }
-    }
-
-    private void applyCrons(CronXml cronXml) throws SchedulerException {
         for (CronEntry entry : cronXml.getEntries()) {
             final String timezone = entry.getTimezone() != null ? entry.getTimezone() : "GMT";
             final String name = String.format("%s@%s#%s", entry.getUrl(), entry.getSchedule(), timezone);
@@ -122,11 +108,40 @@ public class CapewarfCron {
             ScheduleBuilder scheduleBuilder = new GrocScheduleBuilder(new GoogleGrocAdapter(entry.getSchedule(), TimeZone.getTimeZone(timezone)));
             Trigger trigger = TriggerBuilder.newTrigger().withIdentity(name).withSchedule(scheduleBuilder).build();
 
-            scheduler.scheduleJob(jobDetail, trigger);
+            details.add(jobDetail);
+            triggers.add(trigger);
+        }
+        return true;
+    }
+
+    void start() {
+        try {
+            final String appId = configuration.getAppEngineWebXml().getApplication();
+            final String module = configuration.getAppEngineWebXml().getModule();
+
+            final Properties config = new Properties(DEFAULT_PROPERTIES);
+            config.putAll(Compatibility.getInstance().asProperties());
+
+            SchedulerFactory factory = new StdSchedulerFactory(config) {
+                @Override
+                public void initialize(Properties props) throws SchedulerException {
+                    props.put(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, String.format("%s.%s", appId, module));
+                    props.put("org.quartz.threadPool.module", String.format("%s", mi));
+                    super.initialize(props);
+                }
+            };
+            scheduler = factory.getScheduler();
+            scheduler.start();
+
+            for (int i = 0; i < details.size(); i++) {
+                scheduler.scheduleJob(details.get(i), triggers.get(i));
+            }
+        } catch (SchedulerException e) {
+            throw Utils.toRuntimeException(e);
         }
     }
 
-    public void destroy() {
+    void destroy() {
         if (scheduler != null) {
             try {
                 try {

@@ -37,6 +37,7 @@ import com.google.appengine.api.modules.ModulesServiceFactory;
 import org.jboss.capedwarf.common.apiproxy.CapedwarfDelegate;
 import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 import org.jboss.capedwarf.common.security.PrincipalInfo;
+import org.jboss.capedwarf.cron.CronService;
 import org.jboss.capedwarf.log.ExposedLogService;
 import org.jboss.capedwarf.shared.components.AppIdFactory;
 import org.jboss.capedwarf.shared.components.SimpleAppIdFactory;
@@ -53,6 +54,8 @@ import org.jboss.capedwarf.shared.config.ConfigurationAware;
 public class GAEListener extends ConfigurationAware implements ServletContextListener, ServletRequestListener {
     private volatile ExposedLogService logService;
     private AppIdFactory appIdFactory;
+
+    private CronService cronService;
 
     // Invoked from CapedwarfSetupAction -- do not change signatures; reflection usage!
 
@@ -93,18 +96,24 @@ public class GAEListener extends ConfigurationAware implements ServletContextLis
         final String appId = applicationConfiguration.getAppEngineWebXml().getApplication();
         final String module = applicationConfiguration.getAppEngineWebXml().getModule();
 
-        ServletContext servletContext = sce.getServletContext();
+        final ServletContext servletContext = sce.getServletContext();
         servletContext.setAttribute("org.jboss.capedwarf.appId", appId);
         servletContext.setAttribute("org.jboss.capedwarf.module", module);
 
         appIdFactory = new SimpleAppIdFactory(appId, module);
+        cronService = CronService.create(applicationConfiguration);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
-        ServletContext servletContext = sce.getServletContext();
-        String deadlineParameter = servletContext.getInitParameter("lifecycle-manager-deadline");
-        long deadline = Long.parseLong((deadlineParameter != null) ? deadlineParameter : "0");
-        LifecycleManager.getInstance().beginShutdown(deadline);
+        final ServletContext servletContext = sce.getServletContext();
+
+        try {
+            cronService.destroy();
+        } finally {
+            String deadlineParameter = servletContext.getInitParameter("lifecycle-manager-deadline");
+            long deadline = Long.parseLong((deadlineParameter != null) ? deadlineParameter : "0");
+            LifecycleManager.getInstance().beginShutdown(deadline);
+        }
     }
 
     public void requestInitialized(ServletRequestEvent sre) {
