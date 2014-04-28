@@ -52,25 +52,27 @@ public class CronService extends ReceiverAdapter {
         CapewarfCron cc = new CapewarfCron(configuration);
         if (cc.prepare()) {
             service.cron = cc;
-
-            JChannel channel = ComponentRegistry.getInstance().getComponent(Keys.CHANNEL);
-            service.address = channel.getAddress();
-
-            final String appId = configuration.getAppEngineWebXml().getApplication();
-            final String module = configuration.getAppEngineWebXml().getModule();
-            final String stackId = String.format("stack-%s_%s", appId, module);
-            final String channelId = String.format("channel-%s_%s", appId, module);
-
-            try {
-                service.fork = new ForkChannel(channel, stackId, channelId, true, ProtocolStack.ABOVE, FRAG2.class);
-                service.fork.setReceiver(service);
-                service.fork.connect("ignored");
-            } catch (Exception e) {
-                throw Utils.toRuntimeException(e);
-            }
+            service.start(configuration);
         }
-
         return service;
+    }
+
+    private void start(ApplicationConfiguration configuration) {
+        JChannel channel = ComponentRegistry.getInstance().getComponent(Keys.CHANNEL);
+        address = channel.getAddress();
+
+        final String appId = configuration.getAppEngineWebXml().getApplication();
+        final String module = configuration.getAppEngineWebXml().getModule();
+        final String stackId = String.format("stack-%s_%s", appId, module);
+        final String channelId = String.format("channel-%s_%s", appId, module);
+
+        try {
+            fork = new ForkChannel(channel, stackId, channelId, true, ProtocolStack.ABOVE, FRAG2.class);
+            fork.setReceiver(this);
+            fork.connect("ignored");
+        } catch (Exception e) {
+            throw Utils.toRuntimeException(e);
+        }
     }
 
     public void destroy() {
