@@ -22,17 +22,13 @@
 
 package org.jboss.capedwarf.cron;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.util.Utils;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.Receiver;
+import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.fork.ForkChannel;
 import org.jgroups.protocols.FRAG2;
@@ -41,7 +37,7 @@ import org.jgroups.stack.ProtocolStack;
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CronService implements Receiver {
+public class CronService extends ReceiverAdapter {
     private CapewarfCron cron;
 
     private Address address;
@@ -102,23 +98,5 @@ public class CronService implements Receiver {
             cron.start();
         }
         master = first;
-    }
-
-    public void suspect(Address suspect) {
-    }
-
-    public void block() {
-    }
-
-    public void unblock() {
-    }
-
-    public void receive(Message msg) {
-    }
-
-    public void getState(OutputStream output) throws Exception {
-    }
-
-    public void setState(InputStream input) throws Exception {
     }
 }
