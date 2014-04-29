@@ -72,6 +72,7 @@ public class CapewarfCron {
 
     private final ApplicationConfiguration configuration;
     private final ModuleIdentifier mi;
+    private final Properties properties;
 
     private List<JobDetail> details;
     private List<Trigger> triggers;
@@ -81,6 +82,7 @@ public class CapewarfCron {
     CapewarfCron(ApplicationConfiguration configuration) {
         this.configuration = configuration;
         this.mi = Utils.toModule().getIdentifier();
+        this.properties = Compatibility.getInstance().asProperties();
     }
 
     boolean prepare() {
@@ -120,7 +122,7 @@ public class CapewarfCron {
             final String module = configuration.getAppEngineWebXml().getModule();
 
             final Properties config = new Properties(DEFAULT_PROPERTIES);
-            config.putAll(Compatibility.getInstance().asProperties());
+            config.putAll(properties);
 
             SchedulerFactory factory = new StdSchedulerFactory(config) {
                 @Override
