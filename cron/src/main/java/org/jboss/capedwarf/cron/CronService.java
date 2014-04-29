@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.cron;
 
+import java.util.logging.Logger;
+
 import org.jboss.capedwarf.shared.components.ComponentRegistry;
 import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
@@ -31,13 +33,12 @@ import org.jgroups.JChannel;
 import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.fork.ForkChannel;
-import org.jgroups.protocols.FRAG2;
-import org.jgroups.stack.ProtocolStack;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CronService extends ReceiverAdapter {
+    private static final Logger log = Logger.getLogger(CronService.class.getName());
     private CapewarfCron cron;
 
     private Address address;
@@ -67,7 +68,7 @@ public class CronService extends ReceiverAdapter {
         final String channelId = String.format("channel-%s_%s", appId, module);
 
         try {
-            fork = new ForkChannel(channel, stackId, channelId, true, ProtocolStack.ABOVE, FRAG2.class);
+            fork = new ForkChannel(channel, stackId, channelId);
             fork.setReceiver(this);
             fork.connect("ignored");
         } catch (Exception e) {
@@ -98,6 +99,7 @@ public class CronService extends ReceiverAdapter {
         boolean isMaster = address.compareTo(first) == 0;
         if (isMaster && (changed || master == null)) {
             cron.start();
+            log.info(String.format("Started cron scheduler on master node - %s", first));
         }
         master = first;
     }
