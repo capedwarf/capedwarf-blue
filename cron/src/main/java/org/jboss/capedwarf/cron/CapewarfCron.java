@@ -35,11 +35,14 @@ import java.util.logging.Logger;
 
 import org.jboss.capedwarf.common.async.WireWrapper;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.Keys;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.CronEntry;
 import org.jboss.capedwarf.shared.config.CronXml;
 import org.jboss.capedwarf.shared.util.Utils;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -72,6 +75,7 @@ public class CapewarfCron {
 
     private final ApplicationConfiguration configuration;
     private final ModuleIdentifier mi;
+    private final ModuleLoader loader;
     private final Properties properties;
 
     private List<JobDetail> details;
@@ -82,6 +86,7 @@ public class CapewarfCron {
     CapewarfCron(ApplicationConfiguration configuration) {
         this.configuration = configuration;
         this.mi = Utils.toModule().getIdentifier();
+        this.loader = ComponentRegistry.getInstance().getComponent(Keys.MODULE_LOADER);
         this.properties = Compatibility.getInstance().asProperties();
     }
 
@@ -118,28 +123,38 @@ public class CapewarfCron {
 
     void start() {
         try {
-            final String appId = configuration.getAppEngineWebXml().getApplication();
-            final String module = configuration.getAppEngineWebXml().getModule();
-
-            final Properties config = new Properties(DEFAULT_PROPERTIES);
-            config.putAll(properties);
-
-            SchedulerFactory factory = new StdSchedulerFactory(config) {
-                @Override
-                public void initialize(Properties props) throws SchedulerException {
-                    props.put(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, String.format("%s.%s", appId, module));
-                    props.put("org.quartz.threadPool.module", String.format("%s", mi));
-                    super.initialize(props);
-                }
-            };
-            scheduler = factory.getScheduler();
-            scheduler.start();
-
-            for (int i = 0; i < details.size(); i++) {
-                scheduler.scheduleJob(details.get(i), triggers.get(i));
+            final ClassLoader cl = loader.loadModule(mi).getClassLoader();
+            final ClassLoader previous = Utils.setTCCL(cl);
+            try {
+                startInternal();
+            } finally {
+                Utils.setTCCL(previous);
             }
-        } catch (SchedulerException e) {
+        } catch (Exception e) {
             throw Utils.toRuntimeException(e);
+        }
+    }
+
+    private void startInternal() throws Exception {
+        final String appId = configuration.getAppEngineWebXml().getApplication();
+        final String module = configuration.getAppEngineWebXml().getModule();
+
+        final Properties config = new Properties(DEFAULT_PROPERTIES);
+        config.putAll(properties);
+
+        SchedulerFactory factory = new StdSchedulerFactory(config) {
+            @Override
+            public void initialize(Properties props) throws SchedulerException {
+                props.put(StdSchedulerFactory.PROP_SCHED_INSTANCE_NAME, String.format("%s.%s", appId, module));
+                props.put("org.quartz.threadPool.module", String.format("%s", mi));
+                super.initialize(props);
+            }
+        };
+        scheduler = factory.getScheduler();
+        scheduler.start();
+
+        for (int i = 0; i < details.size(); i++) {
+            scheduler.scheduleJob(details.get(i), triggers.get(i));
         }
     }
 
