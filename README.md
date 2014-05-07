@@ -12,11 +12,17 @@ http://www.jboss.org/capedwarf
 How to build CapeDwarf environment?
 -----------------------------------
 
-(1) Build WildFly 8.0.0.Final-SNAPSHOT from master branch --> JBOSS_HOME
+(1) Build WildFly 8.1.0.CR1 from WildFly repo --> JBOSS_HOME
 
     https://github.com/wildfly/wildfly
 
+    git checkout 8.1.0.CR1
+
     mvn clean install -DskipTests -Prelease
+
+Or you can grab it from WildFly downloads.
+
+    http://wildfly.org/downloads/
 
 (2) Build CapeDwarf Shared ("master" branch)
 
@@ -36,7 +42,7 @@ How to build CapeDwarf environment?
 
     mvn clean install -Djboss.dir=${JBOSS_HOME} -Pupdate-as
 
-This will install CapeDwarf Subsystem into previous WildFly 8.0.0.CR1
+This will install CapeDwarf Subsystem into previous WildFly 8.1.0.CR1
 
 (5) Start CapeDwarf
 
