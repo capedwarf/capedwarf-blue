@@ -24,6 +24,7 @@ public abstract class ClusteredTestBase extends TestBase {
 
     public static WebArchive getDeployment() {
         WebArchive war = getCapedwarfDeployment(TestContext.withMetadata()).addClass(ClusteredTestBase.class);
+        war.addAsWebInfResource("cron.xml"); // so we get a cron cluster running
         LibUtils.applyTempModule("cluster-tests");
         try {
             LibUtils.addGaeAsLibrary(war);
