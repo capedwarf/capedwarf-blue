@@ -106,7 +106,7 @@
         <version.arquillian>1.1.4.Final</version.arquillian>
         <version.jboss.wildfly>8.1.0.CR1</version.jboss.wildfly>
         <version.org.jboss.xnio>3.2.2.Final</version.org.jboss.xnio>
-        <version.arquillian.gae>1.0.0.Beta8</version.arquillian.gae>
+        <version.arquillian.gae>1.0.0.Beta9</version.arquillian.gae>
         <version.jboss.maven.transformer>1.0.0.Beta5</version.jboss.maven.transformer>
         <version.jboss.maven.arquillian>1.0.0.Alpha1</version.jboss.maven.arquillian>
         <!-- Testing - MapReduce -->
