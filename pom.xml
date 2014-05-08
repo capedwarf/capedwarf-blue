@@ -119,7 +119,7 @@
         <version.org.json>20090211</version.org.json>
         <!-- Testing Iddx -->
         <version.com.google.api-client>1.11.0-beta</version.com.google.api-client>
-        <version.com.google.api-services-bigquery>v2-rev33-1.8.0-beta</version.com.google.api-services-bigquery>
+        <version.com.google.api-services-bigquery>v2-rev142-1.18.0-rc</version.com.google.api-services-bigquery>
         <!-- Testing Objectify -->
         <version.objectify>4.0rc2</version.objectify>
         <!-- Testing REST -->
