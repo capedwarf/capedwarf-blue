@@ -104,7 +104,7 @@
         <!-- Testing -->
         <version.junit>4.11</version.junit>
         <version.arquillian>1.1.4.Final</version.arquillian>
-        <version.jboss.wildfly>8.1.0.CR1</version.jboss.wildfly>
+        <version.jboss.wildfly>8.1.0.CR2</version.jboss.wildfly>
         <version.org.jboss.xnio>3.2.2.Final</version.org.jboss.xnio>
         <version.arquillian.gae>1.0.0.Beta9</version.arquillian.gae>
         <version.jboss.maven.transformer>1.0.0.Beta5</version.jboss.maven.transformer>
