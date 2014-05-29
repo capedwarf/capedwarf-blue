@@ -122,21 +122,29 @@ public class CapedwarfLogService implements ExposedLogService {
 
     @SuppressWarnings("unchecked")
     private CapedwarfLogQueryResult fetchCapedwarfRequestLogs(CapedwarfLogQuery logQuery) {
+        List<CapedwarfRequestLogs> list;
+        int resultCount;
         List<String> requestIds = logQuery.getQuery().getRequestIds();
         if (requestIds.isEmpty()) {
             CacheQuery cacheQuery = createRequestLogsQuery(logQuery);
-            List<CapedwarfRequestLogs> list = (List<CapedwarfRequestLogs>) (List) cacheQuery.list();
-            return new CapedwarfLogQueryResult(list, cacheQuery.getResultSize());
+            list = (List<CapedwarfRequestLogs>) (List) cacheQuery.list();
+            resultCount = cacheQuery.getResultSize();
         } else {
-            List<CapedwarfRequestLogs> list = new ArrayList<>(requestIds.size());
+            list = new ArrayList<>(requestIds.size());
             for (String requestId : requestIds) {
                 CapedwarfRequestLogs requestLogs = (CapedwarfRequestLogs) store.get(requestId);
                 if (requestLogs != null) {
                     list.add(requestLogs);
                 }
             }
-            return new CapedwarfLogQueryResult(list, list.size());
+            resultCount = list.size();
         }
+        for (int i = 0; i < list.size(); i++) {
+            CapedwarfRequestLogs capedwarfRequestLogs = list.get(i);
+            list.set(i, capedwarfRequestLogs.clone());
+        }
+
+        return new CapedwarfLogQueryResult(list, resultCount);
     }
 
     private CacheQuery createRequestLogsQuery(CapedwarfLogQuery logQuery) {
