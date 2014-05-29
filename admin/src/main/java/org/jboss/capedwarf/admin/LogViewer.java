@@ -79,6 +79,7 @@ public class LogViewer {
 
     public Iterable<RequestLogs> getRequestLogs() {
         LogQuery logQuery = new LogQuery();
+        logQuery.includeAppLogs(true);
         if (!isShowAll()) {
             logQuery = logQuery.minLogLevel(LogService.LogLevel.valueOf(severity));
         }
