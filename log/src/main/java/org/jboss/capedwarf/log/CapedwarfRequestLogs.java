@@ -23,7 +23,7 @@ import org.jboss.util.Base64;
  */
 @Indexed
 @ProvidedId
-public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externalizable {
+public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externalizable, Cloneable {
     public static final String END_TIME_USEC = "endTimeUsec";
     public static final String MAX_LOG_LEVEL = "maxLogLevel";
     public static final String FINISHED = "finished";
@@ -169,6 +169,49 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
             return null;
         } else {
             return in.readUTF();
+        }
+    }
+
+    @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
+    @Override
+    public CapedwarfRequestLogs clone() {
+        try {
+            CapedwarfRequestLogs clone = (CapedwarfRequestLogs) super.clone();
+            clone.requestLogs = new RequestLogs();
+            clone.requestLogs.setAppId(requestLogs.getAppId());
+            clone.requestLogs.setModuleId(requestLogs.getModuleId());
+            clone.requestLogs.setVersionId(requestLogs.getVersionId());
+            clone.requestLogs.setRequestId(requestLogs.getRequestId());
+            clone.requestLogs.setOffset(requestLogs.getOffset());
+            clone.requestLogs.setIp(requestLogs.getIp());
+            clone.requestLogs.setNickname(requestLogs.getNickname());
+            clone.requestLogs.setStartTimeUsec(requestLogs.getStartTimeUsec());
+            clone.requestLogs.setEndTimeUsec(requestLogs.getEndTimeUsec());
+            clone.requestLogs.setLatency(requestLogs.getLatencyUsec());
+            clone.requestLogs.setMcycles(requestLogs.getMcycles());
+            clone.requestLogs.setMethod(requestLogs.getMethod());
+            clone.requestLogs.setResource(requestLogs.getResource());
+            clone.requestLogs.setHttpVersion(requestLogs.getHttpVersion());
+            clone.requestLogs.setStatus(requestLogs.getStatus());
+            clone.requestLogs.setResponseSize(requestLogs.getResponseSize());
+            clone.requestLogs.setReferrer(requestLogs.getReferrer());
+            clone.requestLogs.setUserAgent(requestLogs.getUserAgent());
+            clone.requestLogs.setUrlMapEntry(requestLogs.getUrlMapEntry());
+            clone.requestLogs.setCombined(requestLogs.getCombined());
+            clone.requestLogs.setApiMcycles(requestLogs.getApiMcycles());
+            clone.requestLogs.setHost(requestLogs.getHost());
+            clone.requestLogs.setCost(requestLogs.getCost());
+            clone.requestLogs.setTaskQueueName(requestLogs.getTaskQueueName());
+            clone.requestLogs.setTaskName(requestLogs.getTaskName());
+            clone.requestLogs.setWasLoadingRequest(requestLogs.isLoadingRequest());
+            clone.requestLogs.setPendingTime(requestLogs.getPendingTimeUsec());
+            clone.requestLogs.setReplicaIndex(requestLogs.getReplicaIndex());
+            clone.requestLogs.setFinished(requestLogs.isFinished());
+            clone.requestLogs.setInstanceKey(requestLogs.getInstanceKey());
+            setAppEngineRelease.invokeWithTarget(clone.requestLogs, requestLogs.getAppEngineRelease());
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
         }
     }
 }
