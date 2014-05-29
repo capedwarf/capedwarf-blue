@@ -28,7 +28,6 @@ import java.util.Map;
 
 import com.google.appengine.api.NamespaceManager;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.VoidWork;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -51,8 +50,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 public class ObjectifyTest extends TestsuiteTestBase {
-    private Objectify objectify;
-
     @Deployment
     public static WebArchive getDeployment() {
         WebArchive war = getCapedwarfDeployment();
@@ -68,8 +65,6 @@ public class ObjectifyTest extends TestsuiteTestBase {
         ObjectifyService.register(Car.class);
         ObjectifyService.register(Snapshot.class);
         ObjectifyService.register(TestEntity.class);
-
-        objectify = ObjectifyService.ofy();
     }
 
     @After
@@ -83,16 +78,16 @@ public class ObjectifyTest extends TestsuiteTestBase {
         c1.setMark("Mazda");
         c1.setType("CX-5");
 
-        Map<Key<Car>, Car> keys = objectify.save().entities(c1).now();
+        Map<Key<Car>, Car> keys = ObjectifyService.ofy().save().entities(c1).now();
         Assert.assertEquals(1, keys.size());
         final Key<Car> key = keys.keySet().iterator().next();
         try {
-            Car c2 = objectify.load().key(key).now();
+            Car c2 = ObjectifyService.ofy().load().key(key).now();
 
             Assert.assertEquals(c1.getMark(), c2.getMark());
             Assert.assertEquals(c1.getType(), c2.getType());
         } finally {
-            objectify.delete().key(key).now();
+            ObjectifyService.ofy().delete().key(key).now();
         }
     }
 
@@ -103,9 +98,9 @@ public class ObjectifyTest extends TestsuiteTestBase {
 
         Snapshot s1 = new Snapshot();
         s1.setTimestamp(500);
-        objectify.save().entities(s1).now();
+        ObjectifyService.ofy().save().entities(s1).now();
 
-        List<Snapshot> list = objectify.load()
+        List<Snapshot> list = ObjectifyService.ofy().load()
                 .type(Snapshot.class)
                 .filter("timestamp >=", start)
                 .filter("timestamp <", end)
