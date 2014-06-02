@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.tools;
 
+import java.io.Closeable;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -33,7 +34,7 @@ import java.util.Iterator;
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public class DumpFileFacade {
+public class DumpFileFacade implements Closeable {
 
     private Connection connection;
     private File sqliteFile;

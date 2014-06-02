@@ -75,8 +75,7 @@ public class BulkLoader {
         int packetSize = getPacketSize(args);
         System.out.println("Uploading data from " + filename + " to " + url + " in packets of size " + packetSize);
 
-        DumpFileFacade dumpFileFacade = new DumpFileFacade(new File(filename));
-        try {
+        try (DumpFileFacade dumpFileFacade = new DumpFileFacade(new File(filename))) {
             Iterator<byte[]> iterator = dumpFileFacade.iterator();
 
             try (CloseableHttpClient client = HttpClients.createDefault()) {
@@ -98,8 +97,6 @@ public class BulkLoader {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        } finally {
-            dumpFileFacade.close();
         }
     }
 
@@ -125,8 +122,7 @@ public class BulkLoader {
 
         System.out.println("Dumping data from " + url + " to " + filename + " in packets of size " + packetSize);
 
-        DumpFileFacade dumpFileFacade = new DumpFileFacade(file);
-        try {
+        try (DumpFileFacade dumpFileFacade = new DumpFileFacade(file)) {
             try (CloseableHttpClient client = HttpClients.createDefault()) {
                 HttpGet get = new HttpGet(url);
                 get.getParams().setParameter("action", "dump");
@@ -147,10 +143,7 @@ public class BulkLoader {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        } finally {
-            dumpFileFacade.close();
         }
-
     }
 
     private static byte[] readArray(DataInputStream in) {
