@@ -27,12 +27,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 /**
@@ -42,24 +43,24 @@ import org.apache.http.util.EntityUtils;
 public class FileUploader {
 
     public String getUploadUrl(URL url) throws URISyntaxException, IOException {
-        HttpClient httpClient = new DefaultHttpClient();
-
-        HttpGet get = new HttpGet(url.toURI());
-        HttpResponse response = httpClient.execute(get);
-        return EntityUtils.toString(response.getEntity()).trim();
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet get = new HttpGet(url.toURI());
+            HttpResponse response = httpClient.execute(get);
+            return EntityUtils.toString(response.getEntity()).trim();
+        }
     }
 
     public String uploadFile(String uri, String partName, String filename, String mimeType, byte[] contents) throws URISyntaxException, IOException {
-        HttpClient httpClient = new DefaultHttpClient();
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpPost post = new HttpPost(uri);
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            ByteArrayBody contentBody = new ByteArrayBody(contents, ContentType.create(mimeType), filename);
+            builder.addPart(partName, contentBody);
+            post.setEntity(builder.build());
 
-        HttpPost post = new HttpPost(uri);
-        MultipartEntity entity = new MultipartEntity();
-        ByteArrayBody contentBody = new ByteArrayBody(contents, mimeType, filename);
-        entity.addPart(partName, contentBody);
-        post.setEntity(entity);
-
-        HttpResponse response = httpClient.execute(post);
-        return EntityUtils.toString(response.getEntity());
+            HttpResponse response = httpClient.execute(post);
+            return EntityUtils.toString(response.getEntity());
+        }
     }
 
     /**

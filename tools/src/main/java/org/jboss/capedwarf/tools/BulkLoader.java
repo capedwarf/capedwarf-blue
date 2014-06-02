@@ -30,11 +30,13 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -48,13 +50,17 @@ public class BulkLoader {
 
         Arguments arguments = new Arguments(args);
         String command = args[0];
-        if (command.equals("upload")) {
-            doUpload(arguments);
-        } else if (command.equals("dump")) {
-            doDump(arguments);
-        } else {
-            System.out.println("Unknown command " + command);
-            printUsage();
+        switch (command) {
+            case "upload":
+                doUpload(arguments);
+                break;
+            case "dump":
+                doDump(arguments);
+                break;
+            default:
+                System.out.println("Unknown command " + command);
+                printUsage();
+                break;
         }
     }
 
@@ -73,8 +79,7 @@ public class BulkLoader {
         try {
             Iterator<byte[]> iterator = dumpFileFacade.iterator();
 
-            DefaultHttpClient client = new DefaultHttpClient(new SingleClientConnManager());
-            try {
+            try (CloseableHttpClient client = HttpClients.createDefault()) {
                 File partFile = new File(filename + ".part");
                 UploadPacket packet = new UploadPacket(partFile);
                 while (iterator.hasNext()) {
@@ -98,10 +103,10 @@ public class BulkLoader {
         }
     }
 
-    private static void sendPacket(UploadPacket packet, DefaultHttpClient client, String url) throws IOException {
+    private static void sendPacket(UploadPacket packet, HttpClient client, String url) throws IOException {
         HttpPut put = new HttpPut(url);
         System.out.println("Uploading packet of " + packet.size() + " entities");
-        put.setEntity(new FileEntity(packet.getFile(), "application/capedwarf-data"));
+        put.setEntity(new FileEntity(packet.getFile(), ContentType.create("application/capedwarf-data")));
         HttpResponse response = client.execute(put);
         response.getEntity().writeTo(new ByteArrayOutputStream());
         System.out.println("Received response " + response);
@@ -122,8 +127,7 @@ public class BulkLoader {
 
         DumpFileFacade dumpFileFacade = new DumpFileFacade(file);
         try {
-            DefaultHttpClient client = new DefaultHttpClient(new SingleClientConnManager());
-            try {
+            try (CloseableHttpClient client = HttpClients.createDefault()) {
                 HttpGet get = new HttpGet(url);
                 get.getParams().setParameter("action", "dump");
                 System.out.println("Downloading packet of " + packetSize + " entities");
