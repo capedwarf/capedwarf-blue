@@ -38,6 +38,12 @@
         <dependency>
             <groupId>com.google.appengine.tools</groupId>
             <artifactId>appengine-gcs-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
