@@ -62,7 +62,12 @@ class GcsServiceStorage extends FilestoreServiceStorage {
         } else {
             AppEngineFile file = getFileService().createNewBlobFile(contentType, bucketName, filename, AppEngineFile.FileSystem.GS);
             BlobKey blobKey = getBlobKey(file);
-            GcsFileOptions options = new GcsFileOptions.Builder().mimeType(contentType).build();
+
+            GcsFileOptions.Builder builder = new GcsFileOptions.Builder();
+            builder.addUserMetadata("uploaded-filename", filename);
+            builder.mimeType(contentType);
+            GcsFileOptions options = builder.build();
+
             try (GcsOutputChannel out = getGcsService().createOrReplace(toFilename(blobKey), options)) {
                 try (ReadableByteChannel in = Channels.newChannel(provider.get())) {
                     IOUtils.copy(in, out);

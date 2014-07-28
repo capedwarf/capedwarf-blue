@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.files;
 
+import java.util.Map;
+
 import com.google.appengine.api.files.GSFileOptions;
 import org.jboss.capedwarf.shared.reflection.ReflectionUtils;
 
@@ -41,5 +43,11 @@ class GSFileOptionsAdapter {
 
     String getMimeType() {
         return (String) ReflectionUtils.getFieldValue(options, "mimeType");
+    }
+
+    @SuppressWarnings("unchecked")
+    String getUserMetadata(String key) {
+        Map<String, String> userMetadata = (Map<String, String>) ReflectionUtils.getFieldValue(options, "userMetadata");
+        return (userMetadata != null) ? userMetadata.get(key) : null;
     }
 }

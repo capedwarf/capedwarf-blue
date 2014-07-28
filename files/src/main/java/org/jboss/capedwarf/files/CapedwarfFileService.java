@@ -96,7 +96,12 @@ public class CapedwarfFileService implements ExposedFileService {
             Object sp = info.getProperty(BlobInfoFactory.SIZE);
             long size = (sp != null ? (Long) sp : -1);
             String md5Hash = (String) info.getProperty(BlobInfoFactory.MD5_HASH);
-            String gsObjectName = key.getKeyString(); // atm this is equal
+
+            // gsObjectName??
+            String keyString = key.getKeyString();
+            int p = keyString.lastIndexOf("/");
+            String gsObjectName = keyString.substring(p + 1);
+
             return new FileInfo(contentType, creation, filename, size, md5Hash, gsObjectName);
         } else {
             return null;
@@ -114,7 +119,11 @@ public class CapedwarfFileService implements ExposedFileService {
     public AppEngineFile createNewGSFile(GSFileOptions options) throws IOException {
         final GSFileOptionsAdapter adapter = new GSFileOptionsAdapter(options);
         final String fileName = adapter.getFileName();
-        return createNewBlobFile(adapter.getMimeType(), fileName, null, fileName, AppEngineFile.FileSystem.GS);
+        String uploadedFilename = adapter.getUserMetadata("uploaded-filename");
+        if (uploadedFilename == null) {
+            uploadedFilename = fileName;
+        }
+        return createNewBlobFile(adapter.getMimeType(), fileName, null, uploadedFilename, AppEngineFile.FileSystem.GS);
     }
 
     public void delete(BlobKey... blobKeys) {
@@ -241,7 +250,7 @@ public class CapedwarfFileService implements ExposedFileService {
         return createNewBlobFile(contentType, null, bucketName, uploadedFileName, fs);
     }
 
-    private AppEngineFile createNewBlobFile(String contentType, String fileName, String bucketName, String uploadedFileName, AppEngineFile.FileSystem fs) throws IOException {
+    private AppEngineFile createNewBlobFile(String contentType, String fileName, String bucketName, String uploadedFilename, AppEngineFile.FileSystem fs) throws IOException {
         if (contentType == null || contentType.trim().isEmpty()) {
             contentType = DEFAULT_MIME_TYPE;
         }
@@ -258,19 +267,19 @@ public class CapedwarfFileService implements ExposedFileService {
             file = new AppEngineFile(fileName);
         }
 
-        storeTemporaryBlobInfo(file, contentType, new Date(), uploadedFileName);
+        storeTemporaryBlobInfo(file, contentType, new Date(), uploadedFilename);
 
         return file;
     }
 
-    private void storeTemporaryBlobInfo(AppEngineFile file, String contentType, Date creationTimestamp, String uploadedFileName) {
+    private void storeTemporaryBlobInfo(AppEngineFile file, String contentType, Date creationTimestamp, String uploadedFilename) {
         final String origNamespace = NamespaceManager.get();
         NamespaceManager.set("");
         try {
             Entity tempBlobInfo = new Entity(getTempBlobInfoKey(file));
             tempBlobInfo.setProperty(BlobInfoFactory.CONTENT_TYPE, contentType);
             tempBlobInfo.setProperty(BlobInfoFactory.CREATION, creationTimestamp);
-            tempBlobInfo.setProperty(BlobInfoFactory.FILENAME, uploadedFileName);
+            tempBlobInfo.setProperty(BlobInfoFactory.FILENAME, uploadedFilename);
             datastoreService.put(tempBlobInfo);
         } finally {
             NamespaceManager.set(origNamespace);
