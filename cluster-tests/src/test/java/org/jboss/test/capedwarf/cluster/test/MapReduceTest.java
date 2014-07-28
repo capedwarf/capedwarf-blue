@@ -25,22 +25,6 @@ package org.jboss.test.capedwarf.cluster.test;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.jboss.test.capedwarf.common.support.JBoss;
-import org.jboss.test.capedwarf.testsuite.LibUtils;
-import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountMapper;
-import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountReducer;
-import org.jboss.test.capedwarf.testsuite.mapreduce.test.MapReduceTestBase;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.KeyFactory;
@@ -57,6 +41,21 @@ import com.google.appengine.tools.mapreduce.outputs.InMemoryOutput;
 import com.google.appengine.tools.mapreduce.outputs.NoOutput;
 import com.google.appengine.tools.mapreduce.reducers.NoReducer;
 import com.google.appengine.tools.pipeline.JobInfo;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.test.capedwarf.common.support.JBoss;
+import org.jboss.test.capedwarf.testsuite.LibUtils;
+import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountMapper;
+import org.jboss.test.capedwarf.testsuite.mapreduce.support.CountReducer;
+import org.jboss.test.capedwarf.testsuite.mapreduce.test.MapReduceTestBase;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 /**
  * MapReduce cluster tests.
@@ -93,20 +92,22 @@ public class MapReduceTest extends MapReduceTestBase {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     @OperateOnDeployment("dep1") @InSequence(10)
     public void putDataInA() throws Exception {
         int shardCount = 1;
-        final String createHandle = MapReduceJob.start(
-                MapReduceSpecification.of(
-                        "Create MapReduce entities",
-                        new ConsecutiveLongInput(0, payloads.size() * (long) shardCount, shardCount),
-                        new MyEntityCreator("MapReduceTest", payloads),
-                        Marshallers.getVoidMarshaller(),
-                        Marshallers.getVoidMarshaller(),
-                        NoReducer.<Void, Void, Void>create(),
-                        NoOutput.<Void, Void>create(1)),
-                getSettings());
+
+        MapReduceSpecification.Builder builder = new MapReduceSpecification.Builder();
+        builder.setJobName("Create MapReduce entities");
+        builder.setInput(new ConsecutiveLongInput(0, payloads.size() * (long) shardCount, shardCount));
+        builder.setMapper(new MyEntityCreator("MapReduceTest", payloads));
+        builder.setKeyMarshaller(Marshallers.getVoidMarshaller());
+        builder.setValueMarshaller(Marshallers.getVoidMarshaller());
+        builder.setReducer(NoReducer.create());
+        builder.setOutput(new NoOutput());
+
+        final String createHandle = MapReduceJob.start(builder.build(), getSettings());
 
         Entity entity = new Entity("CMR", 1L);
         entity.setProperty("handle", createHandle);
@@ -127,22 +128,22 @@ public class MapReduceTest extends MapReduceTestBase {
         log.severe("----- Create: " + create);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     @OperateOnDeployment("dep2") @InSequence(30)
     public void countDataInB() throws Exception {
         int mapShardCount = 1;
-        int reduceShardCount = 1;
 
-        String countHandle = MapReduceJob.start(
-                MapReduceSpecification.of(
-                        "MapReduceTest stats",
-                        new DatastoreInput("MapReduceTest", mapShardCount),
-                        new CountMapper(),
-                        Marshallers.getStringMarshaller(),
-                        Marshallers.getLongMarshaller(),
-                        new CountReducer(),
-                        new InMemoryOutput<KeyValue<String, Long>>(reduceShardCount)),
-                getSettings());
+        MapReduceSpecification.Builder builder = new MapReduceSpecification.Builder();
+        builder.setJobName("MapReduceTest stats");
+        builder.setInput(new DatastoreInput("MapReduceTest", mapShardCount));
+        builder.setMapper(new CountMapper());
+        builder.setKeyMarshaller(Marshallers.getStringMarshaller());
+        builder.setValueMarshaller(Marshallers.getLongMarshaller());
+        builder.setReducer(new CountReducer());
+        builder.setOutput(new InMemoryOutput<KeyValue<String, Long>>());
+
+        final String countHandle = MapReduceJob.start(builder.build(), getSettings());
 
         Entity entity = new Entity("CMR", 2);
         entity.setProperty("handle", countHandle);
