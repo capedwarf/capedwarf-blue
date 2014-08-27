@@ -22,13 +22,8 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.transaction.Transaction;
 
 import com.google.appengine.api.datastore.Key;
 
@@ -40,17 +35,11 @@ import com.google.appengine.api.datastore.Key;
 class XGTxChecker implements TxChecker {
     private static final int MAX_ENTITY_GROUPS = 5;
 
-    private static final ConcurrentMap<Key, Transaction> usedRoots = new ConcurrentHashMap<Key, Transaction>();
-
     // 1 per tx, we should be fine wrt sync
     private Set<Key> roots = new HashSet<Key>();
 
     public void add(Key currentRoot, Key key) {
-        final Transaction current = CapedwarfTransaction.getTx();
-        final Transaction previous = usedRoots.putIfAbsent(currentRoot, current);
-        if (previous != null && current.equals(previous) == false) {
-            throw new ConcurrentModificationException("Different transactions on same entity group: " + currentRoot);
-        }
+        TxTracker.track(currentRoot);
 
         roots.add(currentRoot);
     }
@@ -63,7 +52,7 @@ class XGTxChecker implements TxChecker {
         // if it was added into roots, it passed used check
         // so we can safely remove it
         for (Key root : roots) {
-            usedRoots.remove(root);
+            TxTracker.remove(root);
         }
     }
 }
