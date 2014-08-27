@@ -116,3 +116,8 @@ Existing examples / demos:
 (3) A ToDo list app
 
     https://github.com/capedwarf/todolist
+
+(4) Restlet on OpenShift
+
+    https://github.com/kerbymart/capedwarf-restlet
+
