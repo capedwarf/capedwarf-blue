@@ -52,7 +52,7 @@ class EntityGroupTracker implements Synchronization {
         this.keys = new ConcurrentHashMap<Key, Key>();
     }
 
-    static EntityGroupTracker registerKey(Key key) {
+    static EntityGroupTracker registerTracker(Key key) {
         if (key == null || ignoreTracking())
             return null;
 
@@ -69,28 +69,13 @@ class EntityGroupTracker implements Synchronization {
             egt.registerSynchronization(transaction);
             trackers.put(transaction, egt);
         }
-        egt.addKey(key);
         return egt;
     }
 
     static void trackKey(Key key) {
-        final EntityGroupTracker egt = registerKey(key);
+        final EntityGroupTracker egt = registerTracker(key);
         if (egt != null) {
-            egt.checkRoot();
-        }
-    }
-
-    static void check() {
-        if (ignoreTracking())
-            return;
-
-        final Transaction transaction = CapedwarfTransaction.getTx();
-        if (ignoreTracking(transaction))
-            return; // nothing to check
-
-        EntityGroupTracker egt = trackers.get(transaction);
-        if (egt != null) {
-            egt.checkRoot();
+            egt.checkRoot(key);
         }
     }
 
@@ -111,15 +96,11 @@ class EntityGroupTracker implements Synchronization {
         }
     }
 
-    private Key addKey(Key key) {
+    private void checkRoot(Key key) {
         Key currentRoot = getRoot(key);
         keys.put(key, currentRoot);
-        checker.add(currentRoot, key);
-        return currentRoot;
-    }
 
-    private void checkRoot() {
-        if (checker.isInvalid()) {
+        if (checker.isInvalid(currentRoot, key)) {
             throw new IllegalArgumentException("can't operate on multiple entity groups in a single transaction. found: " + keys.keySet());
         }
     }
@@ -133,10 +114,13 @@ class EntityGroupTracker implements Synchronization {
     }
 
     public void beforeCompletion() {
-        trackers.remove(tx);
     }
 
     public void afterCompletion(int status) {
-        checker.clear();
+        try {
+            checker.clear();
+        } finally {
+            trackers.remove(tx);
+        }
     }
 }

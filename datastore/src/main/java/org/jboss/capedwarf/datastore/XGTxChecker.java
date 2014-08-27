@@ -38,14 +38,12 @@ class XGTxChecker implements TxChecker {
     // 1 per tx, we should be fine wrt sync
     private Set<Key> roots = new HashSet<Key>();
 
-    public void add(Key currentRoot, Key key) {
+    public boolean isInvalid(Key currentRoot, Key key) {
         TxTracker.track(currentRoot);
 
         roots.add(currentRoot);
-    }
 
-    public boolean isInvalid() {
-        return roots.size() > MAX_ENTITY_GROUPS;
+        return (roots.size() > MAX_ENTITY_GROUPS);
     }
 
     public void clear() {

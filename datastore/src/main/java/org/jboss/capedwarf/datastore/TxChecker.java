@@ -31,19 +31,13 @@ import com.google.appengine.api.datastore.Key;
  */
 interface TxChecker {
     /**
-     * Add key and its root.
+     * Is current checker invalid.
      *
      * @param root the key's root
      * @param key the key we just added
-     */
-    void add(Key root, Key key);
-
-    /**
-     * Is current checker invalid.
-     *
      * @return true if invalid, false otherwise
      */
-    boolean isInvalid();
+    boolean isInvalid(Key root, Key key);
 
     /**
      * Clear after tx.

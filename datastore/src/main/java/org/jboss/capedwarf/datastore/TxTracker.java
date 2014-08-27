@@ -51,4 +51,8 @@ class TxTracker {
     static void remove(Key currentRoot) {
         usedRoots.remove(currentRoot);
     }
+
+    static void dump() {
+        System.err.println("Used roots: " + usedRoots);
+    }
 }

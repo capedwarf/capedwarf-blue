@@ -33,20 +33,16 @@ class SingleTxChecker implements TxChecker {
     private boolean invalid;
     private Key root;
 
-    public void add(Key currentRoot, Key key) {
-        TxTracker.track(currentRoot);
-
+    public boolean isInvalid(Key currentRoot, Key key) {
         // do not check if already invalid
         if (invalid == false) {
             if (root == null) {
                 root = currentRoot;
-            } else if (root.equals(currentRoot) == false){
+                TxTracker.track(currentRoot);
+            } else if (root.equals(currentRoot) == false) {
                 invalid = true;
             }
         }
-    }
-
-    public boolean isInvalid() {
         return invalid;
     }
 
