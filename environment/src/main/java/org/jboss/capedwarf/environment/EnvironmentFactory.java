@@ -42,7 +42,7 @@ public final class EnvironmentFactory {
 
     /**
      * Get environment.
-     *
+     * <p/>
      * We use ServiceLoader pattern.
      * Proper env impls should be used for diff envs.
      *
@@ -60,14 +60,13 @@ public final class EnvironmentFactory {
         final ServiceLoader<Environment> envs = ServiceLoader.load(Environment.class, cl);
         for (Environment env : envs)
             return env;
-    
+
         Logger.getLogger(EnvironmentFactory.class.getName()).warning("No Environment service present, using NoopEnv!");
         return new NoopEnv();
     }
 
     private static class NoopEnv extends AbstractEnvironment {
         private AtomicLong nextId = new AtomicLong(1);
-        private AtomicLong txId = new AtomicLong(Long.MIN_VALUE);
 
         public String getPartition() {
             return MASTER_SERVER_PARTITION;
@@ -90,10 +89,6 @@ public final class EnvironmentFactory {
 
         public void updateRange(String appId, long id, String sequenceName, long allocationSize) {
             nextId.set(id + allocationSize);
-        }
-
-        public String getTransactionId() {
-            return String.valueOf(txId.getAndIncrement());
         }
     }
 }

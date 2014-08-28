@@ -32,7 +32,7 @@ import com.google.appengine.api.quota.QuotaService;
 
 /**
  * Environment info.
- *
+ * <p/>
  * e.g. on OpenShift cloud, etc
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -64,7 +64,7 @@ public interface Environment {
      * Set capability state (for DEV purposes)
      *
      * @param capability the capability in question
-     * @param status the new status of the capability
+     * @param status     the new status of the capability
      */
     void setState(Capability capability, CapabilityStatus status);
 
@@ -78,10 +78,10 @@ public interface Environment {
     /**
      * Get range.
      *
-     * @param appId the app id
-     * @param parent the parent
+     * @param appId        the app id
+     * @param parent       the parent
      * @param sequenceName the sequenceName
-     * @param num the size of range
+     * @param num          the size of range
      * @return key range start
      */
     Long getRange(String appId, Key parent, String sequenceName, long num);
@@ -89,8 +89,8 @@ public interface Environment {
     /**
      * Check key range.
      *
-     * @param appId the app id
-     * @param keyRange the key range
+     * @param appId        the app id
+     * @param keyRange     the key range
      * @param sequenceName the sequence name
      * @return key range state
      */
@@ -99,17 +99,10 @@ public interface Environment {
     /**
      * Update key range.
      *
-     * @param appId the app id
-     * @param id the id
-     * @param sequenceName the sequence name
+     * @param appId          the app id
+     * @param id             the id
+     * @param sequenceName   the sequence name
      * @param allocationSize the allocationSize
      */
     void updateRange(String appId, long id, String sequenceName, long allocationSize);
-
-    /**
-     * Get transaction id.
-     *
-     * @return the tx id
-     */
-    String getTransactionId();
 }

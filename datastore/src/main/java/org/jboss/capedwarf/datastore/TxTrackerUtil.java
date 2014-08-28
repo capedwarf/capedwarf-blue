@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,35 +22,41 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.google.appengine.api.datastore.Key;
+import org.jboss.capedwarf.shared.compatibility.Compatibility;
 
 /**
- * XG checker.
+ * Track tx usage wrt entity groups.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class XGTxChecker implements TxChecker {
-    private static final int MAX_ENTITY_GROUPS = 5;
+class TxTrackerUtil {
+    private static volatile TxTracker tracker;
 
-    // 1 per tx, we should be fine wrt sync
-    private Set<Key> roots = new HashSet<Key>();
-
-    public boolean isInvalid(Key currentRoot, Key key) {
-        TxTrackerUtil.track(currentRoot);
-
-        roots.add(currentRoot);
-
-        return (roots.size() > MAX_ENTITY_GROUPS);
+    private static TxTracker getTracker() {
+        if (tracker == null) {
+            synchronized (TxTrackerUtil.class) {
+                if (tracker == null) {
+                    if (Compatibility.getInstance().isEnabled(Compatibility.Feature.FORCE_STANDALONE_TX_TRACKER)) {
+                        tracker = new StandaloneTxTracker();
+                    } else {
+                        tracker = new ClusteredTxTracker();
+                    }
+                }
+            }
+        }
+        return tracker;
     }
 
-    public void clear() {
-        // if it was added into roots, it passed used check
-        // so we can safely remove it
-        for (Key root : roots) {
-            TxTrackerUtil.remove(root);
-        }
+    static void track(Key currentRoot) {
+        getTracker().track(currentRoot);
+    }
+
+    static void remove(Key currentRoot) {
+        getTracker().remove(currentRoot);
+    }
+
+    static void dump() {
+        getTracker().dump();
     }
 }

@@ -38,7 +38,7 @@ class SingleTxChecker implements TxChecker {
         if (invalid == false) {
             if (root == null) {
                 root = currentRoot;
-                TxTracker.track(currentRoot);
+                TxTrackerUtil.track(currentRoot);
             } else if (root.equals(currentRoot) == false) {
                 invalid = true;
             }
@@ -47,6 +47,6 @@ class SingleTxChecker implements TxChecker {
     }
 
     public void clear() {
-        TxTracker.remove(root);
+        TxTrackerUtil.remove(root);
     }
 }

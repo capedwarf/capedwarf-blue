@@ -22,12 +22,6 @@
 
 package org.jboss.capedwarf.datastore;
 
-import java.util.ConcurrentModificationException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.transaction.Transaction;
-
 import com.google.appengine.api.datastore.Key;
 
 /**
@@ -35,24 +29,10 @@ import com.google.appengine.api.datastore.Key;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class TxTracker {
-    private static final ConcurrentMap<Key, Transaction> usedRoots = new ConcurrentHashMap<Key, Transaction>();
+interface TxTracker {
+    void track(Key currentRoot);
 
-    // TODO -- handle this globally
+    void remove(Key currentRoot);
 
-    static void track(Key currentRoot) {
-        final Transaction current = CapedwarfTransaction.getTx();
-        final Transaction previous = usedRoots.putIfAbsent(currentRoot, current);
-        if (previous != null && current.equals(previous) == false) {
-            throw new ConcurrentModificationException("Different transactions on same entity group: " + currentRoot);
-        }
-    }
-
-    static void remove(Key currentRoot) {
-        usedRoots.remove(currentRoot);
-    }
-
-    static void dump() {
-        System.err.println("Used roots: " + usedRoots);
-    }
+    void dump();
 }

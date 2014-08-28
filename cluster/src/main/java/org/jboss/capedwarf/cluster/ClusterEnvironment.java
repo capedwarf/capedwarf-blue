@@ -22,8 +22,6 @@
 
 package org.jboss.capedwarf.cluster;
 
-import java.util.UUID;
-
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
@@ -35,7 +33,7 @@ import org.kohsuke.MetaInfServices;
 
 /**
  * Cluster env.
- * 
+ *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @MetaInfServices(Environment.class)
@@ -58,9 +56,5 @@ public class ClusterEnvironment extends AbstractEnvironment {
 
     public void updateRange(String appId, long id, String sequenceName, long allocationSize) {
         InfinispanUtils.submit(appId, CacheName.DIST, new KeyRangeUpdateTask(id, sequenceName, allocationSize), sequenceName);
-    }
-
-    public String getTransactionId() {
-        return UUID.randomUUID().toString();
     }
 }

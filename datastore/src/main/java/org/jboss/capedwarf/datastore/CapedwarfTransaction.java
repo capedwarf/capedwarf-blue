@@ -22,6 +22,7 @@
 
 package org.jboss.capedwarf.datastore;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Stack;
@@ -42,7 +43,6 @@ import org.jboss.capedwarf.common.app.Application;
 import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.common.threads.ExecutorFactory;
 import org.jboss.capedwarf.common.tx.TxUtils;
-import org.jboss.capedwarf.environment.EnvironmentFactory;
 
 /**
  * JBoss GAE transaction.
@@ -353,7 +353,7 @@ final class CapedwarfTransaction implements Transaction {
 
     public synchronized String getId() {
         if (txId == null) {
-            txId = EnvironmentFactory.getEnvironment().getTransactionId();
+            txId = getTxId(getTx());
         }
         return txId;
     }
@@ -380,6 +380,21 @@ final class CapedwarfTransaction implements Transaction {
             }
         } finally {
             TxTasks.clear(tx); // clear anyway
+        }
+    }
+
+    /**
+     * Impl detail!
+     * - https://github.com/jbosstm/narayana/blob/master/ArjunaJTS/jtax/classes/com/arjuna/ats/internal/jta/transaction/jts/TransactionImple.java#L1091
+     * - https://github.com/jbosstm/narayana/blob/master/ArjunaJTA/jta/classes/com/arjuna/ats/internal/jta/transaction/arjunacore/TransactionImple.java#L1010
+     * - https://github.com/jbosstm/narayana/blob/master/ArjunaCore/arjuna/classes/com/arjuna/ats/arjuna/common/Uid.java
+     */
+    static String getTxId(javax.transaction.Transaction tx) {
+        try {
+            Method get_uid = tx.getClass().getMethod("get_uid");
+            return get_uid.invoke(tx).toString();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
         }
     }
 }
