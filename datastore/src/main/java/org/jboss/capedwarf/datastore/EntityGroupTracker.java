@@ -114,11 +114,12 @@ class EntityGroupTracker implements Synchronization {
     }
 
     public void beforeCompletion() {
+        checker.beforeCompletion();
     }
 
     public void afterCompletion(int status) {
         try {
-            checker.clear();
+            checker.afterCompletion(status);
         } finally {
             trackers.remove(tx);
         }

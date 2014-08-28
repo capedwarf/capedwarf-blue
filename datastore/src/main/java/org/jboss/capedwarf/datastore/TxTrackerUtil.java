@@ -52,8 +52,12 @@ class TxTrackerUtil {
         getTracker().track(currentRoot);
     }
 
-    static void remove(Key currentRoot) {
-        getTracker().remove(currentRoot);
+    static void beforeCompletion(Key currentRoot) {
+        getTracker().beforeCompletion(currentRoot);
+    }
+
+    static void afterCompletion(int status, Key currentRoot) {
+        getTracker().afterCompletion(status, currentRoot);
     }
 
     static void dump() {

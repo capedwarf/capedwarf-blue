@@ -46,7 +46,10 @@ class StandaloneTxTracker implements TxTracker {
         }
     }
 
-    public void remove(Key currentRoot) {
+    public void beforeCompletion(Key currentRoot) {
+    }
+
+    public void afterCompletion(int status, Key currentRoot) {
         usedRoots.remove(currentRoot);
     }
 

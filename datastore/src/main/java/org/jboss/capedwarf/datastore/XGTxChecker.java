@@ -46,11 +46,18 @@ class XGTxChecker implements TxChecker {
         return (roots.size() > MAX_ENTITY_GROUPS);
     }
 
-    public void clear() {
-        // if it was added into roots, it passed used check
-        // so we can safely remove it
+    // if it was added into roots, it passed used check
+    // so we can safely remove it
+
+    public void beforeCompletion() {
         for (Key root : roots) {
-            TxTrackerUtil.remove(root);
+            TxTrackerUtil.beforeCompletion(root);
+        }
+    }
+
+    public void afterCompletion(int status) {
+        for (Key root : roots) {
+            TxTrackerUtil.afterCompletion(status, root);
         }
     }
 }

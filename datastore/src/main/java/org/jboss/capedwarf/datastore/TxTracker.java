@@ -32,7 +32,9 @@ import com.google.appengine.api.datastore.Key;
 interface TxTracker {
     void track(Key currentRoot);
 
-    void remove(Key currentRoot);
+    void beforeCompletion(Key currentRoot);
+
+    void afterCompletion(int status, Key currentRoot);
 
     void dump();
 }

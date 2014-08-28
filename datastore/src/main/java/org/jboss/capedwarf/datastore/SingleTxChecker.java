@@ -46,7 +46,11 @@ class SingleTxChecker implements TxChecker {
         return invalid;
     }
 
-    public void clear() {
-        TxTrackerUtil.remove(root);
+    public void beforeCompletion() {
+        TxTrackerUtil.beforeCompletion(root);
+    }
+
+    public void afterCompletion(int status) {
+        TxTrackerUtil.afterCompletion(status, root);
     }
 }

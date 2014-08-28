@@ -22,6 +22,8 @@
 
 package org.jboss.capedwarf.datastore;
 
+import javax.transaction.Synchronization;
+
 import com.google.appengine.api.datastore.Key;
 
 /**
@@ -29,7 +31,7 @@ import com.google.appengine.api.datastore.Key;
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-interface TxChecker {
+interface TxChecker extends Synchronization {
     /**
      * Is current checker invalid.
      *
@@ -38,9 +40,4 @@ interface TxChecker {
      * @return true if invalid, false otherwise
      */
     boolean isInvalid(Key root, Key key);
-
-    /**
-     * Clear after tx.
-     */
-    void clear();
 }

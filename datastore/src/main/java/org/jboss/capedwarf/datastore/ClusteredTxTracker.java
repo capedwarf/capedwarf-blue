@@ -62,8 +62,16 @@ class ClusteredTxTracker implements TxTracker {
         }
     }
 
-    public void remove(Key currentRoot) {
-        usedRoots.remove(mask(currentRoot));
+    public void beforeCompletion(Key currentRoot) {
+    }
+
+    public void afterCompletion(int status, Key currentRoot) {
+        final javax.transaction.Transaction tx = CapedwarfTransaction.suspendTx();
+        try {
+            getUsedRoots().remove(mask(currentRoot));
+        } finally {
+            CapedwarfTransaction.resumeTx(tx);
+        }
     }
 
     public void dump() {
