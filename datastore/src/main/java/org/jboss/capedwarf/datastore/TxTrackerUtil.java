@@ -24,6 +24,8 @@ package org.jboss.capedwarf.datastore;
 
 import com.google.appengine.api.datastore.Key;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
+import org.jboss.capedwarf.shared.components.ComponentRegistry;
+import org.jboss.capedwarf.shared.components.SimpleKey;
 
 /**
  * Track tx usage wrt entity groups.
@@ -31,21 +33,11 @@ import org.jboss.capedwarf.shared.compatibility.Compatibility;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class TxTrackerUtil {
-    private static volatile TxTracker tracker;
-
     private static TxTracker getTracker() {
-        if (tracker == null) {
-            synchronized (TxTrackerUtil.class) {
-                if (tracker == null) {
-                    if (Compatibility.getInstance().isEnabled(Compatibility.Feature.FORCE_STANDALONE_TX_TRACKER)) {
-                        tracker = new StandaloneTxTracker();
-                    } else {
-                        tracker = new ClusteredTxTracker();
-                    }
-                }
-            }
-        }
-        return tracker;
+        final ComponentRegistry registry = ComponentRegistry.getInstance();
+        final TxTracker lazy = new LazyTxTracker();
+        final TxTracker tracker = registry.putIfAbsent(new SimpleKey<TxTracker>(TxTracker.class), lazy);
+        return (tracker != null) ? tracker : lazy;
     }
 
     static void track(Key currentRoot) {
@@ -62,5 +54,40 @@ class TxTrackerUtil {
 
     static void dump() {
         getTracker().dump();
+    }
+
+    private static class LazyTxTracker implements TxTracker {
+        private volatile TxTracker delegate;
+
+        private TxTracker getDelegate() {
+            if (delegate == null) {
+                synchronized (TxTrackerUtil.class) {
+                    if (delegate == null) {
+                        if (Compatibility.getInstance().isEnabled(Compatibility.Feature.FORCE_STANDALONE_TX_TRACKER)) {
+                            delegate = new StandaloneTxTracker();
+                        } else {
+                            delegate = new ClusteredTxTracker();
+                        }
+                    }
+                }
+            }
+            return delegate;
+        }
+
+        public void track(Key currentRoot) {
+            getDelegate().track(currentRoot);
+        }
+
+        public void beforeCompletion(Key currentRoot) {
+            getDelegate().beforeCompletion(currentRoot);
+        }
+
+        public void afterCompletion(int status, Key currentRoot) {
+            getDelegate().afterCompletion(status, currentRoot);
+        }
+
+        public void dump() {
+            getDelegate().dump();
+        }
     }
 }
