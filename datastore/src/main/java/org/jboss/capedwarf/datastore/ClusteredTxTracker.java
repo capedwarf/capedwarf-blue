@@ -53,9 +53,16 @@ class ClusteredTxTracker implements TxTracker {
 
     public void track(Key currentRoot) {
         final Transaction current = CapedwarfTransaction.currentTransaction();
-
+        final String key = mask(currentRoot);
         final String currentId = current.getId();
-        final String previousId = getUsedRoots().putIfAbsent(mask(currentRoot), currentId);
+
+        final String previousId;
+        final javax.transaction.Transaction tx = CapedwarfTransaction.suspendTx();
+        try {
+            previousId = getUsedRoots().putIfAbsent(key, currentId);
+        } finally {
+            CapedwarfTransaction.resumeTx(tx);
+        }
 
         if (previousId != null && previousId.equals(currentId) == false) {
             throw new ConcurrentModificationException("Different transactions on same entity group: " + currentRoot);
@@ -66,9 +73,11 @@ class ClusteredTxTracker implements TxTracker {
     }
 
     public void afterCompletion(int status, Key currentRoot) {
+        final String key = mask(currentRoot);
+
         final javax.transaction.Transaction tx = CapedwarfTransaction.suspendTx();
         try {
-            getUsedRoots().remove(mask(currentRoot));
+            getUsedRoots().remove(key);
         } finally {
             CapedwarfTransaction.resumeTx(tx);
         }
