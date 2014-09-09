@@ -23,14 +23,14 @@
 package org.jboss.capedwarf.cluster;
 
 import org.infinispan.AdvancedCache;
-import org.jboss.capedwarf.common.infinispan.BaseTxTask;
+import org.jboss.capedwarf.common.infinispan.NewTxTask;
 
 /**
  * Entity key id generator taks.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class KeyGeneratorTask extends BaseTxTask<String, Long, Long> {
+public class KeyGeneratorTask extends NewTxTask<String, Long, Long> {
     private final String sequenceName;
     private final long allocationSize;
     private final long initialValue;

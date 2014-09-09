@@ -26,14 +26,14 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyRange;
 import org.infinispan.AdvancedCache;
-import org.jboss.capedwarf.common.infinispan.BaseTxTask;
+import org.jboss.capedwarf.common.infinispan.NewTxTask;
 
 /**
  * Key range check task.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class KeyRangeCheckTask extends BaseTxTask<String, Long, DatastoreService.KeyRangeState> {
+public class KeyRangeCheckTask extends NewTxTask<String, Long, DatastoreService.KeyRangeState> {
     private final KeyRange keyRange;
     private final String sequenceName;
 

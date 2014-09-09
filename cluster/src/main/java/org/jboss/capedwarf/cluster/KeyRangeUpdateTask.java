@@ -23,14 +23,14 @@
 package org.jboss.capedwarf.cluster;
 
 import org.infinispan.AdvancedCache;
-import org.jboss.capedwarf.common.infinispan.BaseTxTask;
+import org.jboss.capedwarf.common.infinispan.NewTxTask;
 
 /**
  * Key range update task.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class KeyRangeUpdateTask extends BaseTxTask<String, Long, Void> {
+public class KeyRangeUpdateTask extends NewTxTask<String, Long, Void> {
     private final long id;
     private final String sequenceName;
     private final long allocationSize;
