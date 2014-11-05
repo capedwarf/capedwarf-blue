@@ -80,7 +80,7 @@ public class CursorTransformer extends RewriteTransformer {
         readObject.setBody("{index = new java.util.concurrent.atomic.AtomicInteger($1.readInt()); size = new org.jboss.capedwarf.datastore.query.DirectLazySize($1.readInt());}");
 
         CtMethod advance = clazz.getDeclaredMethod("advance", new CtClass[]{intClass, pool.get(PreparedQuery.class.getName())});
-        advance.setBody("index.addAndGet($1);");
+        advance.setBody("{index.addAndGet($1); return this;}");
 
         CtMethod reverse = clazz.getDeclaredMethod("reverse");
         reverse.setBody("return new com.google.appengine.api.datastore.Cursor(new java.util.concurrent.atomic.AtomicInteger(getSize() - getIndex()), size);");
@@ -98,8 +98,8 @@ public class CursorTransformer extends RewriteTransformer {
                 "}"
         );
 
-        CtMethod fromByteArray = clazz.getDeclaredMethod("fromByteArray", new CtClass[]{pool.get(byte[].class.getName())});
-        fromByteArray.setBody("return fromWebSafeString(new String($1));");
+        CtMethod toByteString = clazz.getDeclaredMethod("toByteString", new CtClass[]{});
+        toByteString.setBody("return com.google.appengine.repackaged.com.google.protobuf.ByteString.copyFrom(toWebSafeString().getBytes());");
 
         CtMethod equals = clazz.getDeclaredMethod("equals", new CtClass[]{pool.get(Object.class.getName())});
         equals.setBody("return ($1 instanceof com.google.appengine.api.datastore.Cursor) && ((com.google.appengine.api.datastore.Cursor) $1).getIndex() == getIndex();");
