@@ -20,29 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.capedwarf.cron;
+package org.jboss.capedwarf.common.security;
 
-import java.io.Serializable;
-import java.util.concurrent.Callable;
-
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.TaskOptions;
-import org.jboss.capedwarf.shared.config.QueueXml;
+import java.security.BasicPermission;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CronCallable implements Callable<Void>, Serializable {
-    private final String url;
-
-    public CronCallable(String url) {
-        this.url = url;
-    }
-
-    public Void call() throws Exception {
-        Queue queue = QueueFactory.getQueue(QueueXml.INTERNAL);
-        queue.add(TaskOptions.Builder.withUrl(url).header("X-AppEngine-Cron", Boolean.TRUE.toString()));
-        return null;
+public class CapedwarfPermission extends BasicPermission {
+    public CapedwarfPermission(String name) {
+        super(name);
     }
 }

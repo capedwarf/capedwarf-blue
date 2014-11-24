@@ -63,6 +63,7 @@ import org.jboss.capedwarf.common.async.Wrappers;
 import org.jboss.capedwarf.common.infinispan.InfinispanUtils;
 import org.jboss.capedwarf.common.jms.MessageCreator;
 import org.jboss.capedwarf.common.jms.ServletExecutorProducer;
+import org.jboss.capedwarf.common.security.CapedwarfPermission;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.CacheName;
 import org.jboss.capedwarf.shared.config.QueueXml;
@@ -99,6 +100,12 @@ public class CapedwarfQueue implements Queue {
     }
 
     private CapedwarfQueue(String queueName) {
+        if (QueueXml.INTERNAL.equals(queueName)) {
+            SecurityManager sm = System.getSecurityManager();
+            if (sm != null) {
+                sm.checkPermission(new CapedwarfPermission("queue." + QueueXml.INTERNAL));
+            }
+        }
         validateQueueName(queueName);
         this.queueName = queueName;
     }
@@ -186,6 +193,10 @@ public class CapedwarfQueue implements Queue {
     }
 
     private void checkTaskOptions(Transaction transaction, Iterable<TaskOptions> taskOptions) {
+        if (QueueXml.INTERNAL.equals(getQueueName())) {
+            return; // ignore any checks for internal queue
+        }
+
         Set<String> taskNames = new HashSet<String>();
         for (TaskOptions to : taskOptions) {
             TaskOptionsHelper options = new TaskOptionsHelper(to);
