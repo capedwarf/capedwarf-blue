@@ -49,6 +49,10 @@ class VelocityUtils {
         MAP.put(new Key("org.", "apache.", "velocity."), "org.jboss.capedwarf.apache.velocity.");
     }
 
+    static String toString(Object value) {
+        return (value == null) ? "" : value.toString();
+    }
+
     static VelocityEngine create(ServletContext context) throws Exception {
         VelocityEngine engine = new VelocityEngine();
 

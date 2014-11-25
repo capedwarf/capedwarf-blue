@@ -58,11 +58,11 @@ public class Search {
     private String errorMessage;
 
     public String getNamespace() {
-        return namespace == null ? "" : namespace;
+        return VelocityUtils.toString(namespace);
     }
 
     public String getIndexNamePrefix() {
-        return indexNamePrefix == null ? "" : indexNamePrefix;
+        return VelocityUtils.toString(indexNamePrefix);
     }
 
     public boolean isSearchPerformed() {

@@ -39,6 +39,7 @@ public class AdminExtension implements Extension {
         addAnnotatedType(bbd, bm, TimeFormatter.class);
         addAnnotatedType(bbd, bm, SizeFormatter.class);
         addAnnotatedType(bbd, bm, ContextPathProducer.class);
+        addAnnotatedType(bbd, bm, CronJobs.class);
     }
 
     private <E> void addAnnotatedType(BeforeBeanDiscovery bbd, BeanManager bm, Class<E> clazz) {

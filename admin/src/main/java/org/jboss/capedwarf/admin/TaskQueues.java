@@ -77,7 +77,7 @@ public class TaskQueues {
         }
     }
 
-    public class TaskQueue {
+    public static class TaskQueue {
 
         private Queue queue;
         private QueueStatistics statistics;
@@ -100,7 +100,7 @@ public class TaskQueues {
         }
 
         public String getOldestTask() {
-            return statistics.getOldestEtaUsec() == null ? "" : String.valueOf(statistics.getOldestEtaUsec());
+            return VelocityUtils.toString(statistics.getOldestEtaUsec());
         }
 
         public int getTasksInQueue() {

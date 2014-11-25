@@ -24,7 +24,6 @@ package org.jboss.capedwarf.admin;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -82,7 +81,7 @@ public class DatastoreViewer extends DatastoreHolder {
     }
 
     public String getSelectedNamespace() {
-        return selectedNamespace == null ? "" : selectedNamespace;
+        return VelocityUtils.toString(selectedNamespace);
     }
 
     public void setSelectedEntityKind(String selectedEntityKind) {

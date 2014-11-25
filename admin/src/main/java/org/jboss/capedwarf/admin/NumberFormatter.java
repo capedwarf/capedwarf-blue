@@ -47,8 +47,4 @@ public class NumberFormatter {
     private static String singularOrPlural(String unit, long count) {
         return count == 1 ? unit : (unit + "s");
     }
-
-
-
-
 }

@@ -1,0 +1,29 @@
+#parse("/org/jboss/capedwarf/admin/header.vm")
+
+<h2>Cron Jobs</h2>
+
+<p>View current cron jobs for module <b>$cronJobs.module</b>.</p>
+
+<table width="100%">
+    <tr>
+        <th>URL</th>
+        <th>Description</th>
+        <th>Schedule</th>
+        <th>Timezone</th>
+        <th>Target</th>
+        <th>Next fire time</th>
+    </tr>
+
+    #foreach ($row in $cronJobs.jobs)
+        <tr>
+            <td>$row.url</td>
+            <td>$row.desc</td>
+            <td>$row.schedule</td>
+            <td>$row.timezone</td>
+            <td>$row.target</td>
+            <td>$row.next</td>
+        </tr>
+    #end
+</table>
+
+#parse("/org/jboss/capedwarf/admin/footer.vm")

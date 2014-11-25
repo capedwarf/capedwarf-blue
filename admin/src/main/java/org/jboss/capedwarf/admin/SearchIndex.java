@@ -76,15 +76,15 @@ public class SearchIndex {
     private long resultCount;
 
     public String getNamespace() {
-        return namespace == null ? "" : namespace;
+        return VelocityUtils.toString(namespace);
     }
 
     public String getIndexName() {
-        return indexName == null ? "" : indexName;
+        return VelocityUtils.toString(indexName);
     }
 
     public String getQuery() {
-        return query == null ? "" : query;
+        return VelocityUtils.toString(query);
     }
 
     public boolean isSearchPerformed() {

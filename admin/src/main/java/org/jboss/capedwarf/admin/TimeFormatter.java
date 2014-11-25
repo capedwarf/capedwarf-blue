@@ -22,17 +22,16 @@
 
 package org.jboss.capedwarf.admin;
 
-import javax.inject.Named;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javax.inject.Named;
 
 /**
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  */
 @Named
 public class TimeFormatter {
-
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     public String format(long usec) {
