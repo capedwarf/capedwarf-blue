@@ -35,7 +35,7 @@
                             <a href="#">Backends</a>
                         </li>
                         <li>
-                            <a href="cronJobs.vm#">Cron Jobs</a>
+                            <a href="cronJobs.vm">Cron Jobs</a>
                         </li>
                         <li>
                             <a href="taskQueues.vm">Task Queues</a>
