@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.capedwarf.common.io.IOUtils;
+import org.jboss.shrinkwrap.api.asset.ClassLoaderAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.test.capedwarf.common.support.All;
 import org.jboss.test.capedwarf.common.test.TestBase;
@@ -55,23 +56,30 @@ public class PokeTest extends TestBase {
         context.setWebXmlFile("servlet/web.xml");
         WebArchive war = getCapedwarfDeployment(context);
         war.addClass(SimpleServlet.class);
+        war.add(new ClassLoaderAsset("servlet/xindex.html"), "index.html");
         return war;
     }
 
     @RunAsClient
     @Test
+    public void testIndex(@ArquillianResource URL url) throws Exception {
+        doTest(url, "index.html", "GET", "Hello");
+    }
+
+    @RunAsClient
+    @Test
     public void testPut(@ArquillianResource URL url) throws Exception {
-        doTest(url, "PUT");
+        doTest(url, "simple", "PUT", "qwert");
     }
 
     @RunAsClient
     @Test
     public void testPost(@ArquillianResource URL url) throws Exception {
-        doTest(url, "POST");
+        doTest(url, "simple", "POST", "qwert");
     }
 
-    private void doTest(URL url, String method) throws IOException {
-        URL testURL = new URL(url, "simple");
+    private void doTest(URL url, String path, String method, String expected) throws IOException {
+        URL testURL = new URL(url, path);
         HttpURLConnection conn = (HttpURLConnection) testURL.openConnection();
         conn.setRequestMethod(method);
         conn.setDoInput(true);
@@ -87,7 +95,7 @@ public class PokeTest extends TestBase {
             try (InputStream is = conn.getInputStream()) {
                 IOUtils.copyStream(is, baos);
             }
-            Assert.assertEquals("qwert", baos.toString());
+            Assert.assertTrue(baos.toString().contains(expected));
         } finally {
             conn.disconnect();
         }
