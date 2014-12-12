@@ -83,7 +83,7 @@
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.websockets>1.0.0.Final</version.org.jboss.spec.javax.websockets>
         <version.org.hibernate.search>4.5.1.Final</version.org.hibernate.search>
-        <version.org.marshalling>1.4.5.Final</version.org.marshalling>
+        <version.org.marshalling>1.4.9.Final</version.org.marshalling>
         <version.org.infinispan>6.0.2.Final</version.org.infinispan>
         <version.org.wildfly.mail-ra>1.0.0.Alpha2</version.org.wildfly.mail-ra>
         <version.net.jcip>1.0</version.net.jcip>
@@ -91,7 +91,7 @@
         <version.org.apache.httpcomponents>4.3.1</version.org.apache.httpcomponents>
         <version.org.xerial.sqlite>3.7.2</version.org.xerial.sqlite>
         <version.org.codehaus.jackson>1.9.13</version.org.codehaus.jackson>
-        <version.io.undertow>1.0.15.Final</version.io.undertow>
+        <version.io.undertow>1.1.0.Final</version.io.undertow>
         <version.org.quartz>2.2.1</version.org.quartz>
         <!-- Antlr -->
         <version.antlr>3.1</version.antlr>
@@ -104,8 +104,8 @@
         <!-- Testing -->
         <version.junit>4.11</version.junit>
         <version.arquillian>1.1.5.Final</version.arquillian>
-        <version.jboss.wildfly>8.1.0.Final</version.jboss.wildfly>
-        <version.org.jboss.xnio>3.2.2.Final</version.org.jboss.xnio>
+        <version.jboss.wildfly>8.2.0.Final</version.jboss.wildfly>
+        <version.org.jboss.xnio>3.3.0.Final</version.org.jboss.xnio>
         <version.arquillian.gae>1.0.0.Beta9</version.arquillian.gae>
         <version.jboss.maven.transformer>1.0.0.Beta5</version.jboss.maven.transformer>
         <version.jboss.maven.arquillian>1.0.0.Alpha1</version.jboss.maven.arquillian>
@@ -127,7 +127,7 @@
         <!-- Testing Objectify -->
         <version.objectify>4.0rc2</version.objectify>
         <!-- Testing REST -->
-        <version.org.jboss.resteasy>3.0.8.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.0.10.Final</version.org.jboss.resteasy>
         <!-- Build configuration -->
         <version.datanucleus.plugin>3.1.3</version.datanucleus.plugin>
         <version.surefire.plugin>2.12.4</version.surefire.plugin>
