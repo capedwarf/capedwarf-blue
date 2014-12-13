@@ -911,6 +911,13 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-gae-gcloud</artifactId>
+                <version>${version.arquillian.gae}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.maven.plugins</groupId>
                 <artifactId>arquillian-transformer</artifactId>
                 <version>${version.jboss.maven.arquillian}</version>
@@ -1264,6 +1271,48 @@
                 <dependency>
                     <groupId>org.jboss.arquillian.container</groupId>
                     <artifactId>arquillian-gae-tools</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- GAE GCloud -->
+        <profile>
+            <id>gae-gcloud</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>gae-gcloud</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                            <groups>org.jboss.test.capedwarf.common.support.GCloud</groups>
+                            <includes>
+                                <include>org/jboss/test/**/*Test.java</include>
+                            </includes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.capedwarf.blue</groupId>
+                    <artifactId>capedwarf-arquillian</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.arquillian.protocol</groupId>
+                    <artifactId>arquillian-protocol-modules</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>arquillian-gae-gcloud</artifactId>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
