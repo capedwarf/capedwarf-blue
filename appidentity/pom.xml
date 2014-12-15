@@ -17,7 +17,7 @@
 
         <dependency>
             <groupId>org.jboss.capedwarf.shared</groupId>
-            <artifactId>capedwarf-shared</artifactId>
+            <artifactId>capedwarf-integration</artifactId>
         </dependency>
 
         <dependency>

@@ -490,7 +490,7 @@
 
             <dependency>
                 <groupId>org.jboss.capedwarf.shared</groupId>
-                <artifactId>capedwarf-shared</artifactId>
+                <artifactId>capedwarf-integration</artifactId>
                 <version>${version.org.jboss.capedwarf.shared}</version>
             </dependency>
 
