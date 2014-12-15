@@ -41,6 +41,16 @@
         <dependency>
             <groupId>org.jboss.capedwarf.blue</groupId>
             <artifactId>capedwarf-common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.appengine</groupId>
+                    <artifactId>appengine-managed-runtime</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.appengine</groupId>
+                    <artifactId>appengine-jetty-managed-runtime</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
