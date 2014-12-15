@@ -17,6 +17,11 @@
 
         <dependency>
             <groupId>org.jboss.capedwarf.shared</groupId>
+            <artifactId>capedwarf-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.capedwarf.shared</groupId>
             <artifactId>capedwarf-integration</artifactId>
         </dependency>
 
@@ -78,6 +83,18 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.undertow</groupId>
+            <artifactId>undertow-servlet</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

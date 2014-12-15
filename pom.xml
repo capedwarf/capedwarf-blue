@@ -490,6 +490,12 @@
 
             <dependency>
                 <groupId>org.jboss.capedwarf.shared</groupId>
+                <artifactId>capedwarf-common</artifactId>
+                <version>${version.org.jboss.capedwarf.shared}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.capedwarf.shared</groupId>
                 <artifactId>capedwarf-integration</artifactId>
                 <version>${version.org.jboss.capedwarf.shared}</version>
             </dependency>
