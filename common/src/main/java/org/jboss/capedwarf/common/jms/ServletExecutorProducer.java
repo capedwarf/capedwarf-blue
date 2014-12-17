@@ -74,7 +74,7 @@ public class ServletExecutorProducer extends JmsAdapter {
         msg.setStringProperty(MessageConstants.PREFIX + key, value);
     }
 
-    private static String getModuleName() {
+    protected String getModuleName() {
         final Module module = Utils.toModule();
         return module.getIdentifier().toString();
     }
