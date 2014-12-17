@@ -54,8 +54,7 @@ public class ServletInvoker {
         AppIdFactory previous = AppIdFactory.getCurrentFactory();
         AppIdFactory.setCurrentFactory(ClassloaderAppIdFactory.INSTANCE);
         try {
-            TaskOptions taskOptions = TaskOptions.Builder.withUrl(path);
-            MessageCreator creator = new TasksMessageCreator(QueueXml.INTERNAL, taskOptions);
+            MessageCreator creator = new CustomTasksMessageCreator(path);
             ServletExecutorProducer producer = new CustomServletExecutorProducer(module);
             try {
                 producer.sendMessage(creator);
@@ -64,6 +63,17 @@ public class ServletInvoker {
             }
         } finally {
             AppIdFactory.setCurrentFactory(previous);
+        }
+    }
+
+    private static class CustomTasksMessageCreator extends TasksMessageCreator {
+        public CustomTasksMessageCreator(String path) {
+            super(QueueXml.INTERNAL, TaskOptions.Builder.withUrl(path));
+        }
+
+        @Override
+        protected String getCurrentNamespace() {
+            return null;
         }
     }
 

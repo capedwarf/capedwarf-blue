@@ -150,10 +150,14 @@ public class TasksMessageCreator implements MessageCreator {
         putIfNotNull(map, TASK_ETA, taskOptions.getEtaMillis());
         map.put(FAIL_FAST, Boolean.FALSE.toString()); // TODO?
         if (map.containsKey(CURRENT_NAMESPACE) == false) {
-            String namespace = NamespaceManager.get();
+            String namespace = getCurrentNamespace();
             map.put(CURRENT_NAMESPACE, namespace == null ? "" : namespace);
         }
         TasksServletRequestCreator.put(message, TasksServletRequestCreator.HEADERS, map);
+    }
+
+    protected String getCurrentNamespace() {
+        return NamespaceManager.get();
     }
 
     public String getPath() {
