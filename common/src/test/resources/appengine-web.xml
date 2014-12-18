@@ -27,6 +27,8 @@
     <version>1</version>
     <threadsafe>true</threadsafe>
 
+    <warmup-requests-enabled>false</warmup-requests-enabled>
+
     <static-files>
         <include path="**" />
     </static-files>

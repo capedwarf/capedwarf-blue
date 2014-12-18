@@ -26,4 +26,5 @@
     <application>capedwarf-test-b</application>
     <version>1</version>
     <threadsafe>true</threadsafe>
+  <warmup-requests-enabled>false</warmup-requests-enabled>
 </appengine-web-app>
