@@ -42,7 +42,7 @@ class DelegateSessionManagerFactory implements SessionManagerFactory {
                 delegate = new CapedwarfSessionManagerFactory(appEngineWebXml.isAsyncSessionPersistence(), appEngineWebXml.getSessionPersistenceQueueName());
                 break;
             case STUB:
-                delegate = new StubSessionManagerFactory();
+                delegate = StubSessionManagerFactory.INSTANCE;
                 break;
             default:
                 throw new IllegalStateException();
