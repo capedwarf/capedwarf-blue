@@ -47,6 +47,7 @@ public class CommonServletExtension implements ServletExtension {
         switch (sessionType) {
             case APPENGINE:
             case STUB:
+                log.info(String.format("Using %s http session configuration / handling.", sessionType));
                 deploymentInfo.setSessionManagerFactory(new DelegateSessionManagerFactory(appEngineWebXml));
                 break;
             case WILDFLY:
