@@ -35,6 +35,7 @@ public abstract class AuthHandler {
     protected void setupUserPrincipal(HttpServletRequest request, String email, String userId, String authDomain, boolean isAdmin) {
         request.getSession().setAttribute(
             CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY,
-            new CapedwarfUserPrincipal(userId, email, authDomain, isAdmin));
+            new CapedwarfUserPrincipal(userId, email, authDomain, isAdmin)
+        );
     }
 }

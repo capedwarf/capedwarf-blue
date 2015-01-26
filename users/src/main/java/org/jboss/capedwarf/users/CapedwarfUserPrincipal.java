@@ -24,6 +24,7 @@
 
 package org.jboss.capedwarf.users;
 
+import java.io.Serializable;
 import java.security.Principal;
 
 import org.jboss.capedwarf.common.security.PrincipalInfo;
@@ -32,7 +33,9 @@ import org.jboss.capedwarf.common.security.PrincipalInfo;
  * @author <a href="mailto:marko.luksa@gmail.com">Marko Luksa</a>
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-class CapedwarfUserPrincipal implements PrincipalInfo, Principal {
+class CapedwarfUserPrincipal implements PrincipalInfo, Principal, Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final String userId;
     private final String email;
     private final String authDomain;
