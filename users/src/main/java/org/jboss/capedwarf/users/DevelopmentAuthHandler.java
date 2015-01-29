@@ -61,7 +61,7 @@ public class DevelopmentAuthHandler extends AuthHandler {
             "        </p>\n" +
             "        <input type=\"hidden\" name=\"" + AuthServlet.DESTINATION_URL_PARAM + "\" value=\"" + destinationUrl.replace("\"", "\\\"") + "\">\n" +
             "        <p style=\"margin-left: 3em\">\n" +
-            "            <input name=\"action\" type=\"submit\" value=\"Log in\" style=\"padding: 6px 10px\">\n" +
+                "            <input name=\"action\" type=\"submit\" value=\"Log in\" id='btn-login' style=\"padding: 6px 10px\">\n" +
             "        </p>\n" +
             "    </div>\n" +
             "</form>\n" +
