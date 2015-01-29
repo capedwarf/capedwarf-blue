@@ -48,12 +48,12 @@ public class AuthenticatorServletExtension implements ServletExtension {
             return; // looks like there is no explicit secure resources / content
         }
 
-        final String tgt = servletContext.getInitParameter("__TGT__");
+        final String auth = servletContext.getInitParameter("__AUTH__");
         AuthenticationMechanismFactory amf;
-        if (CAPEDWARF.equals(tgt)) {
-            amf = new CapedwarfUsersAuthenticatorFactory();
-        } else {
+        if ("BASIC".equalsIgnoreCase(auth)) {
             amf = new CapedwarfBasicAuthenticatorFactory();
+        } else {
+            amf = new CapedwarfUsersAuthenticatorFactory();
         }
         deploymentInfo.addAuthenticationMechanism(CAPEDWARF, amf);
     }
