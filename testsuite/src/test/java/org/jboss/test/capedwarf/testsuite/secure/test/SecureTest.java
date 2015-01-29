@@ -55,6 +55,7 @@ public class SecureTest extends TestBase {
         TestContext context = TestContext.asDefault();
         context.setWebXmlFile("secure/web.xml");
         WebArchive war = getCapedwarfDeployment(context);
+        war.addAsWebInfResource("secure/capedwarf-web.xml", "capedwarf-web.xml");
         war.addClass(SecureServlet.class);
         LibUtils.addGaeAsLibrary(war);
         return war;
