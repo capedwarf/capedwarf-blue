@@ -348,7 +348,7 @@ public class TransactionsTest extends SimpleTestBase {
         if (isJBossImpl(service) == false)
             return;
 
-        final int N = 5; // max XG entity groups
+        final int N = 25; // max XG entity groups
 
         List<Key> keys = new ArrayList<Key>();
         for (int i = 0; i < N + 1; i++) {
