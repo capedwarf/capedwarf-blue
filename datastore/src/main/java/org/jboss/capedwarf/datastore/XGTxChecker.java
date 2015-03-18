@@ -33,7 +33,7 @@ import com.google.appengine.api.datastore.Key;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 class XGTxChecker implements TxChecker {
-    private static final int MAX_ENTITY_GROUPS = 5;
+    private static final int MAX_ENTITY_GROUPS = Integer.parseInt(System.getProperty("gae.xg.max_entity_groups", "25"));
 
     // 1 per tx, we should be fine wrt sync
     private Set<Key> roots = new HashSet<Key>();
