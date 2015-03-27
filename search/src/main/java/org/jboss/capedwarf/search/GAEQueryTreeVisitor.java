@@ -22,8 +22,6 @@
 
 package org.jboss.capedwarf.search;
 
-import java.util.Collections;
-
 import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.GeoPoint;
 import com.google.appengine.api.search.query.ParserUtils;
@@ -33,23 +31,21 @@ import com.google.appengine.api.search.query.QueryTreeVisitor;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.Tree;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
-import org.apache.lucene.util.Version;
+
 import org.hibernate.search.spatial.SpatialQueryBuilder;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
-
-    public static final Version LUCENE_VERSION = Version.LUCENE_36;
 
     private String allFieldName;
 
@@ -177,7 +173,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
             double radius = Double.parseDouble(value.getText()) / 1000; // need to convert from m to km
 
             String prefixedFieldName = new FieldNamePrefixer().getPrefixedFieldName(fieldName, Field.FieldType.GEO_POINT);
-            return SpatialQueryBuilder.buildSpatialQueryByQuadTree(latitude, longitude, radius, prefixedFieldName);
+            return SpatialQueryBuilder.buildSpatialQueryByHash(latitude, longitude, radius, prefixedFieldName);
         } else {
             return createQuery(leftSide.getText(), operator, rightSide);
         }
@@ -221,15 +217,15 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
             case CONTAINS:
                 return createContainsQuery(field, text);
             case EQ:
-                return new TermRangeQuery(field, text.getText(), text.getText(), true, true);
+                return TermRangeQuery.newStringRange(field, text.getText(), text.getText(), true, true);
             case GREATER_THAN:
-                return new TermRangeQuery(field, text.getText(), null, false, false);
+                return TermRangeQuery.newStringRange(field, text.getText(), null, false, false);
             case GREATER_OR_EQUAL:
-                return new TermRangeQuery(field, text.getText(), null, true, true);
+                return TermRangeQuery.newStringRange(field, text.getText(), null, true, true);
             case LESS_THAN:
-                return new TermRangeQuery(field, null, text.getText(), false, false);
+                return TermRangeQuery.newStringRange(field, null, text.getText(), false, false);
             case LESS_OR_EQUAL:
-                return new TermRangeQuery(field, null, text.getText(), true, true);
+                return TermRangeQuery.newStringRange(field, null, text.getText(), true, true);
             default:
                 // fail fast
                 throw new RuntimeException("Unsupported operator: " + operator);
@@ -239,7 +235,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
     private Query createContainsQuery(String field, Context text) {
         if (text.isPhrase()) {
             try {
-                return new QueryParser(LUCENE_VERSION, null, new StandardAnalyzer(LUCENE_VERSION, Collections.emptySet())).parse(field + ":" + text.getText());
+                return new QueryParser(null, new StandardAnalyzer()).parse(field + ":" + text.getText());
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }

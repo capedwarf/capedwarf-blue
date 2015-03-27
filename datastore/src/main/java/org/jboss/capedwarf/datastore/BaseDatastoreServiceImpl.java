@@ -126,7 +126,7 @@ public class BaseDatastoreServiceImpl implements BaseDatastoreService, CurrentTr
         if (searchManager instanceof SearchManagerImplementor) {
             SearchManagerImplementor smi = (SearchManagerImplementor) searchManager;
             smi.setTimeoutExceptionFactory(new TimeoutExceptionFactory() {
-                public RuntimeException createTimeoutException(String message, org.apache.lucene.search.Query query) {
+                public RuntimeException createTimeoutException(String message, String queryDescription) {
                     return new ApiProxy.ApiDeadlineExceededException("datastore", "RunQuery");
                 }
             });

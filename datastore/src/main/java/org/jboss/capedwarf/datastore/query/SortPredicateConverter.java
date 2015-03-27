@@ -56,6 +56,6 @@ public class SortPredicateConverter {
 
     private SortField convertToSortField(Query.SortPredicate sortPredicate) {
         boolean reverse = sortPredicate.getDirection() == Query.SortDirection.DESCENDING;
-        return new SortField(sortPredicate.getPropertyName(), SortField.STRING, reverse);   // TODO: find appropriate SortField type
+        return new SortField(sortPredicate.getPropertyName(), SortField.Type.STRING, reverse);   // TODO: find appropriate SortField type
     }
 }

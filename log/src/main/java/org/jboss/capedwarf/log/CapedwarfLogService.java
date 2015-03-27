@@ -168,7 +168,7 @@ public class CapedwarfLogService implements ExposedLogService {
 
         Query luceneQuery = getQuery(queryBuilder, queries);
         CacheQuery cacheQuery = searchManager.getQuery(luceneQuery, CapedwarfRequestLogs.class);
-        cacheQuery.sort(new Sort(new SortField(CapedwarfRequestLogs.END_TIME_USEC, SortField.LONG, true)));
+        cacheQuery.sort(new Sort(new SortField(CapedwarfRequestLogs.END_TIME_USEC, SortField.Type.LONG, true)));
         cacheQuery.firstResult(logQuery.getOptions().getOffset());
         if (logQuery.getOptions().getLimit() != null) {
             cacheQuery.maxResults(logQuery.getOptions().getLimit());
@@ -203,7 +203,7 @@ public class CapedwarfLogService implements ExposedLogService {
         QueryBuilder queryBuilder = searchManager.buildQueryBuilderForClass(CapedwarfAppLogLine.class).get();
         Query query = queryBuilder.keyword().onField(CapedwarfAppLogLine.REQUEST_ID).matching(requestLogs.getRequestId()).createQuery();
         CacheQuery cacheQuery = searchManager.getQuery(query, CapedwarfAppLogLine.class);
-        cacheQuery.sort(new Sort(new SortField(CapedwarfAppLogLine.SEQUENCE_NUMBER, SortField.LONG)));
+        cacheQuery.sort(new Sort(new SortField(CapedwarfAppLogLine.SEQUENCE_NUMBER, SortField.Type.LONG)));
         return cacheQuery;
     }
 

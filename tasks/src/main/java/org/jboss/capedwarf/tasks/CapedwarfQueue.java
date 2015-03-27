@@ -77,7 +77,7 @@ import org.jboss.capedwarf.shared.config.QueueXml;
 @QueueInitialization
 public class CapedwarfQueue implements Queue {
     private static final String ID = "ID:";
-    private static final Sort SORT = new Sort(new SortField(Task.ETA_MILLIS, SortField.LONG));
+    private static final Sort SORT = new Sort(new SortField(Task.ETA_MILLIS, SortField.Type.LONG));
 
     private static final Set<String> ALLOWED_HEADERS;
 

@@ -22,30 +22,30 @@
 
 package org.jboss.capedwarf.search;
 
-import java.io.Reader;
-import java.util.Collections;
-
 import com.google.appengine.api.search.Field;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.DelegatingAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.hibernate.search.util.impl.PassThroughAnalyzer;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public final class DocumentFieldAnalyzer extends Analyzer {
+public final class DocumentFieldAnalyzer extends DelegatingAnalyzerWrapper {
 
     private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
 
-    public static final StandardHtmlAnalyzer STANDARD_HTML_ANALYZER = new StandardHtmlAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
-    public static final StandardAnalyzer STANDARD_ANALYZER = new StandardAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION, Collections.emptySet());
-    public static final PassThroughAnalyzer PASS_THROUGH_ANALYZER = new PassThroughAnalyzer(GAEQueryTreeVisitor.LUCENE_VERSION);
+    public static final StandardHtmlAnalyzer STANDARD_HTML_ANALYZER = new StandardHtmlAnalyzer();
+    public static final StandardAnalyzer STANDARD_ANALYZER = new StandardAnalyzer();
+    public static final PassThroughAnalyzer PASS_THROUGH_ANALYZER = PassThroughAnalyzer.INSTANCE;
 
-    public final TokenStream tokenStream(String fieldName, Reader reader) {
+    public DocumentFieldAnalyzer() {
+        super(GLOBAL_REUSE_STRATEGY);
+    }
+
+    protected Analyzer getWrappedAnalyzer(String fieldName) {
         Field.FieldType fieldType = fieldNamePrefixer.getFieldType(fieldName);
-        Analyzer analyzer = getAnalyzer(fieldType);
-        return analyzer.tokenStream(fieldName, reader);
+        return getAnalyzer(fieldType);
     }
 
     private Analyzer getAnalyzer(Field.FieldType fieldType) {

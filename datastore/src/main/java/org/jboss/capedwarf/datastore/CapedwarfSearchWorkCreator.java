@@ -44,19 +44,19 @@ import org.jboss.capedwarf.shared.datastore.DatastoreConstants;
 public class CapedwarfSearchWorkCreator extends DefaultSearchWorkCreator<Object> {
 
     @Override
-    public Collection<Work<Object>> createPerEntityWorks(Object value, Serializable id, WorkType workType) {
+    public Collection<Work> createPerEntityWorks(Object value, Serializable id, WorkType workType) {
         if (id == null) {
             return super.createPerEntityWorks(value, id, workType);
         }
 
         Entity entity = (Entity) value;
-        List<Work<Object>> works = new ArrayList<>(super.createPerEntityWorks(value, id, workType));
+        List<Work> works = new ArrayList<>(super.createPerEntityWorks(value, id, workType));
         for (IndexesXml.Index index : ApplicationConfiguration.getInstance().getIndexesXml().getIndexes().values()) {
             if (index.getKind().equals(entity.getKind())) {
                 int i = 0;
                 for (Entity explodedEntity : explodeEntity(entity, index)) {
                     String explodedId = id + DatastoreConstants.SEPARATOR + i++ + DatastoreConstants.SEPARATOR + index.getName();
-                    works.add(new Work<Object>(explodedEntity, explodedId, workType));
+                    works.add(new Work(explodedEntity, explodedId, workType));
                 }
             }
         }

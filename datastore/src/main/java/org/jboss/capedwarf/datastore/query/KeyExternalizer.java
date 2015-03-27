@@ -29,7 +29,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import com.google.appengine.api.datastore.Key;
-import org.infinispan.marshall.Externalizer;
+import org.infinispan.commons.marshall.Externalizer;
 
 
 /**

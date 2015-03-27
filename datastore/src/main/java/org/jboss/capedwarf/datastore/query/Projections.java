@@ -40,7 +40,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
-import org.hibernate.search.SearchException;
+import org.hibernate.search.exception.SearchException;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.ProjectionConstants;
 import org.jboss.capedwarf.shared.config.IndexesXml;
@@ -94,7 +94,7 @@ class Projections {
         List<SortField> sortFields = new ArrayList<>();
         for (IndexesXml.Property property : index.getProperties()) {
             boolean reverse = "desc".equals(property.getDirection());
-            sortFields.add(new SortField(property.getName(), SortField.STRING, reverse));
+            sortFields.add(new SortField(property.getName(), SortField.Type.STRING, reverse));
         }
         cacheQuery.sort(new Sort(sortFields.toArray(new SortField[sortFields.size()])));
     }
