@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.logging.Logger;
 
 import com.google.appengine.api.search.Cursor;
 import com.google.appengine.api.search.Document;
@@ -68,8 +67,6 @@ public class CapedwarfSearchIndex implements Index {
             return input.build();
         }
     };
-
-    private final Logger log = Logger.getLogger(getClass().getName());
 
     private String name;
     private String namespace;
@@ -233,9 +230,7 @@ public class CapedwarfSearchIndex implements Index {
                 return new MultiFieldGAEQueryTreeVisitor(allFieldName);
             }
         };
-        org.apache.lucene.search.Query luceneQuery = queryConverter.convert(query.getQueryString());
-        log.info("luceneQuery = " + luceneQuery);
-        return luceneQuery;
+        return queryConverter.convert(query.getQueryString());
     }
 
     @SuppressWarnings("unchecked")
