@@ -22,19 +22,28 @@
 
 package org.jboss.capedwarf.search;
 
+import java.io.Reader;
+
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.AnalyzerWrapper;
 import org.apache.lucene.analysis.DelegatingAnalyzerWrapper;
+import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
-public final class StandardHtmlAnalyzer extends DelegatingAnalyzerWrapper {
+public final class StandardHtmlAnalyzer extends AnalyzerWrapper {
     private StandardAnalyzer standardAnalyzer;
 
     public StandardHtmlAnalyzer() {
         super(GLOBAL_REUSE_STRATEGY);
         this.standardAnalyzer = new StandardAnalyzer();
+    }
+
+    @Override
+    protected Reader wrapReader(String fieldName, Reader reader) {
+        return super.wrapReader(fieldName, new HTMLStripCharFilter(reader));
     }
 
     protected Analyzer getWrappedAnalyzer(String fieldName) {
