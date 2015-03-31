@@ -30,6 +30,7 @@ import com.google.appengine.api.search.query.QueryTreeContext;
 import com.google.appengine.api.search.query.QueryTreeVisitor;
 import com.google.appengine.repackaged.org.antlr.runtime.tree.Tree;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -39,7 +40,6 @@ import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
-
 import org.hibernate.search.spatial.SpatialQueryBuilder;
 
 /**
@@ -235,7 +235,7 @@ public class GAEQueryTreeVisitor implements QueryTreeVisitor<Context> {
     private Query createContainsQuery(String field, Context text) {
         if (text.isPhrase()) {
             try {
-                return new QueryParser(null, new StandardAnalyzer()).parse(field + ":" + text.getText());
+                return new QueryParser(null, new StandardAnalyzer(CharArraySet.EMPTY_SET)).parse(field + ":" + text.getText());
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }

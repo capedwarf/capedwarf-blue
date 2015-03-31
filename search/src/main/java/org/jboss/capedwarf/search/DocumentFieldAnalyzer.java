@@ -26,6 +26,7 @@ import com.google.appengine.api.search.Field;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.DelegatingAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.util.CharArraySet;
 import org.hibernate.search.util.impl.PassThroughAnalyzer;
 
 /**
@@ -36,7 +37,7 @@ public final class DocumentFieldAnalyzer extends DelegatingAnalyzerWrapper {
     private FieldNamePrefixer fieldNamePrefixer = new FieldNamePrefixer();
 
     public static final StandardHtmlAnalyzer STANDARD_HTML_ANALYZER = new StandardHtmlAnalyzer();
-    public static final StandardAnalyzer STANDARD_ANALYZER = new StandardAnalyzer();
+    public static final StandardAnalyzer STANDARD_ANALYZER = new StandardAnalyzer(CharArraySet.EMPTY_SET);
     public static final PassThroughAnalyzer PASS_THROUGH_ANALYZER = PassThroughAnalyzer.INSTANCE;
 
     public DocumentFieldAnalyzer() {

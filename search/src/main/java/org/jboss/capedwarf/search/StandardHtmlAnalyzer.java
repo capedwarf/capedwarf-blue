@@ -26,9 +26,9 @@ import java.io.Reader;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.AnalyzerWrapper;
-import org.apache.lucene.analysis.DelegatingAnalyzerWrapper;
 import org.apache.lucene.analysis.charfilter.HTMLStripCharFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.util.CharArraySet;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
@@ -38,7 +38,7 @@ public final class StandardHtmlAnalyzer extends AnalyzerWrapper {
 
     public StandardHtmlAnalyzer() {
         super(GLOBAL_REUSE_STRATEGY);
-        this.standardAnalyzer = new StandardAnalyzer();
+        this.standardAnalyzer = new StandardAnalyzer(CharArraySet.EMPTY_SET);
     }
 
     @Override
