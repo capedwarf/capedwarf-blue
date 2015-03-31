@@ -1,7 +1,7 @@
 <jboss-deployment-structure>
     <deployment>
         <dependencies>
-            <module name="org.bouncycastle.bcprov"/>
+            <module name="org.bouncycastle"/>
         </dependencies>
     </deployment>
 </jboss-deployment-structure>
