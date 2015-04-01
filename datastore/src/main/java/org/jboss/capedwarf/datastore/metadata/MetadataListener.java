@@ -51,6 +51,10 @@ public class MetadataListener extends AbstractPutRemoveCacheListener implements 
         }
     }
 
+    protected void onPostCreate(Entity trigger) {
+        onPostPut(trigger);
+    }
+
     protected void onPrePut(Entity trigger) {
         // namespace and kind are immutable
     }

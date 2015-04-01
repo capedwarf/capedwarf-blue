@@ -24,8 +24,10 @@ package org.jboss.capedwarf.datastore.notifications;
 
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
+import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
@@ -37,6 +39,19 @@ import org.jboss.capedwarf.datastore.KindUtils;
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public abstract class AbstractPutRemoveCacheListener extends AbstractCacheListener {
+    @CacheEntryCreated
+    public void onCreate(CacheEntryCreatedEvent<Key, Entity> event) {
+        if (isIgnoreCreateEvent(event))
+            return;
+
+        Entity trigger = event.getValue();
+        if (event.isPre() == false) {
+            onPostCreate(trigger);
+        } else if (trigger != null) {
+            onPreCreate(trigger);
+        }
+    }
+
     @CacheEntryModified
     public void onPut(CacheEntryModifiedEvent<Key, Entity> event) {
         if (isIgnorePutEvent(event))
@@ -62,6 +77,16 @@ public abstract class AbstractPutRemoveCacheListener extends AbstractCacheListen
         } else {
             onPostRemove(event.getKey());
         }
+    }
+
+    /**
+     * Do we ignore create event.
+     *
+     * @param event the event
+     * @return true if we ignore event, false otherwise
+     */
+    protected boolean isIgnoreCreateEvent(CacheEntryCreatedEvent<Key, Entity> event) {
+        return isIgnoreEvent(event);
     }
 
     /**
@@ -103,6 +128,22 @@ public abstract class AbstractPutRemoveCacheListener extends AbstractCacheListen
     protected boolean isIgnoreEntry(Key key) {
         return KindUtils.match(key.getKind(), KindUtils.Type.STATS, KindUtils.Type.METADATA);
     }
+
+    /**
+     * Pre create, trigger is the old value.
+     *
+     * @param trigger the trigger entity
+     */
+    protected void onPreCreate(Entity trigger) {
+        // do nothing by default
+    }
+
+    /**
+     * Post create, trigger is the new value.
+     *
+     * @param trigger the trigger entity
+     */
+    protected abstract void onPostCreate(Entity trigger);
 
     /**
      * Pre put / modification, trigger is the old value.

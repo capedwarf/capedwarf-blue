@@ -35,6 +35,10 @@ import static org.jboss.capedwarf.datastore.stats.AbstractUpdate.Signum.PLUS;
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
  */
 public abstract class AbstractEagerListener extends AbstractPutRemoveCacheListener {
+    protected void onPostCreate(Entity trigger) {
+        executeCallables(trigger, PLUS);
+    }
+
     protected void onPrePut(Entity trigger) {
         executeCallables(trigger, MINUS);
     }
