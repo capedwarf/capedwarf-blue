@@ -152,7 +152,8 @@ public class StaticServlet extends DefaultServlet {
             HttpServletRequest delegate = new HttpServletRequestWrapper(req) {
                 @Override
                 public String getPathInfo() {
-                    return getPublicRoot() + path; // return full file path
+                    String fullPath = getPublicRoot() + path;
+                    return fullPath.length() == 0 || fullPath.equals("/") ? null : fullPath;
                 }
             };
             for (StaticFileHttpHeader header : include.getHeaders()) {
