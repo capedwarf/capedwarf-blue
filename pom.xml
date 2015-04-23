@@ -81,9 +81,9 @@
         <version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>1.0.0.Final</version.org.jboss.spec.javax.jms.jboss-jms-api_2.0_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.websockets>1.0.0.Final</version.org.jboss.spec.javax.websockets>
-        <version.org.hibernate.search>5.1.1.Final</version.org.hibernate.search>
+        <version.org.hibernate.search>5.1.2-SNAPSHOT</version.org.hibernate.search>
         <version.org.marshalling>1.4.10.Final</version.org.marshalling>
-        <version.org.infinispan>7.2.0.Beta1</version.org.infinispan>
+        <version.org.infinispan>7.1.1.Final</version.org.infinispan>
         <version.org.wildfly.mail-ra>1.0.0.Alpha2</version.org.wildfly.mail-ra>
         <version.net.jcip>1.0</version.net.jcip>
         <version.metainf>1.1</version.metainf>
