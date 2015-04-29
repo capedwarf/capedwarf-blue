@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,14 +23,16 @@
 package org.jboss.capedwarf.bytecode;
 
 /**
- * Group all CapeDwarf transformers.
+ * Hack non-GAE classes / libs.
  *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
-public class CapedwarfTransformer extends ListTransformer {
-    public CapedwarfTransformer() {
-        addTransformer(new FactoriesTransformer());
-        addTransformer(new MiscTransformer());
-        addTransformer(new LibsTransformer());
+final class LibsTransformer extends MultipleTransformer {
+
+    // -- Keep lexicographical order --
+
+    public LibsTransformer() {
+        // Infinispan Query
+        register("org.infinispan.query.backend.QueryInterceptor", new QueryInterceptorTransformer());
     }
 }

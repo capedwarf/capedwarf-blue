@@ -79,6 +79,7 @@ public class CapedwarfTransformerMojo {
                         "|([.]*datastore.Entity.class*)" +
                         "|([.]*datastore.Key.class*)" +
                         "|([.]*search.GeoPoint.class*)" +
+                        "|([.]*backend.QueryInterceptor.class*)" +
                         "|([.]*cloud.sql.jdbc.Driver.class*))",
                 pathToTransformedAppEngineJar};
     }
