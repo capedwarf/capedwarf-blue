@@ -68,6 +68,12 @@
             <artifactId>undertow-servlet</artifactId>
             <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>

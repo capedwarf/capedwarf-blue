@@ -83,7 +83,12 @@
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-common-core</artifactId>
-            <version>${version.org.jboss.jboss-common-core}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
             <scope>provided</scope>
         </dependency>
 
