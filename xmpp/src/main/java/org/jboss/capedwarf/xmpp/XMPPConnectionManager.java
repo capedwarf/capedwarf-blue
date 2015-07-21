@@ -44,7 +44,9 @@ public class XMPPConnectionManager {
         try {
             XmppConfiguration xmppConfig = ApplicationConfiguration.getInstance().getCapedwarfConfiguration().getXmppConfiguration();
 
-            ConnectionConfiguration config = new ConnectionConfiguration(xmppConfig.getHost(), xmppConfig.getPort());
+            ConnectionConfiguration config = new ConnectionConfiguration(xmppConfig.getHost(), xmppConfig.getPort(), "gmail.com");
+            config.setSASLAuthenticationEnabled(false);
+
             XMPPConnection connection = new XMPPConnection(config);
             connection.connect();
             connection.login(xmppConfig.getUsername(), xmppConfig.getPassword());
