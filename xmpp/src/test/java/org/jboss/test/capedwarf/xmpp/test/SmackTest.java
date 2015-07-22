@@ -64,10 +64,10 @@ public class SmackTest {
     }
 
     private XMPPConnection openConnection() throws XMPPException {
-        ConnectionConfiguration config = new ConnectionConfiguration("talk.google.com", 5222, "Work");
+        ConnectionConfiguration config = new ConnectionConfiguration("talk.l.google.com", 5222, "Work");
         XMPPConnection connection = new XMPPConnection(config);
         connection.connect();
-        connection.login("capedwarftest@gmail.com", "jbossownsyou");
+        connection.login("capedwarftest@gmail.com", System.getProperty("capedwarf.xmpp.password"));
         return connection;
     }
 

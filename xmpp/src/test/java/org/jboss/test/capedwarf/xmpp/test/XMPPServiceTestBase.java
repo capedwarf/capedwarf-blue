@@ -35,7 +35,7 @@ public abstract class XMPPServiceTestBase extends TestBase {
     private static final String CAPEDWARF_WEB =
             "<capedwarf-web-app>" +
             "    <xmpp>" +
-                    "        <host>talk.google.com</host>" +
+            "        <host>talk.l.google.com</host>" +
             "        <port>5222</port>" +
             "        <username>%s</username>" +
             "        <password>%s</password>" +
