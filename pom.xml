@@ -91,7 +91,7 @@
         <version.org.apache.httpcomponents>4.3.1</version.org.apache.httpcomponents>
         <version.org.xerial.sqlite>3.7.2</version.org.xerial.sqlite>
         <version.org.codehaus.jackson>1.9.13</version.org.codehaus.jackson>
-        <version.io.undertow>1.1.0.Final</version.io.undertow>
+        <version.io.undertow>1.1.8.Final</version.io.undertow>
         <version.org.quartz>2.2.1</version.org.quartz>
         <!-- Antlr -->
         <version.antlr>3.4</version.antlr>
@@ -104,7 +104,7 @@
         <!-- Testing -->
         <version.junit>4.11</version.junit>
         <version.arquillian>1.1.5.Final</version.arquillian>
-        <version.jboss.wildfly>8.2.0.Final</version.jboss.wildfly>
+        <version.jboss.wildfly>8.2.1.Final</version.jboss.wildfly>
         <version.org.jboss.xnio>3.3.0.Final</version.org.jboss.xnio>
         <version.arquillian.gae>1.0.0.Beta10</version.arquillian.gae>
         <version.jboss.maven.transformer>1.0.0.Beta5</version.jboss.maven.transformer>
