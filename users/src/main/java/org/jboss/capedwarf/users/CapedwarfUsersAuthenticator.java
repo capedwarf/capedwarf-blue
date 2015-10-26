@@ -24,6 +24,7 @@ package org.jboss.capedwarf.users;
 
 import java.io.IOException;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -32,6 +33,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 import io.undertow.security.api.SecurityContext;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletRequestContext;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
@@ -42,12 +44,23 @@ public class CapedwarfUsersAuthenticator extends AbstractAuthenticator {
         final HttpServletRequest request = (HttpServletRequest) servletRequestContext.getServletRequest();
         final HttpServletResponse response = (HttpServletResponse) servletRequestContext.getServletResponse();
 
-        UserService userService = UserServiceFactory.getUserService();
-        String location = userService.createLoginURL(request.getRequestURI());
-        try {
-            response.sendRedirect(location);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+        String path = ServletUtils.getRequestURIWithoutContextPath(request);
+        if (path.startsWith(AuthServlet.LOGIN_PATH)) {
+            RequestDispatcher disp = request.getRequestDispatcher(path);
+            try {
+                disp.forward(request, response);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        } else {
+            try {
+                UserService userService = UserServiceFactory.getUserService();
+                String location = userService.createLoginURL(request.getRequestURI());
+
+                response.sendRedirect(location);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
         }
         return new ChallengeResult(true);
     }
