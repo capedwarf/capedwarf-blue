@@ -132,11 +132,11 @@ public class OAuthLoginProductionAuthHandler extends AuthHandler {
     }
 
     private String getAuthorizationEndpoint() {
-        return "https://accounts.google.com/o/oauth2/auth";  // TODO: discover this through https://accounts.google.com/.well-known/openid-configuration
+        return "https://accounts.google.com/o/oauth2/v2/auth";  // TODO: discover this through https://accounts.google.com/.well-known/openid-configuration
     }
 
     private String getTokenEndpoint() {
-        return "https://accounts.google.com/o/oauth2/token"; // TODO: discover this through https://accounts.google.com/.well-known/openid-configuration
+        return "https://accounts.google.com/o/oauth2/v2/token"; // TODO: discover this through https://accounts.google.com/.well-known/openid-configuration
     }
 
     private String getReturnUrl() {
