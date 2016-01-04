@@ -55,8 +55,8 @@
         <!-- Shared -->
         <version.org.jboss.capedwarf.shared>2.0.0-SNAPSHOT</version.org.jboss.capedwarf.shared>
         <!-- External -->
-        <version.com.google.gae.api>1.9.28</version.com.google.gae.api>
-        <version.com.google.gae.tools>1.9.28</version.com.google.gae.tools>
+        <version.com.google.gae.api>1.9.30</version.com.google.gae.api>
+        <version.com.google.gae.tools>1.9.30</version.com.google.gae.tools>
         <!-- We do not use 16.0.1, due to MapReduce, which needs 15.x -->
         <version.com.google.guava>15.0</version.com.google.guava>
         <version.org.apache.commons-collections>3.2.1</version.org.apache.commons-collections>
