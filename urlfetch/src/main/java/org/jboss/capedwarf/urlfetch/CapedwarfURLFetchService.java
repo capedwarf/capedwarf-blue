@@ -143,7 +143,6 @@ public class CapedwarfURLFetchService implements URLFetchService {
             HttpClient client = ComponentRegistry.getInstance().getComponent(Keys.HTTP_CLIENT);
             HttpContext context = new BasicHttpContext();
             HttpResponse response = client.execute(request, context);
-            HTTPResponseHack jhr = new HTTPResponseHack(response);
 
             String finalURLString = (String) context.getAttribute("final.url");
             URL finalURL;
@@ -156,9 +155,8 @@ public class CapedwarfURLFetchService implements URLFetchService {
             } else {
                 finalURL = request.getURI().toURL();
             }
-            jhr.setFinalUrl(finalURL);
 
-            return jhr.getResponse();
+            return HTTPResponseHack.response(response, finalURL);
         } catch (Exception e) {
             IOException ioe = new IOException();
             ioe.initCause(e);

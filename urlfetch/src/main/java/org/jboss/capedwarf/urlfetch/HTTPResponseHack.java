@@ -22,74 +22,32 @@
 
 package org.jboss.capedwarf.urlfetch;
 
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.appengine.api.urlfetch.HTTPHeader;
 import com.google.appengine.api.urlfetch.HTTPResponse;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.jboss.capedwarf.common.io.IOUtils;
 
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.net.URL;
-
 /**
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 final class HTTPResponseHack {
-
-    private static final Constructor<HTTPResponse> ctor;
-    private static final Method addHeader;
-    private static final Method setContent;
-    private static final Method setFinalUrl;
-
-    static {
-        try {
-            Class<HTTPResponse> clazz = HTTPResponse.class;
-
-            ctor = clazz.getDeclaredConstructor(int.class);
-            ctor.setAccessible(true);
-
-            addHeader = clazz.getDeclaredMethod("addHeader", String.class, String.class);
-            addHeader.setAccessible(true);
-
-            setContent = clazz.getDeclaredMethod("setContent", byte[].class);
-            setContent.setAccessible(true);
-
-            setFinalUrl = clazz.getDeclaredMethod("setFinalUrl", URL.class);
-            setFinalUrl.setAccessible(true);
-        } catch (Throwable t) {
-            throw new IllegalStateException(t);
-        }
-    }
-
-    private HTTPResponse response;
-
-    HTTPResponseHack(HttpResponse response) throws Exception {
-        createResponse(response.getStatusLine().getStatusCode());
-        for (Header h : response.getAllHeaders())
-            addHeader(h.getName(), h.getValue());
+    static HTTPResponse response(HttpResponse response, URL finalUrl) throws Exception {
+        int responseCode = response.getStatusLine().getStatusCode();
 
         InputStream is = response.getEntity().getContent();
-        setContent(IOUtils.toBytes(is, true));
-    }
+        byte[] content = IOUtils.toBytes(is, true);
 
-    HTTPResponse getResponse() {
-        return response;
-    }
+        List<HTTPHeader> headers = new ArrayList<>();
+        for (Header h : response.getAllHeaders()) {
+            headers.add(new HTTPHeader(h.getName(), h.getValue()));
+        }
 
-    void createResponse(int responseCode) throws Exception {
-        response = ctor.newInstance(responseCode);
-    }
-
-    void addHeader(String name, String value) throws Exception {
-        addHeader.invoke(response, name, value);
-    }
-
-    void setContent(byte[] content) throws Exception {
-        setContent.invoke(response, new Object[]{content});
-    }
-
-    void setFinalUrl(URL finalUrl) throws Exception {
-        setFinalUrl.invoke(response, finalUrl);
+        return new HTTPResponse(responseCode, content, finalUrl, headers);
     }
 }
