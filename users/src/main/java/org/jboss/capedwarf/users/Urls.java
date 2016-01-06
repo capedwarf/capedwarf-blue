@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -27,19 +27,30 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OAuthLoginResponse {
+public class Urls {
 
-    @JsonProperty("id_token")
-    private String idToken;
+    @JsonProperty("authorization_endpoint")
+    private String authorizationEndpoint;
 
-    public String getIdToken() {
-        return idToken;
+    @JsonProperty("token_endpoint")
+    private String tokenEndpoint;
+
+    public String getAuthorizationEndpoint() {
+        return authorizationEndpoint;
     }
 
-    public void setIdToken(String idToken) {
-        this.idToken = idToken;
+    public void setAuthorizationEndpoint(String authorizationEndpoint) {
+        this.authorizationEndpoint = authorizationEndpoint;
+    }
+
+    public String getTokenEndpoint() {
+        return tokenEndpoint;
+    }
+
+    public void setTokenEndpoint(String tokenEndpoint) {
+        this.tokenEndpoint = tokenEndpoint;
     }
 }

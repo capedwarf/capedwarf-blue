@@ -40,6 +40,11 @@
             <artifactId>jose-jwt</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+
         <!-- TODO: clean this up -->
         <!-- this dep is needed by AuthServlet -->
         <dependency>

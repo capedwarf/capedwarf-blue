@@ -93,6 +93,7 @@
         <version.org.codehaus.jackson>1.9.13</version.org.codehaus.jackson>
         <version.io.undertow>1.1.8.Final</version.io.undertow>
         <version.org.quartz>2.2.1</version.org.quartz>
+        <version.com.fasterxml.jackson-annotations>2.4.1</version.com.fasterxml.jackson-annotations>
         <!-- Antlr -->
         <version.antlr>3.4</version.antlr>
         <version.antlr.plugin>3.4</version.antlr.plugin>
@@ -1090,6 +1091,12 @@
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-core-asl</artifactId>
                 <version>${version.org.codehaus.jackson}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${version.com.fasterxml.jackson-annotations}</version>
             </dependency>
 
         </dependencies>

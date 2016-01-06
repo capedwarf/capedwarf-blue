@@ -42,14 +42,18 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class OAuthLoginProductionAuthHandler extends AuthHandler {
 
     private static final String STATE_ATTRIBUTE = "__capedwarf_oauth_login_state";
     private static final String DESTINATION_URL_ATTRIBUTE = "__capedwarf_oauth_login_destination_url";
     private static final String GMAIL_COM = "gmail.com";
+    private static final String URLS_ENDPOINT = "https://accounts.google.com/.well-known/openid-configuration";
 
     private ObjectMapper objectMapper = new ObjectMapper();
+
+    private volatile Urls urls;
 
     public OAuthLoginProductionAuthHandler() {
         validateConfiguration();
@@ -62,6 +66,20 @@ public class OAuthLoginProductionAuthHandler extends AuthHandler {
         if (getClientSecret() == null) {
             throw new IllegalStateException("OAuth clientSecret not configured in capedwarf-web.xml");
         }
+    }
+
+    private Urls getUrls() {
+        if (urls == null) {
+            synchronized (this) {
+                if (urls == null) {
+                    ResteasyClient client = new ResteasyClientBuilder().build();
+                    ResteasyWebTarget target = client.target(URLS_ENDPOINT);
+                    Response response = target.request().accept("application/json").get();
+                    urls = response.readEntity(Urls.class);
+                }
+            }
+        }
+        return urls;
     }
 
     public void handleLoginRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -132,11 +150,11 @@ public class OAuthLoginProductionAuthHandler extends AuthHandler {
     }
 
     private String getAuthorizationEndpoint() {
-        return "https://accounts.google.com/o/oauth2/v2/auth";  // TODO: discover this through https://accounts.google.com/.well-known/openid-configuration
+        return getUrls().getAuthorizationEndpoint();
     }
 
     private String getTokenEndpoint() {
-        return "https://accounts.google.com/o/oauth2/v2/token"; // TODO: discover this through https://accounts.google.com/.well-known/openid-configuration
+        return getUrls().getTokenEndpoint();
     }
 
     private String getReturnUrl() {
