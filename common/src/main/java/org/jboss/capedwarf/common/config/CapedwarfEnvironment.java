@@ -215,17 +215,49 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
         return applicationConfiguration;
     }
 
-    public void setBaseApplicationUrl(String scheme, String serverName, int port, String context) {
-        String sPort = (port == DEFAULT_HTTP_PORT) ? "" : ":" + port;
-        defaultVersionHostname = serverName + sPort + context;
-        baseApplicationUrl = scheme + DELIMITER + defaultVersionHostname;
-        if (HTTPS.equals(scheme)) {
-            secureBaseApplicationUrl = baseApplicationUrl;
-        } else {
-            secureBaseApplicationUrl = HTTPS + DELIMITER + defaultVersionHostname;
+    private String getProperty(String prefix) {
+        String key = String.format(prefix + ".%s", SystemProperty.environment.value().value().toLowerCase());
+        String value = getApplicationConfiguration().getCapedwarfConfiguration().getProperties().getProperty(key);
+        if (value != null) {
+            return value;
         }
+        return getApplicationConfiguration().getCapedwarfConfiguration().getProperties().getProperty(prefix);
+    }
+
+    public void setBaseApplicationUrl(String scheme, String serverName, int port, String context) {
+        String baseAppUrl = getProperty("base.app.url");
+        if (baseAppUrl != null) {
+            baseApplicationUrl = baseAppUrl;
+            defaultVersionHostname = baseAppUrl.substring(baseAppUrl.indexOf(DELIMITER) + DELIMITER.length());
+        }
+        String secureAppUrl = getProperty("secure.app.url");
+        if (secureAppUrl != null) {
+            secureBaseApplicationUrl = secureAppUrl;
+        }
+        String path = getProperty("context.path");
+        if (path != null) {
+            contextPath = path;
+        }
+
+        if (contextPath == null) {
+            contextPath = context;
+        }
+
+        if (baseApplicationUrl == null) {
+            String sPort = (port == DEFAULT_HTTP_PORT) ? "" : ":" + port;
+            defaultVersionHostname = serverName + sPort + contextPath;
+            baseApplicationUrl = scheme + DELIMITER + defaultVersionHostname;
+        }
+
+        if (secureBaseApplicationUrl == null) {
+            if (HTTPS.equals(scheme) || baseApplicationUrl.startsWith(HTTPS)) {
+                secureBaseApplicationUrl = baseApplicationUrl;
+            } else {
+                secureBaseApplicationUrl = HTTPS + DELIMITER + defaultVersionHostname;
+            }
+        }
+
         attributes.put(DEFAULT_VERSION_HOSTNAME, defaultVersionHostname);
-        contextPath = context;
     }
 
     public String getBaseApplicationUrl() {
