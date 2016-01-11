@@ -216,10 +216,13 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
     }
 
     private String getProperty(String prefix) {
-        String key = String.format(prefix + ".%s", SystemProperty.environment.value().value().toLowerCase());
-        String value = getApplicationConfiguration().getCapedwarfConfiguration().getProperties().getProperty(key);
-        if (value != null) {
-            return value;
+        SystemProperty.Environment.Value env = SystemProperty.environment.value();
+        if (env != null) {
+            String key = String.format(prefix + ".%s", env.value().toLowerCase());
+            String value = getApplicationConfiguration().getCapedwarfConfiguration().getProperties().getProperty(key);
+            if (value != null) {
+                return value;
+            }
         }
         return getApplicationConfiguration().getCapedwarfConfiguration().getProperties().getProperty(prefix);
     }
