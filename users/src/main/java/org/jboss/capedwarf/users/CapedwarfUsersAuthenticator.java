@@ -57,7 +57,7 @@ public class CapedwarfUsersAuthenticator extends AbstractAuthenticator {
                 UserService userService = UserServiceFactory.getUserService();
                 String location = userService.createLoginURL(request.getRequestURI());
 
-                response.sendRedirect(location);
+                ServletUtils.forward(request, response, location);
             } catch (IOException e) {
                 throw new IllegalStateException(e);
             }

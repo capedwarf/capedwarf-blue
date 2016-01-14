@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.capedwarf.appidentity.CapedwarfHttpServletRequestWrapper;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.picketlink.social.standalone.openid.api.OpenIDAttributeMap;
 import org.picketlink.social.standalone.openid.api.OpenIDLifecycle;
@@ -104,7 +105,7 @@ class CapedwarfOpenIDProtocolAdaptor implements OpenIDProtocolAdapter, OpenIDLif
 
     private void sendWithRedirect(String destinationURL) throws OpenIDProtocolException {
         try {
-            response.sendRedirect(destinationURL);
+            ServletUtils.redirect(request, response, destinationURL);
         } catch (IOException e) {
             throw new OpenIDProtocolException(e);
         }

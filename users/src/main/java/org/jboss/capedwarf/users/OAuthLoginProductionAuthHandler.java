@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jboss.capedwarf.common.io.Base64Utils;
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
 import org.jboss.capedwarf.shared.config.OAuthConfiguration;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
@@ -90,7 +91,8 @@ public class OAuthLoginProductionAuthHandler extends AuthHandler {
         String destinationUrl = request.getParameter(AuthServlet.DESTINATION_URL_PARAM);
         request.getSession().setAttribute(DESTINATION_URL_ATTRIBUTE, destinationUrl);
         request.getSession().setAttribute(STATE_ATTRIBUTE, state);
-        response.sendRedirect(getFullAuthorizationEndpointUrl(authDomain, state));
+        String endpointUrl = getFullAuthorizationEndpointUrl(authDomain, state);
+        ServletUtils.redirect(request, response, endpointUrl);
     }
 
     private String getFullAuthorizationEndpointUrl(String authDomain, String state) {
@@ -126,8 +128,8 @@ public class OAuthLoginProductionAuthHandler extends AuthHandler {
             boolean isAdmin = ApplicationConfiguration.getInstance().getCapedwarfConfiguration().isAdmin(email);
             setupUserPrincipal(request, email, userId, authDomain, isAdmin);
 
-            response.sendRedirect((String)request.getSession().getAttribute(DESTINATION_URL_ATTRIBUTE));
-
+            String destination = (String) request.getSession().getAttribute(DESTINATION_URL_ATTRIBUTE);
+            ServletUtils.forward(request, response, destination);
         } catch (Exception e) {
             throw new IOException(e);
         }

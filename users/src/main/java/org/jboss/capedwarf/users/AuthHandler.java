@@ -19,10 +19,8 @@ public abstract class AuthHandler {
         try {
             request.getSession().removeAttribute(CapedwarfHttpServletRequestWrapper.USER_PRINCIPAL_SESSION_ATTRIBUTE_KEY);
 
-            ServletUtils.handleResponse(response);
-
             String destinationUrl = request.getParameter(AuthServlet.DESTINATION_URL_PARAM);
-            response.sendRedirect(destinationUrl);
+            ServletUtils.forward(request, response, destinationUrl);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

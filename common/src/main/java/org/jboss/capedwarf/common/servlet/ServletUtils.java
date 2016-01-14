@@ -24,6 +24,10 @@
 
 package org.jboss.capedwarf.common.servlet;
 
+import java.io.IOException;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
@@ -49,7 +53,7 @@ public class ServletUtils {
             if (token.trim().startsWith("filename")) {
                 String filename = token.substring(token.indexOf('=') + 1).trim().replace("\"", "");
                 if (filename.length() > 0) {
-                	return filename;
+                    return filename;
                 }
             }
         }
@@ -68,9 +72,9 @@ public class ServletUtils {
     /**
      * Set response headers, etc.
      *
-     * @param response the http response
+     * @param response     the http response
      * @param charEncoding the char encoding; can be null, default is used then
-     * @param length the content length; only applied if not null
+     * @param length       the content length; only applied if not null
      */
     public static void handleResponse(HttpServletResponse response, String charEncoding, Integer length) {
         response.setContentType(CONTENT_TYPE);
@@ -82,5 +86,35 @@ public class ServletUtils {
 
     public static String getRequestURIWithoutContextPath(HttpServletRequest request) {
         return request.getRequestURI().substring(request.getContextPath().length());
+    }
+
+    /**
+     * Do forward.
+     *
+     * @param request  the request
+     * @param response the response
+     * @param location new location
+     * @throws IOException for any error
+     */
+    public static void forward(HttpServletRequest request, HttpServletResponse response, String location) throws IOException {
+        try {
+            RequestDispatcher rd = request.getRequestDispatcher(location);
+            rd.forward(request, response);
+        } catch (ServletException e) {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * Do redirect.
+     *
+     * @param request  the request
+     * @param response the response
+     * @param location new location
+     * @throws IOException for any error
+     */
+    public static void redirect(HttpServletRequest request, HttpServletResponse response, String location) throws IOException {
+        handleResponse(response);
+        response.sendRedirect(location);
     }
 }

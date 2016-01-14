@@ -31,7 +31,8 @@ public class DevelopmentAuthHandler extends AuthHandler {
 
             setupUserPrincipal(request, email, userId, authDomain, isAdmin);
 
-            response.sendRedirect(request.getParameter(AuthServlet.DESTINATION_URL_PARAM));
+            String destination = request.getParameter(AuthServlet.DESTINATION_URL_PARAM);
+            ServletUtils.forward(request, response, destination);
         }
     }
 

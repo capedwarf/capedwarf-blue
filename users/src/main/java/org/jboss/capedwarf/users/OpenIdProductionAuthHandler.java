@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.jboss.capedwarf.common.servlet.ServletUtils;
 import org.jboss.capedwarf.common.url.URLUtils;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.picketlink.social.standalone.openid.api.OpenIDManager;
@@ -58,7 +59,8 @@ public class OpenIdProductionAuthHandler extends AuthHandler {
             boolean authenticated = manager.verify(adapter, getStringToStringParameterMap(request), getFullRequestURL(request));
             if (authenticated) {
                 try {
-                    response.sendRedirect(request.getParameter(AuthServlet.DESTINATION_URL_PARAM));
+                    String destination = request.getParameter(AuthServlet.DESTINATION_URL_PARAM);
+                    ServletUtils.forward(request, response, destination);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
