@@ -33,9 +33,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.velocity.context.AbstractContext;
 import org.apache.velocity.tools.generic.EscapeTool;
+import org.jboss.capedwarf.common.config.CapedwarfEnvironment;
 
 /**
  * @author <a href="mailto:mluksa@redhat.com">Marko Luksa</a>
+ * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class CapedwarfVelocityContext extends AbstractContext {
 
@@ -46,18 +48,24 @@ public class CapedwarfVelocityContext extends AbstractContext {
     private static ThreadLocal<CapedwarfVelocityContext> threadLocal = new ThreadLocal<CapedwarfVelocityContext>();
     private HttpServletRequest req;
 
+    @SuppressWarnings("unused")
     public CapedwarfVelocityContext() {
     }
 
     public CapedwarfVelocityContext(BeanManager manager, HttpServletRequest request) {
-        assert manager != null : "manager should not be null";
-        assert request != null : "request should not be null";
+        if (manager == null) {
+            throw new IllegalArgumentException("Null bean manager!");
+        }
+        if (request == null) {
+            throw new IllegalArgumentException("Null request!");
+        }
         this.manager = manager;
         init(request);
     }
 
     public void init(HttpServletRequest request) {
         this.req = request;
+        put("base_url", CapedwarfEnvironment.getThreadLocalInstance().getBaseApplicationUrl());
         put("request", request);
         put("esc", new EscapeTool());
     }
@@ -68,11 +76,11 @@ public class CapedwarfVelocityContext extends AbstractContext {
         if (value != null)
             return value;
 
-        Bean<? extends Object> bean = manager.resolve(manager.getBeans(key));
+        Bean<?> bean = manager.resolve(manager.getBeans(key));
         if (bean == null)
             return null;
-        
-        CreationalContext<? extends Object> creationalContext = manager.createCreationalContext(bean);
+
+        CreationalContext<?> creationalContext = manager.createCreationalContext(bean);
         return manager.getReference(bean, Object.class, creationalContext);
     }
 
@@ -83,6 +91,7 @@ public class CapedwarfVelocityContext extends AbstractContext {
 
     @Override
     public boolean internalContainsKey(Object key) {
+        //noinspection SuspiciousMethodCalls
         return map.containsKey(key);
     }
 
@@ -93,6 +102,7 @@ public class CapedwarfVelocityContext extends AbstractContext {
 
     @Override
     public Object internalRemove(Object key) {
+        //noinspection SuspiciousMethodCalls
         return map.remove(key);
     }
 

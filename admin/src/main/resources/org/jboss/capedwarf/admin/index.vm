@@ -1,4 +1,4 @@
 <html>
 <head>
-    <meta http-equiv="Refresh" content="0; URL=${request.getContextPath()}/_ah/admin/datastore.vm"/>
+    <meta http-equiv="Refresh" content="0; URL=${base_url}/_ah/admin/datastore.vm"/>
 </head>
