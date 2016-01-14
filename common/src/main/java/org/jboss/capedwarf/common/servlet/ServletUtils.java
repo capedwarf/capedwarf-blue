@@ -88,6 +88,12 @@ public class ServletUtils {
         return request.getRequestURI().substring(request.getContextPath().length());
     }
 
+    private static void validateLocation(String location) throws IOException {
+        if (location == null) {
+            throw new IOException("Missing location / destination parameter!");
+        }
+    }
+
     /**
      * Do forward.
      *
@@ -97,6 +103,7 @@ public class ServletUtils {
      * @throws IOException for any error
      */
     public static void forward(HttpServletRequest request, HttpServletResponse response, String location) throws IOException {
+        validateLocation(location);
         try {
             RequestDispatcher rd = request.getRequestDispatcher(location);
             rd.forward(request, response);
@@ -114,6 +121,7 @@ public class ServletUtils {
      * @throws IOException for any error
      */
     public static void redirect(HttpServletRequest request, HttpServletResponse response, String location) throws IOException {
+        validateLocation(location);
         handleResponse(response);
         response.sendRedirect(location);
     }
