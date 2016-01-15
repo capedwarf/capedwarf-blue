@@ -2,6 +2,6 @@
 
 <h2>$esc.html($customAdminPage.name)</h2>
 
-<iframe width="100%" frameborder="0" border="0" marginheight="0" marginwidth="0" height="800px" src="$contextPath$customAdminPage.url"/>
+<iframe width="100%" frameborder="0" border="0" marginheight="0" marginwidth="0" height="800px" src="$base_url$customAdminPage.url"/>
 
 #parse("/org/jboss/capedwarf/admin/footer.vm")
