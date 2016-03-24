@@ -193,7 +193,7 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
         TopicsReducer reducer = new TopicsReducer();
         TopicsCollator collator = new TopicsCollator();
 
-        MapReduceTask<TopicAndSubId, SubscriptionHolder, String, Set<String>> task = new MapReduceTask<TopicAndSubId, SubscriptionHolder, String, Set<String>>(cache);
+        MapReduceTask<TopicAndSubId, SubscriptionHolder, String, Set<String>> task = new MapReduceTask<>(cache);
         return task.mappedWith(mapper).reducedWith(reducer).execute(collator);
     }
 
@@ -202,7 +202,7 @@ public class CapedwarfProspectiveSearchService implements ProspectiveSearchServi
     }
 
     private String encodeDocument(Entity document) {
-        return Base64Utils.encodeWebSafe(EntityTranslator.convertToPb(document).toByteArray(), false);
+        return Base64Utils.encodeWebSafe(EntityTranslator.convertToPb(document).toByteArray());
     }
 
     private Entity decodeDocument(String encodedDocument) {

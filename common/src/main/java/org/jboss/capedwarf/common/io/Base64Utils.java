@@ -22,7 +22,7 @@
 
 package org.jboss.capedwarf.common.io;
 
-import com.google.appengine.repackaged.com.google.common.util.Base64;
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * Gather all Base64 methods here.
@@ -32,18 +32,18 @@ import com.google.appengine.repackaged.com.google.common.util.Base64;
 @SuppressWarnings("deprecation")
 public class Base64Utils {
     public static byte[] decode(String input) {
-        return Base64.decode(input);
+        return Base64.decodeBase64(input);
     }
 
     public static String encode(byte[] input) {
-        return Base64.encode(input);
+        return Base64.encodeBase64String(input);
     }
 
     public static byte[] decodeWebSafe(String input) {
-        return Base64.decodeWebSafe(input);
+        return new Base64(true).decode(input);
     }
 
-    public static String encodeWebSafe(byte[] bytes, boolean doPadding) {
-        return Base64.encodeWebSafe(bytes, doPadding);
+    public static String encodeWebSafe(byte[] bytes) {
+        return new Base64(true).encodeAsString(bytes);
     }
 }

@@ -61,6 +61,7 @@
         <version.com.google.guava>15.0</version.com.google.guava>
         <version.org.apache.commons-collections>3.2.1</version.org.apache.commons-collections>
         <version.org.apache.commons-lang>2.6</version.org.apache.commons-lang>
+        <version.org.apache.commons-codec>1.9</version.org.apache.commons-codec>
         <version.org.apache.log4j>1.2.17</version.org.apache.log4j>
         <version.org.apache.lucene>3.6.2</version.org.apache.lucene>
         <version.org.apache.velocity>1.6.3</version.org.apache.velocity>
@@ -640,6 +641,12 @@
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>${version.org.apache.commons-lang}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${version.org.apache.commons-codec}</version>
             </dependency>
 
             <dependency>
