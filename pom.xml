@@ -105,7 +105,7 @@
         <version.org.datanucleus.jdo>3.0.1</version.org.datanucleus.jdo>
         <!-- Testing -->
         <version.junit>4.11</version.junit>
-        <version.arquillian>1.1.5.Final</version.arquillian>
+        <version.arquillian>1.1.11.Final</version.arquillian>
         <version.jboss.wildfly>8.2.1.Final</version.jboss.wildfly>
         <version.org.jboss.xnio>3.3.0.Final</version.org.jboss.xnio>
         <version.arquillian.gae>1.0.0.Beta10</version.arquillian.gae>
