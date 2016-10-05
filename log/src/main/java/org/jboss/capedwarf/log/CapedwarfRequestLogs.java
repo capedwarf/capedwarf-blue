@@ -92,6 +92,7 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
         out.writeLong(requestLogs.getLatencyUsec());
         out.writeLong(requestLogs.getMcycles());
         writeUTF(out, requestLogs.getMethod());
+        writeUTF(out, requestLogs.getModuleId());
         writeUTF(out, requestLogs.getResource());
         writeUTF(out, requestLogs.getHttpVersion());
         out.writeInt(requestLogs.getStatus());
@@ -130,6 +131,7 @@ public class CapedwarfRequestLogs extends CapedwarfLogElement implements Externa
             requestLogs.setLatency(in.readLong());
             requestLogs.setMcycles(in.readLong());
             requestLogs.setMethod(readUTF(in));
+            requestLogs.setModuleId(readUTF(in));
             requestLogs.setResource(readUTF(in));
             requestLogs.setHttpVersion(readUTF(in));
             requestLogs.setStatus(in.readInt());
