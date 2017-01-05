@@ -29,7 +29,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.NamespaceManager;
@@ -37,6 +36,7 @@ import com.google.appengine.api.backends.BackendService;
 import com.google.appengine.api.utils.SystemProperty;
 import com.google.apphosting.api.ApiProxy;
 import com.google.common.base.Function;
+import org.jboss.capedwarf.common.io.SerializableMap;
 import org.jboss.capedwarf.shared.compatibility.Compatibility;
 import org.jboss.capedwarf.shared.config.AppEngineWebXml;
 import org.jboss.capedwarf.shared.config.ApplicationConfiguration;
@@ -91,7 +91,7 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
     public CapedwarfEnvironment() {
         requestStart = System.currentTimeMillis();
         // attributes
-        attributes = new ConcurrentHashMap<String, Object>();
+        attributes = new SerializableMap<>(); // the best we can do to keep env around for async Infinispan calls
         // a bit of a workaround for LocalServiceTestHelper::tearDown NPE
         attributes.put(REQUEST_END_LISTENERS, new ArrayList());
         // add thread factory
@@ -379,9 +379,8 @@ public class CapedwarfEnvironment implements ApiProxy.Environment, Serializable,
             throw new RuntimeException(e);
         }
 
-        clone.attributes = new ConcurrentHashMap<>(attributes);
+        clone.attributes = new SerializableMap<>(attributes);
 
         return clone;
     }
 }
-
