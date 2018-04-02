@@ -59,7 +59,8 @@ public class CronJobs {
             ApplicationConfiguration configuration = ApplicationConfiguration.getInstance();
             CronXml cronXml = configuration.getCronXml();
             for (CronEntry ce : cronXml.getEntries()) {
-                jobs.add(new Job(ce.getUrl(), ce.getDescription(), ce.getSchedule(), ce.getTimezone(), ce.getTarget(), current));
+                String timezone = ce.getTimezone() != null ? ce.getTimezone() : "GMT";
+                jobs.add(new Job(ce.getUrl(), ce.getDescription(), ce.getSchedule(), timezone, ce.getTarget(), current));
             }
         }
         return jobs;
